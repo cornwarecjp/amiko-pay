@@ -11,3 +11,11 @@
 *.lai
 *.la
 *.a
+
+# Dependency files
+*.d
+
+# Executable
+amikopay
+amikopay.exe
+
