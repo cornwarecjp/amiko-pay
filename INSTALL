@@ -1,0 +1,40 @@
+=======================================
+System requirements
+=======================================
+
+Amiko Pay uses the following libraries:
+* POSIX sockets (available on all modern UNIX/Linux operating systems)
+* OpenSSL ("libssl")
+* liburiparser
+
+Amiko Pay is developed on Linux, but it will probably work on all UNIX-like
+systems, and you might be able to compile it for windows too. As an example,
+you will need the following packages in Ubuntu 12.04:
+* build-essential
+* libssl-dev
+* liburiparser-dev
+
+
+=======================================
+Build instructions
+=======================================
+
+Open a terminal, and go to the directory that contains this file.
+Then, enter the command "make" and press Enter.
+If there were no errors, the executable file "amikopay" has been created.
+That's it!
+
+If you encountered errors when building, they are probably related to how
+Amiko Pay tries to use the programming libraries: this can be dependent on your
+operating system. You can change the settings in the file "Makefile" and retry
+building.
+
+
+=======================================
+Installation instructions
+=======================================
+
+There is no "standard" way of installing Amiko Pay. You can choose for yourself
+where you want to place the executable file.
+
+

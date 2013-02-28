@@ -1,0 +1,52 @@
+/*
+    link.cpp
+    Copyright (C) 2013 by CJP
+
+    This file is part of Amiko Pay.
+
+    Amiko Pay is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Amiko Pay is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include "link.h"
+
+std::map<CString, CLink::t_schemeHandler> CLink::m_schemeHandlers;
+
+void CLink::registerSchemeHandler(const CString &scheme, CLink::t_schemeHandler handler)
+{
+	m_schemeHandlers[scheme] = handler;
+}
+
+CLink *CLink::make(const CURI &uri)
+{
+	CString scheme = uri.getScheme();
+	if(scheme == "")
+		throw CConstructionFailed("Empty scheme");
+
+	std::map<CString, t_schemeHandler>::const_iterator iterator =
+		m_schemeHandlers.find(scheme);
+
+	if(iterator == m_schemeHandlers.end())
+		throw CConstructionFailed("unknown scheme");
+
+	const t_schemeHandler handler = iterator->second;
+	try
+	{
+		return handler(uri);
+	}
+	catch(CException &e)
+	{
+		throw CConstructionFailed(e.what());
+	}
+}
+
