@@ -28,7 +28,7 @@
 #include "exception.h"
 #include "log.h"
 
-#include "amikolink.h"
+#include "amikocomlink.h"
 
 #include "cstring.h"
 
@@ -37,7 +37,7 @@
 
 void client()
 {
-	CAmikoLink link(CURI("amikolink://localhost"));
+	CAmikoComLink link(CURI("amikolink://localhost"));
 
 	sleep(2);
 }
@@ -46,7 +46,7 @@ void client()
 void server()
 {
 	CTCPListener listener(AMIKO_DEFAULT_PORT);
-	CAmikoLink link(listener);
+	CAmikoComLink link(listener);
 
 	sleep(3);
 }
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 		This is described in the threads(3) manpage. 
 		*/
 
-		CAmikoLink::registerForScheme("amikolink");
+		CAmikoComLink::registerForScheme("amikolink");
 
 		if(argc < 2) throw CException("Missing commandline argument");
 

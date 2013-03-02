@@ -1,5 +1,5 @@
 /*
-    amikolink.h
+    amikocomlink.h
     Copyright (C) 2013 by CJP
 
     This file is part of Amiko Pay.
@@ -18,8 +18,8 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef AMIKOLINK_H
-#define AMIKOLINK_H
+#ifndef AMIKOCOMLINK_H
+#define AMIKOCOMLINK_H
 
 #include <stdint.h>
 
@@ -34,7 +34,7 @@
 #define AMIKO_MIN_PROTOCOL_VERSION 1
 #define AMIKO_MAX_PROTOCOL_VERSION 1
 
-class CAmikoLink : public CLink
+class CAmikoComLink : public CLink
 {
 public:
 	SIMPLEEXCEPTIONCLASS(CProtocolError)
@@ -55,7 +55,7 @@ public:
 	CProtocolError
 	CVersionNegotiationFailure
 	*/
-	CAmikoLink(const CURI &uri);
+	CAmikoComLink(const CURI &uri);
 
 	/*
 	listener:
@@ -73,7 +73,7 @@ public:
 	CProtocolError
 	CVersionNegotiationFailure
 	*/
-	CAmikoLink(const CTCPListener &listener);
+	CAmikoComLink(const CTCPListener &listener);
 
 	/*
 	scheme:

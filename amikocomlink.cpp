@@ -1,5 +1,5 @@
 /*
-    amikolink.cpp
+    amikocomlink.cpp
     Copyright (C) 2013 by CJP
 
     This file is part of Amiko Pay.
@@ -21,12 +21,12 @@
 #include <cstdio>
 #include <algorithm>
 
-#include "amikolink.h"
+#include "amikocomlink.h"
 
 //With 32-bit protocol version numbers, we'll never exceed this:
 #define MAX_NEGOTIATION_STRING_LENGTH 32
 
-CAmikoLink::CAmikoLink(const CURI &uri)
+CAmikoComLink::CAmikoComLink(const CURI &uri)
 	: m_Connection(uri.getHost(), uri.getPort(AMIKO_DEFAULT_PORT))
 {
 	//TODO: catch exceptions
@@ -46,7 +46,7 @@ CAmikoLink::CAmikoLink(const CURI &uri)
 }
 
 
-CAmikoLink::CAmikoLink(const CTCPListener &listener)
+CAmikoComLink::CAmikoComLink(const CTCPListener &listener)
 	: m_Connection(listener)
 {
 	//TODO: catch exceptions
@@ -72,19 +72,19 @@ CAmikoLink::CAmikoLink(const CTCPListener &listener)
 }
 
 
-CLink *CAmikoLink::makeNewInstance(const CURI &uri)
+CLink *CAmikoComLink::makeNewInstance(const CURI &uri)
 {
-	return new CAmikoLink(uri);
+	return new CAmikoComLink(uri);
 }
 
 
-void CAmikoLink::registerForScheme(const CString &scheme)
+void CAmikoComLink::registerForScheme(const CString &scheme)
 {
 	registerSchemeHandler(scheme, makeNewInstance);
 }
 
 
-void CAmikoLink::sendNegotiationString(uint32_t minVersion, uint32_t maxVersion)
+void CAmikoComLink::sendNegotiationString(uint32_t minVersion, uint32_t maxVersion)
 {
 	m_Connection.send(CBinBuffer(
 		CString::format(
@@ -95,7 +95,7 @@ void CAmikoLink::sendNegotiationString(uint32_t minVersion, uint32_t maxVersion)
 }
 
 
-void CAmikoLink::receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion)
+void CAmikoComLink::receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion)
 {
 	CString receivedString;
 	CBinBuffer buf; buf.resize(1);
