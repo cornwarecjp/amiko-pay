@@ -70,6 +70,8 @@ private:
 
 #define SIMPLEEXCEPTIONCLASS(name) class name : public CException {public: name(const CString &text) throw() : CException(text) {} };
 
+#include "cstring.h"
+
 #endif
 
 
