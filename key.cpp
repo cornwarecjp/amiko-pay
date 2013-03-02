@@ -1,6 +1,6 @@
 /*
     key.cpp
-	Copyright (C) 2009-2012 by the Bitcoin developers
+    Copyright (C) 2009-2012 by the Bitcoin developers
     Copyright (C) 2013 by CJP
 
     This file is part of Amiko Pay.
