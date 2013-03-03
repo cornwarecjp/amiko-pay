@@ -26,6 +26,7 @@
 #include "exception.h"
 #include "cstring.h"
 #include "uriparser.h"
+#include "message.h"
 
 /*
 Base class and factory infrastructure for communication link objects
@@ -35,6 +36,9 @@ class CComLink
 {
 public:
 	SIMPLEEXCEPTIONCLASS(CConstructionFailed)
+
+	virtual void sendMessage(const CMessage &message)=0;
+	virtual CMessage *receiveMessage()=0;
 
 	/*
 	uri:

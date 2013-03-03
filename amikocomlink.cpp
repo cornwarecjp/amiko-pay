@@ -158,4 +158,14 @@ void CAmikoComLink::receiveNegotiationString(uint32_t &minVersion, uint32_t &max
 }
 
 
+void CAmikoComLink::sendMessage(const CMessage &message)
+{
+	//TODO
+}
+
+CMessage *CAmikoComLink::receiveMessage()
+{
+	//TODO
+	return NULL;
+}
 

@@ -85,6 +85,10 @@ public:
 	*/
 	static void registerForScheme(const CString &scheme);
 
+	virtual void sendMessage(const CMessage &message);
+	virtual CMessage *receiveMessage();
+
+
 private:
 	CTCPConnection m_Connection;
 

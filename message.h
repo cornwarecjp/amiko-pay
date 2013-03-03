@@ -21,8 +21,12 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
-#include "binbuffer.h"
+#include <stdint.h>
+
 #include "exception.h"
+
+#include "binbuffer.h"
+#include "key.h"
 
 class CMessage
 {
@@ -35,10 +39,25 @@ public:
 	eMyPublicKey=0
 	};
 
-	virtual CBinBuffer serialize() const = 0;
-	virtual void deserialize(const CBinBuffer &data) const = 0;
+	static CMessage *constructMessage(const CBinBuffer &data, eTypeID ID);
 
-	virtual eType getTypeID() const=0;
+	virtual eTypeID getTypeID() const=0;
+
+	CBinBuffer serialize() const;
+	void deserialize(const CBinBuffer &data);
+
+	virtual CBinBuffer getSerializedBody() const = 0;
+	virtual void setSerializedBody(const CBinBuffer &data) = 0;
+
+private:
+
+	CKey m_Source, m_Destination;
+
+	//TODO: make this hashes
+	CBinBuffer m_lastSentByMe;
+	CBinBuffer m_lastAcceptedByMe;
+
+	uint64_t m_Timestamp;
 };
 
 #endif
