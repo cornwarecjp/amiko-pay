@@ -32,6 +32,7 @@
 #include "tcplistener.h"
 
 #include "key.h"
+#include "sha256.h"
 
 void client()
 {

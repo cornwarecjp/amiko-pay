@@ -131,12 +131,12 @@ CBinBuffer CKey::getPrivateKey() const
 }
 
 
-CBinBuffer CKey::sign(const CBinBuffer &hash) const
+CBinBuffer CKey::sign(const CSHA256 &hash) const
 {
 	unsigned int size = ECDSA_size(m_KeyData);
 	CBinBuffer ret;
 	ret.resize(size); // Make sure it is big enough
-	if(!ECDSA_sign(0, &hash[0], hash.size(), &ret[0], &size, m_KeyData))
+	if(!ECDSA_sign(0, hash.getData(), hash.getSize(), &ret[0], &size, m_KeyData))
 		throw CKeyError("CKey::sign(const CBinBuffer &): ECDSA_sign failed");
 
 	ret.resize(size); // Shrink to fit actual size
@@ -144,10 +144,10 @@ CBinBuffer CKey::sign(const CBinBuffer &hash) const
 }
 
 
-bool CKey::verify(const CBinBuffer &hash, const CBinBuffer &signature) const
+bool CKey::verify(const CSHA256 &hash, const CBinBuffer &signature) const
 {
 	// -1 = error, 0 = bad sig, 1 = good
-	int result = ECDSA_verify(0, &hash[0], hash.size(), &signature[0], signature.size(), m_KeyData);
+	int result = ECDSA_verify(0, hash.getData(), hash.getSize(), &signature[0], signature.size(), m_KeyData);
 	if(result == 1) return true;
 	if(result == 0) return false;
 	throw CKeyError("CKey::verify(const CBinBuffer &, const CBinBuffer &) failed");

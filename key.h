@@ -25,6 +25,7 @@
 
 #include "exception.h"
 #include "binbuffer.h"
+#include "sha256.h"
 
 /*
 Contains public key, private key or both
@@ -129,7 +130,7 @@ public:
 	Contains a private key (CHECKED/TODO)
 
 	hash:
-	Reference to properly formed CBinBuffer object
+	Reference to properly formed CSHA256 object
 	Reference lifetime: at least until the end of this function
 
 	Return value:
@@ -139,14 +140,14 @@ public:
 	Exceptions:
 	CKeyError
 	*/
-	CBinBuffer sign(const CBinBuffer &hash) const;
+	CBinBuffer sign(const CSHA256 &hash) const;
 
 	/*
 	This object:
 	Contains a public key (CHECKED/TODO)
 
 	hash:
-	Reference to properly formed CBinBuffer object
+	Reference to properly formed CSHA256 object
 	Reference lifetime: at least until the end of this function
 
 	signature:
@@ -160,7 +161,7 @@ public:
 	Exceptions:
 	CKeyError
 	*/
-	bool verify(const CBinBuffer &hash, const CBinBuffer &signature) const;
+	bool verify(const CSHA256 &hash, const CBinBuffer &signature) const;
 
 private:
 
