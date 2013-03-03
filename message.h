@@ -21,18 +21,24 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
+#include "binbuffer.h"
+#include "exception.h"
+
 class CMessage
 {
 public:
-	/*
-	Constructed object:
+	SIMPLEEXCEPTIONCLASS(CSerializationError)
 
-	Exceptions:
-	*/
-	CMessage();
+	enum eTypeID
+	{
+	//Amiko link protocol version 1
+	eMyPublicKey=0
+	};
 
-	~CMessage();
+	virtual CBinBuffer serialize() const = 0;
+	virtual void deserialize(const CBinBuffer &data) const = 0;
 
+	virtual eType getTypeID() const=0;
 };
 
 #endif
