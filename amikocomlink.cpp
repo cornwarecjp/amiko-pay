@@ -72,7 +72,7 @@ CAmikoComLink::CAmikoComLink(const CTCPListener &listener)
 }
 
 
-CLink *CAmikoComLink::makeNewInstance(const CURI &uri)
+CComLink *CAmikoComLink::makeNewInstance(const CURI &uri)
 {
 	return new CAmikoComLink(uri);
 }

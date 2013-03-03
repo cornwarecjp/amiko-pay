@@ -1,5 +1,5 @@
 /*
-    link.cpp
+    comlink.cpp
     Copyright (C) 2013 by CJP
 
     This file is part of Amiko Pay.
@@ -18,16 +18,16 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "link.h"
+#include "comlink.h"
 
-std::map<CString, CLink::t_schemeHandler> CLink::m_schemeHandlers;
+std::map<CString, CComLink::t_schemeHandler> CComLink::m_schemeHandlers;
 
-void CLink::registerSchemeHandler(const CString &scheme, CLink::t_schemeHandler handler)
+void CComLink::registerSchemeHandler(const CString &scheme, CComLink::t_schemeHandler handler)
 {
 	m_schemeHandlers[scheme] = handler;
 }
 
-CLink *CLink::make(const CURI &uri)
+CComLink *CComLink::make(const CURI &uri)
 {
 	CString scheme = uri.getScheme();
 	if(scheme == "")

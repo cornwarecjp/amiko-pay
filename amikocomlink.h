@@ -23,7 +23,7 @@
 
 #include <stdint.h>
 
-#include "link.h"
+#include "comlink.h"
 
 #include "uriparser.h"
 #include "tcpconnection.h"
@@ -34,7 +34,7 @@
 #define AMIKO_MIN_PROTOCOL_VERSION 1
 #define AMIKO_MAX_PROTOCOL_VERSION 1
 
-class CAmikoComLink : public CLink
+class CAmikoComLink : public CComLink
 {
 public:
 	SIMPLEEXCEPTIONCLASS(CProtocolError)
@@ -113,7 +113,7 @@ private:
 	Exceptions:
 	CConstructionFailed
 	*/
-	static CLink *makeNewInstance(const CURI &uri);
+	static CComLink *makeNewInstance(const CURI &uri);
 };
 
 #endif

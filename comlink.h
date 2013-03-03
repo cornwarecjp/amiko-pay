@@ -1,5 +1,5 @@
 /*
-    link.h
+    comlink.h
     Copyright (C) 2013 by CJP
 
     This file is part of Amiko Pay.
@@ -18,8 +18,8 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef LINK_H
-#define LINK_H
+#ifndef COMLINK_H
+#define COMLINK_H
 
 #include <map>
 
@@ -28,10 +28,10 @@
 #include "uriparser.h"
 
 /*
-Base class and factory infrastructure for link objects
+Base class and factory infrastructure for communication link objects
 */
 
-class CLink
+class CComLink
 {
 public:
 	SIMPLEEXCEPTIONCLASS(CConstructionFailed)
@@ -42,13 +42,13 @@ public:
 	Reference lifetime: at least until the end of this function
 
 	Return value:
-	Pointer to a newly constructed link object
+	Pointer to a newly constructed communication link object
 	Pointer ownership is passed to the caller
 
 	Exceptions:
 	CConstructionFailed
 	*/
-	static CLink *make(const CURI &uri);
+	static CComLink *make(const CURI &uri);
 
 	/*
 	uri:
@@ -56,13 +56,13 @@ public:
 	Reference lifetime: at least until the end of this function
 
 	Return value:
-	Pointer to a newly constructed link object
+	Pointer to a newly constructed communication link object
 	Pointer ownership is passed to the caller
 
 	Exceptions:
 	CConstructionFailed
 	*/
-	static inline CLink *make(const CString &uri)
+	static inline CComLink *make(const CString &uri)
 		{return make(CURI(uri));}
 
 
@@ -70,20 +70,20 @@ protected:
 
 
 	/*
-	Handler function for a link URI scheme.
+	Handler function for a communication link URI scheme.
 
 	uri:
 	Reference to a properly formed CURI object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
 	Return value:
-	Pointer to a newly constructed link object
+	Pointer to a newly constructed communication link object
 	Pointer ownership is passed to the caller
 
 	Exceptions:
 	any CException-derived class
 	*/
-	typedef CLink *(*t_schemeHandler)(const CURI &uri);
+	typedef CComLink *(*t_schemeHandler)(const CURI &uri);
 
 	/*
 	scheme:
