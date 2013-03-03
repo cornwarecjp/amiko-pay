@@ -24,15 +24,37 @@
 
 #include "binbuffer.h"
 
-CBinBuffer::CBinBuffer() throw()
+CBinBuffer::CBinBuffer()
 {
 }
 
 
-CBinBuffer::CBinBuffer(const CString &str) throw()
+CBinBuffer::CBinBuffer(const CString &str)
 {
 	resize(str.size());
 	memcpy(&((*this)[0]), str.c_str(), size());
+}
+
+
+void CBinBuffer::appendBinBuffer(const CBinBuffer &value)
+{
+	insert(end(), value.begin(), value.end());
+}
+
+
+CBinBuffer CBinBuffer::readBinBuffer(size_t &pos, size_t length) const
+{
+	if(pos > size())
+		throw CReadError("CBinBuffer::readBinBuffer(size_t &, size_t): start past end of buffer");
+	if(size() - pos < length)
+		throw CReadError("CBinBuffer::readBinBuffer(size_t &, size_t): end past end of buffer");
+
+	CBinBuffer ret;
+	ret.resize(length);
+	memcpy(&ret[0], &(*this)[0], size());
+
+	pos += length;
+	return ret;;
 }
 
 

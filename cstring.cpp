@@ -38,6 +38,7 @@ CString::CString(const char *s)
 }
 
 
+/*
 CString::CString(const CBinBuffer &buffer)
 {
 	resize(buffer.size());
@@ -50,7 +51,7 @@ CString::CString(const CBinBuffer &buffer)
 		(*this)[i] = buffer[i];
 	}
 }
-
+*/
 
 CString &CString::operator=(const char *str)
 {

@@ -27,6 +27,7 @@
 
 #include "binbuffer.h"
 #include "key.h"
+#include "sha256.h"
 
 class CMessage
 {
@@ -51,11 +52,11 @@ public:
 
 private:
 
-	CKey m_Source, m_Destination;
+	CKey m_Source;
+	CKey m_Destination;
 
-	//TODO: make this hashes
-	CBinBuffer m_lastSentByMe;
-	CBinBuffer m_lastAcceptedByMe;
+	CSHA256 m_lastSentByMe;
+	CSHA256 m_lastAcceptedByMe;
 
 	uint64_t m_Timestamp;
 };

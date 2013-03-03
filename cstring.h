@@ -26,7 +26,7 @@
 #include <string>
 
 #include "exception.h"
-#include "binbuffer.h"
+//#include "binbuffer.h"
 
 /*
 String class.
@@ -95,7 +95,7 @@ public:
 	Exceptions:
 	CNullCharacterException
 	*/
-	CString(const CBinBuffer &buffer);
+	//CString(const CBinBuffer &buffer);
 
 	/*
 	str:

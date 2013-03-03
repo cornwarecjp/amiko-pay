@@ -23,7 +23,8 @@
 
 #include <vector>
 
-class CString;
+#include "cstring.h"
+#include "exception.h"
 
 /*
 Buffer for arbitrary-content binary data
@@ -31,12 +32,16 @@ Buffer for arbitrary-content binary data
 class CBinBuffer : public std::vector<unsigned char>
 {
 public:
+	SIMPLEEXCEPTIONCLASS(CReadError)
 
 	/*
 	Constructed object:
 	Empty buffer object
+
+	Exceptions:
+	none
 	*/
-	CBinBuffer() throw();
+	CBinBuffer();
 
 	/*
 	str:
@@ -46,8 +51,87 @@ public:
 	Constructed object:
 	Buffer object containing a copy of the contents of str
 	(not including null character at the end)
+
+	Exceptions:
+	none
 	*/
-	CBinBuffer(const CString &str) throw();
+	CBinBuffer(const CString &str);
+
+	/*
+	T:
+	unsigned integer type (NOT CHECKED)
+
+	Exceptions:
+	none
+	*/
+	template<class T> void appendUint(T value)
+	{
+		//big endian
+		for(unsigned int i=sizeof(T); i != 0; i--)
+			push_back((
+				value >> ( 8 * (i-1) )
+				) & 0xff);
+	}
+
+	/*
+	value:
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Exceptions:
+	none
+	*/
+	void appendBinBuffer(const CBinBuffer &value);
+
+	/*
+	T:
+	unsigned integer type (NOT CHECKED)
+
+	pos:
+	Reference to integer (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+	pos <= size() - {size of return value} (CHECKED)
+	The value of pos will be incremented with {size of return value}
+
+	Return value:
+	Data read from this object at position pos
+
+	Exceptions:
+	CReadError
+	*/
+	template<class T> T readUint(size_t &pos) const
+	{
+		if(pos+sizeof(T) < pos)
+			throw CReadError("CBinBuffer::readUint(size_t &): integer overflow");
+		if(pos+sizeof(T) > size())
+			throw CReadError("CBinBuffer::readUint(size_t &): end of buffer");
+
+		//big endian
+		T ret = 0;
+		for(unsigned int i=0; i < sizeof(T); i++)
+			ret |= (  T((*this)[pos+i]) << (8*i)  );
+
+		pos += sizeof(T);
+		return ret;
+	}
+
+	/*
+	pos:
+	Reference to integer (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+	pos < size() (CHECKED)
+	The value of pos will be incremented with length
+
+	length:
+	length <= size() - pos (CHECKED)
+
+	Return value:
+	Data read from this object at position pos
+
+	Exceptions:
+	CReadError
+	*/
+	CBinBuffer readBinBuffer(size_t &pos, size_t length) const;
 };
 
 #endif

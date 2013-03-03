@@ -62,6 +62,17 @@ public:
 	*/
 	inline size_t getSize() const
 		{return size();}
+
+	/*
+	Return value:
+	Reference to properly formed CBinBuffer object
+	Reference lifetime: equal to the lifetime of this object
+
+	Exceptions:
+	none
+	*/
+	inline const CBinBuffer &asBinBuffer() const
+		{return *this;}
 };
 
 #endif

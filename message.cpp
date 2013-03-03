@@ -18,6 +18,8 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdint.h>
+
 #include "message.h"
 
 CMessage *CMessage::constructMessage(const CBinBuffer &data, eTypeID ID)
@@ -29,14 +31,49 @@ CMessage *CMessage::constructMessage(const CBinBuffer &data, eTypeID ID)
 
 CBinBuffer CMessage::serialize() const
 {
-	//TODO
-	return getSerializedBody();
+	//TODO: assert that everything fits within specified integer sizes
+
+	CBinBuffer signedBody;
+	signedBody.appendUint<uint64_t>(m_Timestamp);
+	signedBody.appendBinBuffer(m_lastSentByMe.asBinBuffer());
+	signedBody.appendBinBuffer(m_lastAcceptedByMe.asBinBuffer());
+	signedBody.appendUint<uint32_t>(getTypeID());
+	signedBody.appendBinBuffer(getSerializedBody());
+
+	CBinBuffer signature = m_Source.sign(CSHA256(signedBody));
+
+	//TODO: add source and destination pubkeys
+	CBinBuffer ret;
+	ret.appendUint<uint32_t>(signedBody.size());
+	ret.appendBinBuffer(signedBody);
+	ret.appendUint<uint32_t>(signature.size());
+	ret.appendBinBuffer(signature);
+
+	return ret;
 }
 
 
 void CMessage::deserialize(const CBinBuffer &data)
 {
-	//TODO
-	setSerializedBody(data);
+	//TODO: check whether sizes are not unreasonably large
+
+	//TODO: add source and destination pubkeys
+	size_t pos = 0;
+	uint32_t signedBodySize = data.readUint<uint32_t>(pos);
+	CBinBuffer signedBody = data.readBinBuffer(pos, signedBodySize);
+	uint32_t signatureSize = data.readUint<uint32_t>(pos);
+	CBinBuffer signature = data.readBinBuffer(pos, signatureSize);
+
+	//TODO: verify signature
+	//TODO: store signature (important for later evidence!!!)
+
+	pos = 0;
+	m_Timestamp = signedBody.readUint<uint64_t>(pos);
+	CBinBuffer lastSentByMe = signedBody.readBinBuffer(pos, 256); //TODO
+	CBinBuffer lastAcceptedByMe = signedBody.readBinBuffer(pos, 256); //TODO
+	//TODO:
+	//signedBody.appendUint<uint32_t>(getTypeID());
+	//signedBody.appendBinBuffer(getSerializedBody());
+	//setSerializedBody(data);
 }
 
