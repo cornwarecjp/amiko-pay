@@ -34,3 +34,19 @@ CSHA256::CSHA256(const CBinBuffer &data)
 }
 
 
+CSHA256::CSHA256()
+{}
+
+
+CSHA256 CSHA256::fromBinBuffer(const CBinBuffer &buffer)
+{
+	if(buffer.size() != 32)
+		throw CBinBuffer::CReadError("CSHA256::fromBinBuffer(const CBinBuffer &): incorrect input size");
+
+	CSHA256 ret;
+	ret.assign(buffer.begin(), buffer.end());
+	return ret;
+}
+
+
+

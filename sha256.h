@@ -55,7 +55,7 @@ public:
 
 	/*
 	Return value:
-	256
+	32
 
 	Exceptions:
 	none
@@ -71,8 +71,33 @@ public:
 	Exceptions:
 	none
 	*/
-	inline const CBinBuffer &asBinBuffer() const
+	inline const CBinBuffer &toBinBuffer() const
 		{return *this;}
+
+	/*
+	buffer:
+	Reference to properly formed CBinBuffer object
+	Reference lifetime: at least until the end of this function
+	buffer.size() == 32 (CHECKED)
+
+	Return value:
+	SHA256 hash containing the data of buffer
+
+	Exceptions:
+	CBinBuffer::CReadError
+	*/
+	static CSHA256 fromBinBuffer(const CBinBuffer &buffer);
+
+
+private:
+	/*
+	Constructed object:
+	Uninitialized CSHA256 object
+
+	Exceptions:
+	none
+	*/
+	CSHA256();
 };
 
 #endif
