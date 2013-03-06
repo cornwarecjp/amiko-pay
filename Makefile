@@ -3,11 +3,8 @@
 # Generic Makefile for C/C++ Program
 #
 # License: GPL (General Public License)
-# Author:  whyglinux <whyglinux AT gmail DOT com>
-# Date:    2006/03/04 (version 0.1)
-#          2007/03/24 (version 0.2)
-#          2007/04/09 (version 0.3)
-#          2007/06/26 (version 0.4)
+# Copyright (C) 2006-2007 by whyglinux <whyglinux AT gmail DOT com>
+# Copyright (C) 2013 by CJP
 #
 # Description:
 # ------------
@@ -76,9 +73,11 @@ SRCDIRS   =
 # The executable file name.
 # If not specified, current directory name or `a.out' will be used.
 PROGRAM   = amikopay
+TEST_PROGRAM = test/test
 
-#Add btcripple to the source directories:
+#Add amiko pay to the source directories:
 SRCDIRS = .
+TEST_SRCDIRS = test
 
 ## Implicit Section: change the following only when necessary.
 ##==========================================================================
@@ -118,21 +117,18 @@ CTAGSFLAGS =
 SHELL   = /bin/sh
 EMPTY   =
 SPACE   = $(EMPTY) $(EMPTY)
-ifeq ($(PROGRAM),)
-  CUR_PATH_NAMES = $(subst /,$(SPACE),$(subst $(SPACE),_,$(CURDIR)))
-  PROGRAM = $(word $(words $(CUR_PATH_NAMES)),$(CUR_PATH_NAMES))
-  ifeq ($(PROGRAM),)
-    PROGRAM = a.out
-  endif
-endif
-ifeq ($(SRCDIRS),)
-  SRCDIRS = .
-endif
+
 SOURCES = $(foreach d,$(SRCDIRS),$(wildcard $(addprefix $(d)/*,$(SRCEXTS))))
 HEADERS = $(foreach d,$(SRCDIRS),$(wildcard $(addprefix $(d)/*,$(HDREXTS))))
 SRC_CXX = $(filter-out %.c,$(SOURCES))
 OBJS    = $(addsuffix .o, $(basename $(SOURCES)))
 DEPS    = $(OBJS:.o=.d)
+
+TEST_SOURCES = $(foreach d,$(TEST_SRCDIRS),$(wildcard $(addprefix $(d)/*,$(SRCEXTS)))) $(filter-out ./main.cpp,$(SOURCES))
+TEST_HEADERS = $(foreach d,$(TEST_SRCDIRS),$(wildcard $(addprefix $(d)/*,$(HDREXTS))))
+TEST_SRC_CXX = $(filter-out %.c,$(TEST_SOURCES))
+TEST_OBJS    = $(addsuffix .o, $(basename $(TEST_SOURCES)))
+TEST_DEPS    = $(TEST_OBJS:.o=.d)
 
 ## Define some useful variables.
 DEP_OPT = $(shell if `$(CC) --version | grep "GCC" >/dev/null`; then \
@@ -143,7 +139,7 @@ COMPILE.cxx = $(CXX) $(MY_CFLAGS) $(CXXFLAGS) $(CPPFLAGS) -c
 LINK.c      = $(CC)  $(MY_CFLAGS) $(CFLAGS)   $(CPPFLAGS) $(LDFLAGS)
 LINK.cxx    = $(CXX) $(MY_CFLAGS) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
-.PHONY: all objs clean distclean tags ctags help
+.PHONY: all objs clean distclean tags ctags help test
 
 # Delete the default suffixes
 .SUFFIXES:
@@ -215,20 +211,20 @@ objs:$(OBJS)
 
 # Rules for generating the tags.
 #-------------------------------------
-tags: $(HEADERS) $(SOURCES)
-	$(ETAGS) $(ETAGSFLAGS) $(HEADERS) $(SOURCES)
+tags: $(HEADERS) $(SOURCES) $(TEST_SOURCES)
+	$(ETAGS) $(ETAGSFLAGS) $(HEADERS) $(SOURCES) $(TEST_SOURCES)
 
-ctags: $(HEADERS) $(SOURCES)
-	$(CTAGS) $(CTAGSFLAGS) $(HEADERS) $(SOURCES)
+ctags: $(HEADERS) $(SOURCES) $(TEST_SOURCES)
+	$(CTAGS) $(CTAGSFLAGS) $(HEADERS) $(SOURCES) $(TEST_SOURCES)
 
 # Rules for generating the executable.
 #-------------------------------------
 $(PROGRAM):$(OBJS)
-ifeq ($(SRC_CXX),)              # C program
-	$(LINK.c)   $(OBJS) $(MY_LIBS) -o $@
-else                            # C++ program
 	$(LINK.cxx) $(OBJS) $(MY_LIBS) -o $@
-endif
+
+test:$(TEST_OBJS)
+	$(LINK.cxx) $(TEST_OBJS) $(MY_LIBS) -o $(TEST_PROGRAM)
+	./$(TEST_PROGRAM)
 
 ifndef NODEP
 ifneq ($(DEPS),)
@@ -237,10 +233,10 @@ endif
 endif
 
 clean:
-	$(RM) $(OBJS) $(PROGRAM) $(PROGRAM).exe
+	$(RM) $(OBJS) $(TEST_OBJS) $(PROGRAM) $(PROGRAM).exe $(TEST_PROGRAM) $(TEST_PROGRAM).exe
 
 distclean: clean
-	$(RM) $(DEPS) TAGS
+	$(RM) $(DEPS) $(TEST_DEPS) TAGS
 
 # Show help.
 help:
@@ -264,12 +260,18 @@ help:
 # Show variables (for debug use only.)
 show:
 	@echo 'PROGRAM     :' $(PROGRAM)
+	@echo 'TEST_PROGRAM:' $(TEST_PROGRAM)
 	@echo 'SRCDIRS     :' $(SRCDIRS)
+	@echo 'TEST_SRCDIRS:' $(TEST_SRCDIRS)
 	@echo 'HEADERS     :' $(HEADERS)
 	@echo 'SOURCES     :' $(SOURCES)
+	@echo 'TEST_SOURCES:' $(TEST_SOURCES)
 	@echo 'SRC_CXX     :' $(SRC_CXX)
+	@echo 'TEST_SRC_CXX:' $(TEST_SRC_CXX)
 	@echo 'OBJS        :' $(OBJS)
+	@echo 'TEST_OBJS   :' $(TEST_OBJS)
 	@echo 'DEPS        :' $(DEPS)
+	@echo 'TEST_DEPS   :' $(TEST_DEPS)
 	@echo 'DEPEND      :' $(DEPEND)
 	@echo 'COMPILE.c   :' $(COMPILE.c)
 	@echo 'COMPILE.cxx :' $(COMPILE.cxx)

@@ -50,40 +50,6 @@ void server()
 	sleep(3);
 }
 
-void testKeys()
-{
-	while(1)
-	{
-		CKey privKey;
-		privKey.makeNewKey();
-		CKey pubKey;
-		pubKey.setPublicKey(privKey.getPublicKey());
-
-		CBinBuffer data("blablabla");
-		CBinBuffer goodSig = privKey.sign(data);
-
-		CKey otherKey;
-		otherKey.makeNewKey();
-		CBinBuffer badSig1 = otherKey.sign(data);
-
-		CBinBuffer badSig2 = privKey.sign(CBinBuffer("bad data"));
-
-		if(pubKey.verify(data, goodSig))
-			{printf("test 1: ok\n");}
-		else
-			{printf("test 1: not ok\n"); break;}
-
-		if(!pubKey.verify(data, badSig1))
-			{printf("test 2: ok\n");}
-		else
-			{printf("test 2: not ok\n"); break;}
-
-		if(!pubKey.verify(data, badSig2))
-			{printf("test 3: ok\n");}
-		else
-			{printf("test 3: not ok\n"); break;}
-	}
-}
 
 int main(int argc, char **argv)
 {
@@ -111,7 +77,6 @@ int main(int argc, char **argv)
 
 		if(command == "client") client();
 		if(command == "server") server();
-		if(command == "testKeys") testKeys();
 
 		/*
 		printf("%p\n", CLink::make("amikolink://localhost"));
