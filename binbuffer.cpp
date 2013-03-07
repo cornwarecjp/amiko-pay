@@ -18,6 +18,7 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdio>
 #include <string.h>
 
 #include "cstring.h"
@@ -51,10 +52,18 @@ CBinBuffer CBinBuffer::readBinBuffer(size_t &pos, size_t length) const
 
 	CBinBuffer ret;
 	ret.resize(length);
-	memcpy(&ret[0], &(*this)[0], size());
+	memcpy(&ret[0], &(*this)[pos], length);
 
 	pos += length;
-	return ret;;
+	return ret;
 }
 
+
+CString CBinBuffer::hexDump() const
+{
+	CString ret;
+	for(size_t i=0; i < size(); i++)
+		ret += CString::format("%02x", 3, (*this)[i]);
+	return ret;
+}
 

@@ -21,7 +21,6 @@
 #include <cstdio>
 
 #include "key.h"
-
 #include "test.h"
 
 /*
@@ -31,6 +30,8 @@ class CKeyTest : public CTest
 {
 	virtual void run()
 	{
+		printf("Key tests:\n");
+
 		CKey privKey;
 		privKey.makeNewKey();
 		CKey pubKey;
@@ -45,20 +46,9 @@ class CKeyTest : public CTest
 
 		CBinBuffer badSig2 = privKey.sign(CBinBuffer("bad data"));
 
-		if(pubKey.verify(data, goodSig))
-			{printf("test 1: ok\n");}
-		else
-			{printf("test 1: not ok\n");}
-
-		if(!pubKey.verify(data, badSig1))
-			{printf("test 2: ok\n");}
-		else
-			{printf("test 2: not ok\n");}
-
-		if(!pubKey.verify(data, badSig2))
-			{printf("test 3: ok\n");}
-		else
-			{printf("test 3: not ok\n");}
+		test("  Good signature is accepted", pubKey.verify(data, goodSig));
+		test("  Signature from different key is rejected", !pubKey.verify(data, badSig1));
+		test("  Signature of different data is rejected", !pubKey.verify(data, badSig2));
 	}
 } keyTest;
 

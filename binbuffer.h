@@ -21,6 +21,7 @@
 #ifndef BINBUFFER_H
 #define BINBUFFER_H
 
+#include <cstdio>
 #include <vector>
 
 #include "cstring.h"
@@ -109,7 +110,7 @@ public:
 		//big endian
 		T ret = 0;
 		for(unsigned int i=0; i < sizeof(T); i++)
-			ret |= (  T((*this)[pos+i]) << (8*i)  );
+			ret |= (  T((*this)[pos+i]) << (8*(sizeof(T)-i-1))  );
 
 		pos += sizeof(T);
 		return ret;
@@ -132,6 +133,15 @@ public:
 	CReadError
 	*/
 	CBinBuffer readBinBuffer(size_t &pos, size_t length) const;
+
+	/*
+	Return value:
+	Hexadecimal representation of this object
+
+	Exceptions:
+	none
+	*/
+	CString hexDump() const;
 };
 
 #endif

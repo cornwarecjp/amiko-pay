@@ -42,7 +42,9 @@ public:
 
 	//TODO: specs for all these methods
 
-	static CMessage *constructMessage(const CBinBuffer &data, eTypeID ID);
+	CMessage();
+
+	static CMessage *constructMessage(const CBinBuffer &data);
 
 	virtual eTypeID getTypeID() const=0;
 
@@ -55,9 +57,6 @@ public:
 	void sign();
 	bool verifySignature() const;
 
-private:
-
-	CBinBuffer getSignedBody() const;
 
 	CKey m_Source;
 	CKey m_Destination;
@@ -67,6 +66,11 @@ private:
 	CSHA256 m_lastAcceptedByMe;
 
 	uint64_t m_Timestamp;
+
+
+private:
+
+	CBinBuffer getSignedBody() const;
 };
 
 #endif

@@ -1,5 +1,5 @@
 /*
-    test.h
+    messages.h
     Copyright (C) 2013 by CJP
 
     This file is part of Amiko Pay.
@@ -18,42 +18,24 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cstdio>
+#ifndef MESSAGES_H
+#define MESSAGES_H
 
-#include <vector>
+#include "message.h"
 
-class CTest;
-
-/*
-TODO: document
-*/
-//implemented in tests_main.cpp
-std::vector<CTest *> &getTestList();
-
-/*
-TODO: document
-*/
-class CTest
+class CMyPublicKeyMessage : public CMessage
 {
 public:
 
-	CTest()
-	{
-		getTestList().push_back(this);
-	}
+	eTypeID getTypeID() const
+		{return eMyPublicKey;}
 
-	virtual void run()=0;
+	CBinBuffer getSerializedBody() const;
+	void setSerializedBody(const CBinBuffer &data);
 
-
-protected:
-
-	inline void test(const char *description, bool result) const
-	{
-		if(result)
-			{printf("%s: OK\n", description);}
-		else
-			{printf("%s: FAIL\n", description);}
-	}
+	CBinBuffer m_PublicKey;
 };
+
+#endif
 
 

@@ -18,14 +18,42 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdio>
 #include <stdint.h>
 
 #include "message.h"
+#include "messages.h"
 
-CMessage *CMessage::constructMessage(const CBinBuffer &data, eTypeID ID)
+
+CMessage::CMessage() :
+	m_lastSentByMe(CBinBuffer()),
+	m_lastAcceptedByMe(CBinBuffer())
 {
-	//TODO
-	return NULL;
+	//TODO: sensible default values, e.g. for timestamp
+}
+
+
+CMessage *CMessage::constructMessage(const CBinBuffer &data)
+{
+	//The ID is located at bytes 4..8
+	if(data.size() < 8)
+		throw CSerializationError("Message does not contain a type ID");
+	size_t pos = 4;
+	uint32_t ID = data.readUint<uint32_t>(pos);
+
+	CMessage *ret = NULL;
+
+	switch(ID)
+	{
+	case eMyPublicKey:
+		ret = new CMyPublicKeyMessage;
+		break;
+	default:
+		throw CSerializationError("Invalid message type ID");
+	}
+
+	ret->deserialize(data);
+	return ret;
 }
 
 
@@ -66,7 +94,9 @@ void CMessage::deserialize(const CBinBuffer &data)
 
 	//verify ID:
 	if(ID != getTypeID())
-		throw CSerializationError("CMessage::deserialize(const CBinBuffer &): ID in message does not match ID of message class");
+		throw CSerializationError(CString::format(
+			"CMessage::deserialize(const CBinBuffer &): ID in message (%d) does not match ID of message class (%d)",
+			256, ID, getTypeID()));
 
 	//TODO: verify signature
 	//TODO: sanity check on timestamp
