@@ -18,6 +18,9 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string.h>
+#include <cstdlib>
+
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
@@ -29,8 +32,19 @@ std::vector<CTest *> &getTestList()
 	return testList;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+	//Commandline options
+	int n = 1;
+
+	for(int i=0; i < argc; i++)
+		if(strcmp(argv[i], "-n") == 0 && i+1 < argc)
+		{
+			i++;
+			n = atoi(argv[i]);
+		}
+
+	//Initialize libssl
 	SSL_load_error_strings();
 	SSL_library_init();
 
@@ -46,8 +60,17 @@ int main()
 	*/
 
 	std::vector<CTest *> &testList = getTestList();
-	for(std::size_t i=0; i < testList.size(); i++)
-		testList[i]->run();
+
+	int count = 0;
+	while(true)
+	{
+		for(std::size_t i=0; i < testList.size(); i++)
+			testList[i]->run();
+
+		count++;
+		if(n > 0 && count >= n) break;
+	}
+
 	return 0;
 }
 
