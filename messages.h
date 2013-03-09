@@ -23,18 +23,64 @@
 
 #include "message.h"
 
+
 class CPublicKeyMessage : public CMessage
 {
 public:
 	virtual ~CPublicKeyMessage();
 
 	eTypeID getTypeID() const
-		{return eMyPublicKey;}
+		{return ePublicKey;}
 
 	CBinBuffer getSerializedBody() const;
 	void setSerializedBody(const CBinBuffer &data);
 
-	CBinBuffer m_PublicKey;
+	CBinBuffer m_publicKey;
+};
+
+
+class CAckMessage : public CMessage
+{
+	virtual ~CAckMessage();
+
+	eTypeID getTypeID() const
+		{return eAck;}
+
+	CBinBuffer getSerializedBody() const;
+	void setSerializedBody(const CBinBuffer &data);
+
+	//No contents here:
+	//The purpose of this message is purely to
+	//update m_lastAcceptedBySource
+};
+
+
+class CNackMessage : public CMessage
+{
+	virtual ~CNackMessage();
+
+	eTypeID getTypeID() const
+		{return eNack;}
+
+	CBinBuffer getSerializedBody() const;
+	void setSerializedBody(const CBinBuffer &data);
+
+	CSHA256 m_rejectedBySource; //hash of message rejected by source
+	CString m_reason;           //reason why the message was rejected
+};
+
+
+class CFinStateMessage : public CMessage
+{
+	virtual ~CFinStateMessage();
+
+	eTypeID getTypeID() const
+		{return eFinState;}
+
+	CBinBuffer getSerializedBody() const;
+	void setSerializedBody(const CBinBuffer &data);
+
+	//TODO: financial link state specification
 };
 
 #endif

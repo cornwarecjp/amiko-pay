@@ -25,11 +25,7 @@
 #include "messages.h"
 
 
-CMessage::CMessage() :
-	m_source(CBinBuffer()),
-	m_destination(CBinBuffer()),
-	m_lastSentBySource(CBinBuffer()),
-	m_lastAcceptedBySource(CBinBuffer())
+CMessage::CMessage()
 {
 	//TODO: sensible default values, e.g. for timestamp
 }
@@ -52,8 +48,17 @@ CMessage *CMessage::constructMessage(const CBinBuffer &data)
 
 	switch(ID)
 	{
-	case eMyPublicKey:
+	case ePublicKey:
 		ret = new CPublicKeyMessage;
+		break;
+	case eAck:
+		ret = new CAckMessage;
+		break;
+	case eNack:
+		ret = new CNackMessage;
+		break;
+	case eFinState:
+		ret = new CFinStateMessage;
 		break;
 	default:
 		throw CSerializationError("Invalid message type ID");

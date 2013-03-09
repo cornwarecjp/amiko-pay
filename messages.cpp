@@ -21,19 +21,57 @@
 #include "messages.h"
 
 
+//=====================================
 CPublicKeyMessage::~CPublicKeyMessage()
-{
-}
-
+{}
 
 CBinBuffer CPublicKeyMessage::getSerializedBody() const
-{
-	return m_PublicKey;
-}
-
+{return m_publicKey;}
 
 void CPublicKeyMessage::setSerializedBody(const CBinBuffer &data)
+{m_publicKey = data;}
+
+
+//=====================================
+CAckMessage::~CAckMessage()
+{}
+
+CBinBuffer CAckMessage::getSerializedBody() const
+{return CBinBuffer();}
+
+void CAckMessage::setSerializedBody(const CBinBuffer &data)
+{}
+
+
+//=====================================
+CNackMessage::~CNackMessage()
+{}
+
+CBinBuffer CNackMessage::getSerializedBody() const
 {
-	m_PublicKey = data;
+	//TODO
+	return CBinBuffer();
 }
+
+void CNackMessage::setSerializedBody(const CBinBuffer &data)
+{
+	//TODO
+}
+
+
+//=====================================
+CFinStateMessage::~CFinStateMessage()
+{}
+
+CBinBuffer CFinStateMessage::getSerializedBody() const
+{
+	//TODO
+	return CBinBuffer();
+}
+
+void CFinStateMessage::setSerializedBody(const CBinBuffer &data)
+{
+	//TODO
+}
+
 

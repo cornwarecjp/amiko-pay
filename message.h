@@ -37,7 +37,10 @@ public:
 	enum eTypeID
 	{
 	//Amiko link protocol version 1
-	eMyPublicKey=0
+	ePublicKey=0,
+	eAck=1,
+	eNack=2,
+	eFinState=3
 	};
 
 	/*
