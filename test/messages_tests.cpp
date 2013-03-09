@@ -44,7 +44,7 @@ class CMessagesTest : public CTest
 		destination.makeNewKey();
 
 		//Construct the message
-		CMyPublicKeyMessage startMessage;
+		CPublicKeyMessage startMessage;
 		startMessage.m_source = CSHA256(source.getPublicKey());
 		startMessage.m_destination = CSHA256(destination.getPublicKey());
 		startMessage.m_lastSentBySource     = CSHA256(CBinBuffer("Hello"));
@@ -76,7 +76,7 @@ class CMessagesTest : public CTest
 			endMessage->m_Timestamp == startMessage.m_Timestamp);
 
 		test("  PublicKeyMessage serialization conserves public key",
-			((CMyPublicKeyMessage *)endMessage)->m_PublicKey == startMessage.m_PublicKey);
+			((CPublicKeyMessage *)endMessage)->m_PublicKey == startMessage.m_PublicKey);
 
 		//Delete constructed message
 		delete endMessage;

@@ -23,10 +23,10 @@
 
 #include "message.h"
 
-class CMyPublicKeyMessage : public CMessage
+class CPublicKeyMessage : public CMessage
 {
 public:
-	virtual ~CMyPublicKeyMessage();
+	virtual ~CPublicKeyMessage();
 
 	eTypeID getTypeID() const
 		{return eMyPublicKey;}

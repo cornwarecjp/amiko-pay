@@ -40,22 +40,111 @@ public:
 	eMyPublicKey=0
 	};
 
-	//TODO: specs for all these methods
+	/*
+	Constructed object:
+	Uninitialized message object
 
+	Exceptions:
+	none
+	*/
 	CMessage();
+
 	virtual ~CMessage();
 
+	/*
+	data:
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Return value:
+	Valid pointer
+	Pointer ownership: passed to the caller
+	Pointed memory contains CMessage-derived object
+	Pointed object is deserialized from data
+
+	Exceptions:
+	CSerializationError
+	*/
 	static CMessage *constructMessage(const CBinBuffer &data);
 
+	/*
+	Return value:
+	Valid eTypeID value
+
+	Exceptions:
+	none
+	*/
 	virtual eTypeID getTypeID() const=0;
 
+	/*
+	Return value:
+	Serialized message
+
+	Exceptions:
+	CBinBuffer::CWriteError
+	*/
 	CBinBuffer serialize() const;
+
+	/*
+	data:
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+	Serialized message
+	Type ID matches this object (CHECKED)
+
+	Exceptions:
+	CBinBuffer::CReadError
+	*/
 	void deserialize(const CBinBuffer &data);
 
+	/*
+	Return value:
+	Serialized "payload" body data
+
+	Exceptions:
+	CBinBuffer::CWriteError
+	*/
 	virtual CBinBuffer getSerializedBody() const = 0;
+
+	/*
+	data:
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+	Serialized "payload" body data
+
+	Exceptions:
+	CBinBuffer::CReadError
+	*/
 	virtual void setSerializedBody(const CBinBuffer &data) = 0;
 
+	/*
+	key:
+	Reference to properly formed CKey object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+	Contains a private key (CHECKED/TODO)
+	Corresponds with m_source (NOT CHECKED/TODO)
+
+	Exceptions:
+	CBinBuffer::CWriteError
+	CKey::CKeyError
+	*/
 	void sign(const CKey &key);
+
+	/*
+	key:
+	Reference to properly formed CKey object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+	Contains a public key (CHECKED/TODO)
+	Corresponds with m_source (NOT CHECKED/TODO)
+
+	Return value:
+	true if the signature is valid
+	false if the signature is invalid
+
+	Exceptions:
+	CBinBuffer::CWriteError
+	CKey::CKeyError
+	*/
 	bool verifySignature(const CKey &key) const;
 
 
@@ -71,7 +160,24 @@ public:
 
 private:
 
+	/*
+	Return value:
+	Serialized data which is signed
+
+	Exceptions:
+	CBinBuffer::CWriteError
+	*/
 	CBinBuffer getSignedBody() const;
+
+	/*
+	data:
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+	Serialized data which is signed
+
+	Exceptions:
+	CBinBuffer::CReadError
+	*/
 	void setSignedBody(const CBinBuffer &data);
 };
 

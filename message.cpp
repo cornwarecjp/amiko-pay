@@ -53,13 +53,15 @@ CMessage *CMessage::constructMessage(const CBinBuffer &data)
 	switch(ID)
 	{
 	case eMyPublicKey:
-		ret = new CMyPublicKeyMessage;
+		ret = new CPublicKeyMessage;
 		break;
 	default:
 		throw CSerializationError("Invalid message type ID");
 	}
 
+	//TODO: in case of any exception here, delete the object to prevent a memory leak
 	ret->deserialize(data);
+
 	return ret;
 }
 

@@ -21,18 +21,18 @@
 #include "messages.h"
 
 
-CMyPublicKeyMessage::~CMyPublicKeyMessage()
+CPublicKeyMessage::~CPublicKeyMessage()
 {
 }
 
 
-CBinBuffer CMyPublicKeyMessage::getSerializedBody() const
+CBinBuffer CPublicKeyMessage::getSerializedBody() const
 {
 	return m_PublicKey;
 }
 
 
-void CMyPublicKeyMessage::setSerializedBody(const CBinBuffer &data)
+void CPublicKeyMessage::setSerializedBody(const CBinBuffer &data)
 {
 	m_PublicKey = data;
 }
