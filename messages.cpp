@@ -69,13 +69,59 @@ CFinStateMessage::~CFinStateMessage()
 
 CBinBuffer CFinStateMessage::getSerializedBody() const
 {
-	//TODO
-	return CBinBuffer();
+	//TODO: assert that everything fits within specified integer sizes
+
+	CBinBuffer ret;
+	ret.appendUint<uint64_t>(m_myBalance   + (uint64_t(1)<<62));
+	ret.appendUint<uint64_t>(m_yourBalance + (uint64_t(1)<<62));
+
+	ret.appendUint<uint32_t>(m_pendingTransactions.size());
+	ret.appendUint<uint32_t>(m_myPendingDeposits.size());
+	ret.appendUint<uint32_t>(m_yourPendingDeposits.size());
+
+	for(size_t i=0; i < m_pendingTransactions.size(); i++)
+		ret.appendRawBinBuffer(m_pendingTransactions[i].toBinBuffer());
+	for(size_t i=0; i < m_myPendingDeposits.size(); i++)
+		ret.appendRawBinBuffer(m_myPendingDeposits[i].toBinBuffer());
+	for(size_t i=0; i < m_yourPendingDeposits.size(); i++)
+		ret.appendRawBinBuffer(m_yourPendingDeposits[i].toBinBuffer());
+
+	return ret;
 }
 
 void CFinStateMessage::setSerializedBody(const CBinBuffer &data)
 {
-	//TODO
+	size_t pos = 0;
+	m_myBalance   = data.readUint<uint64_t>(pos) - (uint64_t(1)<<62);
+	m_yourBalance = data.readUint<uint64_t>(pos) - (uint64_t(1)<<62);
+
+	uint32_t numPendingTransactions = data.readUint<uint32_t>(pos);
+	uint32_t numMyPendingDeposits   = data.readUint<uint32_t>(pos);
+	uint32_t numyourPendingDeposits = data.readUint<uint32_t>(pos);
+
+	if(CSHA256::getSize() *
+		(numPendingTransactions+numMyPendingDeposits+numyourPendingDeposits)
+		!= data.size()-pos)
+			throw CBinBuffer::CReadError(
+				"CFinStateMessage::setSerializedBody(const CBinBuffer &): sizes don't add up to remaining buffer size"
+				);
+
+	m_pendingTransactions.resize(numPendingTransactions);
+	m_myPendingDeposits.resize(numMyPendingDeposits);
+	m_yourPendingDeposits.resize(numyourPendingDeposits);
+
+	for(size_t i=0; i < numPendingTransactions; i++)
+		m_pendingTransactions[i] = CSHA256::fromBinBuffer(
+			data.readRawBinBuffer(pos, CSHA256::getSize())
+			);
+	for(size_t i=0; i < numMyPendingDeposits; i++)
+		m_myPendingDeposits[i] = CSHA256::fromBinBuffer(
+			data.readRawBinBuffer(pos, CSHA256::getSize())
+			);
+	for(size_t i=0; i < numyourPendingDeposits; i++)
+		m_yourPendingDeposits[i] = CSHA256::fromBinBuffer(
+			data.readRawBinBuffer(pos, CSHA256::getSize())
+			);
 }
 
 

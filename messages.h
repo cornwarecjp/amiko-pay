@@ -21,6 +21,9 @@
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
+#include <stdint.h>
+#include <vector>
+
 #include "message.h"
 
 
@@ -80,7 +83,10 @@ class CFinStateMessage : public CMessage
 	CBinBuffer getSerializedBody() const;
 	void setSerializedBody(const CBinBuffer &data);
 
-	//TODO: financial link state specification
+	int64_t m_myBalance, m_yourBalance;
+	std::vector<CSHA256> m_pendingTransactions;
+	std::vector<CSHA256> m_myPendingDeposits;
+	std::vector<CSHA256> m_yourPendingDeposits;
 };
 
 #endif
