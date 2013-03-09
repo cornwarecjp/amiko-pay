@@ -27,14 +27,14 @@
 
 CSHA256::CSHA256()
 {
-	resize(32);
+	resize(getSize());
 }
 
 
 CSHA256::CSHA256(const CBinBuffer &data)
 {
 	//TODO: can this fail?
-	resize(32);
+	resize(getSize());
 	static unsigned char pblank[1];
 	SHA256((data.size()==0 ? pblank : &data[0]), data.size() * sizeof(unsigned char), &(*this)[0]);
 }
@@ -42,7 +42,7 @@ CSHA256::CSHA256(const CBinBuffer &data)
 
 CSHA256 CSHA256::fromBinBuffer(const CBinBuffer &buffer)
 {
-	if(buffer.size() != 32)
+	if(buffer.size() != getSize())
 		throw CBinBuffer::CReadError("CSHA256::fromBinBuffer(const CBinBuffer &): incorrect input size");
 
 	CSHA256 ret;

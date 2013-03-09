@@ -80,8 +80,8 @@ public:
 	Exceptions:
 	none
 	*/
-	inline size_t getSize() const
-		{return size();}
+	inline static size_t getSize()
+		{return 32;}
 
 	/*
 	Return value:

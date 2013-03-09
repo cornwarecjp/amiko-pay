@@ -77,7 +77,7 @@ CBinBuffer CMessage::serialize() const
 
 	CBinBuffer ret;
 	ret.appendBinBuffer(getSignedBody());
-	ret.appendBinBuffer(m_Signature);
+	ret.appendRawBinBuffer(m_Signature);
 
 	return ret;
 }
@@ -87,7 +87,7 @@ void CMessage::deserialize(const CBinBuffer &data)
 {
 	size_t pos = 0;
 	setSignedBody(data.readBinBuffer(pos));
-	m_Signature = data.readBinBuffer(pos);
+	m_Signature = data.readRawBinBuffer(pos, data.size()-pos);
 
 	//TODO: verify signature
 	//TODO: sanity check on timestamp
@@ -116,12 +116,12 @@ CBinBuffer CMessage::getSignedBody() const
 
 	CBinBuffer ret;
 	ret.appendUint<uint32_t>(getTypeID());
-	ret.appendBinBuffer(m_source.toBinBuffer());
-	ret.appendBinBuffer(m_destination.toBinBuffer());
+	ret.appendRawBinBuffer(m_source.toBinBuffer());
+	ret.appendRawBinBuffer(m_destination.toBinBuffer());
 	ret.appendUint<uint64_t>(m_Timestamp);
-	ret.appendBinBuffer(m_lastSentBySource.toBinBuffer());
-	ret.appendBinBuffer(m_lastAcceptedBySource.toBinBuffer());
-	ret.appendBinBuffer(getSerializedBody());
+	ret.appendRawBinBuffer(m_lastSentBySource.toBinBuffer());
+	ret.appendRawBinBuffer(m_lastAcceptedBySource.toBinBuffer());
+	ret.appendRawBinBuffer(getSerializedBody());
 	return ret;
 }
 
@@ -136,12 +136,16 @@ void CMessage::setSignedBody(const CBinBuffer &data)
 			"CMessage::setSignedBody(const CBinBuffer &): ID in message (%d) does not match ID of message class (%d)",
 			256, ID, getTypeID()));
 
-	m_source = CSHA256::fromBinBuffer(data.readBinBuffer(pos));
-	m_destination = CSHA256::fromBinBuffer(data.readBinBuffer(pos));
+	m_source = CSHA256::fromBinBuffer(
+		data.readRawBinBuffer(pos, CSHA256::getSize()));
+	m_destination = CSHA256::fromBinBuffer(
+		data.readRawBinBuffer(pos, CSHA256::getSize()));
 	m_Timestamp = data.readUint<uint64_t>(pos);
-	m_lastSentBySource = CSHA256::fromBinBuffer(data.readBinBuffer(pos));
-	m_lastAcceptedBySource = CSHA256::fromBinBuffer(data.readBinBuffer(pos));
-	setSerializedBody(data.readBinBuffer(pos));
+	m_lastSentBySource = CSHA256::fromBinBuffer(
+		data.readRawBinBuffer(pos, CSHA256::getSize()));
+	m_lastAcceptedBySource = CSHA256::fromBinBuffer(
+		data.readRawBinBuffer(pos, CSHA256::getSize()));
+	setSerializedBody(data.readRawBinBuffer(pos, data.size()-pos));
 
 	if(getSignedBody() != data)
 		throw CSerializationError(
