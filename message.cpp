@@ -33,6 +33,11 @@ CMessage::CMessage() :
 }
 
 
+CMessage::~CMessage()
+{
+}
+
+
 CMessage *CMessage::constructMessage(const CBinBuffer &data)
 {
 	//The ID is located at bytes 4..8

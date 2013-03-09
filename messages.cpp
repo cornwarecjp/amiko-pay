@@ -20,10 +20,17 @@
 
 #include "messages.h"
 
+
+CMyPublicKeyMessage::~CMyPublicKeyMessage()
+{
+}
+
+
 CBinBuffer CMyPublicKeyMessage::getSerializedBody() const
 {
 	return m_PublicKey;
 }
+
 
 void CMyPublicKeyMessage::setSerializedBody(const CBinBuffer &data)
 {

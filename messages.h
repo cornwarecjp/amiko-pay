@@ -26,6 +26,7 @@
 class CMyPublicKeyMessage : public CMessage
 {
 public:
+	virtual ~CMyPublicKeyMessage();
 
 	eTypeID getTypeID() const
 		{return eMyPublicKey;}

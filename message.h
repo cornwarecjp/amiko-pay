@@ -43,6 +43,7 @@ public:
 	//TODO: specs for all these methods
 
 	CMessage();
+	virtual ~CMessage();
 
 	static CMessage *constructMessage(const CBinBuffer &data);
 
