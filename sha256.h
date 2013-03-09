@@ -27,6 +27,15 @@ class CSHA256 : protected CBinBuffer
 {
 public:
 	/*
+	Constructed object:
+	Uninitialized CSHA256 object
+
+	Exceptions:
+	none
+	*/
+	CSHA256();
+
+	/*
 	data:
 	Reference to properly formed CBinBuffer object
 	Reference lifetime: at least until the end of this function
@@ -98,17 +107,6 @@ public:
 	CBinBuffer::CReadError
 	*/
 	static CSHA256 fromBinBuffer(const CBinBuffer &buffer);
-
-
-private:
-	/*
-	Constructed object:
-	Uninitialized CSHA256 object
-
-	Exceptions:
-	none
-	*/
-	CSHA256();
 };
 
 #endif

@@ -25,6 +25,12 @@
 #include "sha256.h"
 
 
+CSHA256::CSHA256()
+{
+	resize(32);
+}
+
+
 CSHA256::CSHA256(const CBinBuffer &data)
 {
 	//TODO: can this fail?
@@ -32,10 +38,6 @@ CSHA256::CSHA256(const CBinBuffer &data)
 	static unsigned char pblank[1];
 	SHA256((data.size()==0 ? pblank : &data[0]), data.size() * sizeof(unsigned char), &(*this)[0]);
 }
-
-
-CSHA256::CSHA256()
-{}
 
 
 CSHA256 CSHA256::fromBinBuffer(const CBinBuffer &buffer)
