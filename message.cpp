@@ -77,7 +77,7 @@ CBinBuffer CMessage::serialize() const
 
 	CBinBuffer ret;
 	ret.appendBinBuffer(getSignedBody());
-	ret.appendRawBinBuffer(m_Signature);
+	ret.appendRawBinBuffer(m_signature);
 
 	return ret;
 }
@@ -87,7 +87,7 @@ void CMessage::deserialize(const CBinBuffer &data)
 {
 	size_t pos = 0;
 	setSignedBody(data.readBinBuffer(pos));
-	m_Signature = data.readRawBinBuffer(pos, data.size()-pos);
+	m_signature = data.readRawBinBuffer(pos, data.size()-pos);
 
 	//TODO: verify signature
 	//TODO: sanity check on timestamp
@@ -99,14 +99,14 @@ void CMessage::sign(const CKey &key)
 {
 	//TODO: check whether m_Source corresponds with key
 	//maybe set m_Source??
-	m_Signature = key.sign(CSHA256(getSignedBody()));
+	m_signature = key.sign(CSHA256(getSignedBody()));
 }
 
 
 bool CMessage::verifySignature(const CKey &key) const
 {
 	//TODO: check whether m_Source corresponds with key
-	return key.verify(CSHA256(getSignedBody()), m_Signature);
+	return key.verify(CSHA256(getSignedBody()), m_signature);
 }
 
 

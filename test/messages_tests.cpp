@@ -60,26 +60,25 @@ class CMessagesTest : public CTest
 		//Reconstruct message from serialized data
 		CMessage *endMessage = CMessage::constructMessage(serializedMessage);
 
-		test("  PublicKeyMessage serialization conserves message type",
-			endMessage->getTypeID() == startMessage.getTypeID());
-		test("  PublicKeyMessage serialization conserves source address",
-			endMessage->m_source == startMessage.m_source);
-		test("  PublicKeyMessage serialization conserves destination address",
-			endMessage->m_destination == startMessage.m_destination);
-		test("  PublicKeyMessage serialization conserves signature",
-			endMessage->m_Signature == startMessage.m_Signature);
-		test("  PublicKeyMessage serialization conserves last sent hash",
-			endMessage->m_lastSentBySource == startMessage.m_lastSentBySource);
-		test("  PublicKeyMessage serialization conserves last accepted hash",
-			endMessage->m_lastAcceptedBySource == startMessage.m_lastAcceptedBySource);
-		test("  PublicKeyMessage serialization conserves timestamp",
-			endMessage->m_Timestamp == startMessage.m_Timestamp);
-
-		test("  PublicKeyMessage serialization conserves public key",
+		test("  CPublicKeyMessage serialization conserves CMessage members",
+			membersAreEqual(&startMessage, endMessage));
+		test("  CPublicKeyMessage serialization conserves public key",
 			((CPublicKeyMessage *)endMessage)->m_publicKey == startMessage.m_publicKey);
 
 		//Delete constructed message
 		delete endMessage;
+	}
+
+	bool membersAreEqual(const CMessage *msg1, const CMessage *msg2) const
+	{
+		if(msg1->getTypeID() != msg2->getTypeID()) return false;
+		if(msg1->m_source != msg2->m_source) return false;
+		if(msg1->m_destination != msg2->m_destination) return false;
+		if(msg1->m_signature != msg2->m_signature) return false;
+		if(msg1->m_lastSentBySource != msg2->m_lastSentBySource) return false;
+		if(msg1->m_lastAcceptedBySource != msg2->m_lastAcceptedBySource) return false;
+		if(msg1->m_Timestamp != msg2->m_Timestamp) return false;
+		return true;
 	}
 
 } messagesTest;

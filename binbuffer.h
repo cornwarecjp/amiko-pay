@@ -68,6 +68,8 @@ public:
 	none
 	*/
 	bool operator==(const CBinBuffer &data) const;
+	inline bool operator!=(const CBinBuffer &data) const
+		{return !operator==(data);}
 
 	/*
 	this object:

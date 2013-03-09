@@ -58,6 +58,8 @@ public:
 	*/
 	inline bool operator==(const CSHA256 &hash2) const
 		{return CBinBuffer::operator==(hash2.toBinBuffer());}
+	inline bool operator!=(const CSHA256 &hash2) const
+		{return CBinBuffer::operator!=(hash2.toBinBuffer());}
 
 	/*
 	Return value:

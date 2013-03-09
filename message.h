@@ -153,7 +153,7 @@ public:
 
 	CSHA256 m_source;       //hash of source public key
 	CSHA256 m_destination;  //hash of destination public key
-	CBinBuffer m_Signature; //signature of source
+	CBinBuffer m_signature; //signature of source
 
 	CSHA256 m_lastSentBySource;     //hash of previous message sent by source
 	CSHA256 m_lastAcceptedBySource; //hash of last message accepted by source
