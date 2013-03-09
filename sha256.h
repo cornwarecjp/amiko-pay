@@ -40,6 +40,17 @@ public:
 	CSHA256(const CBinBuffer &data);
 
 	/*
+	hash2:
+	Reference to properly formed CSHA256 object
+	Reference lifetime: at least until the end of this function
+	
+	Exceptions:
+	none
+	*/
+	inline bool operator==(const CSHA256 &hash2) const
+		{return CBinBuffer::operator==(hash2.toBinBuffer());}
+
+	/*
 	Return value:
 	Valid pointer
 	Pointed memory contains at least getSize() bytes

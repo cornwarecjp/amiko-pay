@@ -60,6 +60,16 @@ public:
 	CBinBuffer(const CString &str);
 
 	/*
+	data:
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Exceptions:
+	none
+	*/
+	bool operator==(const CBinBuffer &data) const;
+
+	/*
 	T:
 	unsigned integer type (NOT CHECKED)
 

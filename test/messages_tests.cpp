@@ -58,14 +58,26 @@ class CMessagesTest : public CTest
 		//printf("Message: %s\n\n", serializedMessage.hexDump().c_str());
 
 		//Reconstruct message from serialized data
-		CMessage *_endMessage = CMessage::constructMessage(serializedMessage);
+		CMessage *endMessage = CMessage::constructMessage(serializedMessage);
 
 		test("  PublicKeyMessage serialization conserves message type",
-			_endMessage->getTypeID() == startMessage.getTypeID());
+			endMessage->getTypeID() == startMessage.getTypeID());
+		test("  PublicKeyMessage serialization conserves source address",
+			endMessage->m_source == startMessage.m_source);
+		test("  PublicKeyMessage serialization conserves destination address",
+			endMessage->m_destination == startMessage.m_destination);
+		test("  PublicKeyMessage serialization conserves signature",
+			endMessage->m_Signature == startMessage.m_Signature);
+		test("  PublicKeyMessage serialization conserves last sent hash",
+			endMessage->m_lastSentBySource == startMessage.m_lastSentBySource);
+		test("  PublicKeyMessage serialization conserves last accepted hash",
+			endMessage->m_lastAcceptedBySource == startMessage.m_lastAcceptedBySource);
+		test("  PublicKeyMessage serialization conserves timestamp",
+			endMessage->m_Timestamp == startMessage.m_Timestamp);
 		//TODO: check whether the messages are equal
 
 		//Delete constructed message
-		delete _endMessage;
+		delete endMessage;
 	}
 
 } messagesTest;

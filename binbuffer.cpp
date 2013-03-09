@@ -38,6 +38,13 @@ CBinBuffer::CBinBuffer(const CString &str)
 }
 
 
+bool CBinBuffer::operator==(const CBinBuffer &data) const
+{
+	if(size() != data.size()) return false;
+	return memcmp(&(*this)[0], &data[0], size()) == 0;
+}
+
+
 void CBinBuffer::appendBinBuffer(const CBinBuffer &value)
 {
 	if(value.size() > uint32_t(-1))
