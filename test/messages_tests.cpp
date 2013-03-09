@@ -74,7 +74,9 @@ class CMessagesTest : public CTest
 			endMessage->m_lastAcceptedBySource == startMessage.m_lastAcceptedBySource);
 		test("  PublicKeyMessage serialization conserves timestamp",
 			endMessage->m_Timestamp == startMessage.m_Timestamp);
-		//TODO: check whether the messages are equal
+
+		test("  PublicKeyMessage serialization conserves public key",
+			((CMyPublicKeyMessage *)endMessage)->m_PublicKey == startMessage.m_PublicKey);
 
 		//Delete constructed message
 		delete endMessage;
