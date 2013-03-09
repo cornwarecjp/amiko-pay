@@ -28,7 +28,7 @@
 CSHA256::CSHA256(const CBinBuffer &data)
 {
 	//TODO: can this fail?
-	resize(256);
+	resize(32);
 	static unsigned char pblank[1];
 	SHA256((data.size()==0 ? pblank : &data[0]), data.size() * sizeof(unsigned char), &(*this)[0]);
 }
