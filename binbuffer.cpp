@@ -20,6 +20,7 @@
 
 #include <cstdio>
 #include <string.h>
+#include <stdint.h>
 
 #include "cstring.h"
 
@@ -39,16 +40,22 @@ CBinBuffer::CBinBuffer(const CString &str)
 
 void CBinBuffer::appendBinBuffer(const CBinBuffer &value)
 {
+	if(value.size() > uint32_t(-1))
+		throw CWriteError("CBinBuffer::appendBinBuffer(const CBinBuffer &): buffer too large");
+
+	appendUint<uint32_t>(value.size());
 	insert(end(), value.begin(), value.end());
 }
 
 
-CBinBuffer CBinBuffer::readBinBuffer(size_t &pos, size_t length) const
+CBinBuffer CBinBuffer::readBinBuffer(size_t &pos) const
 {
+	size_t length = readUint<uint32_t>(pos);
+
 	if(pos > size())
-		throw CReadError("CBinBuffer::readBinBuffer(size_t &, size_t): start past end of buffer");
+		throw CReadError("CBinBuffer::readBinBuffer(size_t &): start past end of buffer");
 	if(size() - pos < length)
-		throw CReadError("CBinBuffer::readBinBuffer(size_t &, size_t): end past end of buffer");
+		throw CReadError("CBinBuffer::readBinBuffer(size_t &): end past end of buffer");
 
 	CBinBuffer ret;
 	ret.resize(length);

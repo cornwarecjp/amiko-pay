@@ -70,9 +70,7 @@ CBinBuffer CMessage::serialize() const
 
 	//TODO: add source and destination pubkeys
 	CBinBuffer ret;
-	ret.appendUint<uint32_t>(signedBody.size());
 	ret.appendBinBuffer(signedBody);
-	ret.appendUint<uint32_t>(m_Signature.size());
 	ret.appendBinBuffer(m_Signature);
 
 	return ret;
@@ -81,21 +79,17 @@ CBinBuffer CMessage::serialize() const
 
 void CMessage::deserialize(const CBinBuffer &data)
 {
-	//TODO: check whether sizes are not unreasonably large
-
 	//TODO: add source and destination pubkeys
 	size_t pos = 0;
-	uint32_t signedBodySize = data.readUint<uint32_t>(pos);
-	CBinBuffer signedBody = data.readBinBuffer(pos, signedBodySize);
-	uint32_t signatureSize = data.readUint<uint32_t>(pos);
-	m_Signature = data.readBinBuffer(pos, signatureSize);
+	CBinBuffer signedBody = data.readBinBuffer(pos);
+	m_Signature = data.readBinBuffer(pos);
 
 	pos = 0;
 	uint32_t ID = signedBody.readUint<uint32_t>(pos);
 	m_Timestamp = signedBody.readUint<uint64_t>(pos);
-	m_lastSentByMe = CSHA256::fromBinBuffer(signedBody.readBinBuffer(pos, 32));
-	m_lastAcceptedByMe = CSHA256::fromBinBuffer(signedBody.readBinBuffer(pos, 32));
-	setSerializedBody(signedBody.readBinBuffer(pos, signedBody.size()-pos));
+	m_lastSentByMe = CSHA256::fromBinBuffer(signedBody.readBinBuffer(pos));
+	m_lastAcceptedByMe = CSHA256::fromBinBuffer(signedBody.readBinBuffer(pos));
+	setSerializedBody(signedBody.readBinBuffer(pos));
 
 	//verify ID:
 	if(ID != getTypeID())

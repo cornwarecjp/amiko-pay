@@ -34,6 +34,7 @@ class CBinBuffer : public std::vector<unsigned char>
 {
 public:
 	SIMPLEEXCEPTIONCLASS(CReadError)
+	SIMPLEEXCEPTIONCLASS(CWriteError)
 
 	/*
 	Constructed object:
@@ -80,7 +81,7 @@ public:
 	Reference lifetime: at least until the end of this function
 
 	Exceptions:
-	none
+	CWriteError
 	*/
 	void appendBinBuffer(const CBinBuffer &value);
 
@@ -120,11 +121,8 @@ public:
 	pos:
 	Reference to integer (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
-	pos < size() (CHECKED)
-	The value of pos will be incremented with length
-
-	length:
-	length <= size() - pos (CHECKED)
+	pos <= size() - 4 (CHECKED)
+	The value of pos will be incremented with the amount of data read
 
 	Return value:
 	Data read from this object at position pos
@@ -132,7 +130,7 @@ public:
 	Exceptions:
 	CReadError
 	*/
-	CBinBuffer readBinBuffer(size_t &pos, size_t length) const;
+	CBinBuffer readBinBuffer(size_t &pos) const;
 
 	/*
 	Return value:
