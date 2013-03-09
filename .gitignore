@@ -15,7 +15,8 @@
 # Dependency files
 *.d
 
-# Executable
+# Executable(s)
+.exe
 amikopay
-amikopay.exe
+amikotest
 

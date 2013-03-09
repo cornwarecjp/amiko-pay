@@ -73,7 +73,7 @@ SRCDIRS   =
 # The executable file name.
 # If not specified, current directory name or `a.out' will be used.
 PROGRAM   = amikopay
-TEST_PROGRAM = test/test
+TEST_PROGRAM = test/amikotest
 
 #Add amiko pay to the source directories:
 SRCDIRS = .
