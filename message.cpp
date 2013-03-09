@@ -66,11 +66,9 @@ CBinBuffer CMessage::serialize() const
 {
 	//TODO: assert that everything fits within specified integer sizes
 
-	CBinBuffer signedBody = getSignedBody();
-
 	//TODO: add source and destination pubkeys
 	CBinBuffer ret;
-	ret.appendBinBuffer(signedBody);
+	ret.appendBinBuffer(getSignedBody());
 	ret.appendBinBuffer(m_Signature);
 
 	return ret;
@@ -81,21 +79,8 @@ void CMessage::deserialize(const CBinBuffer &data)
 {
 	//TODO: add source and destination pubkeys
 	size_t pos = 0;
-	CBinBuffer signedBody = data.readBinBuffer(pos);
+	setSignedBody(data.readBinBuffer(pos));
 	m_Signature = data.readBinBuffer(pos);
-
-	pos = 0;
-	uint32_t ID = signedBody.readUint<uint32_t>(pos);
-	m_Timestamp = signedBody.readUint<uint64_t>(pos);
-	m_lastSentByMe = CSHA256::fromBinBuffer(signedBody.readBinBuffer(pos));
-	m_lastAcceptedByMe = CSHA256::fromBinBuffer(signedBody.readBinBuffer(pos));
-	setSerializedBody(signedBody.readBinBuffer(pos));
-
-	//verify ID:
-	if(ID != getTypeID())
-		throw CSerializationError(CString::format(
-			"CMessage::deserialize(const CBinBuffer &): ID in message (%d) does not match ID of message class (%d)",
-			256, ID, getTypeID()));
 
 	//TODO: verify signature
 	//TODO: sanity check on timestamp
@@ -126,5 +111,26 @@ CBinBuffer CMessage::getSignedBody() const
 	signedBody.appendBinBuffer(m_lastAcceptedByMe.toBinBuffer());
 	signedBody.appendBinBuffer(getSerializedBody());
 	return signedBody;
+}
+
+
+void CMessage::setSignedBody(const CBinBuffer &data)
+{
+	size_t pos = 0;
+
+	uint32_t ID = data.readUint<uint32_t>(pos);
+	if(ID != getTypeID())
+		throw CSerializationError(CString::format(
+			"CMessage::setSignedBody(const CBinBuffer &): ID in message (%d) does not match ID of message class (%d)",
+			256, ID, getTypeID()));
+
+	m_Timestamp = data.readUint<uint64_t>(pos);
+	m_lastSentByMe = CSHA256::fromBinBuffer(data.readBinBuffer(pos));
+	m_lastAcceptedByMe = CSHA256::fromBinBuffer(data.readBinBuffer(pos));
+	setSerializedBody(data.readBinBuffer(pos));
+
+	if(getSignedBody() != data)
+		throw CSerializationError(
+			"CMessage::setSignedBody(const CBinBuffer &): input data does not match reconstructed object");
 }
 

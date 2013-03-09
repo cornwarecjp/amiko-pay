@@ -72,6 +72,7 @@ public:
 private:
 
 	CBinBuffer getSignedBody() const;
+	void setSignedBody(const CBinBuffer &data);
 };
 
 #endif
