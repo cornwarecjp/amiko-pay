@@ -69,6 +69,7 @@ class CNackMessage : public CMessage
 	void setSerializedBody(const CBinBuffer &data);
 
 	CSHA256 m_rejectedBySource; //hash of message rejected by source
+	uint32_t m_reasonCode;      //machine-readable reason code (to be standardized)
 	CString m_reason;           //reason why the message was rejected
 };
 

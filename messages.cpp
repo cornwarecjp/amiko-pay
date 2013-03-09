@@ -50,7 +50,8 @@ CNackMessage::~CNackMessage()
 CBinBuffer CNackMessage::getSerializedBody() const
 {
 	CBinBuffer ret;
-	ret.appendBinBuffer(m_rejectedBySource.toBinBuffer());
+	ret.appendRawBinBuffer(m_rejectedBySource.toBinBuffer());
+	ret.appendUint<uint32_t>(m_reasonCode);
 	ret.appendBinBuffer(CString(m_reason));
 	return ret;
 }
@@ -58,7 +59,9 @@ CBinBuffer CNackMessage::getSerializedBody() const
 void CNackMessage::setSerializedBody(const CBinBuffer &data)
 {
 	size_t pos = 0;
-	m_rejectedBySource = CSHA256::fromBinBuffer(data.readBinBuffer(pos));
+	m_rejectedBySource = CSHA256::fromBinBuffer(
+		data.readRawBinBuffer(pos, CSHA256::getSize()));
+	m_reasonCode = data.readUint<uint32_t>(pos);
 	m_reason = data.readBinBuffer(pos).toString();
 }
 
