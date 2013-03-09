@@ -29,9 +29,11 @@ TODO: document and expand
 */
 class CMessagesTest : public CTest
 {
+	virtual const char *getName()
+		{return "messages";	}
+
 	virtual void run()
 	{
-		printf("Messages tests:\n");
 		testPublicKeyMessage();
 	}
 

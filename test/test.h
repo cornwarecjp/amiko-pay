@@ -42,6 +42,7 @@ public:
 		getTestList().push_back(this);
 	}
 
+	virtual const char *getName()=0;
 	virtual void run()=0;
 
 

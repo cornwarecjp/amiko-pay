@@ -20,6 +20,7 @@
 
 #include <string.h>
 #include <cstdlib>
+#include <cstdio>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -36,13 +37,21 @@ int main(int argc, char *argv[])
 {
 	//Commandline options
 	int n = 1;
+	const char *testName = NULL;
 
 	for(int i=0; i < argc; i++)
+	{
 		if(strcmp(argv[i], "-n") == 0 && i+1 < argc)
 		{
 			i++;
 			n = atoi(argv[i]);
 		}
+		if(strcmp(argv[i], "-t") == 0 && i+1 < argc)
+		{
+			i++;
+			testName = argv[i];
+		}
+	}
 
 	//Initialize libssl
 	SSL_load_error_strings();
@@ -65,7 +74,11 @@ int main(int argc, char *argv[])
 	while(true)
 	{
 		for(std::size_t i=0; i < testList.size(); i++)
-			testList[i]->run();
+			if(testName==NULL || strcmp(testList[i]->getName(), testName) == 0)
+			{
+				printf("\nTest: \"%s\"\n", testList[i]->getName());
+				testList[i]->run();
+			}
 
 		count++;
 		if(n > 0 && count >= n) break;

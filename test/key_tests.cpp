@@ -28,10 +28,11 @@ TODO: document and expand
 */
 class CKeyTest : public CTest
 {
+	virtual const char *getName()
+		{return "key";}
+
 	virtual void run()
 	{
-		printf("Key tests:\n");
-
 		CKey privKey;
 		privKey.makeNewKey();
 		CKey pubKey;
