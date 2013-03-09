@@ -62,6 +62,16 @@ public:
 class CNackMessage : public CMessage
 {
 public:
+
+	enum eReason
+	{
+	//Amiko link protocol version 1
+	eNonstandardReason=0,
+	eBadSignature=1,
+	eWrongBalance=2
+	};
+
+
 	virtual ~CNackMessage();
 
 	eTypeID getTypeID() const
@@ -71,7 +81,7 @@ public:
 	void setSerializedBody(const CBinBuffer &data);
 
 	CSHA256 m_rejectedBySource; //hash of message rejected by source
-	uint32_t m_reasonCode;      //machine-readable reason code (to be standardized)
+	eReason m_reasonCode;       //machine-readable reason code
 	CString m_reason;           //reason why the message was rejected
 };
 

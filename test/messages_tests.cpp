@@ -95,7 +95,7 @@ class CMessagesTest : public CTest
 		//Construct the message
 		CNackMessage startMessage;
 		startMessage.m_rejectedBySource = CSHA256(CBinBuffer("give me all your money"));
-		startMessage.m_reasonCode = 12;
+		startMessage.m_reasonCode = CNackMessage::eWrongBalance;
 		startMessage.m_reason = "I want to keep it for myself";
 		setBaseMembervalues(startMessage);
 

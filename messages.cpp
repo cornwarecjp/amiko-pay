@@ -61,7 +61,19 @@ void CNackMessage::setSerializedBody(const CBinBuffer &data)
 	size_t pos = 0;
 	m_rejectedBySource = CSHA256::fromBinBuffer(
 		data.readRawBinBuffer(pos, CSHA256::getSize()));
-	m_reasonCode = data.readUint<uint32_t>(pos);
+
+	uint32_t reasonCode = data.readUint<uint32_t>(pos);
+	switch(reasonCode)
+	{
+	case eNonstandardReason:
+	case eBadSignature:
+	case eWrongBalance:
+		m_reasonCode = eReason(reasonCode);
+		break;
+	default:
+		throw CBinBuffer::CReadError("CNackMessage::setSerializedBody(const CBinBuffer &): invalid reason code");
+	}
+
 	m_reason = data.readBinBuffer(pos).toString();
 }
 
