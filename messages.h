@@ -44,6 +44,7 @@ public:
 
 class CAckMessage : public CMessage
 {
+public:
 	virtual ~CAckMessage();
 
 	eTypeID getTypeID() const
@@ -60,6 +61,7 @@ class CAckMessage : public CMessage
 
 class CNackMessage : public CMessage
 {
+public:
 	virtual ~CNackMessage();
 
 	eTypeID getTypeID() const
@@ -76,6 +78,7 @@ class CNackMessage : public CMessage
 
 class CFinStateMessage : public CMessage
 {
+public:
 	virtual ~CFinStateMessage();
 
 	eTypeID getTypeID() const

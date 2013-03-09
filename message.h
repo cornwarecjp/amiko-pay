@@ -158,7 +158,7 @@ public:
 	CSHA256 m_lastSentBySource;     //hash of previous message sent by source
 	CSHA256 m_lastAcceptedBySource; //hash of last message accepted by source
 
-	uint64_t m_Timestamp; //timestamp when this message was created by source
+	uint64_t m_timestamp; //timestamp when this message was created by source
 
 
 private:
