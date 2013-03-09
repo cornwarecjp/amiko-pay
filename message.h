@@ -55,18 +55,18 @@ public:
 	virtual CBinBuffer getSerializedBody() const = 0;
 	virtual void setSerializedBody(const CBinBuffer &data) = 0;
 
-	void sign();
-	bool verifySignature() const;
+	void sign(const CKey &key);
+	bool verifySignature(const CKey &key) const;
 
 
-	CKey m_Source;
-	CKey m_Destination;
-	CBinBuffer m_Signature;
+	CSHA256 m_source;       //hash of source public key
+	CSHA256 m_destination;  //hash of destination public key
+	CBinBuffer m_Signature; //signature of source
 
-	CSHA256 m_lastSentByMe;
-	CSHA256 m_lastAcceptedByMe;
+	CSHA256 m_lastSentBySource;     //hash of previous message sent by source
+	CSHA256 m_lastAcceptedBySource; //hash of last message accepted by source
 
-	uint64_t m_Timestamp;
+	uint64_t m_Timestamp; //timestamp when this message was created by source
 
 
 private:

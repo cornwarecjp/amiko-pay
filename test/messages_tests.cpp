@@ -45,13 +45,13 @@ class CMessagesTest : public CTest
 
 		//Construct the message
 		CMyPublicKeyMessage startMessage;
-		startMessage.m_Source = source;
-		startMessage.m_Destination.setPublicKey(destination.getPublicKey());
-		startMessage.m_lastSentByMe     = CSHA256(CBinBuffer("Hello"));
-		startMessage.m_lastAcceptedByMe = CSHA256(CBinBuffer("Goodbye"));
+		startMessage.m_source = CSHA256(source.getPublicKey());
+		startMessage.m_destination = CSHA256(destination.getPublicKey());
+		startMessage.m_lastSentBySource     = CSHA256(CBinBuffer("Hello"));
+		startMessage.m_lastAcceptedBySource = CSHA256(CBinBuffer("Goodbye"));
 		startMessage.m_Timestamp = 42;
 		startMessage.m_PublicKey = source.getPublicKey();
-		startMessage.sign();
+		startMessage.sign(source);
 
 		//Serialize the message
 		CBinBuffer serializedMessage = startMessage.serialize();
