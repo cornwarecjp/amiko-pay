@@ -67,6 +67,12 @@ void CBinBuffer::appendBinBuffer(const CBinBuffer &value)
 		throw CWriteError("CBinBuffer::appendBinBuffer(const CBinBuffer &): buffer too large");
 
 	appendUint<uint32_t>(value.size());
+	appendRawBinBuffer(value);
+}
+
+
+void CBinBuffer::appendRawBinBuffer(const CBinBuffer &value)
+{
 	insert(end(), value.begin(), value.end());
 }
 
@@ -74,11 +80,16 @@ void CBinBuffer::appendBinBuffer(const CBinBuffer &value)
 CBinBuffer CBinBuffer::readBinBuffer(size_t &pos) const
 {
 	size_t length = readUint<uint32_t>(pos);
+	return readRawBinBuffer(pos, length);
+}
 
+
+CBinBuffer CBinBuffer::readRawBinBuffer(size_t &pos, size_t length) const
+{
 	if(pos > size())
-		throw CReadError("CBinBuffer::readBinBuffer(size_t &): start past end of buffer");
+		throw CReadError("CBinBuffer::readBinBuffer(size_t &, size_t): start past end of buffer");
 	if(size() - pos < length)
-		throw CReadError("CBinBuffer::readBinBuffer(size_t &): end past end of buffer");
+		throw CReadError("CBinBuffer::readBinBuffer(size_t &, size_t): end past end of buffer");
 
 	CBinBuffer ret;
 	ret.resize(length);

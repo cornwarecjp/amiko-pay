@@ -106,6 +106,7 @@ public:
 	CWriteError
 	*/
 	void appendBinBuffer(const CBinBuffer &value);
+	void appendRawBinBuffer(const CBinBuffer &value);
 
 	/*
 	T:
@@ -153,6 +154,24 @@ public:
 	CReadError
 	*/
 	CBinBuffer readBinBuffer(size_t &pos) const;
+
+	/*
+	pos:
+	Reference to integer (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+	pos <= size() (CHECKED)
+	The value of pos will be incremented with length
+
+	length:
+	length <= size() - pos (CHECKED)
+
+	Return value:
+	Data read from this object at position pos
+
+	Exceptions:
+	CReadError
+	*/
+	CBinBuffer readRawBinBuffer(size_t &pos, size_t length) const;
 
 	/*
 	Return value:
