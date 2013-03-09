@@ -45,6 +45,22 @@ bool CBinBuffer::operator==(const CBinBuffer &data) const
 }
 
 
+CString CBinBuffer::toString() const
+{
+	CString ret;
+	ret.resize(size());
+	for(size_t i=0; i<size(); i++)
+	{
+		if((*this)[i] == '\0')
+			throw CReadError(
+				"Buffer could not be converted to string because it contains a null character");
+
+		ret[i] = (*this)[i];
+	}
+	return ret;
+}
+
+
 void CBinBuffer::appendBinBuffer(const CBinBuffer &value)
 {
 	if(value.size() > uint32_t(-1))

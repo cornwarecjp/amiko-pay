@@ -70,6 +70,18 @@ public:
 	bool operator==(const CBinBuffer &data) const;
 
 	/*
+	this object:
+	Does not contain null characters (CHECKED)
+	
+	Return value:
+	String object containing a copy of the contents of this object
+
+	Exceptions:
+	CReadError
+	*/
+	CString toString() const;
+
+	/*
 	T:
 	unsigned integer type (NOT CHECKED)
 

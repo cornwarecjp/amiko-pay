@@ -38,8 +38,6 @@ Unless specified otherwise, string contents is assumed to be UTF-8 encoded.
 class CString : public std::string
 {
 public:
-
-	SIMPLEEXCEPTIONCLASS(CNullCharacterException)
 	SIMPLEEXCEPTIONCLASS(CFormatException)
 
 	/*
@@ -82,20 +80,6 @@ public:
 	none
 	*/
 	CString(const char *s);
-
-	/*
-	buffer:
-	Reference to properly formed CBinBuffer object (NOT CHECKED)
-	Reference lifetime: at least until the end of this function
-	Does not contain null characters (CHECKED)
-	
-	Constructed object:
-	String object containing a copy of the contents of buffer
-
-	Exceptions:
-	CNullCharacterException
-	*/
-	//CString(const CBinBuffer &buffer);
 
 	/*
 	str:

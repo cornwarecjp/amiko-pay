@@ -38,21 +38,6 @@ CString::CString(const char *s)
 }
 
 
-/*
-CString::CString(const CBinBuffer &buffer)
-{
-	resize(buffer.size());
-	for(size_t i=0; i<buffer.size(); i++)
-	{
-		if(buffer[i] == '\0')
-			throw CNullCharacterException(
-				"Buffer could not be converted to string because it contains a null character");
-
-		(*this)[i] = buffer[i];
-	}
-}
-*/
-
 CString &CString::operator=(const char *str)
 {
 	this->assign(str);
