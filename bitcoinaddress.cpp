@@ -39,9 +39,19 @@ public:
 
 	CBigNum(const CBinBuffer &data)
 	{
-		//assumption: data.size() is a multiple of 4 bytes
-		//If this is not true, readUint will throw an exception
 		size_t pos = 0;
+
+		//Generally, data.size() is not a multiple of 4 bytes.
+		//So the first value must be read from fewer than 4 bytes.
+		if(data.size() % 4 != 0)
+		{
+			uint32_t firstValue = 0;
+			while((data.size()-pos) % 4 != 0)
+				firstValue = (firstValue<<8) + data.readUint<uint8_t>(pos);
+			push_back(firstValue);
+		}
+
+		//Read all the other values
 		while(pos < data.size())
 			push_back(data.readUint<uint32_t>(pos));
 	}
@@ -63,8 +73,8 @@ public:
 	{
 		for(size_t i=0; i < size(); i++)
 			if((*this)[i] != 0)
-				return false;
-		return true;
+				return true;
+		return false;
 	}
 };
 
@@ -102,7 +112,7 @@ inline CString encodeBase58(const CBinBuffer &data)
 inline CString encodeBase58Check(const CBinBuffer &data)
 {
 	// add 4-byte hash check to the end
-	CSHA256 hash(data);
+	CSHA256 hash(CSHA256(data).toBinBuffer());
 	CBinBuffer firstFourBytes = hash.toBinBuffer(); firstFourBytes.resize(4);
 	CBinBuffer withChecksum(data);
 	withChecksum.appendRawBinBuffer(firstFourBytes);
