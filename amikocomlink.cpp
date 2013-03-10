@@ -160,12 +160,24 @@ void CAmikoComLink::receiveNegotiationString(uint32_t &minVersion, uint32_t &max
 
 void CAmikoComLink::sendMessage(const CMessage &message)
 {
-	//TODO
+	//TODO: check whether everything fits in the integer data types
+	CBinBuffer serialized = message.serialize();
+	CBinBuffer sizebuffer;
+	sizebuffer.appendUint<uint32_t>(serialized.size());
+	m_Connection.send(sizebuffer);
+	m_Connection.send(serialized);
 }
 
 CMessage *CAmikoComLink::receiveMessage()
 {
-	//TODO
-	return NULL;
+	//TODO: non-blocking and non-truncating receive
+	CBinBuffer sizebuffer; sizebuffer.resize(4);
+	m_Connection.receive(sizebuffer);
+	size_t pos = 0;
+	uint32_t size = sizebuffer.readUint<uint32_t>(pos);
+	//TODO: check whether size is unreasonably large
+	CBinBuffer serialized; serialized.resize(size);
+	m_Connection.receive(serialized);
+	return CMessage::constructMessage(serialized);
 }
 
