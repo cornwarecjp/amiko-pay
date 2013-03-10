@@ -108,3 +108,37 @@ CString CBinBuffer::hexDump() const
 	return ret;
 }
 
+inline unsigned int decodeHexChar(char c)
+{
+	//TODO: more efficient way with no branching etc.
+	if(c>='0' && c<='9')
+		return c-'0';
+	if(c>='a' && c<='f')
+		return 10+c-'a';
+	if(c>='A' && c<='F')
+		return 10+c-'F';
+	throw CBinBuffer::CWriteError("decodeHexChar: invalid character");
+	return 0;
+}
+
+CBinBuffer CBinBuffer::fromHex(const CString &hex)
+{
+	if(hex.length() % 2 != 0)
+		throw CWriteError("CBinBuffer::fromHex(const CString &): input contains an odd number of characters");
+
+	CBinBuffer ret;
+	ret.resize(hex.length()/2);
+
+	size_t j = 0;
+	for(size_t i=0; i < ret.size(); i++)
+	{
+		unsigned int c1 = decodeHexChar(hex[j]);
+		unsigned int c2 = decodeHexChar(hex[j+1]);
+		ret[i] = 16*c1 + c2;
+		j += 2;
+	}
+
+	return ret;
+}
+
+

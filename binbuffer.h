@@ -183,6 +183,21 @@ public:
 	none
 	*/
 	CString hexDump() const;
+
+	/*
+	hex:
+	Reference to properly formed CString object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+	Contains only hexadecimal characters (0..9,a..f,A..F) (CHECKED)
+	Contains an even number of characters (CHECKED)
+
+	Return value:
+	binbuffer corresponding to hex
+
+	Exceptions:
+	CWriteError
+	*/
+	static CBinBuffer fromHex(const CString &hex);
 };
 
 #endif
