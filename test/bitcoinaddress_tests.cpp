@@ -34,24 +34,34 @@ class CBitcoinAddressTest : public CTest
 	virtual void run()
 	{
 		/*
-		I just took some random key from the block chain
+		I just took some random keys from the block chain
 		(thanks to blockexplorer.com for the service).
-		I have no idea whose key this is.
+		I have no idea whose keys they are.
 		*/
 
-		//address = 1ALk99MqTNc9ifW1DhbUa8g39FTiHuyr3L
 		//hash160 = 66750c10f3f64d0e4b8d6d80fa3d9f08cb59cdd3
-		CBinBuffer pubkey = CBinBuffer::fromHex(
+		testPubKey("  The address of a public key corresponds to the known value",
 			"0406e4a5c2a5f8dcfbfbadd86dd4fc908e4de1068599f2a818677f8eb0f4e375"
-			"b220fb7c0845960d0ec2c11cdffa4b22dbb264e6f2e8c0b90d196985aa11cfd435"
+			"b220fb7c0845960d0ec2c11cdffa4b22dbb264e6f2e8c0b90d196985aa11cfd435",
+			"1ALk99MqTNc9ifW1DhbUa8g39FTiHuyr3L"
 			);
+
+		//hash160 = 0000a21b7e708c3816f18be8cfce5f6740f94c2b
+		testPubKey("  Leading zeroes are processed as required",
+			"04791ee6c09049ba1c7a3db01b563d0a3ad580a4e2ce232fa7eb017ea7384194"
+			"aecd156054a3186bd405363936715c6216e73980ff03f2c9eeec74ec132a32f7c4",
+			"111kzsNZ1w27kSGXwyov1ZvUGVLJMvLmJ"
+			);
+	}
+
+	void testPubKey(const char *testDescr, const CString &hexPubKey, const CString &address)
+	{
+		CBinBuffer pubkey = CBinBuffer::fromHex(hexPubKey);
 
 		CKey key;
 		key.setPublicKey(pubkey);
 
-		CString address = getBitcoinAddress(key);
-		test("  The address of a public key corresponds to the known value",
-			address == "1ALk99MqTNc9ifW1DhbUa8g39FTiHuyr3L");
+		test(testDescr, getBitcoinAddress(key) == address);
 	}
 
 } bitcoinAddressTest;
