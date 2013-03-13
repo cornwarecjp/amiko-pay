@@ -58,7 +58,7 @@
 MY_CFLAGS = -I. -I/usr/include/uriparser
 
 # The linker options.
-MY_LIBS   = -lm -luriparser -lssl
+MY_LIBS   = -lm -lpthread -luriparser -lssl
 
 # The pre-processor options used by the cpp (man cpp for more).
 CPPFLAGS  = -Wall
