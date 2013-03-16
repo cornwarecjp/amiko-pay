@@ -55,6 +55,20 @@ protected:
 		else
 			{printf("%s: FAIL\n", description);}
 	}
+
+	template<class T>
+	inline bool throws(void (*function)(void *), void *arg) const
+	{
+		try
+		{
+			function(arg);
+		}
+		catch(T &e)
+		{
+			return true;
+		}
+		return false;
+	}
 };
 
 
