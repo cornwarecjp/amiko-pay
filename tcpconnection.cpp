@@ -21,14 +21,30 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string.h>
+#include <stdint.h>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <errno.h>
+#include <poll.h>
+#include <time.h>
 
 #include "tcpconnection.h"
+
+//get time since epoch in milliseconds
+//TODO: get timer its own source file(s).
+uint64_t getTime()
+{
+	//TODO: check for failure
+	//TODO: maybe select monotomic clock?
+	timespec t;
+	clock_gettime(CLOCK_REALTIME, &t);
+	return uint64_t(t.tv_sec)*1000 + t.tv_nsec/1000;
+}
 
 /*
 Wrapper-class of getaddrinfo functionality, to have a RAII way of dealing
@@ -87,6 +103,9 @@ CTCPConnection::CTCPConnection(const CString &hostname, const CString &service)
 
 	if(rp == NULL) // No address succeeded
 		throw CConnectException("Failed to connect");
+
+	//Set non-blocking
+	fcntl(m_FD, F_SETFL, O_NONBLOCK);
 }
 
 
@@ -141,23 +160,53 @@ void CTCPConnection::receive(CBinBuffer &buffer, int timeout)
 		return;
 	}
 
-	CBinBuffer newBytes; newBytes.resize(buffer.size() - m_ReceiveBuffer.size());
-	ssize_t ret = read(m_FD, &(newBytes[0]), newBytes.size());
+	uint64_t endTime = getTime() + timeout;
 
-	if(ret == 0)
-		throw CReceiveException("Unexpected close of TCP connection");
+	pollfd pfd;
+	pfd.fd = m_FD;
+	pfd.events = POLLIN | POLLPRI | POLLRDHUP;
 
-	if(ret < 0)
-		throw CReceiveException(CString::format(
-			"Error receiving from TCP connection; error code: %d", 256, errno));
-
-	if(ret < ssize_t(newBytes.size()))
+	while(true)
 	{
+		//Wait for data or timeout
+		//TODO: each iteration, reduce timeout with the elapsed time
+		uint64_t startTime = getTime();
+		int64_t dt = int64_t(endTime) - startTime;
+		if(dt < 0) dt = 0; //don't wait infinitely if time has passed
+		if(timeout < 0) dt = timeout; //infinite wait if requested by caller
+		int poll_ret = poll(&pfd, 1, dt);
+		if(poll_ret == 0)
+			throw CTimeoutException("CTCPConnection::receive(CBinBuffer &, int): timeout");
+		if(poll_ret < 0)
+			throw CReceiveException(CString::format(
+				"Error in poll(); error code: %d", 256, errno));
+
+		CBinBuffer newBytes; newBytes.resize(buffer.size() - m_ReceiveBuffer.size());
+		ssize_t read_ret = read(m_FD, &(newBytes[0]), newBytes.size());
+
+		if(read_ret == 0)
+			throw CReceiveException("Unexpected close of TCP connection");
+
+		if(read_ret < 0)
+		{
+			if(errno == EAGAIN || errno == EWOULDBLOCK)
+				continue; //another iteration
+
+			throw CReceiveException(CString::format(
+				"Error receiving from TCP connection; error code: %d", 256, errno));
+		}
+
+		if(read_ret > ssize_t(newBytes.size()))
+			throw CReceiveException("Unexpected: received more than requested");
+
+		newBytes.resize(read_ret);
 		m_ReceiveBuffer += newBytes;
-		throw CTimeoutException("Data not available");
+
+		if(m_ReceiveBuffer.size() >= buffer.size())
+			break;
 	}
 
-	buffer = m_ReceiveBuffer + newBytes;
+	buffer = m_ReceiveBuffer;
 	m_ReceiveBuffer.clear();
 }
 
