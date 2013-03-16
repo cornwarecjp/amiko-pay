@@ -26,6 +26,8 @@
 #include "tcplistener.h"
 #include "test.h"
 
+void receiveWithTimeout(void *arg);
+
 /*
 TODO: document and expand
 */
@@ -33,6 +35,9 @@ class CTCPConnectionTest : public CTest
 {
 public:
 	CTCPConnectionTest() : m_Listener("4321") {}
+
+	CTCPConnection *m_C1;
+	CTCPConnection *m_C2;
 
 private:
 	CTCPListener m_Listener;
@@ -42,20 +47,32 @@ private:
 
 	virtual void run()
 	{
-		CTCPConnection *c1 = new CTCPConnection("localhost", "4321");
-		CTCPConnection *c2 = new CTCPConnection(m_Listener);
+		m_C1 = new CTCPConnection("localhost", "4321");
+		m_C2 = new CTCPConnection(m_Listener);
 
-		c1->send(CBinBuffer("blabla"));
+		m_C1->send(CBinBuffer("blabla"));
 
 		CBinBuffer result; result.resize(6);
-		c2->receive(result, 1); //1 ms timeout
+		m_C2->receive(result, 1); //1 ms timeout
 		test("  CTCPConnection transfers data", result.toString() == "blabla");
 
+		test("  receive times out",
+			throws<CTCPConnection::CTimeoutException>(receiveWithTimeout, this)
+			);
+
 		//Delete in the correct order, to allow release of the port number
-		delete c1;
+		delete m_C1;
 		//sleep(1);
-		delete c2;
+		delete m_C2;
 	}
 
 } tcpconnectionTest;
+
+
+void receiveWithTimeout(void *arg)
+{
+	CTCPConnectionTest *test = (CTCPConnectionTest *)arg;
+	CBinBuffer b; b.resize(1);
+	test->m_C2->receive(b, 100);
+}
 
