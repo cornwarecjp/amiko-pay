@@ -21,7 +21,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string.h>
-#include <stdint.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -31,20 +30,11 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <poll.h>
-#include <time.h>
+
+#include "timer.h"
 
 #include "tcpconnection.h"
 
-//get time since epoch in milliseconds
-//TODO: get timer its own source file(s).
-uint64_t getTime()
-{
-	//TODO: check for failure
-	//TODO: maybe select monotomic clock?
-	timespec t;
-	clock_gettime(CLOCK_REALTIME, &t);
-	return uint64_t(t.tv_sec)*1000 + t.tv_nsec/1000;
-}
 
 /*
 Wrapper-class of getaddrinfo functionality, to have a RAII way of dealing
@@ -160,7 +150,7 @@ void CTCPConnection::receive(CBinBuffer &buffer, int timeout)
 		return;
 	}
 
-	uint64_t endTime = getTime() + timeout;
+	uint64_t endTime = CTimer::getTime() + timeout;
 
 	pollfd pfd;
 	pfd.fd = m_FD;
@@ -169,8 +159,7 @@ void CTCPConnection::receive(CBinBuffer &buffer, int timeout)
 	while(true)
 	{
 		//Wait for data or timeout
-		//TODO: each iteration, reduce timeout with the elapsed time
-		uint64_t startTime = getTime();
+		uint64_t startTime = CTimer::getTime();
 		int64_t dt = int64_t(endTime) - startTime;
 		if(dt < 0) dt = 0; //don't wait infinitely if time has passed
 		if(timeout < 0) dt = timeout; //infinite wait if requested by caller
