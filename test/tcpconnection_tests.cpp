@@ -19,11 +19,14 @@
 */
 
 #include <cstdio>
+#include <stdint.h>
 
 #include <unistd.h>
 
 #include "tcpconnection.h"
 #include "tcplistener.h"
+#include "timer.h"
+
 #include "test.h"
 
 void receiveWithTimeout(void *arg);
@@ -56,9 +59,13 @@ private:
 		m_C2->receive(result, 1); //1 ms timeout
 		test("  CTCPConnection transfers data", result.toString() == "blabla");
 
+		uint64_t t1 = CTimer::getTime();
 		test("  receive times out",
 			throws<CTCPConnection::CTimeoutException>(receiveWithTimeout, this)
 			);
+		uint64_t t2 = CTimer::getTime();
+		test("  time-out time is as expected",
+			int64_t(t2-t1) >= 1200 && int64_t(t2-t1) < 1250); //give it 50ms space
 
 		//Delete in the correct order, to allow release of the port number
 		delete m_C1;
@@ -73,6 +80,6 @@ void receiveWithTimeout(void *arg)
 {
 	CTCPConnectionTest *test = (CTCPConnectionTest *)arg;
 	CBinBuffer b; b.resize(1);
-	test->m_C2->receive(b, 100);
+	test->m_C2->receive(b, 1200);
 }
 
