@@ -34,14 +34,6 @@ class CTCPConnectionTest : public CTest
 public:
 	CTCPConnectionTest() : m_Listener("4321") {}
 
-	~CTCPConnectionTest()
-	{
-		//Some time before deleting the listener, to make sure all open
-		//connections are cleaned up, so the port can be released
-		sleep(1);
-	}
-
-
 private:
 	CTCPListener m_Listener;
 
@@ -50,20 +42,23 @@ private:
 
 	virtual void run()
 	{
-		{
-			CTCPConnection c1("localhost", "4321");
-			CTCPConnection c2(m_Listener);
+		CTCPConnection *c1 = new CTCPConnection("localhost", "4321");
+		CTCPConnection *c2 = new CTCPConnection(m_Listener);
 
-			c1.send(CBinBuffer("blabla"));
+		c1->send(CBinBuffer("blabla"));
 
-			//Some time to allow the message to arrive
-			sleep(1);
+		//Some time to allow the message to arrive
+		sleep(1);
 
-			CBinBuffer result; result.resize(6);
-			c2.receive(result);
-			test("  CTCPConnection transfers data", result.toString() == "blabla");
-		}
+		CBinBuffer result; result.resize(6);
+		c2->receive(result);
+		test("  CTCPConnection transfers data", result.toString() == "blabla");
 
+		//Delete in the correct order, to allow release of the port number
+		delete c1;
+		//sleep(1);
+		delete c2;
 	}
+
 } tcpconnectionTest;
 
