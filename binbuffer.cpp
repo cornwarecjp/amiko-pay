@@ -45,6 +45,21 @@ bool CBinBuffer::operator==(const CBinBuffer &data) const
 }
 
 
+const CBinBuffer &CBinBuffer::operator+=(const CBinBuffer &data)
+{
+	insert(end(), data.begin(), data.end());
+	return *this;
+}
+
+
+const CBinBuffer CBinBuffer::operator+(const CBinBuffer &data) const
+{
+	CBinBuffer ret(*this);
+	ret += data;
+	return ret;
+}
+
+
 CString CBinBuffer::toString() const
 {
 	CString ret;

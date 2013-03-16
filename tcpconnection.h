@@ -38,6 +38,7 @@ public:
 	SIMPLEEXCEPTIONCLASS(CConnectException)
 	SIMPLEEXCEPTIONCLASS(CReceiveException)
 	SIMPLEEXCEPTIONCLASS(CSendException)
+	SIMPLEEXCEPTIONCLASS(CTimeoutException)
 
 	/*
 	hostname:
@@ -94,16 +95,22 @@ public:
 	Reference to properly formed CBinBuffer object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
+	timeout:
+	timeout >= 0: time-out in milliseconds
+	timeout < 0: infinite time-out
+
 	Function behavior:
-	Receives at most buffer.size() bytes.
+	Receives buffer.size() bytes.
 	The received bytes are written into buffer.
-	If less than buffer.size() bytes are received, buffer is resized to match
-	the number of received bytes.
+	If less than buffer.size() bytes are received before the time-out,
+	buffer is unaffected, a CTimeoutException is thrown, and the received bytes
+	(if any) will be available the next time this method is called.
 
 	Exceptions:
 	CReceiveException
+	CTimeoutException
 	*/
-	virtual void receive(CBinBuffer &buffer) const;
+	virtual void receive(CBinBuffer &buffer, int timeout);
 
 protected:
 
@@ -116,6 +123,8 @@ protected:
 
 private:
 	int m_FD;
+
+	CBinBuffer m_ReceiveBuffer;
 };
 
 #endif

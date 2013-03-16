@@ -97,17 +97,15 @@ void CAmikoComLink::sendNegotiationString(uint32_t minVersion, uint32_t maxVersi
 
 void CAmikoComLink::receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion)
 {
+	//TODO: more efficient than one-byte-at-a-time
+
 	CString receivedString;
 	CBinBuffer buf; buf.resize(1);
 	bool finished = false;
 
 	for(unsigned int i=0; i < MAX_NEGOTIATION_STRING_LENGTH; i++)
 	{
-		m_Connection.receive(buf);
-		if(buf.size() != 1)
-			throw CProtocolError(
-				"Error receiving protocol negotiation");
-
+		m_Connection.receive(buf, -1); //TODO: set time-out on receiving
 		unsigned char c = buf[0];
 
 		if(c == '\n')
@@ -170,14 +168,16 @@ void CAmikoComLink::sendMessage(const CMessage &message)
 
 CMessage *CAmikoComLink::receiveMessage()
 {
-	//TODO: non-blocking and non-truncating receive
+	//note: this is a non-blocking receive.
+
+	//TODO: store size in case sizeBuffer is received but serialized not yet.
 	CBinBuffer sizebuffer; sizebuffer.resize(4);
-	m_Connection.receive(sizebuffer);
+	m_Connection.receive(sizebuffer, 0); //immediate time-out
 	size_t pos = 0;
 	uint32_t size = sizebuffer.readUint<uint32_t>(pos);
 	//TODO: check whether size is unreasonably large
 	CBinBuffer serialized; serialized.resize(size);
-	m_Connection.receive(serialized);
+	m_Connection.receive(serialized, 0); //immediate time-out
 	return CMessage::constructMessage(serialized);
 }
 

@@ -47,11 +47,8 @@ private:
 
 		c1->send(CBinBuffer("blabla"));
 
-		//Some time to allow the message to arrive
-		sleep(1);
-
 		CBinBuffer result; result.resize(6);
-		c2->receive(result);
+		c2->receive(result, 1); //1 ms timeout
 		test("  CTCPConnection transfers data", result.toString() == "blabla");
 
 		//Delete in the correct order, to allow release of the port number

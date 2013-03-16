@@ -72,6 +72,32 @@ public:
 		{return !operator==(data);}
 
 	/*
+	data:
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Return value:
+	reference to this object
+
+	Exceptions:
+	none
+	*/
+	const CBinBuffer &operator+=(const CBinBuffer &data);
+
+	/*
+	data:
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Return value:
+	CBinBuffer object containing the concatenation of thos object and data
+
+	Exceptions:
+	none
+	*/
+	const CBinBuffer operator+(const CBinBuffer &data) const;
+
+	/*
 	this object:
 	Does not contain null characters (CHECKED)
 	

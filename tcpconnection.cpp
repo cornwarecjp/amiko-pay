@@ -130,18 +130,35 @@ void CTCPConnection::send(const CBinBuffer &buffer) const
 }
 
 
-void CTCPConnection::receive(CBinBuffer &buffer) const
+void CTCPConnection::receive(CBinBuffer &buffer, int timeout)
 {
-	ssize_t ret = read(m_FD, &(buffer[0]), buffer.size());
+	if(m_ReceiveBuffer.size() >= buffer.size())
+	{
+		buffer.assign(
+			m_ReceiveBuffer.begin(), m_ReceiveBuffer.begin()+buffer.size());
+		m_ReceiveBuffer.erase(
+			m_ReceiveBuffer.begin(), m_ReceiveBuffer.begin()+buffer.size());
+		return;
+	}
+
+	CBinBuffer newBytes; newBytes.resize(buffer.size() - m_ReceiveBuffer.size());
+	ssize_t ret = read(m_FD, &(newBytes[0]), newBytes.size());
 
 	if(ret == 0)
 		throw CReceiveException("Unexpected close of TCP connection");
 
 	if(ret < 0)
-		throw CReceiveException(CString::format("Error receiving from TCP connection; error code: %d", 256, errno));
+		throw CReceiveException(CString::format(
+			"Error receiving from TCP connection; error code: %d", 256, errno));
 
-	if(ret < ssize_t(buffer.size()))
-		buffer.resize(ret);
+	if(ret < ssize_t(newBytes.size()))
+	{
+		m_ReceiveBuffer += newBytes;
+		throw CTimeoutException("Data not available");
+	}
+
+	buffer = m_ReceiveBuffer + newBytes;
+	m_ReceiveBuffer.clear();
 }
 
 
