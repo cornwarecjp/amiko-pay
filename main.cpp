@@ -20,8 +20,6 @@
 
 #include <cstdio>
 
-#include <unistd.h>
-
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
@@ -29,26 +27,6 @@
 #include "log.h"
 
 #include "amikocomlink.h"
-#include "tcplistener.h"
-
-#include "key.h"
-#include "sha256.h"
-
-void client()
-{
-	CAmikoComLink link(CURI("amikolink://localhost"));
-
-	sleep(2);
-}
-
-
-void server()
-{
-	CTCPListener listener(AMIKO_DEFAULT_PORT);
-	CAmikoComLink link(listener);
-
-	sleep(3);
-}
 
 
 int main(int argc, char **argv)
@@ -71,16 +49,7 @@ int main(int argc, char **argv)
 
 		CAmikoComLink::registerForScheme("amikolink");
 
-		if(argc < 2) throw CException("Missing commandline argument");
-
-		CString command(argv[1]);
-
-		if(command == "client") client();
-		if(command == "server") server();
-
-		/*
-		printf("%p\n", CLink::make("amikolink://localhost"));
-		*/
+		//TODO: add application code here
 
 		ERR_free_strings();
 
