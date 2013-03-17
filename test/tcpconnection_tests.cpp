@@ -95,6 +95,18 @@ private:
 				result.toString() == "kl");
 		}
 
+		m_C1->send(CBinBuffer("mnop"));
+		{
+			CBinBuffer result; result.resize(2);
+			m_C2->receive(result, 1); //1 ms timeout
+			m_C2->unreceive(CBinBuffer("qr"));
+			m_C1->send(CBinBuffer("st"));
+			result.resize(6);
+			m_C2->receive(result, 1); //1 ms timeout
+			test("  unreceive inserts data in correct position",
+				result.toString() == "qropst");
+		}
+
 		//Delete in the correct order, to allow release of the port number
 		delete m_C1;
 

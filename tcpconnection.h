@@ -112,6 +112,21 @@ public:
 	*/
 	virtual void receive(CBinBuffer &buffer, int timeout);
 
+	/*
+	data:
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Function behavior:
+	Stores the data from the argument.
+	The next time(s) receive(..) is called, the stored data will be returned
+	before any data received from the TCP connection is returned.
+
+	Exceptions:
+	none
+	*/
+	void unreceive(const CBinBuffer &data);
+
 protected:
 
 	/*

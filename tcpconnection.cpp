@@ -200,3 +200,8 @@ void CTCPConnection::receive(CBinBuffer &buffer, int timeout)
 }
 
 
+void CTCPConnection::unreceive(const CBinBuffer &data)
+{
+	m_ReceiveBuffer.insert(m_ReceiveBuffer.begin(), data.begin(), data.end());
+}
+
