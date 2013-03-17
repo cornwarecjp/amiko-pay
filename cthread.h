@@ -151,5 +151,22 @@ private:
 	pthread_mutex_t m_mutex;
 };
 
+
+/*
+Instantiating this class registers mutexes for use by OpenSSL.
+There should always be either zero or one instance of this class.
+*/
+class COpenSSLMutexes
+{
+public:
+	COpenSSLMutexes();
+	~COpenSSLMutexes();
+
+private:
+	static void lockingCallback(int mode, int i, const char* file, int line);
+
+	static CMutex **m_mutexes;
+};
+
 #endif
 

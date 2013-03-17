@@ -25,6 +25,8 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
+#include "cthread.h"
+
 #include "test.h"
 
 std::vector<CTest *> &getTestList()
@@ -56,17 +58,7 @@ int main(int argc, char *argv[])
 	//Initialize libssl
 	SSL_load_error_strings();
 	SSL_library_init();
-
-	/*
-	TODO:
-	Multi-threaded applications must provide two callback functions to
-	OpenSSL by calling CRYPTO_set_locking_callback() and
-	CRYPTO_set_id_callback(), for all versions of OpenSSL up to and
-	including 0.9.8[abc...].
-	As of version 1.0.0, CRYPTO_set_id_callback() and associated APIs are
-	deprecated by CRYPTO_THREADID_set_callback() and friends.
-	This is described in the threads(3) manpage. 
-	*/
+	COpenSSLMutexes openSSLMutexes;
 
 	std::vector<CTest *> &testList = getTestList();
 

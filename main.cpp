@@ -25,7 +25,7 @@
 
 #include "exception.h"
 #include "log.h"
-
+#include "cthread.h"
 #include "amikocomlink.h"
 
 
@@ -35,17 +35,7 @@ int main(int argc, char **argv)
 	{
 		SSL_load_error_strings();
 		SSL_library_init();
-
-		/*
-		TODO:
-		Multi-threaded applications must provide two callback functions to
-		OpenSSL by calling CRYPTO_set_locking_callback() and
-		CRYPTO_set_id_callback(), for all versions of OpenSSL up to and
-		including 0.9.8[abc...].
-		As of version 1.0.0, CRYPTO_set_id_callback() and associated APIs are
-		deprecated by CRYPTO_THREADID_set_callback() and friends.
-		This is described in the threads(3) manpage. 
-		*/
+		COpenSSLMutexes openSSLMutexes;
 
 		CAmikoComLink::registerForScheme("amikolink");
 

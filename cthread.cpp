@@ -19,6 +19,8 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <openssl/crypto.h>
+
 #include "cthread.h"
 
 
@@ -87,7 +89,7 @@ void *CThread::run(void *arg)
 
 CMutex::CMutex()
 {
-	if(!pthread_mutex_init(&m_mutex, NULL))
+	if(pthread_mutex_init(&m_mutex, NULL) != 0)
 		throw CError("Mutex construction failed");
 }
 
@@ -101,14 +103,48 @@ CMutex::~CMutex()
 
 void CMutex::lock()
 {
-	if(!pthread_mutex_lock(&m_mutex))
+	if(pthread_mutex_lock(&m_mutex) != 0)
 		throw CError("Mutex locking failed");
 }
 
 
 void CMutex::unlock()
 {
-	if(!pthread_mutex_unlock(&m_mutex))
+	if(pthread_mutex_unlock(&m_mutex) != 0)
 		throw CError("Mutex unlocking failed");
+}
+
+
+CMutex **COpenSSLMutexes::m_mutexes = NULL;
+
+COpenSSLMutexes::COpenSSLMutexes()
+{
+	if(m_mutexes != NULL)
+		throw CException(
+			"Programming error: there are multiple instances of COpenSSLMutexes");
+
+	m_mutexes = (CMutex **)OPENSSL_malloc(CRYPTO_num_locks() * sizeof(CMutex *));
+	for(int i = 0; i < CRYPTO_num_locks(); i++)
+		m_mutexes[i] = new CMutex();
+	CRYPTO_set_locking_callback(lockingCallback);
+}
+
+
+COpenSSLMutexes::~COpenSSLMutexes()
+{
+	CRYPTO_set_locking_callback(NULL);
+	for(int i = 0; i < CRYPTO_num_locks(); i++)
+		delete m_mutexes[i];
+	OPENSSL_free(m_mutexes);
+	m_mutexes = NULL;
+}
+
+
+void COpenSSLMutexes::lockingCallback(int mode, int i, const char* file, int line)
+{
+	if (mode & CRYPTO_LOCK)
+		{m_mutexes[i]->lock();}
+	else
+		{m_mutexes[i]->unlock();}
 }
 
