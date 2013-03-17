@@ -51,11 +51,19 @@ class CAmikoComLinkTestServer : public CThread
 			{
 				usleep(50000); //50 ms
 			}
+			catch(CTCPConnection::CReceiveException &e)
+			{
+				//Connection closed or other error: stop
+				break;
+			}
 		}
 
 		delete c2;
 	}
 } amikoComLinkTestServer;
+
+
+void receiveMessage(void *arg);
 
 
 class CAmikoComLinkTest : public CTest
@@ -85,9 +93,20 @@ class CAmikoComLinkTest : public CTest
 			delete msg;
 		}
 
+		test("  Timeout exception occurs when no message is available",
+			throws<CTCPConnection::CTimeoutException>(receiveMessage, c1));
+
 		delete c1;
 
 		amikoComLinkTestServer.stop();
 	}
 } amikoComLinkTest;
+
+
+void receiveMessage(void *arg)
+{
+	CAmikoComLink *c = (CAmikoComLink *)arg;
+	CMessage *msg = c->receiveMessage();
+	delete msg;
+}
 
