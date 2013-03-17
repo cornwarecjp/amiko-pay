@@ -19,13 +19,32 @@
 */
 
 #include <cstdio>
+#include <unistd.h>
 
 #include "amikocomlink.h"
+#include "tcplistener.h"
+#include "cthread.h"
+
 #include "test.h"
 
 /*
 TODO: document and expand
 */
+
+class CAmikoComLinkTestServer : public CThread
+{
+	void threadFunc()
+	{
+		CTCPListener listener(AMIKO_DEFAULT_PORT);
+		CAmikoComLink *c2 = new CAmikoComLink(listener);
+
+		sleep(2);
+
+		delete c2;
+	}
+} amikoComLinkTestServer;
+
+
 class CAmikoComLinkTest : public CTest
 {
 	virtual const char *getName()
@@ -33,7 +52,14 @@ class CAmikoComLinkTest : public CTest
 
 	virtual void run()
 	{
-		//TODO
+		amikoComLinkTestServer.start();
+
+		sleep(1);
+
+		CAmikoComLink *c1 = new CAmikoComLink(CURI("amikolink://localhost"));
+		delete c1;
+
+		amikoComLinkTestServer.stop();
 	}
 } amikoComLinkTest;
 
