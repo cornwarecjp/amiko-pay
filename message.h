@@ -66,6 +66,7 @@ public:
 	Pointed object is deserialized from data
 
 	Exceptions:
+	CBinBuffer::CReadError
 	CSerializationError
 	*/
 	static CMessage *constructMessage(const CBinBuffer &data);

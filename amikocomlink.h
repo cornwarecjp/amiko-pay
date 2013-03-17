@@ -85,7 +85,30 @@ public:
 	*/
 	static void registerForScheme(const CString &scheme);
 
+	/*
+	message:
+	Reference to properly formed CMessage object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Exceptions:
+	CBinBuffer::CWriteError
+	CTCPConnection::CSendException
+	*/
 	virtual void sendMessage(const CMessage &message);
+
+	/*
+	Return value:
+	Valid pointer
+	Pointer ownership: passed to the caller
+	Pointed memory contains CMessage-derived object
+	Pointed object is deserialized from data
+
+	Exceptions:
+	CTCPConnection::CReceiveException
+	CTCPConnection::CTimeoutException
+	CBinBuffer::CReadError
+	CMessage::CSerializationError
+	*/
 	virtual CMessage *receiveMessage();
 
 
@@ -100,6 +123,16 @@ private:
 	void sendNegotiationString(uint32_t minVersion, uint32_t maxVersion);
 
 	/*
+	minVersion:
+	Reference to valid uint32_t (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	maxVersion:
+	Reference to valid uint32_t (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Note: method writes values into minVersion and maxVersion.
+
 	Exceptions:
 	CTCPConnection::CReceiveException
 	CProtocolError
