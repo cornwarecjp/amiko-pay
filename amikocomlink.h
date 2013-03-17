@@ -91,6 +91,7 @@ public:
 
 private:
 	CTCPConnection m_Connection;
+	uint32_t m_ProtocolVersion;
 
 	/*
 	Exceptions:

@@ -42,7 +42,7 @@ CAmikoComLink::CAmikoComLink(const CURI &uri)
 	if(minVersion < maxVersion)
 		throw CProtocolError("Protocol negotiation gave weird result");
 
-	//TODO: remember protocol version
+	m_ProtocolVersion = minVersion;
 }
 
 
@@ -67,8 +67,8 @@ CAmikoComLink::CAmikoComLink(const CTCPListener &listener)
 	}
 
 	//Choose the highest version supported by both parties
-	//TODO: remember protocol version
-	sendNegotiationString(maxVersion, maxVersion);
+	m_ProtocolVersion = maxVersion;
+	sendNegotiationString(m_ProtocolVersion, m_ProtocolVersion);
 }
 
 
@@ -169,15 +169,28 @@ void CAmikoComLink::sendMessage(const CMessage &message)
 CMessage *CAmikoComLink::receiveMessage()
 {
 	//note: this is a non-blocking receive.
-
-	//TODO: store size in case sizeBuffer is received but serialized not yet.
 	CBinBuffer sizebuffer(4);
 	m_Connection.receive(sizebuffer, 0); //immediate time-out
 	size_t pos = 0;
 	uint32_t size = sizebuffer.readUint<uint32_t>(pos);
 	//TODO: check whether size is unreasonably large
 	CBinBuffer serialized; serialized.resize(size);
-	m_Connection.receive(serialized, 0); //immediate time-out
+
+	try
+	{
+		m_Connection.receive(serialized, 0); //immediate time-out
+	}
+	catch(CTCPConnection::CTimeoutException &e)
+	{
+		/*
+		If receiving the message itself gives a timeout, then we have to put
+		back the size data, so it can be re-read the next time this method is
+		called.
+		*/
+		m_Connection.unreceive(sizebuffer);
+		throw; //re-throw timeout exception
+	}
+
 	return CMessage::constructMessage(serialized);
 }
 
