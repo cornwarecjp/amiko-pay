@@ -56,7 +56,7 @@ private:
 		m_C1->send(CBinBuffer("abcdef"));
 
 		{
-			CBinBuffer result; result.resize(6);
+			CBinBuffer result(6);
 			m_C2->receive(result, 1); //1 ms timeout
 			test("  CTCPConnection transfers data",
 				result.toString() == "abcdef");
@@ -82,14 +82,14 @@ private:
 		m_C1->send(CBinBuffer("ijkl"));
 
 		{
-			CBinBuffer result; result.resize(4);
+			CBinBuffer result(4);
 			m_C2->receive(result, 1); //1 ms timeout
 			test("  receive returns old data + first part of new data",
 				result.toString() == "ghij");
 		}
 
 		{
-			CBinBuffer result; result.resize(2);
+			CBinBuffer result(2);
 			m_C2->receive(result, 1); //1 ms timeout
 			test("  receive returns remaining old data",
 				result.toString() == "kl");
@@ -97,7 +97,7 @@ private:
 
 		m_C1->send(CBinBuffer("mnop"));
 		{
-			CBinBuffer result; result.resize(2);
+			CBinBuffer result(2);
 			m_C2->receive(result, 1); //1 ms timeout
 			m_C2->unreceive(CBinBuffer("qr"));
 			m_C1->send(CBinBuffer("st"));
@@ -123,7 +123,7 @@ private:
 void receiveWithTimeout(void *arg)
 {
 	CTCPConnectionTest *test = (CTCPConnectionTest *)arg;
-	CBinBuffer b; b.resize(4);
+	CBinBuffer b(4);
 	test->m_C2->receive(b, 1200);
 }
 

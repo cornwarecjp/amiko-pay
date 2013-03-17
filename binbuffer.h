@@ -46,6 +46,15 @@ public:
 	CBinBuffer();
 
 	/*
+	Constructed object:
+	Uninitialized buffer object of the given size
+
+	Exceptions:
+	none
+	*/
+	CBinBuffer(size_t size);
+
+	/*
 	str:
 	Reference to properly formed CString object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function

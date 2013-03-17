@@ -100,7 +100,7 @@ void CAmikoComLink::receiveNegotiationString(uint32_t &minVersion, uint32_t &max
 	//TODO: more efficient than one-byte-at-a-time
 
 	CString receivedString;
-	CBinBuffer buf; buf.resize(1);
+	CBinBuffer buf(1);
 	bool finished = false;
 
 	for(unsigned int i=0; i < MAX_NEGOTIATION_STRING_LENGTH; i++)
@@ -171,7 +171,7 @@ CMessage *CAmikoComLink::receiveMessage()
 	//note: this is a non-blocking receive.
 
 	//TODO: store size in case sizeBuffer is received but serialized not yet.
-	CBinBuffer sizebuffer; sizebuffer.resize(4);
+	CBinBuffer sizebuffer(4);
 	m_Connection.receive(sizebuffer, 0); //immediate time-out
 	size_t pos = 0;
 	uint32_t size = sizebuffer.readUint<uint32_t>(pos);

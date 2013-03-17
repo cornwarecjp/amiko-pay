@@ -31,6 +31,11 @@ CBinBuffer::CBinBuffer()
 }
 
 
+CBinBuffer::CBinBuffer(size_t size) : std::vector<unsigned char>(size)
+{
+}
+
+
 CBinBuffer::CBinBuffer(const CString &str)
 {
 	resize(str.size());
