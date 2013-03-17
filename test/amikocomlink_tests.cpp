@@ -24,6 +24,7 @@
 #include "amikocomlink.h"
 #include "tcplistener.h"
 #include "cthread.h"
+#include "messages.h"
 
 #include "test.h"
 
@@ -38,8 +39,19 @@ class CAmikoComLinkTestServer : public CThread
 		CTCPListener listener(AMIKO_DEFAULT_PORT);
 		CAmikoComLink *c2 = new CAmikoComLink(listener);
 
-		//100 ms
-		usleep(100000);
+		//Continue echoeing until stop() is called
+		while(!m_terminate)
+		{
+			try
+			{
+				CMessage *msg = c2->receiveMessage();
+				c2->sendMessage(*msg);
+			}
+			catch(CTCPConnection::CTimeoutException &e)
+			{
+				usleep(50000); //50 ms
+			}
+		}
 
 		delete c2;
 	}
@@ -55,10 +67,24 @@ class CAmikoComLinkTest : public CTest
 	{
 		amikoComLinkTestServer.start();
 
-		//50 ms
-		usleep(50000);
+		//Wait some time to make "sure" the server is initialized
+		usleep(50000); //50 ms
 
 		CAmikoComLink *c1 = new CAmikoComLink(CURI("amikolink://localhost"));
+
+		{
+			CNackMessage nack1; nack1.m_reason = "test";
+			c1->sendMessage(nack1);
+			usleep(100000); //100 ms
+			CMessage *msg = c1->receiveMessage();
+			test("  Message transmission preserves type",
+				msg->getTypeID() == CMessage::eNack);
+			CNackMessage *nack2 = (CNackMessage *)msg;
+			test("  Message transmission preserves contents",
+				nack2->m_reason == nack1.m_reason);
+			delete msg;
+		}
+
 		delete c1;
 
 		amikoComLinkTestServer.stop();
