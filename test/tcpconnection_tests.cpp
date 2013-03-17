@@ -36,11 +36,6 @@ TODO: document and expand
 */
 class CTCPConnectionTest : public CTest
 {
-public:
-	CTCPConnection *m_C1;
-	CTCPConnection *m_C2;
-
-private:
 	virtual const char *getName()
 		{return "tcpconnection";}
 
@@ -48,14 +43,14 @@ private:
 	{
 		CTCPListener *listener = new CTCPListener("4321");
 
-		m_C1 = new CTCPConnection("localhost", "4321");
-		m_C2 = new CTCPConnection(*listener);
+		CTCPConnection *c1 = new CTCPConnection("localhost", "4321");
+		CTCPConnection *c2 = new CTCPConnection(*listener);
 
-		m_C1->send(CBinBuffer("abcdef"));
+		c1->send(CBinBuffer("abcdef"));
 
 		{
 			CBinBuffer result(6);
-			m_C2->receive(result, 1); //1 ms timeout
+			c2->receive(result, 1); //1 ms timeout
 			test("  CTCPConnection transfers data",
 				result.toString() == "abcdef");
 		}
@@ -63,7 +58,7 @@ private:
 		{
 			uint64_t t1 = CTimer::getTime();
 			test("  receive times out when there is no data",
-				throws<CTCPConnection::CTimeoutException>(receiveWithTimeout, this)
+				throws<CTCPConnection::CTimeoutException>(receiveWithTimeout, c2)
 				);
 			uint64_t t2 = CTimer::getTime();
 			//give it 50ms space:
@@ -71,48 +66,48 @@ private:
 				int64_t(t2-t1) >= 1200 && int64_t(t2-t1) < 1250);
 		}
 
-		m_C1->send(CBinBuffer("gh"));
+		c1->send(CBinBuffer("gh"));
 
 		test("  receive times out when there is partial data",
-			throws<CTCPConnection::CTimeoutException>(receiveWithTimeout, this)
+			throws<CTCPConnection::CTimeoutException>(receiveWithTimeout, c2)
 			);
 
-		m_C1->send(CBinBuffer("ijkl"));
+		c1->send(CBinBuffer("ijkl"));
 
 		{
 			CBinBuffer result(4);
-			m_C2->receive(result, 1); //1 ms timeout
+			c2->receive(result, 1); //1 ms timeout
 			test("  receive returns old data + first part of new data",
 				result.toString() == "ghij");
 		}
 
 		{
 			CBinBuffer result(2);
-			m_C2->receive(result, 1); //1 ms timeout
+			c2->receive(result, 1); //1 ms timeout
 			test("  receive returns remaining old data",
 				result.toString() == "kl");
 		}
 
-		m_C1->send(CBinBuffer("mnop"));
+		c1->send(CBinBuffer("mnop"));
 		{
 			CBinBuffer result(2);
-			m_C2->receive(result, 1); //1 ms timeout
-			m_C2->unreceive(CBinBuffer("qr"));
-			m_C1->send(CBinBuffer("st"));
+			c2->receive(result, 1); //1 ms timeout
+			c2->unreceive(CBinBuffer("qr"));
+			c1->send(CBinBuffer("st"));
 			result.resize(6);
-			m_C2->receive(result, 1); //1 ms timeout
+			c2->receive(result, 1); //1 ms timeout
 			test("  unreceive inserts data in correct position",
 				result.toString() == "qropst");
 		}
 
 		//Delete in the correct order, to allow release of the port number
-		delete m_C1;
+		delete c1;
 
 		test("  receive gives exception when peer closes",
-			throws<CTCPConnection::CReceiveException>(receiveWithTimeout, this)
+			throws<CTCPConnection::CReceiveException>(receiveWithTimeout, c2)
 			);
 
-		delete m_C2;
+		delete c2;
 
 		delete listener;
 	}
@@ -122,8 +117,8 @@ private:
 
 void receiveWithTimeout(void *arg)
 {
-	CTCPConnectionTest *test = (CTCPConnectionTest *)arg;
+	CTCPConnection *c = (CTCPConnection *)arg;
 	CBinBuffer b(4);
-	test->m_C2->receive(b, 1200);
+	c->receive(b, 1200);
 }
 
