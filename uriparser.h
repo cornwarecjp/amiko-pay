@@ -59,6 +59,18 @@ public:
 
 	/*
 	Return value:
+	Reference to a correctly formed CString object
+	Reference lifetime: equal to lifetime of this object
+	ASCII encoded (TODO: support unicode)
+
+	Exceptions:
+	none
+	*/
+	inline const CString &getURI() const
+		{return m_URIText;}
+
+	/*
+	Return value:
 	ASCII encoded (TODO: support unicode)
 
 	Exceptions:

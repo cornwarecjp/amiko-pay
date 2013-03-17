@@ -21,6 +21,8 @@
 #include <cstdio>
 #include <algorithm>
 
+#include "log.h"
+
 #include "amikocomlink.h"
 
 //With 32-bit protocol version numbers, we'll never exceed this:
@@ -43,6 +45,8 @@ CAmikoComLink::CAmikoComLink(const CURI &uri)
 		throw CProtocolError("Protocol negotiation gave weird result");
 
 	m_ProtocolVersion = minVersion;
+	log(CString::format("Connected as client to %s with protocol version %d\n",
+		1024, uri.getURI().c_str(), m_ProtocolVersion));
 }
 
 
@@ -69,6 +73,9 @@ CAmikoComLink::CAmikoComLink(const CTCPListener &listener)
 	//Choose the highest version supported by both parties
 	m_ProtocolVersion = maxVersion;
 	sendNegotiationString(m_ProtocolVersion, m_ProtocolVersion);
+
+	log(CString::format("Connected as server with protocol version %d\n",
+		1024, m_ProtocolVersion));
 }
 
 
