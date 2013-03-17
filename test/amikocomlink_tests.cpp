@@ -38,7 +38,8 @@ class CAmikoComLinkTestServer : public CThread
 		CTCPListener listener(AMIKO_DEFAULT_PORT);
 		CAmikoComLink *c2 = new CAmikoComLink(listener);
 
-		sleep(2);
+		//100 ms
+		usleep(100000);
 
 		delete c2;
 	}
@@ -54,7 +55,8 @@ class CAmikoComLinkTest : public CTest
 	{
 		amikoComLinkTestServer.start();
 
-		sleep(1);
+		//50 ms
+		usleep(50000);
 
 		CAmikoComLink *c1 = new CAmikoComLink(CURI("amikolink://localhost"));
 		delete c1;
