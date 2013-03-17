@@ -26,6 +26,7 @@ CThread::CThread()
 {
 	m_terminate = false;
 	m_tid = 0;
+	m_isRunning = false;
 }
 
 
@@ -37,29 +38,41 @@ CThread::~CThread()
 
 void CThread::start()
 {
-	if (m_tid != 0)
+	if(m_isRunning)
 		throw CAlreadyRunningError("Attempt to start a thread that is already running");
 
+	m_isRunning = true;
 	m_terminate = false;
-	if (pthread_create(&m_tid, NULL, &CThread::run, (void *) this) != 0)
+	if(pthread_create(&m_tid, NULL, &CThread::run, (void *) this) != 0)
+	{
+		m_isRunning = false;
 		throw CStartFailedError("Failed to start the thread");
+	}
 }
 
 
 void CThread::stop()
 {
-	if (m_tid == 0)
-		throw CNotRunningError("Attempt to stop a thread that is not running");
+	/*
+	Since m_tid is private and is only set to zero when the thread is stopped,
+	it is safe to do nothing if m_tid is already zero.
+
+	In fact, when m_tid is zero, it is necessary to do nothing, since there is
+	no thread with that ID.
+	*/
+	if(m_tid == 0) return;
 
 	m_terminate = true;
-	pthread_join(m_tid, NULL);
+	if(pthread_join(m_tid, NULL) != 0)
+		throw CStopFailedError("Failed to stop the thread");
 	m_tid = 0;
+	m_isRunning = false;
 }
 
 
 bool CThread::isRunning()
 {
-	return m_tid != 0;
+	return m_isRunning;
 }
 
 
@@ -67,7 +80,7 @@ void *CThread::run(void *arg)
 {
 	CThread *parent = (CThread *)arg;
 	parent->threadFunc();
-	parent->m_tid = 0;
+	parent->m_isRunning = false;
 	return NULL;
 }
 

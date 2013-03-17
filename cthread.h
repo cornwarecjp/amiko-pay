@@ -31,8 +31,8 @@ class CThread
 {
 public:
 	SIMPLEEXCEPTIONCLASS(CAlreadyRunningError)
-	SIMPLEEXCEPTIONCLASS(CNotRunningError)
 	SIMPLEEXCEPTIONCLASS(CStartFailedError)
+	SIMPLEEXCEPTIONCLASS(CStopFailedError)
 
 	/*
 	Constructed object:
@@ -59,13 +59,10 @@ public:
 	void start();
 
 	/*
-	this object:
-	running (CHECKED)
-
 	Note: waits until thread stops
 
 	Exceptions:
-	CNotRunningError
+	CStopFailedError
 	*/
 	void stop();
 
@@ -110,6 +107,7 @@ private:
 	static void *run(void *arg);
 
 	pthread_t m_tid;
+	bool m_isRunning;
 };
 
 
