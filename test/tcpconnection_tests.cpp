@@ -37,21 +37,19 @@ TODO: document and expand
 class CTCPConnectionTest : public CTest
 {
 public:
-	CTCPConnectionTest() : m_Listener("4321") {}
-
 	CTCPConnection *m_C1;
 	CTCPConnection *m_C2;
 
 private:
-	CTCPListener m_Listener;
-
 	virtual const char *getName()
 		{return "tcpconnection";}
 
 	virtual void run()
 	{
+		CTCPListener *listener = new CTCPListener("4321");
+
 		m_C1 = new CTCPConnection("localhost", "4321");
-		m_C2 = new CTCPConnection(m_Listener);
+		m_C2 = new CTCPConnection(*listener);
 
 		m_C1->send(CBinBuffer("abcdef"));
 
@@ -115,6 +113,8 @@ private:
 			);
 
 		delete m_C2;
+
+		delete listener;
 	}
 
 } tcpconnectionTest;
