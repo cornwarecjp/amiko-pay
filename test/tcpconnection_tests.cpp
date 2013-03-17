@@ -53,23 +53,55 @@ private:
 		m_C1 = new CTCPConnection("localhost", "4321");
 		m_C2 = new CTCPConnection(m_Listener);
 
-		m_C1->send(CBinBuffer("blabla"));
+		m_C1->send(CBinBuffer("abcdef"));
 
-		CBinBuffer result; result.resize(6);
-		m_C2->receive(result, 1); //1 ms timeout
-		test("  CTCPConnection transfers data", result.toString() == "blabla");
+		{
+			CBinBuffer result; result.resize(6);
+			m_C2->receive(result, 1); //1 ms timeout
+			test("  CTCPConnection transfers data",
+				result.toString() == "abcdef");
+		}
 
-		uint64_t t1 = CTimer::getTime();
-		test("  receive times out",
+		{
+			uint64_t t1 = CTimer::getTime();
+			test("  receive times out when there is no data",
+				throws<CTCPConnection::CTimeoutException>(receiveWithTimeout, this)
+				);
+			uint64_t t2 = CTimer::getTime();
+			//give it 50ms space:
+			test("  time-out time is as expected",
+				int64_t(t2-t1) >= 1200 && int64_t(t2-t1) < 1250);
+		}
+
+		m_C1->send(CBinBuffer("gh"));
+
+		test("  receive times out when there is partial data",
 			throws<CTCPConnection::CTimeoutException>(receiveWithTimeout, this)
 			);
-		uint64_t t2 = CTimer::getTime();
-		test("  time-out time is as expected",
-			int64_t(t2-t1) >= 1200 && int64_t(t2-t1) < 1250); //give it 50ms space
+
+		m_C1->send(CBinBuffer("ijkl"));
+
+		{
+			CBinBuffer result; result.resize(4);
+			m_C2->receive(result, 1); //1 ms timeout
+			test("  receive returns old data + first part of new data",
+				result.toString() == "ghij");
+		}
+
+		{
+			CBinBuffer result; result.resize(2);
+			m_C2->receive(result, 1); //1 ms timeout
+			test("  receive returns remaining old data",
+				result.toString() == "kl");
+		}
 
 		//Delete in the correct order, to allow release of the port number
 		delete m_C1;
-		//sleep(1);
+
+		test("  receive gives exception when peer closes",
+			throws<CTCPConnection::CReceiveException>(receiveWithTimeout, this)
+			);
+
 		delete m_C2;
 	}
 
@@ -79,7 +111,7 @@ private:
 void receiveWithTimeout(void *arg)
 {
 	CTCPConnectionTest *test = (CTCPConnectionTest *)arg;
-	CBinBuffer b; b.resize(1);
+	CBinBuffer b; b.resize(4);
 	test->m_C2->receive(b, 1200);
 }
 
