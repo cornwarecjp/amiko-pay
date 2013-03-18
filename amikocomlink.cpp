@@ -38,11 +38,14 @@ CAmikoComLink::CAmikoComLink(const CURI &uri)
 	uint32_t minVersion, maxVersion;
 	receiveNegotiationString(minVersion, maxVersion);
 
-	if(minVersion > maxVersion)
-		throw CVersionNegotiationFailure("No matching protocol version");
+	if(minVersion < AMIKO_MIN_PROTOCOL_VERSION || maxVersion > AMIKO_MAX_PROTOCOL_VERSION)
+		throw CProtocolError("Peer returned illegal protocol negotiation result");
 
 	if(minVersion < maxVersion)
 		throw CProtocolError("Protocol negotiation gave weird result");
+
+	if(minVersion > maxVersion)
+		throw CVersionNegotiationFailure("No matching protocol version");
 
 	m_ProtocolVersion = minVersion;
 	log(CString::format("Connected as client to %s with protocol version %d\n",
@@ -57,6 +60,9 @@ CAmikoComLink::CAmikoComLink(const CTCPListener &listener)
 
 	uint32_t minVersion, maxVersion;
 	receiveNegotiationString(minVersion, maxVersion);
+
+	if(minVersion > maxVersion)
+		throw CProtocolError("Protocol negotiation gave weird result");
 
 	//Version matching
 	minVersion = std::max<uint32_t>(minVersion, AMIKO_MIN_PROTOCOL_VERSION);
