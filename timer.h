@@ -35,6 +35,15 @@ public:
 	none (TODO)
 	*/
 	static uint64_t getTime();
+
+	/*
+	microseconds:
+	number of milliseconds to sleep
+
+	Exceptions:
+	none
+	*/
+	static void sleep(unsigned int milliseconds);
 };
 
 #endif

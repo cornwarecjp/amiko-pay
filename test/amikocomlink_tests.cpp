@@ -19,12 +19,12 @@
 */
 
 #include <cstdio>
-#include <unistd.h>
 
 #include "amikocomlink.h"
 #include "tcplistener.h"
 #include "cthread.h"
 #include "messages.h"
+#include "timer.h"
 
 #include "test.h"
 
@@ -49,7 +49,7 @@ class CAmikoComLinkTestServer : public CThread
 			}
 			catch(CTCPConnection::CTimeoutException &e)
 			{
-				usleep(50000); //50 ms
+				CTimer::sleep(50); //50 ms
 			}
 			catch(CTCPConnection::CReceiveException &e)
 			{
@@ -76,14 +76,14 @@ class CAmikoComLinkTest : public CTest
 		amikoComLinkTestServer.start();
 
 		//Wait some time to make "sure" the server is initialized
-		usleep(50000); //50 ms
+		CTimer::sleep(50); //50 ms
 
 		CAmikoComLink *c1 = new CAmikoComLink(CURI("amikolink://localhost"));
 
 		{
 			CNackMessage nack1; nack1.m_reason = "test";
 			c1->sendMessage(nack1);
-			usleep(100000); //100 ms
+			CTimer::sleep(100); //100 ms
 			CMessage *msg = c1->receiveMessage();
 			test("  Message transmission preserves type",
 				msg->getTypeID() == CMessage::eNack);

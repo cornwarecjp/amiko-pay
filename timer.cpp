@@ -19,6 +19,7 @@
 */
 
 #include <time.h>
+#include <unistd.h>
 
 #include "timer.h"
 
@@ -31,4 +32,11 @@ uint64_t CTimer::getTime()
 	clock_gettime(CLOCK_REALTIME, &t);
 	return uint64_t(t.tv_sec)*1000 + t.tv_nsec/1000000;
 }
+
+
+void CTimer::sleep(unsigned int milliseconds)
+{
+	usleep(milliseconds*1000);
+}
+
 
