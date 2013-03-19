@@ -169,7 +169,7 @@ void CAmikoComLink::receiveNegotiationString(uint32_t &minVersion, uint32_t &max
 }
 
 
-void CAmikoComLink::sendMessage(const CMessage &message)
+void CAmikoComLink::sendMessageDirect(const CMessage &message)
 {
 	//TODO: check whether everything fits in the integer data types
 	CBinBuffer serialized = message.serialize();
@@ -179,7 +179,7 @@ void CAmikoComLink::sendMessage(const CMessage &message)
 	m_Connection.send(serialized);
 }
 
-CMessage *CAmikoComLink::receiveMessage()
+CMessage *CAmikoComLink::receiveMessageDirect()
 {
 	//note: this is a non-blocking receive.
 	CBinBuffer sizebuffer(4);

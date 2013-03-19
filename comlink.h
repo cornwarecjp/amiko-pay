@@ -28,17 +28,21 @@
 #include "uriparser.h"
 #include "message.h"
 
+#include "cthread.h"
+
 /*
 Base class and factory infrastructure for communication link objects
 */
 
-class CComLink
+class CComLink : public CThread
 {
 public:
 	SIMPLEEXCEPTIONCLASS(CConstructionFailed)
 
-	virtual void sendMessage(const CMessage &message)=0;
-	virtual CMessage *receiveMessage()=0;
+	//void sendMessage(const CMessage &message);
+	//CMessage *receiveMessage();
+
+	void threadFunc();
 
 	/*
 	uri:
@@ -72,6 +76,11 @@ public:
 
 protected:
 
+	/*
+	TODO
+	*/
+	virtual void sendMessageDirect(const CMessage &message)=0;
+	virtual CMessage *receiveMessageDirect()=0;
 
 	/*
 	Handler function for a communication link URI scheme.

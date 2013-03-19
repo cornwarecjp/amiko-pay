@@ -20,6 +20,12 @@
 
 #include "comlink.h"
 
+
+void CComLink::threadFunc()
+{
+}
+
+
 std::map<CString, CComLink::t_schemeHandler> CComLink::m_schemeHandlers;
 
 void CComLink::registerSchemeHandler(const CString &scheme, CComLink::t_schemeHandler handler)

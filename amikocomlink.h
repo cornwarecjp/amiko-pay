@@ -94,7 +94,7 @@ public:
 	CBinBuffer::CWriteError
 	CTCPConnection::CSendException
 	*/
-	virtual void sendMessage(const CMessage &message);
+	virtual void sendMessageDirect(const CMessage &message);
 
 	/*
 	Return value:
@@ -109,7 +109,7 @@ public:
 	CBinBuffer::CReadError
 	CMessage::CSerializationError
 	*/
-	virtual CMessage *receiveMessage();
+	virtual CMessage *receiveMessageDirect();
 
 
 private:
