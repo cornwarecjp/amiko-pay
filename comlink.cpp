@@ -21,8 +21,20 @@
 #include "comlink.h"
 
 
+void CComLink::sendMessage(const CMessage &message)
+{
+	m_SendQueue.lock();
+	m_SendQueue.push(message.serialize());
+	m_SendQueue.unlock();
+}
+
+
 void CComLink::threadFunc()
 {
+	while(!m_terminate)
+	{
+		//TODO
+	}
 }
 
 

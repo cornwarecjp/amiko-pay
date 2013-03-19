@@ -22,6 +22,7 @@
 #define COMLINK_H
 
 #include <map>
+#include <queue>
 
 #include "exception.h"
 #include "cstring.h"
@@ -39,11 +40,49 @@ class CComLink : public CThread
 public:
 	SIMPLEEXCEPTIONCLASS(CConstructionFailed)
 
-	//void sendMessage(const CMessage &message);
-	//CMessage *receiveMessage();
+	/*
+	message:
+	Reference to properly formed CMessage object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Exceptions:
+	TODO
+	*/
+	void sendMessage(const CMessage &message);
 
 	void threadFunc();
 
+
+protected:
+	/*
+	message:
+	Reference to properly formed CMessage object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Exceptions:
+	TODO
+	*/
+	virtual void sendMessageDirect(const CMessage &message)=0;
+
+	/*
+	Return value:
+	Valid pointer
+	Pointer ownership: passed to the caller
+	Pointed memory contains CMessage-derived object
+	Pointed object is deserialized from data
+
+	Exceptions:
+	TODO
+	*/
+	virtual CMessage *receiveMessageDirect()=0;
+
+
+private:
+
+	CCriticalSection< std::queue<CBinBuffer> > m_SendQueue;
+
+
+public:
 	/*
 	uri:
 	Reference to a properly formed CURI object (NOT CHECKED)
@@ -75,12 +114,6 @@ public:
 
 
 protected:
-
-	/*
-	TODO
-	*/
-	virtual void sendMessageDirect(const CMessage &message)=0;
-	virtual CMessage *receiveMessageDirect()=0;
 
 	/*
 	Handler function for a communication link URI scheme.
