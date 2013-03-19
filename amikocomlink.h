@@ -91,35 +91,30 @@ public:
 
 	/*
 	message:
-	Reference to properly formed CMessage object (NOT CHECKED)
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
 	This object:
 	Initialized (NOT CHECKED)
 
 	Exceptions:
-	CBinBuffer::CWriteError
 	CTCPConnection::CSendException
 	*/
-	virtual void sendMessageDirect(const CMessage &message);
+	virtual void sendMessageDirect(const CBinBuffer &message);
 
 	/*
 	This object:
 	Initialized (NOT CHECKED)
 
 	Return value:
-	Valid pointer
-	Pointer ownership: passed to the caller
-	Pointed memory contains CMessage-derived object
-	Pointed object is deserialized from data
+	CBinBuffer object
 
 	Exceptions:
 	CTCPConnection::CReceiveException
 	CTCPConnection::CTimeoutException
 	CBinBuffer::CReadError
-	CMessage::CSerializationError
 	*/
-	virtual CMessage *receiveMessageDirect();
+	virtual CBinBuffer receiveMessageDirect();
 
 
 private:

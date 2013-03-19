@@ -61,25 +61,22 @@ protected:
 
 	/*
 	message:
-	Reference to properly formed CMessage object (NOT CHECKED)
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
 	Exceptions:
 	TODO
 	*/
-	virtual void sendMessageDirect(const CMessage &message)=0;
+	virtual void sendMessageDirect(const CBinBuffer &message)=0;
 
 	/*
 	Return value:
-	Valid pointer
-	Pointer ownership: passed to the caller
-	Pointed memory contains CMessage-derived object
-	Pointed object is deserialized from data
+	CBinBuffer object
 
 	Exceptions:
 	TODO
 	*/
-	virtual CMessage *receiveMessageDirect()=0;
+	virtual CBinBuffer receiveMessageDirect()=0;
 
 
 private:

@@ -180,29 +180,27 @@ void CAmikoComLink::receiveNegotiationString(uint32_t &minVersion, uint32_t &max
 }
 
 
-void CAmikoComLink::sendMessageDirect(const CMessage &message)
+void CAmikoComLink::sendMessageDirect(const CBinBuffer &message)
 {
 	//TODO: check whether everything fits in the integer data types
-	CBinBuffer serialized = message.serialize();
 	CBinBuffer sizebuffer;
-	sizebuffer.appendUint<uint32_t>(serialized.size());
+	sizebuffer.appendUint<uint32_t>(message.size());
 	m_Connection.send(sizebuffer);
-	m_Connection.send(serialized);
+	m_Connection.send(message);
 }
 
-CMessage *CAmikoComLink::receiveMessageDirect()
+CBinBuffer CAmikoComLink::receiveMessageDirect()
 {
-	//note: this is a non-blocking receive.
 	CBinBuffer sizebuffer(4);
 	m_Connection.receive(sizebuffer, 0); //immediate time-out
 	size_t pos = 0;
 	uint32_t size = sizebuffer.readUint<uint32_t>(pos);
 	//TODO: check whether size is unreasonably large
-	CBinBuffer serialized; serialized.resize(size);
+	CBinBuffer ret; ret.resize(size);
 
 	try
 	{
-		m_Connection.receive(serialized, 0); //immediate time-out
+		m_Connection.receive(ret, 0); //immediate time-out
 	}
 	catch(CTCPConnection::CTimeoutException &e)
 	{
@@ -215,6 +213,6 @@ CMessage *CAmikoComLink::receiveMessageDirect()
 		throw; //re-throw timeout exception
 	}
 
-	return CMessage::constructMessage(serialized);
+	return ret;
 }
 

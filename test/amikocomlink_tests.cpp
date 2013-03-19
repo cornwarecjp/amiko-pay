@@ -45,8 +45,8 @@ class CAmikoComLinkTestServer : public CThread
 		{
 			try
 			{
-				CMessage *msg = c2->receiveMessageDirect();
-				c2->sendMessageDirect(*msg);
+				CBinBuffer msg = c2->receiveMessageDirect();
+				c2->sendMessageDirect(msg);
 			}
 			catch(CTCPConnection::CTimeoutException &e)
 			{
@@ -83,16 +83,11 @@ class CAmikoComLinkTest : public CTest
 		c1->initialize();
 
 		{
-			CNackMessage nack1; nack1.m_reason = "test";
-			c1->sendMessageDirect(nack1);
+			c1->sendMessageDirect(CBinBuffer("test"));
 			CTimer::sleep(100); //100 ms
-			CMessage *msg = c1->receiveMessageDirect();
-			test("  Message transmission preserves type",
-				msg->getTypeID() == CMessage::eNack);
-			CNackMessage *nack2 = (CNackMessage *)msg;
+			CBinBuffer msg = c1->receiveMessageDirect();
 			test("  Message transmission preserves contents",
-				nack2->m_reason == nack1.m_reason);
-			delete msg;
+				msg.toString() == "test");
 		}
 
 		test("  Timeout exception occurs when no message is available",
@@ -108,7 +103,6 @@ class CAmikoComLinkTest : public CTest
 void receiveMessage(void *arg)
 {
 	CAmikoComLink *c = (CAmikoComLink *)arg;
-	CMessage *msg = c->receiveMessageDirect();
-	delete msg;
+	CBinBuffer msg = c->receiveMessageDirect();
 }
 
