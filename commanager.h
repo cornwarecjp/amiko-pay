@@ -23,7 +23,6 @@
 
 #include <vector>
 
-#include "tcplistener.h"
 #include "comlink.h"
 
 #include "cthread.h"
@@ -46,12 +45,23 @@ public:
 
 	~CComManager();
 
+	/*
+	link:
+	Valid pointer (NOT CHECKED)
+	Pointed memory contains CComLink object (NOT CHECKED)
+	Pointer ownership: PASSED TO THIS OBJECT
+
+	Exceptions:
+	CMutex::CError
+	*/
+	void addComLink(CComLink *link);
+
 
 	void threadFunc();
 
 private:
 
-	std::vector<CComLink *> m_ComLinks;
+	CCriticalSection< std::vector<CComLink *> > m_ComLinks;
 };
 
 #endif
