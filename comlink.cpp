@@ -32,17 +32,19 @@ void CComLink::sendMessage(const CMessage &message)
 
 void CComLink::threadFunc()
 {
+	//TODO: catch all exceptions and handle them
+
 	initialize();
 
 	while(!m_terminate)
 	{
 		//TODO: receive data
 
-		m_HasNewSendData.wait(); //TODO: timeout, so we'll also receive data
+		m_HasNewSendData.waitWithTimeout(10); //10 ms
 		m_SendQueue.lock();
 		while(!m_SendQueue.empty())
 		{
-			//sendMessageDirect(m_SendQueue.front()); //TODO
+			sendMessageDirect(m_SendQueue.front());
 			m_SendQueue.pop();
 		}
 		m_SendQueue.unlock();
