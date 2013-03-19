@@ -115,6 +115,43 @@ void CMutex::unlock()
 }
 
 
+CSemaphore::CSemaphore()
+{
+	if(sem_init(&m_semaphore, 0, 0) != 0)
+		throw CError("Semaphore construction failed");
+}
+
+
+CSemaphore::~CSemaphore()
+{
+	//TODO: how to deal failure here? We cannot throw exceptions in a destructor.
+	sem_destroy(&m_semaphore);
+}
+
+
+void CSemaphore::wait()
+{
+	if(sem_wait(&m_semaphore) != 0)
+		throw CError("Semaphore waiting failed");
+}
+
+
+void CSemaphore::post()
+{
+	if(sem_post(&m_semaphore) != 0)
+		throw CError("Semaphore posting failed");
+}
+
+
+int CSemaphore::getValue()
+{
+	int ret = 0;
+	if(sem_getvalue(&m_semaphore, &ret) != 0)
+		throw CError("Semaphore getValue failed");
+	return ret;
+}
+
+
 CMutex **COpenSSLMutexes::m_mutexes = NULL;
 
 COpenSSLMutexes::COpenSSLMutexes()

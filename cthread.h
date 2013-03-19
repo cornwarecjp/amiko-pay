@@ -23,6 +23,7 @@
 #define CTHREAD_H
 
 #include <pthread.h>
+#include <semaphore.h>
 
 #include "exception.h"
 
@@ -149,6 +150,53 @@ public:
 
 private:
 	pthread_mutex_t m_mutex;
+};
+
+
+class CSemaphore
+{
+public:
+	SIMPLEEXCEPTIONCLASS(CError)
+
+	/*
+	Constructed object:
+	An semaphore object with value 0
+
+	Exceptions:
+	CError
+	*/
+	CSemaphore();
+
+	~CSemaphore();
+
+	/*
+	Waits until the value of the semaphore is greater than 0,
+	then decrements the value.
+
+	Exceptions:
+	CError
+	*/
+	void wait();
+
+	/*
+	Increments the value of the semaphore
+
+	Exceptions:
+	CError
+	*/
+	void post();
+
+	/*
+	Return value:
+	The value of the semaphore
+	
+	Exceptions:
+	CError
+	*/
+	int getValue();
+
+private:
+	sem_t m_semaphore;
 };
 
 
