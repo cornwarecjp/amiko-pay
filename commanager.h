@@ -51,7 +51,6 @@ public:
 
 private:
 
-	std::vector<CTCPListener *> m_Listeners;
 	std::vector<CComLink *> m_ComLinks;
 };
 

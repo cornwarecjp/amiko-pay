@@ -18,6 +18,8 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "timer.h"
+
 #include "commanager.h"
 
 
@@ -33,6 +35,10 @@ CComManager::~CComManager()
 
 void CComManager::threadFunc()
 {
+	while(!m_terminate)
+	{
+		CTimer::sleep(10);
+	}
 }
 
 
