@@ -153,6 +153,10 @@ private:
 };
 
 
+template<class T> class CCriticalSection : public T, public CMutex
+{};
+
+
 class CSemaphore
 {
 public:
