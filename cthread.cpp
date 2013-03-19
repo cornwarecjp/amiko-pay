@@ -19,7 +19,11 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <errno.h>
+
 #include <openssl/crypto.h>
+
+#include "timer.h"
 
 #include "cthread.h"
 
@@ -133,6 +137,21 @@ void CSemaphore::wait()
 {
 	if(sem_wait(&m_semaphore) != 0)
 		throw CError("Semaphore waiting failed");
+}
+
+
+void CSemaphore::waitWithTimeout(unsigned int milliseconds)
+{
+	uint64_t endTime = CTimer::getTime() + milliseconds;
+	timespec ts;
+	ts.tv_sec = endTime / 1000;
+	ts.tv_nsec = (endTime % 1000) * 1000000;
+
+	if(sem_timedwait(&m_semaphore, &ts) != 0)
+		if(errno == ETIMEDOUT)
+			{throw CTimeoutError("waitWithTimeout timeout occurred");}
+		else
+			{throw CError("waitWithTimeout: semaphore waiting failed");}
 }
 
 

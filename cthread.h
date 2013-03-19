@@ -161,6 +161,7 @@ class CSemaphore
 {
 public:
 	SIMPLEEXCEPTIONCLASS(CError)
+	SIMPLEEXCEPTIONCLASS(CTimeoutError)
 
 	/*
 	Constructed object:
@@ -181,6 +182,16 @@ public:
 	CError
 	*/
 	void wait();
+
+	/*
+	Waits until the value of the semaphore is greater than 0,
+	then decrements the value.
+
+	Exceptions:
+	CError
+	CTimeout
+	*/
+	void waitWithTimeout(unsigned int milliseconds);
 
 	/*
 	Increments the value of the semaphore
