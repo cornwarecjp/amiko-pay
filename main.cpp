@@ -19,6 +19,7 @@
 */
 
 #include <cstdio>
+#include <unistd.h>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -26,8 +27,20 @@
 #include "exception.h"
 #include "log.h"
 #include "cthread.h"
-#include "amikocomlink.h"
 
+#include "amikocomlink.h"
+#include "commanager.h"
+
+void app()
+{
+	CComManager comManager;
+
+	comManager.start();
+
+	sleep(20);
+
+	comManager.stop();
+}
 
 int main(int argc, char **argv)
 {
@@ -39,7 +52,7 @@ int main(int argc, char **argv)
 
 		CAmikoComLink::registerForScheme("amikolink");
 
-		//TODO: add application code here
+		app();
 
 		ERR_free_strings();
 
