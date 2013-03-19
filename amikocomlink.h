@@ -46,14 +46,10 @@ public:
 	Reference lifetime: at least until the end of this function
 
 	Constructed object:
-	Connected link object
+	Connected, uninitialized link object
 
 	Exceptions:
 	CTCPConnection::CConnectException
-	CTCPConnection::CSendException
-	CTCPConnection::CReceiveException
-	CProtocolError
-	CVersionNegotiationFailure
 	*/
 	CAmikoComLink(const CURI &uri);
 
@@ -64,14 +60,10 @@ public:
 	TODO: lifetime at least as long as lifetime of this object??
 
 	Constructed object:
-	Connected link object
+	Connected, uninitialized link object
 
 	Exceptions:
 	CTCPConnection::CConnectException
-	CTCPConnection::CSendException
-	CTCPConnection::CReceiveException
-	CProtocolError
-	CVersionNegotiationFailure
 	*/
 	CAmikoComLink(const CTCPListener &listener);
 
@@ -86,9 +78,24 @@ public:
 	static void registerForScheme(const CString &scheme);
 
 	/*
+	This object:
+	Uninitialized (NOT CHECKED)
+
+	Exceptions:
+	CTCPConnection::CSendException
+	CTCPConnection::CReceiveException
+	CProtocolError
+	CVersionNegotiationFailure
+	*/
+	virtual void initialize();
+
+	/*
 	message:
 	Reference to properly formed CMessage object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
+
+	This object:
+	Initialized (NOT CHECKED)
 
 	Exceptions:
 	CBinBuffer::CWriteError
@@ -97,6 +104,9 @@ public:
 	virtual void sendMessageDirect(const CMessage &message);
 
 	/*
+	This object:
+	Initialized (NOT CHECKED)
+
 	Return value:
 	Valid pointer
 	Pointer ownership: passed to the caller
@@ -115,6 +125,8 @@ public:
 private:
 	CTCPConnection m_Connection;
 	uint32_t m_ProtocolVersion;
+	bool m_isServerSide;
+	CString m_URI;
 
 	/*
 	Exceptions:

@@ -38,6 +38,7 @@ class CAmikoComLinkTestServer : public CThread
 	{
 		CTCPListener listener(AMIKO_DEFAULT_PORT);
 		CAmikoComLink *c2 = new CAmikoComLink(listener);
+		c2->initialize();
 
 		//Continue echoeing until stop() is called
 		while(!m_terminate)
@@ -79,6 +80,7 @@ class CAmikoComLinkTest : public CTest
 		CTimer::sleep(50); //50 ms
 
 		CAmikoComLink *c1 = new CAmikoComLink(CURI("amikolink://localhost"));
+		c1->initialize();
 
 		{
 			CNackMessage nack1; nack1.m_reason = "test";

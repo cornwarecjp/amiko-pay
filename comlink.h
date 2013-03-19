@@ -55,6 +55,11 @@ public:
 
 protected:
 	/*
+	TODO
+	*/
+	virtual void initialize()=0;
+
+	/*
 	message:
 	Reference to properly formed CMessage object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
