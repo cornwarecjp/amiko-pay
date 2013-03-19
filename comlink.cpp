@@ -26,14 +26,26 @@ void CComLink::sendMessage(const CMessage &message)
 	m_SendQueue.lock();
 	m_SendQueue.push(message.serialize());
 	m_SendQueue.unlock();
+	m_HasNewSendData.post();
 }
 
 
 void CComLink::threadFunc()
 {
+	initialize();
+
 	while(!m_terminate)
 	{
-		//TODO
+		//TODO: receive data
+
+		m_HasNewSendData.wait(); //TODO: timeout, so we'll also receive data
+		m_SendQueue.lock();
+		while(!m_SendQueue.empty())
+		{
+			//sendMessageDirect(m_SendQueue.front()); //TODO
+			m_SendQueue.pop();
+		}
+		m_SendQueue.unlock();
 	}
 }
 

@@ -85,6 +85,7 @@ protected:
 private:
 
 	CCriticalSection< std::queue<CBinBuffer> > m_SendQueue;
+	CSemaphore m_HasNewSendData;
 
 
 public:
