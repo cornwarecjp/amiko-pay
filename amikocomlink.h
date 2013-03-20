@@ -34,6 +34,11 @@
 #define AMIKO_MIN_PROTOCOL_VERSION 1
 #define AMIKO_MAX_PROTOCOL_VERSION 1
 
+
+/*
+AmikoComLink is a ComLink which implements the Amiko low-level messaging
+protocol.
+*/
 class CAmikoComLink : public CComLink
 {
 public:

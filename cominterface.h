@@ -25,6 +25,13 @@
 #include "binbuffer.h"
 #include "cthread.h"
 
+/*
+A ComInterface is an object that can take part in the message delivery system
+of Amiko.
+You can send messages through the interface with the sendMessage method.
+If any messages are received on the interface, the ComInterface object will
+send them to the "receiver" object, which is set with the setReceiver method.
+*/
 class CComInterface
 {
 public:

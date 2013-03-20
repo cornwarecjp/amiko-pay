@@ -32,9 +32,25 @@
 #include "cominterface.h"
 
 /*
-Base class and factory infrastructure for communication link objects
-*/
+A ComLink object is a ComInterface that sends messages to and from a (remote)
+peer process. It contains its own thread which manages sending and receiving
+of messages.
+A ComLink object can have the following states:
+  pending
+  operational
+  closed
+The initial state is 'pending'. An object can spontaneously perform the
+following state transitions:
+  pending->operational
+  pending->closed
+  operational->closed
+Sending and receiving of messages only happens in the operational state.
+As soon as the closed state is reached, the ComLink object should be deleted
+to free up system resources (such as memory, the thread and the network socket).
 
+This class also contains some factory infrastructure for creating objects from
+derived classes, based on an URI.
+*/
 class CComLink : public CComInterface, public CThread
 {
 public:
