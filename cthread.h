@@ -163,6 +163,28 @@ public:
 };
 
 
+class CMutexLocker
+{
+public:
+	/*
+	mutex:
+	Reference to properly formed CMutex object (NOT CHECKED)
+	Reference lifetime: at least the lifetime of this object
+
+	Note: locks the mutex
+	*/
+	CMutexLocker(CMutex &mutex);
+
+	/*
+	Note: unlocks the mutex
+	*/
+	~CMutexLocker();
+
+private:
+	CMutex &m_Mutex;
+};
+
+
 class CSemaphore
 {
 public:

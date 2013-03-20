@@ -119,6 +119,18 @@ void CMutex::unlock()
 }
 
 
+CMutexLocker::CMutexLocker(CMutex &mutex) : m_Mutex(mutex)
+{
+	m_Mutex.lock();
+}
+
+
+CMutexLocker::~CMutexLocker()
+{
+	m_Mutex.unlock();
+}
+
+
 CSemaphore::CSemaphore()
 {
 	if(sem_init(&m_semaphore, 0, 0) != 0)
