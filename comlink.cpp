@@ -39,9 +39,25 @@ void CComLink::threadFunc()
 
 	while(!m_terminate)
 	{
-		//TODO: receive data
+		//Receive data:
+		try
+		{
+			while(true)
+				deliverReceivedMessage(receiveMessageDirect());
+		}
+		catch(CNoDataAvailable &e)
+		{
+			/*
+			Ignore this exception:
+			It is normal that this occurs, in fact it is our way to get out of
+			the while loop in the try block
+			*/
+		}
 
+		//Wait a while, unless there is data to be sent:
 		m_HasNewSendData.waitWithTimeout(10); //10 ms
+
+		//Send data:
 		{
 			CMutexLocker lock(m_SendQueue);
 			while(!m_SendQueue.m_Value.empty())

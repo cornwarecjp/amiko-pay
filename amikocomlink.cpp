@@ -194,7 +194,16 @@ CBinBuffer CAmikoComLink::receiveMessageDirect()
 	CBinBuffer sizebuffer(4);
 	m_Connection.receive(sizebuffer, 0); //immediate time-out
 	size_t pos = 0;
-	uint32_t size = sizebuffer.readUint<uint32_t>(pos);
+	uint32_t size = 0;
+	try
+	{
+		size = sizebuffer.readUint<uint32_t>(pos);
+	}
+	catch(CTCPConnection::CTimeoutException &e)
+	{
+		throw(CNoDataAvailable("Timeout when reading size"));
+	}
+
 	//TODO: check whether size is unreasonably large
 	CBinBuffer ret; ret.resize(size);
 
@@ -205,12 +214,12 @@ CBinBuffer CAmikoComLink::receiveMessageDirect()
 	catch(CTCPConnection::CTimeoutException &e)
 	{
 		/*
-		If receiving the message itself gives a timeout, then we have to put
+		If receiving the message body gives a timeout, then we have to put
 		back the size data, so it can be re-read the next time this method is
 		called.
 		*/
 		m_Connection.unreceive(sizebuffer);
-		throw; //re-throw timeout exception
+		throw(CNoDataAvailable("Timeout when reading message body"));
 	}
 
 	return ret;

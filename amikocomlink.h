@@ -111,8 +111,8 @@ public:
 
 	Exceptions:
 	CTCPConnection::CReceiveException
-	CTCPConnection::CTimeoutException
 	CBinBuffer::CReadError
+	CNoDataAvailable
 	*/
 	virtual CBinBuffer receiveMessageDirect();
 

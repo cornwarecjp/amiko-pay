@@ -39,6 +39,7 @@ class CComLink : public CComInterface, public CThread
 {
 public:
 	SIMPLEEXCEPTIONCLASS(CConstructionFailed)
+	SIMPLEEXCEPTIONCLASS(CNoDataAvailable)
 
 	//TODO: virtual destructor
 
@@ -76,6 +77,7 @@ protected:
 	CBinBuffer object
 
 	Exceptions:
+	CNoDataAvailable
 	TODO
 	*/
 	virtual CBinBuffer receiveMessageDirect()=0;
