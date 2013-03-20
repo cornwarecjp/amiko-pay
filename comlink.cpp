@@ -52,44 +52,58 @@ void CComLink::threadFunc()
 		return;
 	}
 
-	//TODO: catch all exceptions and handle them
-
-	initialize();
-
+	//Catch all exceptions and handle them
+	try
 	{
-		CMutexLocker lock(m_State);
-		m_State.m_Value = eOperational;
-	}
+		initialize();
 
-	while(!m_terminate)
-	{
-		//Receive data:
-		try
 		{
-			while(true)
-				deliverReceivedMessage(receiveMessageDirect());
-		}
-		catch(CNoDataAvailable &e)
-		{
-			/*
-			Ignore this exception:
-			It is normal that this occurs, in fact it is our way to get out of
-			the while loop in the try block
-			*/
+			CMutexLocker lock(m_State);
+			m_State.m_Value = eOperational;
 		}
 
-		//Wait a while, unless there is data to be sent:
-		m_HasNewSendData.waitWithTimeout(10); //10 ms
-
-		//Send data:
+		while(!m_terminate)
 		{
-			CMutexLocker lock(m_SendQueue);
-			while(!m_SendQueue.m_Value.empty())
+			//Receive data:
+			try
 			{
-				sendMessageDirect(m_SendQueue.m_Value.front());
-				m_SendQueue.m_Value.pop();
+				while(true)
+					deliverReceivedMessage(receiveMessageDirect());
+			}
+			catch(CNoDataAvailable &e)
+			{
+				/*
+				Ignore this exception:
+				It is normal that this occurs, in fact it is our way to get out of
+				the while loop in the try block
+				*/
+			}
+
+			//Wait a while, unless there is data to be sent:
+			m_HasNewSendData.waitWithTimeout(10); //10 ms
+
+			//Send data:
+			{
+				CMutexLocker lock(m_SendQueue);
+				while(!m_SendQueue.m_Value.empty())
+				{
+					sendMessageDirect(m_SendQueue.m_Value.front());
+					m_SendQueue.m_Value.pop();
+				}
 			}
 		}
+	}
+	catch(CException &e)
+	{
+		log(CString::format(
+			"CComLink::threadFunc(): Caught application exception: %s\n",
+			256, e.what()));
+	}
+	catch(std::exception &e)
+	{
+		log(CString::format(
+			"CComLink::threadFunc(): Caught standard library exception: %s\n",
+			256, e.what()));
 	}
 
 	{
