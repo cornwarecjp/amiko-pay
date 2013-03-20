@@ -31,19 +31,17 @@ CComManager::CComManager()
 CComManager::~CComManager()
 {
 	//TODO: prevent deadlocks with the comlink threads themselves
-	m_ComLinks.lock();
+	CMutexLocker lock(m_ComLinks);
 	for(size_t i=0; i < m_ComLinks.m_Value.size(); i++)
 		delete m_ComLinks.m_Value[i];
 	m_ComLinks.m_Value.clear();
-	m_ComLinks.unlock();	
 }
 
 
 void CComManager::addComLink(CComLink *link)
 {
-	m_ComLinks.lock();
+	CMutexLocker lock(m_ComLinks);
 	m_ComLinks.m_Value.push_back(link);
-	m_ComLinks.unlock();
 }
 
 

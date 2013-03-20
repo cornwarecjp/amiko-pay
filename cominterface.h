@@ -21,12 +21,15 @@
 #ifndef COMINTERFACE_H
 #define COMINTERFACE_H
 
+#include "exception.h"
 #include "binbuffer.h"
 #include "cthread.h"
 
 class CComInterface
 {
 public:
+	SIMPLEEXCEPTIONCLASS(CMessageLost)
+
 	/*
 	Constructed object:
 	ComInterface  with receiver set to NULL
@@ -64,6 +67,17 @@ public:
 
 
 protected:
+	/*
+	message:
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Exceptions:
+	CMessageLost
+	TODO (same as sendMessage)
+	*/
+	void deliverReceivedMessage(const CBinBuffer &message);
+
 	CCriticalSection<CComInterface *> m_Receiver;
 };
 

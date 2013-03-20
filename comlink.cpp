@@ -23,9 +23,10 @@
 
 void CComLink::sendMessage(const CBinBuffer &message)
 {
-	m_SendQueue.lock();
-	m_SendQueue.m_Value.push(message);
-	m_SendQueue.unlock();
+	{
+		CMutexLocker lock(m_SendQueue);
+		m_SendQueue.m_Value.push(message);
+	}
 	m_HasNewSendData.post();
 }
 
@@ -41,13 +42,14 @@ void CComLink::threadFunc()
 		//TODO: receive data
 
 		m_HasNewSendData.waitWithTimeout(10); //10 ms
-		m_SendQueue.lock();
-		while(!m_SendQueue.m_Value.empty())
 		{
-			sendMessageDirect(m_SendQueue.m_Value.front());
-			m_SendQueue.m_Value.pop();
+			CMutexLocker lock(m_SendQueue);
+			while(!m_SendQueue.m_Value.empty())
+			{
+				sendMessageDirect(m_SendQueue.m_Value.front());
+				m_SendQueue.m_Value.pop();
+			}
 		}
-		m_SendQueue.unlock();
 	}
 }
 

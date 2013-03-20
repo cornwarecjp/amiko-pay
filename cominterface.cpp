@@ -33,9 +33,17 @@ CComInterface::~CComInterface()
 
 void CComInterface::setReceiver(CComInterface *receiver)
 {
-	m_Receiver.lock();
+	CMutexLocker lock(m_Receiver);
 	m_Receiver.m_Value = receiver;
-	m_Receiver.unlock();
+}
+
+
+void CComInterface::deliverReceivedMessage(const CBinBuffer &message)
+{
+	CMutexLocker lock(m_Receiver);
+	if(m_Receiver.m_Value == NULL)
+		throw CMessageLost("A message was lost because no receiver was set");
+	m_Receiver.m_Value->sendMessage(message);
 }
 
 
