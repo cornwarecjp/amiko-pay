@@ -32,38 +32,6 @@
 TODO: document and expand
 */
 
-class CAmikoComLinkTestServer : public CThread
-{
-	void threadFunc()
-	{
-		CTCPListener listener(AMIKO_DEFAULT_PORT);
-		CAmikoComLink *c2 = new CAmikoComLink(listener);
-		c2->initialize();
-
-		//Continue echoeing until stop() is called
-		while(!m_terminate)
-		{
-			try
-			{
-				CBinBuffer msg = c2->receiveMessageDirect();
-				c2->sendMessageDirect(msg);
-			}
-			catch(CTCPConnection::CTimeoutException &e)
-			{
-				CTimer::sleep(50); //50 ms
-			}
-			catch(CTCPConnection::CReceiveException &e)
-			{
-				//Connection closed or other error: stop
-				break;
-			}
-		}
-
-		delete c2;
-	}
-} amikoComLinkTestServer;
-
-
 void receiveMessage(void *arg);
 
 
@@ -74,12 +42,14 @@ class CAmikoComLinkTest : public CTest
 
 	virtual void run()
 	{
-		amikoComLinkTestServer.start();
-
-		//Wait some time to make "sure" the server is initialized
-		CTimer::sleep(50); //50 ms
+		CTCPListener listener(AMIKO_DEFAULT_PORT);
 
 		CAmikoComLink *c1 = new CAmikoComLink(CURI("amikolink://localhost"));
+
+		CAmikoComLink *c2 = new CAmikoComLink(listener);
+		c2->setReceiver(c2); //loop-back
+		c2->start();
+
 		c1->initialize();
 
 		{
@@ -90,12 +60,14 @@ class CAmikoComLinkTest : public CTest
 				msg.toString() == "test");
 		}
 
-		test("  Timeout exception occurs when no message is available",
-			throws<CTCPConnection::CTimeoutException>(receiveMessage, c1));
+		test("  NoDataAvailable exception occurs when no message is available",
+			throws<CComLink::CNoDataAvailable>(receiveMessage, c1));
 
 		delete c1;
 
-		amikoComLinkTestServer.stop();
+		c2->setReceiver(NULL);
+		c2->stop();
+		delete c2;
 	}
 } amikoComLinkTest;
 
