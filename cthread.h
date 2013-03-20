@@ -129,6 +129,14 @@ public:
 	~CMutex();
 
 	/*
+	These classes are allowed to access the private lock and unlock methods.
+	Other code should use CMutexLocker objects for this.
+	*/
+	friend class CMutexLocker;
+	friend class COpenSSLMutexes;
+
+private:
+	/*
 	This object:
 	not locked by this thread (NOT CHECKED)
 
@@ -148,7 +156,6 @@ public:
 	*/
 	void unlock();
 
-private:
 	pthread_mutex_t m_mutex;
 };
 
