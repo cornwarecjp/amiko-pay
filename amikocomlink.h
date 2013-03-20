@@ -67,6 +67,8 @@ public:
 	*/
 	CAmikoComLink(const CTCPListener &listener);
 
+	~CAmikoComLink();
+
 	/*
 	scheme:
 	Reference to properly formed CString object (NOT CHECKED)

@@ -21,6 +21,11 @@
 #include "comlink.h"
 
 
+CComLink::~CComLink()
+{
+}
+
+
 void CComLink::sendMessage(const CBinBuffer &message)
 {
 	{

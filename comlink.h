@@ -41,7 +41,7 @@ public:
 	SIMPLEEXCEPTIONCLASS(CConstructionFailed)
 	SIMPLEEXCEPTIONCLASS(CNoDataAvailable)
 
-	//TODO: virtual destructor
+	virtual ~CComLink();
 
 	/*
 	message:
@@ -58,6 +58,10 @@ public:
 
 protected:
 	/*
+	This object:
+	Uninitialized (NOT CHECKED)
+
+	Exceptions:
 	TODO
 	*/
 	virtual void initialize()=0;
