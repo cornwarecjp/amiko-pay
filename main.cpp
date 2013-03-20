@@ -29,17 +29,25 @@
 #include "cthread.h"
 
 #include "amikocomlink.h"
-#include "commanager.h"
+#include "tcplistener.h"
+#include "timer.h"
 
 void app()
 {
-	CComManager comManager;
+	CTCPListener listener(AMIKO_DEFAULT_PORT);
+	CAmikoComLink *c2 = new CAmikoComLink(listener);
 
-	comManager.start();
+	c2->setReceiver(c2);
+	c2->start();
 
-	sleep(20);
+	CTimer::sleep(10000); //10 s
 
-	comManager.stop();
+	//Note that this is not really exception-safe:
+	//this should be deleted in case of any exception.
+	//TODO: use some kind of RAII pointer class.
+	c2->setReceiver(NULL);
+	c2->stop();
+	delete c2;
 }
 
 int main(int argc, char **argv)
