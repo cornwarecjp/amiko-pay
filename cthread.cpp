@@ -152,7 +152,7 @@ void CSemaphore::wait()
 }
 
 
-void CSemaphore::waitWithTimeout(unsigned int milliseconds)
+bool CSemaphore::waitWithTimeout(unsigned int milliseconds)
 {
 	uint64_t endTime = CTimer::getTime() + milliseconds;
 	timespec ts;
@@ -162,10 +162,12 @@ void CSemaphore::waitWithTimeout(unsigned int milliseconds)
 	if(sem_timedwait(&m_semaphore, &ts) != 0)
 	{
 		if(errno == ETIMEDOUT)
-			{throw CTimeoutError("waitWithTimeout timeout occurred");}
+			{return true;}
 		else
 			{throw CError("waitWithTimeout: semaphore waiting failed");}
 	}
+
+	return false;
 }
 
 

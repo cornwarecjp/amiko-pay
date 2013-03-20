@@ -55,12 +55,7 @@ void CComLink::threadFunc()
 		}
 
 		//Wait a while, unless there is data to be sent:
-		try
-		{
-			m_HasNewSendData.waitWithTimeout(10); //10 ms
-		}
-		catch(CSemaphore::CTimeoutError &e)
-		{} //TODO: more convenient through return value instead of exception
+		m_HasNewSendData.waitWithTimeout(10); //10 ms
 
 		//Send data:
 		{
