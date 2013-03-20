@@ -41,6 +41,22 @@ public:
 	SIMPLEEXCEPTIONCLASS(CConstructionFailed)
 	SIMPLEEXCEPTIONCLASS(CNoDataAvailable)
 
+	enum eState
+	{
+	ePending,
+	eOperational,
+	eClosed
+	};
+
+	/*
+	Constructed object:
+	comlink in pending state
+
+	Exceptions:
+	none
+	*/
+	CComLink();
+
 	virtual ~CComLink();
 
 	/*
@@ -53,7 +69,18 @@ public:
 	*/
 	void sendMessage(const CBinBuffer &message);
 
+	/*
+	This object:
+	comlink in pending state (CHECKED)
+	*/
 	void threadFunc();
+
+
+	inline eState getState()
+	{
+		CMutexLocker lock(m_State);
+		return m_State.m_Value;
+	}
 
 
 protected:
@@ -91,6 +118,8 @@ private:
 
 	CCriticalSection< std::queue<CBinBuffer> > m_SendQueue;
 	CSemaphore m_HasNewSendData;
+
+	CCriticalSection<eState> m_State;
 
 
 public:

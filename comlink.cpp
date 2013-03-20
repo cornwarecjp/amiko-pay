@@ -18,7 +18,13 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "log.h"
+
 #include "comlink.h"
+
+CComLink::CComLink() : m_State(ePending)
+{
+}
 
 
 CComLink::~CComLink()
@@ -38,9 +44,22 @@ void CComLink::sendMessage(const CBinBuffer &message)
 
 void CComLink::threadFunc()
 {
+	if(getState() != ePending)
+	{
+		log("CComLink::threadFunc(): initial state was not 'pending'; stopping thread\n");
+		CMutexLocker lock(m_State);
+		m_State.m_Value = eClosed;
+		return;
+	}
+
 	//TODO: catch all exceptions and handle them
 
 	initialize();
+
+	{
+		CMutexLocker lock(m_State);
+		m_State.m_Value = eOperational;
+	}
 
 	while(!m_terminate)
 	{
@@ -71,6 +90,11 @@ void CComLink::threadFunc()
 				m_SendQueue.m_Value.pop();
 			}
 		}
+	}
+
+	{
+		CMutexLocker lock(m_State);
+		m_State.m_Value = eClosed;
 	}
 }
 
