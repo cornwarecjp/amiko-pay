@@ -153,8 +153,14 @@ private:
 };
 
 
-template<class T> class CCriticalSection : public T, public CMutex
-{};
+template<class T> class CCriticalSection : public CMutex
+{
+public:
+	CCriticalSection() : m_Value() {}
+	CCriticalSection(const T &v) : m_Value(v) {}
+
+	T m_Value;
+};
 
 
 class CSemaphore

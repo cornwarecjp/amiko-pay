@@ -148,10 +148,12 @@ void CSemaphore::waitWithTimeout(unsigned int milliseconds)
 	ts.tv_nsec = (endTime % 1000) * 1000000;
 
 	if(sem_timedwait(&m_semaphore, &ts) != 0)
+	{
 		if(errno == ETIMEDOUT)
 			{throw CTimeoutError("waitWithTimeout timeout occurred");}
 		else
 			{throw CError("waitWithTimeout: semaphore waiting failed");}
+	}
 }
 
 

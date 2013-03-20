@@ -32,9 +32,9 @@ CComManager::~CComManager()
 {
 	//TODO: prevent deadlocks with the comlink threads themselves
 	m_ComLinks.lock();
-	for(size_t i=0; i < m_ComLinks.size(); i++)
-		delete m_ComLinks[i];
-	m_ComLinks.clear();
+	for(size_t i=0; i < m_ComLinks.m_Value.size(); i++)
+		delete m_ComLinks.m_Value[i];
+	m_ComLinks.m_Value.clear();
 	m_ComLinks.unlock();	
 }
 
@@ -42,7 +42,7 @@ CComManager::~CComManager()
 void CComManager::addComLink(CComLink *link)
 {
 	m_ComLinks.lock();
-	m_ComLinks.push_back(link);
+	m_ComLinks.m_Value.push_back(link);
 	m_ComLinks.unlock();
 }
 

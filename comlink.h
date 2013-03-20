@@ -40,6 +40,8 @@ class CComLink : public CThread
 public:
 	SIMPLEEXCEPTIONCLASS(CConstructionFailed)
 
+	//TODO: virtual destructor
+
 	/*
 	message:
 	Reference to properly formed CMessage object (NOT CHECKED)
