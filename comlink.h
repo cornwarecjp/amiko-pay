@@ -27,15 +27,15 @@
 #include "exception.h"
 #include "cstring.h"
 #include "uriparser.h"
-#include "message.h"
 
 #include "cthread.h"
+#include "cominterface.h"
 
 /*
 Base class and factory infrastructure for communication link objects
 */
 
-class CComLink : public CThread
+class CComLink : public CComInterface, public CThread
 {
 public:
 	SIMPLEEXCEPTIONCLASS(CConstructionFailed)
@@ -44,13 +44,13 @@ public:
 
 	/*
 	message:
-	Reference to properly formed CMessage object (NOT CHECKED)
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
 	Exceptions:
 	TODO
 	*/
-	void sendMessage(const CMessage &message);
+	void sendMessage(const CBinBuffer &message);
 
 	void threadFunc();
 

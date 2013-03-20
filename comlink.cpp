@@ -21,10 +21,10 @@
 #include "comlink.h"
 
 
-void CComLink::sendMessage(const CMessage &message)
+void CComLink::sendMessage(const CBinBuffer &message)
 {
 	m_SendQueue.lock();
-	m_SendQueue.m_Value.push(message.serialize());
+	m_SendQueue.m_Value.push(message);
 	m_SendQueue.unlock();
 	m_HasNewSendData.post();
 }
