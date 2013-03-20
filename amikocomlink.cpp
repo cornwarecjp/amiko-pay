@@ -192,17 +192,17 @@ void CAmikoComLink::sendMessageDirect(const CBinBuffer &message)
 CBinBuffer CAmikoComLink::receiveMessageDirect()
 {
 	CBinBuffer sizebuffer(4);
-	m_Connection.receive(sizebuffer, 0); //immediate time-out
-	size_t pos = 0;
-	uint32_t size = 0;
 	try
 	{
-		size = sizebuffer.readUint<uint32_t>(pos);
+		m_Connection.receive(sizebuffer, 0); //immediate time-out
 	}
 	catch(CTCPConnection::CTimeoutException &e)
 	{
-		throw(CNoDataAvailable("Timeout when reading size"));
+		throw CNoDataAvailable("Timeout when reading size");
 	}
+
+	size_t pos = 0;
+	uint32_t size = sizebuffer.readUint<uint32_t>(pos);
 
 	//TODO: check whether size is unreasonably large
 	CBinBuffer ret; ret.resize(size);
@@ -219,7 +219,7 @@ CBinBuffer CAmikoComLink::receiveMessageDirect()
 		called.
 		*/
 		m_Connection.unreceive(sizebuffer);
-		throw(CNoDataAvailable("Timeout when reading message body"));
+		throw CNoDataAvailable("Timeout when reading message body");
 	}
 
 	return ret;
