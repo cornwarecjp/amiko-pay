@@ -113,6 +113,18 @@ void CComLink::threadFunc()
 }
 
 
+const CKey &CComLink::getRemoteAddress() const
+{
+	return m_RemoteAddress;
+}
+
+
+const CKey &CComLink::getLocalAddress() const
+{
+	return m_LocalAddress;
+}
+
+
 std::map<CString, CComLink::t_schemeHandler> CComLink::m_schemeHandlers;
 
 void CComLink::registerSchemeHandler(const CString &scheme, CComLink::t_schemeHandler handler)

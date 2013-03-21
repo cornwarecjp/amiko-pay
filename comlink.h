@@ -27,6 +27,7 @@
 #include "exception.h"
 #include "cstring.h"
 #include "uriparser.h"
+#include "key.h"
 
 #include "cthread.h"
 #include "cominterface.h"
@@ -98,6 +99,14 @@ public:
 		return m_State.m_Value;
 	}
 
+	/*
+	Return value:
+	Reference to properly formed CKey object
+	Reference lifetime: equal to lifetime of this object
+	*/
+	virtual const CKey &getRemoteAddress() const;
+	virtual const CKey &getLocalAddress() const;
+
 
 protected:
 	/*
@@ -128,6 +137,9 @@ protected:
 	TODO
 	*/
 	virtual CBinBuffer receiveMessageDirect()=0;
+
+
+	CKey m_RemoteAddress, m_LocalAddress;
 
 
 private:
