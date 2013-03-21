@@ -20,6 +20,8 @@
 
 #include <cstdio>
 
+#include "bitcoinaddress.h"
+
 #include "messages.h"
 
 #include "test.h"
@@ -52,7 +54,10 @@ class CMessagesTest : public CTest
 	{
 		//Construct the message
 		CHelloMessage startMessage;
-		startMessage.m_publicKey = m_source.getPublicKey();
+		startMessage.m_myPublicKey = m_source.getPublicKey();
+		startMessage.m_myPreferredURL = CString("amikolink://localhost/") +
+			getBitcoinAddress(m_source);
+		startMessage.m_yourAddress = getBitcoinAddress(m_destination);
 		setBaseMembervalues(startMessage);
 
 		//Serialize the message
@@ -63,8 +68,13 @@ class CMessagesTest : public CTest
 
 		test("  CHelloMessage serialization conserves CMessage members",
 			baseMembersAreEqual(&startMessage, endMessage));
+		CHelloMessage *endMessage2 = (CHelloMessage *)endMessage;
 		test("  CHelloMessage serialization conserves public key",
-			((CHelloMessage *)endMessage)->m_publicKey == startMessage.m_publicKey);
+			endMessage2->m_myPublicKey == startMessage.m_myPublicKey);
+		test("  CHelloMessage serialization conserves preferred URL",
+			endMessage2->m_myPreferredURL == startMessage.m_myPreferredURL);
+		test("  CHelloMessage serialization conserves address",
+			endMessage2->m_yourAddress == startMessage.m_yourAddress);
 
 		//Delete constructed message
 		delete endMessage;

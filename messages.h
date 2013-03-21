@@ -27,6 +27,13 @@
 #include "message.h"
 
 
+/*
+Greeting message sent during initialization.
+It informs the other party to which link the connection applies (m_yourAddress),
+It gives the other party the public key to be used for signing/encryption
+(m_myPublicKey),
+and it gives the preferred URL for connecting back (m_myPreferredURL).
+*/
 class CHelloMessage : public CMessage
 {
 public:
@@ -38,7 +45,9 @@ public:
 	CBinBuffer getSerializedBody() const;
 	void setSerializedBody(const CBinBuffer &data);
 
-	CBinBuffer m_publicKey;
+	CBinBuffer m_myPublicKey;
+	CString m_myPreferredURL;
+	CString m_yourAddress;
 };
 
 

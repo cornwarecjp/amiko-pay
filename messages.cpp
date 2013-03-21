@@ -27,12 +27,19 @@ CHelloMessage::~CHelloMessage()
 
 CBinBuffer CHelloMessage::getSerializedBody() const
 {
-	return m_publicKey;
+	CBinBuffer ret;
+	ret.appendBinBuffer(m_myPublicKey);
+	ret.appendBinBuffer(CString(m_myPreferredURL));
+	ret.appendBinBuffer(CString(m_yourAddress));
+	return ret;
 }
 
 void CHelloMessage::setSerializedBody(const CBinBuffer &data)
 {
-	m_publicKey = data;
+	size_t pos = 0;
+	m_myPublicKey = data.readBinBuffer(pos);
+	m_myPreferredURL = data.readBinBuffer(pos).toString();
+	m_yourAddress = data.readBinBuffer(pos).toString();
 }
 
 
