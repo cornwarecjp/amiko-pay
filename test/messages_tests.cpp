@@ -41,17 +41,17 @@ class CMessagesTest : public CTest
 		m_source.makeNewKey();
 		m_destination.makeNewKey();
 
-		testPublicKeyMessage();
+		testHelloMessage();
 		testAckMessage();
 		testNackMessage();
 		testFinStateMessage();
 	}
 
 
-	void testPublicKeyMessage()
+	void testHelloMessage()
 	{
 		//Construct the message
-		CPublicKeyMessage startMessage;
+		CHelloMessage startMessage;
 		startMessage.m_publicKey = m_source.getPublicKey();
 		setBaseMembervalues(startMessage);
 
@@ -61,10 +61,10 @@ class CMessagesTest : public CTest
 		//Reconstruct message from serialized data
 		CMessage *endMessage = CMessage::constructMessage(serializedMessage);
 
-		test("  CPublicKeyMessage serialization conserves CMessage members",
+		test("  CHelloMessage serialization conserves CMessage members",
 			baseMembersAreEqual(&startMessage, endMessage));
-		test("  CPublicKeyMessage serialization conserves public key",
-			((CPublicKeyMessage *)endMessage)->m_publicKey == startMessage.m_publicKey);
+		test("  CHelloMessage serialization conserves public key",
+			((CHelloMessage *)endMessage)->m_publicKey == startMessage.m_publicKey);
 
 		//Delete constructed message
 		delete endMessage;

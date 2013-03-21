@@ -48,8 +48,8 @@ CMessage *CMessage::constructMessage(const CBinBuffer &data)
 
 	switch(ID)
 	{
-	case ePublicKey:
-		ret = new CPublicKeyMessage;
+	case eHello:
+		ret = new CHelloMessage;
 		break;
 	case eAck:
 		ret = new CAckMessage;

@@ -22,14 +22,18 @@
 
 
 //=====================================
-CPublicKeyMessage::~CPublicKeyMessage()
+CHelloMessage::~CHelloMessage()
 {}
 
-CBinBuffer CPublicKeyMessage::getSerializedBody() const
-{return m_publicKey;}
+CBinBuffer CHelloMessage::getSerializedBody() const
+{
+	return m_publicKey;
+}
 
-void CPublicKeyMessage::setSerializedBody(const CBinBuffer &data)
-{m_publicKey = data;}
+void CHelloMessage::setSerializedBody(const CBinBuffer &data)
+{
+	m_publicKey = data;
+}
 
 
 //=====================================

@@ -27,13 +27,13 @@
 #include "message.h"
 
 
-class CPublicKeyMessage : public CMessage
+class CHelloMessage : public CMessage
 {
 public:
-	virtual ~CPublicKeyMessage();
+	virtual ~CHelloMessage();
 
 	eTypeID getTypeID() const
-		{return ePublicKey;}
+		{return eHello;}
 
 	CBinBuffer getSerializedBody() const;
 	void setSerializedBody(const CBinBuffer &data);
