@@ -29,17 +29,14 @@
 #define MAX_NEGOTIATION_STRING_LENGTH 32
 
 CAmikoComLink::CAmikoComLink(const CURI &uri) :
-	m_Connection(uri.getHost(), uri.getPort(AMIKO_DEFAULT_PORT)),
-	m_URI(uri.getURI())
+	CComLink(uri)
 {
-	m_isServerSide = false;
 }
 
 
 CAmikoComLink::CAmikoComLink(const CTCPListener &listener) :
-	m_Connection(listener)
+	CComLink(listener)
 {
-	m_isServerSide = true;
 }
 
 

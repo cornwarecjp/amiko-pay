@@ -25,16 +25,6 @@
 
 #include "comlink.h"
 
-#include "uriparser.h"
-#include "tcpconnection.h"
-
-//TODO: choose a friendly default port
-#define AMIKO_DEFAULT_PORT "12345"
-
-#define AMIKO_MIN_PROTOCOL_VERSION 1
-#define AMIKO_MAX_PROTOCOL_VERSION 1
-
-
 /*
 AmikoComLink is a ComLink which implements the Amiko low-level messaging
 protocol.
@@ -42,8 +32,6 @@ protocol.
 class CAmikoComLink : public CComLink
 {
 public:
-	SIMPLEEXCEPTIONCLASS(CProtocolError)
-	SIMPLEEXCEPTIONCLASS(CVersionNegotiationFailure)
 
 	/*
 	uri:
@@ -115,10 +103,6 @@ public:
 
 
 private:
-	CTCPConnection m_Connection;
-	uint32_t m_ProtocolVersion;
-	bool m_isServerSide;
-	CString m_URI;
 
 	/*
 	Exceptions:

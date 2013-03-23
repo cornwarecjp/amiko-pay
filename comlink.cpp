@@ -22,7 +22,20 @@
 
 #include "comlink.h"
 
-CComLink::CComLink() : m_State(ePending)
+
+CComLink::CComLink(const CURI &uri) :
+	m_Connection(uri.getHost(), uri.getPort(AMIKO_DEFAULT_PORT)),
+	m_URI(uri.getURI()),
+	m_isServerSide(false),
+	m_State(ePending)
+{
+}
+
+
+CComLink::CComLink(const CTCPListener &listener) :
+	m_Connection(listener),
+	m_isServerSide(true),
+	m_State(ePending)
 {
 }
 

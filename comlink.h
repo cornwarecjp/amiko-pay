@@ -28,9 +28,16 @@
 #include "cstring.h"
 #include "uriparser.h"
 #include "key.h"
+#include "tcpconnection.h"
 
 #include "cthread.h"
 #include "cominterface.h"
+
+//TODO: choose a friendly default port
+#define AMIKO_DEFAULT_PORT "12345"
+
+#define AMIKO_MIN_PROTOCOL_VERSION 1
+#define AMIKO_MAX_PROTOCOL_VERSION 1
 
 /*
 A ComLink object is a ComInterface that sends messages to and from a (remote)
@@ -52,6 +59,8 @@ to free up system resources (such as memory, the thread and the network socket).
 class CComLink : public CComInterface, public CThread
 {
 public:
+	SIMPLEEXCEPTIONCLASS(CProtocolError)
+	SIMPLEEXCEPTIONCLASS(CVersionNegotiationFailure)
 	SIMPLEEXCEPTIONCLASS(CNoDataAvailable)
 
 	enum eState
@@ -61,14 +70,33 @@ public:
 	eClosed
 	};
 
+
 	/*
+	uri:
+	Reference to properly formed CURI object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
 	Constructed object:
-	comlink in pending state
+	Connected link object in pending state
 
 	Exceptions:
-	none
+	CTCPConnection::CConnectException
 	*/
-	CComLink();
+	CComLink(const CURI &uri);
+
+	/*
+	listener:
+	Reference to properly formed CTCPListener object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+	TODO: lifetime at least as long as lifetime of this object??
+
+	Constructed object:
+	Connected link object in pending state
+
+	Exceptions:
+	CTCPConnection::CConnectException
+	*/
+	CComLink(const CTCPListener &listener);
 
 	virtual ~CComLink();
 
@@ -136,7 +164,10 @@ protected:
 
 
 	CKey m_RemoteAddress, m_LocalAddress;
-
+	CTCPConnection m_Connection;
+	CString m_URI;
+	bool m_isServerSide;
+	uint32_t m_ProtocolVersion;
 
 private:
 
