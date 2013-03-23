@@ -25,20 +25,22 @@
 //With 32-bit protocol version numbers, we'll never exceed this:
 #define MAX_NEGOTIATION_STRING_LENGTH 32
 
-CComLink::CComLink(const CURI &uri) :
+CComLink::CComLink(const CURI &uri, const CAmikoSettings &settings) :
 	m_Connection(uri.getHost(), uri.getPort(AMIKO_DEFAULT_PORT)),
 	m_URI(uri.getURI()),
 	m_isServerSide(false),
 	m_State(ePending)
 {
+	//TODO: use settings
 }
 
 
-CComLink::CComLink(const CTCPListener &listener) :
+CComLink::CComLink(const CTCPListener &listener, const CAmikoSettings &settings) :
 	m_Connection(listener),
 	m_isServerSide(true),
 	m_State(ePending)
 {
+	//TODO: use settings
 }
 
 

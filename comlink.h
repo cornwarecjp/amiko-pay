@@ -30,6 +30,7 @@
 #include "uriparser.h"
 #include "key.h"
 #include "tcpconnection.h"
+#include "amikosettings.h"
 
 #include "cthread.h"
 #include "cominterface.h"
@@ -61,6 +62,7 @@ class CComLink : public CComInterface, public CThread
 {
 public:
 	SIMPLEEXCEPTIONCLASS(CProtocolError)
+	SIMPLEEXCEPTIONCLASS(CLinkDoesNotExist)
 	SIMPLEEXCEPTIONCLASS(CVersionNegotiationFailure)
 	SIMPLEEXCEPTIONCLASS(CNoDataAvailable)
 
@@ -77,13 +79,19 @@ public:
 	Reference to properly formed CURI object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
+	settings:
+	Reference to properly formed CAmikoSettings object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+	Address in URI corresponds with one public key in settings (CHECKED)
+
 	Constructed object:
 	Connected link object in pending state
 
 	Exceptions:
+	CLinkDoesNotExist
 	CTCPConnection::CConnectException
 	*/
-	CComLink(const CURI &uri);
+	CComLink(const CURI &uri, const CAmikoSettings &settings);
 
 	/*
 	listener:
@@ -91,13 +99,17 @@ public:
 	Reference lifetime: at least until the end of this function
 	TODO: lifetime at least as long as lifetime of this object??
 
+	settings:
+	Reference to properly formed CAmikoSettings object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
 	Constructed object:
 	Connected link object in pending state
 
 	Exceptions:
 	CTCPConnection::CConnectException
 	*/
-	CComLink(const CTCPListener &listener);
+	CComLink(const CTCPListener &listener, const CAmikoSettings &settings);
 
 	virtual ~CComLink();
 
@@ -129,10 +141,10 @@ public:
 	Reference to properly formed CKey object
 	Reference lifetime: equal to lifetime of this object
 	*/
-	inline const CKey &getRemoteAddress() const
-		{return m_RemoteAddress;}
-	inline const CKey &getLocalAddress() const
-		{return m_LocalAddress;}
+	inline const CKey &getRemoteKey() const
+		{return m_RemoteKey;}
+	inline const CKey &getLocalKey() const
+		{return m_LocalKey;}
 
 
 private:
@@ -141,6 +153,7 @@ private:
 	Uninitialized (NOT CHECKED)
 
 	Exceptions:
+	CLinkDoesNotExist (TODO)
 	CTCPConnection::CSendException
 	CTCPConnection::CReceiveException
 	CProtocolError
@@ -194,7 +207,7 @@ private:
 	void receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion);
 
 
-	CKey m_RemoteAddress, m_LocalAddress;
+	CKey m_RemoteKey, m_LocalKey;
 	CTCPConnection m_Connection;
 	CString m_URI;
 	bool m_isServerSide;

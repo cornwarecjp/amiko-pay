@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "comlink.h"
+#include "amikosettings.h"
 #include "tcplistener.h"
 #include "cthread.h"
 #include "messages.h"
@@ -66,16 +67,18 @@ class CComLinkTest : public CTest
 
 	virtual void run()
 	{
+		CAmikoSettings settings;
+
 		//Start listening at TCP port
 		CTCPListener listener(AMIKO_DEFAULT_PORT);
 
 		//Connect to TCP port
-		CComLink *c1 = new CComLink(CURI("amikolink://localhost"));
+		CComLink *c1 = new CComLink(CURI("amikolink://localhost"), settings);
 		c1->setReceiver(&testReceiver);
 		c1->start();
 
 		//Accept connection on TCP port and loopback messages
-		CComLink *c2 = new CComLink(listener);
+		CComLink *c2 = new CComLink(listener, settings);
 		c2->setReceiver(c2); //loop-back
 		c2->start();
 
