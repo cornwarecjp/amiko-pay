@@ -136,29 +136,7 @@ void CComLink::initialize()
 {
 	if(m_isServerSide)
 	{
-		{
-			uint32_t minVersion, maxVersion;
-			receiveNegotiationString(minVersion, maxVersion);
-
-			if(minVersion > maxVersion)
-				throw CProtocolError("Protocol negotiation gave weird result");
-
-			//Version matching
-			minVersion = std::max<uint32_t>(minVersion, AMIKO_MIN_PROTOCOL_VERSION);
-			maxVersion = std::min<uint32_t>(maxVersion, AMIKO_MAX_PROTOCOL_VERSION);
-
-			if(minVersion > maxVersion)
-			{
-				//No matching version found
-				//Inform other side
-				sendNegotiationString(minVersion, maxVersion);
-				throw CVersionNegotiationFailure("No matching protocol version");
-			}
-
-			//Choose the highest version supported by both parties
-			m_ProtocolVersion = maxVersion;
-			sendNegotiationString(m_ProtocolVersion, m_ProtocolVersion);
-		}
+		negotiateVersion();
 
 		//1 s timeout:
 		CHelloMessage hello = receiveHello(1000);
@@ -239,23 +217,7 @@ void CComLink::initialize()
 			m_LocalKey = match->m_localKey;
 		}
 
-		{
-			sendNegotiationString(AMIKO_MIN_PROTOCOL_VERSION, AMIKO_MAX_PROTOCOL_VERSION);
-
-			uint32_t minVersion, maxVersion;
-			receiveNegotiationString(minVersion, maxVersion);
-
-			if(minVersion < AMIKO_MIN_PROTOCOL_VERSION || maxVersion > AMIKO_MAX_PROTOCOL_VERSION)
-				throw CProtocolError("Peer returned illegal protocol negotiation result");
-
-			if(minVersion < maxVersion)
-				throw CProtocolError("Protocol negotiation gave weird result");
-
-			if(minVersion > maxVersion)
-				throw CVersionNegotiationFailure("No matching protocol version");
-
-			m_ProtocolVersion = minVersion;
-		}
+		negotiateVersion();
 
 		CHelloMessage hello;
 		//TODO: remaining fields
@@ -299,6 +261,53 @@ void CComLink::initialize()
 			getBitcoinAddress(m_LocalKey).c_str(),
 			getBitcoinAddress(m_RemoteKey).c_str(),
 			m_ProtocolVersion));
+	}
+}
+
+
+void CComLink::negotiateVersion()
+{
+	if(m_isServerSide)
+	{
+		uint32_t minVersion, maxVersion;
+		receiveNegotiationString(minVersion, maxVersion);
+
+		if(minVersion > maxVersion)
+			throw CProtocolError("Protocol negotiation gave weird result");
+
+		//Version matching
+		minVersion = std::max<uint32_t>(minVersion, AMIKO_MIN_PROTOCOL_VERSION);
+		maxVersion = std::min<uint32_t>(maxVersion, AMIKO_MAX_PROTOCOL_VERSION);
+
+		if(minVersion > maxVersion)
+		{
+			//No matching version found
+			//Inform other side
+			sendNegotiationString(minVersion, maxVersion);
+			throw CVersionNegotiationFailure("No matching protocol version");
+		}
+
+		//Choose the highest version supported by both parties
+		m_ProtocolVersion = maxVersion;
+		sendNegotiationString(m_ProtocolVersion, m_ProtocolVersion);
+	}
+	else
+	{
+		sendNegotiationString(AMIKO_MIN_PROTOCOL_VERSION, AMIKO_MAX_PROTOCOL_VERSION);
+
+		uint32_t minVersion, maxVersion;
+		receiveNegotiationString(minVersion, maxVersion);
+
+		if(minVersion < AMIKO_MIN_PROTOCOL_VERSION || maxVersion > AMIKO_MAX_PROTOCOL_VERSION)
+			throw CProtocolError("Peer returned illegal protocol negotiation result");
+
+		if(minVersion < maxVersion)
+			throw CProtocolError("Protocol negotiation gave weird result");
+
+		if(minVersion > maxVersion)
+			throw CVersionNegotiationFailure("No matching protocol version");
+
+		m_ProtocolVersion = minVersion;
 	}
 }
 

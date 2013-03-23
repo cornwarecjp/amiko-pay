@@ -188,6 +188,25 @@ private:
 	*/
 	CBinBuffer receiveMessageDirect(int timeoutValue=0);
 
+	/*
+	Exceptions:
+	CProtocolError
+	CVersionNegotiationFailure
+	CTCPConnection::CSendException
+	CTCPConnection::CReceiveException
+	TODO: timeout exception
+	*/
+	void negotiateVersion();
+
+	/*
+	Exceptions:
+	CLinkDoesNotExist
+	CProtocolError
+	CNoDataAvailable
+	CTCPConnection::CSendException
+	CTCPConnection::CReceiveException
+	*/
+	//void exchangeHello(); TODO
 
 	/*
 	Exceptions:
