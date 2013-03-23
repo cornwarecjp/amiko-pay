@@ -63,18 +63,6 @@ public:
 	~CAmikoComLink();
 
 	/*
-	This object:
-	Uninitialized (NOT CHECKED)
-
-	Exceptions:
-	CTCPConnection::CSendException
-	CTCPConnection::CReceiveException
-	CProtocolError
-	CVersionNegotiationFailure
-	*/
-	virtual void initialize();
-
-	/*
 	message:
 	Reference to properly formed CBinBuffer object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
@@ -100,32 +88,6 @@ public:
 	CNoDataAvailable
 	*/
 	virtual CBinBuffer receiveMessageDirect();
-
-
-private:
-
-	/*
-	Exceptions:
-	CTCPConnection::CSendException
-	*/
-	void sendNegotiationString(uint32_t minVersion, uint32_t maxVersion);
-
-	/*
-	minVersion:
-	Reference to valid uint32_t (NOT CHECKED)
-	Reference lifetime: at least until the end of this function
-
-	maxVersion:
-	Reference to valid uint32_t (NOT CHECKED)
-	Reference lifetime: at least until the end of this function
-
-	Note: method writes values into minVersion and maxVersion.
-
-	Exceptions:
-	CTCPConnection::CReceiveException
-	CProtocolError
-	*/
-	void receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion);
 };
 
 #endif
