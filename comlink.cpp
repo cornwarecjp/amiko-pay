@@ -19,6 +19,8 @@
 */
 
 #include "log.h"
+#include "bitcoinaddress.h"
+#include "messages.h"
 
 #include "comlink.h"
 
@@ -27,20 +29,21 @@
 
 CComLink::CComLink(const CURI &uri, const CAmikoSettings &settings) :
 	m_Connection(uri.getHost(), uri.getPort(AMIKO_DEFAULT_PORT)),
-	m_URI(uri.getURI()),
+	m_URI(uri),
+	m_Settings(settings),
 	m_isServerSide(false),
 	m_State(ePending)
 {
-	//TODO: use settings
 }
 
 
 CComLink::CComLink(const CTCPListener &listener, const CAmikoSettings &settings) :
 	m_Connection(listener),
+	m_URI("dummy://localhost"),
+	m_Settings(settings),
 	m_isServerSide(true),
 	m_State(ePending)
 {
-	//TODO: use settings
 }
 
 
@@ -132,53 +135,193 @@ void CComLink::threadFunc()
 
 void CComLink::initialize()
 {
-	//TODO: catch exceptions
 	if(m_isServerSide)
 	{
-		uint32_t minVersion, maxVersion;
-		receiveNegotiationString(minVersion, maxVersion);
-
-		if(minVersion > maxVersion)
-			throw CProtocolError("Protocol negotiation gave weird result");
-
-		//Version matching
-		minVersion = std::max<uint32_t>(minVersion, AMIKO_MIN_PROTOCOL_VERSION);
-		maxVersion = std::min<uint32_t>(maxVersion, AMIKO_MAX_PROTOCOL_VERSION);
-
-		if(minVersion > maxVersion)
 		{
-			//No matching version found
-			//Inform other side
-			sendNegotiationString(minVersion, maxVersion);
-			throw CVersionNegotiationFailure("No matching protocol version");
+			uint32_t minVersion, maxVersion;
+			receiveNegotiationString(minVersion, maxVersion);
+
+			if(minVersion > maxVersion)
+				throw CProtocolError("Protocol negotiation gave weird result");
+
+			//Version matching
+			minVersion = std::max<uint32_t>(minVersion, AMIKO_MIN_PROTOCOL_VERSION);
+			maxVersion = std::min<uint32_t>(maxVersion, AMIKO_MAX_PROTOCOL_VERSION);
+
+			if(minVersion > maxVersion)
+			{
+				//No matching version found
+				//Inform other side
+				sendNegotiationString(minVersion, maxVersion);
+				throw CVersionNegotiationFailure("No matching protocol version");
+			}
+
+			//Choose the highest version supported by both parties
+			m_ProtocolVersion = maxVersion;
+			sendNegotiationString(m_ProtocolVersion, m_ProtocolVersion);
 		}
 
-		//Choose the highest version supported by both parties
-		m_ProtocolVersion = maxVersion;
-		sendNegotiationString(m_ProtocolVersion, m_ProtocolVersion);
+		//1 s timeout:
+		CMessage *msg = CMessage::constructMessage(receiveMessageDirect(1000));
 
-		log(CString::format("Connected as server with protocol version %d\n",
-			1024, m_ProtocolVersion));
+		if(msg->getTypeID() != CMessage::eHello)
+		{
+			delete msg;
+			throw CProtocolError("Expected hello message, got different message type");
+		}
+
+		CHelloMessage hello = *((CHelloMessage *)msg);
+		//TODO: make exception-safe
+		delete msg;
+
+		//TODO: send nack reply in all the below error cases
+
+		if(hello.m_source != CSHA256(hello.m_myPublicKey))
+			throw CProtocolError(
+				"Source address and public key mismatch in received hello");
+
+		m_RemoteKey.setPublicKey(hello.m_myPublicKey);
+		if(!hello.verifySignature(m_RemoteKey))
+			throw CProtocolError(
+				"Signature and public key mismatch in received hello");
+
+		{
+			CString address = hello.m_yourAddress;
+
+			const CAmikoSettings::CLink *match = NULL;
+			for(size_t i=0; i < m_Settings.m_links.size(); i++)
+			{
+				const CAmikoSettings::CLink &link = m_Settings.m_links[i];
+				if(getBitcoinAddress(link.m_localKey) == address)
+				{
+					if(match != NULL)
+						throw CLinkDoesNotExist(
+							"Multiple links match address; can't choose");
+
+					match = &link;
+				}
+			}
+			if(match == NULL)
+				throw CLinkDoesNotExist("No matching link found for address");
+
+			m_LocalKey = match->m_localKey;
+		}
+
+		CHelloMessage helloReply;
+		//TODO: remaining fields
+		helloReply.m_source = CSHA256(m_LocalKey.getPublicKey());
+		helloReply.m_destination = CSHA256(m_RemoteKey.getPublicKey());
+		helloReply.m_myPublicKey = m_LocalKey.getPublicKey();
+		helloReply.m_yourAddress = getBitcoinAddress(helloReply.m_destination);
+		helloReply.sign(m_LocalKey);
+		sendMessageDirect(helloReply.serialize());
+
+		//TODO: wait for ack/nack?
+
+		log(CString::format(
+			"Connected as server (local: %s remote: %s) with protocol version %d\n",
+			1024,
+			getBitcoinAddress(m_LocalKey).c_str(),
+			getBitcoinAddress(m_RemoteKey).c_str(),
+			m_ProtocolVersion));
 	}
 	else
 	{
-		sendNegotiationString(AMIKO_MIN_PROTOCOL_VERSION, AMIKO_MAX_PROTOCOL_VERSION);
+		{
 
-		uint32_t minVersion, maxVersion;
-		receiveNegotiationString(minVersion, maxVersion);
+			CString address = m_URI.getPath();
 
-		if(minVersion < AMIKO_MIN_PROTOCOL_VERSION || maxVersion > AMIKO_MAX_PROTOCOL_VERSION)
-			throw CProtocolError("Peer returned illegal protocol negotiation result");
+			const CAmikoSettings::CLink *match = NULL;
+			for(size_t i=0; i < m_Settings.m_links.size(); i++)
+			{
+				const CAmikoSettings::CLink &link = m_Settings.m_links[i];
+				if(link.m_remoteURI.getPath() == address)
+				{
+					if(match != NULL)
+						throw CLinkDoesNotExist(
+							"Multiple links match address; can't choose");
 
-		if(minVersion < maxVersion)
-			throw CProtocolError("Protocol negotiation gave weird result");
+					match = &link;
+				}
+			}
+			if(match == NULL)
+				throw CLinkDoesNotExist("No matching link found for address");
 
-		if(minVersion > maxVersion)
-			throw CVersionNegotiationFailure("No matching protocol version");
+			m_LocalKey = match->m_localKey;
+		}
 
-		m_ProtocolVersion = minVersion;
-		log(CString::format("Connected as client to %s with protocol version %d\n",
-			1024, m_URI.c_str(), m_ProtocolVersion));
+		{
+			sendNegotiationString(AMIKO_MIN_PROTOCOL_VERSION, AMIKO_MAX_PROTOCOL_VERSION);
+
+			uint32_t minVersion, maxVersion;
+			receiveNegotiationString(minVersion, maxVersion);
+
+			if(minVersion < AMIKO_MIN_PROTOCOL_VERSION || maxVersion > AMIKO_MAX_PROTOCOL_VERSION)
+				throw CProtocolError("Peer returned illegal protocol negotiation result");
+
+			if(minVersion < maxVersion)
+				throw CProtocolError("Protocol negotiation gave weird result");
+
+			if(minVersion > maxVersion)
+				throw CVersionNegotiationFailure("No matching protocol version");
+
+			m_ProtocolVersion = minVersion;
+		}
+
+		CHelloMessage hello;
+		//TODO: remaining fields
+		hello.m_source = CSHA256(m_LocalKey.getPublicKey());
+		hello.m_myPublicKey = m_LocalKey.getPublicKey();
+		hello.m_yourAddress = m_URI.getPath();
+		hello.sign(m_LocalKey);
+		sendMessageDirect(hello.serialize());
+
+		//1 s timeout:
+		CMessage *msg = CMessage::constructMessage(receiveMessageDirect(1000));
+
+		//TODO: deal with Nack reply (which is a valid reply)
+
+		if(msg->getTypeID() != CMessage::eHello)
+		{
+			delete msg;
+			throw CProtocolError("Expected hello message, got different message type");
+		}
+
+		CHelloMessage helloReply = *((CHelloMessage *)msg);
+		//TODO: make exception-safe
+		delete msg;
+
+		//TODO: send nack reply in all the below error cases
+
+		if(getBitcoinAddress(helloReply.m_source) != hello.m_yourAddress)
+			throw CProtocolError(
+				"Mismatch between own hello and received hello source");
+
+		if(helloReply.m_yourAddress != getBitcoinAddress(hello.m_source))
+			throw CProtocolError(
+				"Mismatch between own hello source and received hello");
+
+		if(helloReply.m_destination != CSHA256(m_LocalKey.getPublicKey()))
+			throw CProtocolError(
+				"Destination address and public key mismatch in received hello");
+
+		if(helloReply.m_source != CSHA256(helloReply.m_myPublicKey))
+			throw CProtocolError(
+				"Source address and public key mismatch in received hello");
+
+		m_RemoteKey.setPublicKey(helloReply.m_myPublicKey);
+		if(!helloReply.verifySignature(m_RemoteKey))
+			throw CProtocolError(
+				"Signature and public key mismatch in received hello");
+
+		//TODO: send ack?
+
+		log(CString::format(
+			"Connected as client (local: %s remote: %s) with protocol version %d\n",
+			1024,
+			getBitcoinAddress(m_LocalKey).c_str(),
+			getBitcoinAddress(m_RemoteKey).c_str(),
+			m_ProtocolVersion));
 	}
 }
 
@@ -204,7 +347,7 @@ void CComLink::receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersi
 
 	for(unsigned int i=0; i < MAX_NEGOTIATION_STRING_LENGTH; i++)
 	{
-		m_Connection.receive(buf, -1); //TODO: set time-out on receiving
+		m_Connection.receive(buf, 1000); //1 s timeout (TODO)
 		unsigned char c = buf[0];
 
 		if(c == '\n')
@@ -265,12 +408,12 @@ void CComLink::sendMessageDirect(const CBinBuffer &message)
 }
 
 
-CBinBuffer CComLink::receiveMessageDirect()
+CBinBuffer CComLink::receiveMessageDirect(int timeoutValue)
 {
 	CBinBuffer sizebuffer(4);
 	try
 	{
-		m_Connection.receive(sizebuffer, 0); //immediate time-out
+		m_Connection.receive(sizebuffer, timeoutValue);
 	}
 	catch(CTCPConnection::CTimeoutException &e)
 	{
@@ -285,7 +428,7 @@ CBinBuffer CComLink::receiveMessageDirect()
 
 	try
 	{
-		m_Connection.receive(ret, 0); //immediate time-out
+		m_Connection.receive(ret, timeoutValue);
 	}
 	catch(CTCPConnection::CTimeoutException &e)
 	{

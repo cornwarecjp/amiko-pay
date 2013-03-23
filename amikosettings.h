@@ -24,6 +24,8 @@
 #include <vector>
 
 #include "binbuffer.h"
+#include "uriparser.h"
+#include "key.h"
 
 class CAmikoSettings
 {
@@ -31,10 +33,13 @@ public:
 
 	class CLink
 	{
-		CBinBuffer m_localPublicKey;
-		CBinBuffer m_remotePublicKey;
+	public:
+		CLink() : m_remoteURI("dummy://localhost") {}
+		CURI m_remoteURI;
+		CKey m_localKey;
+		CKey m_remoteKey; //must either be empty or correspond with m_remoteURI
 	};
-	std::vector<CLink> m_Links;
+	std::vector<CLink> m_links;
 };
 
 #endif

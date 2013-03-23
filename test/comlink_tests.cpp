@@ -27,6 +27,7 @@
 #include "cthread.h"
 #include "messages.h"
 #include "timer.h"
+#include "bitcoinaddress.h"
 
 #include "test.h"
 
@@ -67,20 +68,36 @@ class CComLinkTest : public CTest
 
 	virtual void run()
 	{
-		CAmikoSettings settings;
+		CAmikoSettings settings1, settings2;
+		settings1.m_links.resize(1);
+		settings2.m_links.resize(1);
+		CAmikoSettings::CLink &link1 = settings1.m_links[0];
+		CAmikoSettings::CLink &link2 = settings2.m_links[0];
+		link1.m_localKey.makeNewKey();
+		link2.m_localKey.makeNewKey();
+		link1.m_remoteKey.setPublicKey(link2.m_localKey.getPublicKey());
+		link2.m_remoteKey.setPublicKey(link1.m_localKey.getPublicKey());
+		link1.m_remoteURI =
+			CString("amikolink://localhost/") + getBitcoinAddress(link1.m_remoteKey);
 
 		//Start listening at TCP port
 		CTCPListener listener(AMIKO_DEFAULT_PORT);
 
 		//Connect to TCP port
-		CComLink *c1 = new CComLink(CURI("amikolink://localhost"), settings);
+		CComLink *c1 = new CComLink(link1.m_remoteURI, settings1);
 		c1->setReceiver(&testReceiver);
 		c1->start();
 
 		//Accept connection on TCP port and loopback messages
-		CComLink *c2 = new CComLink(listener, settings);
+		CComLink *c2 = new CComLink(listener, settings2);
 		c2->setReceiver(c2); //loop-back
 		c2->start();
+
+		//wait until initialization is finished:
+		while(
+			c1->getState() == CComLink::ePending ||
+			c2->getState() == CComLink::ePending)
+				CTimer::sleep(10); //10 ms
 
 		testReceiver.clear();
 		c1->sendMessage(CBinBuffer("test"));

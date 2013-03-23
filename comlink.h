@@ -78,17 +78,18 @@ public:
 	uri:
 	Reference to properly formed CURI object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
+	Contains a host and a path (NOT CHECKED)
+	Path equals m_remoteURI.getPath() of one link in settings (NOT CHECKED)
 
 	settings:
 	Reference to properly formed CAmikoSettings object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
-	Address in URI corresponds with one public key in settings (CHECKED)
 
 	Constructed object:
 	Connected link object in pending state
 
 	Exceptions:
-	CLinkDoesNotExist
+	CURI::CNotFound
 	CTCPConnection::CConnectException
 	*/
 	CComLink(const CURI &uri, const CAmikoSettings &settings);
@@ -153,7 +154,7 @@ private:
 	Uninitialized (NOT CHECKED)
 
 	Exceptions:
-	CLinkDoesNotExist (TODO)
+	CLinkDoesNotExist
 	CTCPConnection::CSendException
 	CTCPConnection::CReceiveException
 	CProtocolError
@@ -172,6 +173,10 @@ private:
 	void sendMessageDirect(const CBinBuffer &message);
 
 	/*
+	timeoutValue:
+	timeout >= 0: time-out in milliseconds
+	timeout < 0: infinite time-out
+
 	Return value:
 	CBinBuffer object
 
@@ -180,7 +185,7 @@ private:
 	CBinBuffer::CReadError
 	CNoDataAvailable
 	*/
-	CBinBuffer receiveMessageDirect();
+	CBinBuffer receiveMessageDirect(int timeoutValue=0);
 
 
 	/*
@@ -209,7 +214,8 @@ private:
 
 	CKey m_RemoteKey, m_LocalKey;
 	CTCPConnection m_Connection;
-	CString m_URI;
+	CURI m_URI;
+	CAmikoSettings m_Settings;
 	bool m_isServerSide;
 	uint32_t m_ProtocolVersion;
 
