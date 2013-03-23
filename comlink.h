@@ -135,6 +135,7 @@ public:
 		{return m_LocalAddress;}
 
 
+private:
 	/*
 	This object:
 	Uninitialized (NOT CHECKED)
@@ -144,8 +145,6 @@ public:
 	CTCPConnection::CReceiveException
 	CProtocolError
 	CVersionNegotiationFailure
-
-	TODO: make this private
 	*/
 	void initialize();
 
@@ -156,8 +155,6 @@ public:
 
 	Exceptions:
 	CTCPConnection::CSendException
-
-	TODO: make this private
 	*/
 	void sendMessageDirect(const CBinBuffer &message);
 
@@ -169,13 +166,10 @@ public:
 	CTCPConnection::CReceiveException
 	CBinBuffer::CReadError
 	CNoDataAvailable
-
-	TODO: make this private
 	*/
 	CBinBuffer receiveMessageDirect();
 
 
-private:
 	/*
 	Exceptions:
 	CTCPConnection::CSendException
