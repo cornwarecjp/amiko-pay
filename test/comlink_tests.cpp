@@ -20,7 +20,7 @@
 
 #include <cstdio>
 
-#include "amikocomlink.h"
+#include "comlink.h"
 #include "tcplistener.h"
 #include "cthread.h"
 #include "messages.h"
@@ -35,18 +35,18 @@ TODO: document and expand
 void receiveMessage(void *arg);
 
 
-class CAmikoComLinkTest : public CTest
+class CComLinkTest : public CTest
 {
 	virtual const char *getName()
-		{return "amikocomlink";}
+		{return "comlink";}
 
 	virtual void run()
 	{
 		CTCPListener listener(AMIKO_DEFAULT_PORT);
 
-		CAmikoComLink *c1 = new CAmikoComLink(CURI("amikolink://localhost"));
+		CComLink *c1 = new CComLink(CURI("amikolink://localhost"));
 
-		CAmikoComLink *c2 = new CAmikoComLink(listener);
+		CComLink *c2 = new CComLink(listener);
 		c2->setReceiver(c2); //loop-back
 		c2->start();
 
@@ -69,12 +69,12 @@ class CAmikoComLinkTest : public CTest
 		c2->stop();
 		delete c2;
 	}
-} amikoComLinkTest;
+} comLinkTest;
 
 
 void receiveMessage(void *arg)
 {
-	CAmikoComLink *c = (CAmikoComLink *)arg;
+	CComLink *c = (CComLink *)arg;
 	CBinBuffer msg = c->receiveMessageDirect();
 }
 

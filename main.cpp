@@ -28,14 +28,14 @@
 #include "log.h"
 #include "cthread.h"
 
-#include "amikocomlink.h"
+#include "comlink.h"
 #include "tcplistener.h"
 #include "timer.h"
 
 void app()
 {
 	CTCPListener listener(AMIKO_DEFAULT_PORT);
-	CAmikoComLink *c2 = new CAmikoComLink(listener);
+	CComLink *c2 = new CComLink(listener);
 
 	c2->setReceiver(c2);
 	c2->start();
