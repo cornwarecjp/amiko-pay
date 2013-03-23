@@ -23,6 +23,7 @@
 
 #include <map>
 #include <queue>
+#include <stdint.h>
 
 #include "exception.h"
 #include "cstring.h"
@@ -148,34 +149,31 @@ public:
 	*/
 	void initialize();
 
-
-protected:
 	/*
 	message:
 	Reference to properly formed CBinBuffer object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
 	Exceptions:
-	TODO
+	CTCPConnection::CSendException
+
+	TODO: make this private
 	*/
-	virtual void sendMessageDirect(const CBinBuffer &message)=0;
+	void sendMessageDirect(const CBinBuffer &message);
 
 	/*
 	Return value:
 	CBinBuffer object
 
 	Exceptions:
+	CTCPConnection::CReceiveException
+	CBinBuffer::CReadError
 	CNoDataAvailable
-	TODO
+
+	TODO: make this private
 	*/
-	virtual CBinBuffer receiveMessageDirect()=0;
+	CBinBuffer receiveMessageDirect();
 
-
-	CKey m_RemoteAddress, m_LocalAddress;
-	CTCPConnection m_Connection;
-	CString m_URI;
-	bool m_isServerSide;
-	uint32_t m_ProtocolVersion;
 
 private:
 	/*
@@ -201,6 +199,12 @@ private:
 	*/
 	void receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion);
 
+
+	CKey m_RemoteAddress, m_LocalAddress;
+	CTCPConnection m_Connection;
+	CString m_URI;
+	bool m_isServerSide;
+	uint32_t m_ProtocolVersion;
 
 	CCriticalSection< std::queue<CBinBuffer> > m_SendQueue;
 	CSemaphore m_HasNewSendData;

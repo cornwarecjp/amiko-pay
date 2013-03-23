@@ -21,8 +21,6 @@
 #ifndef AMIKOCOMLINK_H
 #define AMIKOCOMLINK_H
 
-#include <stdint.h>
-
 #include "comlink.h"
 
 /*
@@ -61,33 +59,6 @@ public:
 	CAmikoComLink(const CTCPListener &listener);
 
 	~CAmikoComLink();
-
-	/*
-	message:
-	Reference to properly formed CBinBuffer object (NOT CHECKED)
-	Reference lifetime: at least until the end of this function
-
-	This object:
-	Initialized (NOT CHECKED)
-
-	Exceptions:
-	CTCPConnection::CSendException
-	*/
-	virtual void sendMessageDirect(const CBinBuffer &message);
-
-	/*
-	This object:
-	Initialized (NOT CHECKED)
-
-	Return value:
-	CBinBuffer object
-
-	Exceptions:
-	CTCPConnection::CReceiveException
-	CBinBuffer::CReadError
-	CNoDataAvailable
-	*/
-	virtual CBinBuffer receiveMessageDirect();
 };
 
 #endif
