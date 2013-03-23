@@ -19,6 +19,7 @@
 */
 
 #include <cstdio>
+#include <vector>
 
 #include "comlink.h"
 #include "tcplistener.h"
@@ -32,7 +33,30 @@
 TODO: document and expand
 */
 
-void receiveMessage(void *arg);
+class CTestReceiver : public CComInterface
+{
+public:
+	void sendMessage(const CBinBuffer &message)
+	{
+		CMutexLocker lock(m_receivedMessages);
+		m_receivedMessages.m_Value.push_back(message);
+	}
+
+	void clear()
+	{
+		CMutexLocker lock(m_receivedMessages);
+		m_receivedMessages.m_Value.clear();
+	}
+
+	std::vector<CBinBuffer> getMessages()
+	{
+		CMutexLocker lock(m_receivedMessages);
+		return m_receivedMessages.m_Value;
+	}
+
+	CCriticalSection< std::vector<CBinBuffer> > m_receivedMessages;
+
+} testReceiver;
 
 
 class CComLinkTest : public CTest
@@ -42,27 +66,29 @@ class CComLinkTest : public CTest
 
 	virtual void run()
 	{
+		//Start listening at TCP port
 		CTCPListener listener(AMIKO_DEFAULT_PORT);
 
+		//Connect to TCP port
 		CComLink *c1 = new CComLink(CURI("amikolink://localhost"));
+		c1->setReceiver(&testReceiver);
+		c1->start();
 
+		//Accept connection on TCP port and loopback messages
 		CComLink *c2 = new CComLink(listener);
 		c2->setReceiver(c2); //loop-back
 		c2->start();
 
-		c1->initialize();
+		testReceiver.clear();
+		c1->sendMessage(CBinBuffer("test"));
+		CTimer::sleep(100); //100 ms
+		std::vector<CBinBuffer> msgs = testReceiver.getMessages();
+		test("  Message transmission preserves contents",
+			msgs.size() == 1 &&
+			msgs[0].toString() == "test");
 
-		{
-			c1->sendMessageDirect(CBinBuffer("test"));
-			CTimer::sleep(100); //100 ms
-			CBinBuffer msg = c1->receiveMessageDirect();
-			test("  Message transmission preserves contents",
-				msg.toString() == "test");
-		}
-
-		test("  NoDataAvailable exception occurs when no message is available",
-			throws<CComLink::CNoDataAvailable>(receiveMessage, c1));
-
+		c1->setReceiver(NULL);
+		c1->stop();
 		delete c1;
 
 		c2->setReceiver(NULL);
@@ -71,10 +97,4 @@ class CComLinkTest : public CTest
 	}
 } comLinkTest;
 
-
-void receiveMessage(void *arg)
-{
-	CComLink *c = (CComLink *)arg;
-	CBinBuffer msg = c->receiveMessageDirect();
-}
 
