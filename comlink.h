@@ -31,6 +31,7 @@
 #include "key.h"
 #include "tcpconnection.h"
 #include "amikosettings.h"
+#include "messages.h"
 
 #include "cthread.h"
 #include "cominterface.h"
@@ -174,8 +175,8 @@ private:
 
 	/*
 	timeoutValue:
-	timeout >= 0: time-out in milliseconds
-	timeout < 0: infinite time-out
+	timeoutValue >= 0: time-out in milliseconds
+	timeoutValue < 0: infinite time-out
 
 	Return value:
 	CBinBuffer object
@@ -211,6 +212,18 @@ private:
 	*/
 	void receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion);
 
+	/*
+	timeoutValue:
+	timeoutValue >= 0: time-out in milliseconds
+	timeoutValue < 0: infinite time-out
+
+	Exceptions:
+	CTCPConnection::CReceiveException
+	CBinBuffer::CReadError
+	CNoDataAvailable
+	CProtocolError
+	*/
+	CHelloMessage receiveHello(int timeoutValue);
 
 	CKey m_RemoteKey, m_LocalKey;
 	CTCPConnection m_Connection;

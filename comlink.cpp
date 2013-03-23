@@ -20,7 +20,6 @@
 
 #include "log.h"
 #include "bitcoinaddress.h"
-#include "messages.h"
 
 #include "comlink.h"
 
@@ -162,17 +161,7 @@ void CComLink::initialize()
 		}
 
 		//1 s timeout:
-		CMessage *msg = CMessage::constructMessage(receiveMessageDirect(1000));
-
-		if(msg->getTypeID() != CMessage::eHello)
-		{
-			delete msg;
-			throw CProtocolError("Expected hello message, got different message type");
-		}
-
-		CHelloMessage hello = *((CHelloMessage *)msg);
-		//TODO: make exception-safe
-		delete msg;
+		CHelloMessage hello = receiveHello(1000);
 
 		//TODO: send nack reply in all the below error cases
 
@@ -277,19 +266,7 @@ void CComLink::initialize()
 		sendMessageDirect(hello.serialize());
 
 		//1 s timeout:
-		CMessage *msg = CMessage::constructMessage(receiveMessageDirect(1000));
-
-		//TODO: deal with Nack reply (which is a valid reply)
-
-		if(msg->getTypeID() != CMessage::eHello)
-		{
-			delete msg;
-			throw CProtocolError("Expected hello message, got different message type");
-		}
-
-		CHelloMessage helloReply = *((CHelloMessage *)msg);
-		//TODO: make exception-safe
-		delete msg;
+		CHelloMessage helloReply = receiveHello(1000);
 
 		//TODO: send nack reply in all the below error cases
 
@@ -395,6 +372,26 @@ void CComLink::receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersi
 
 	minVersion = minVerStr.parseAsDecimalInteger();
 	maxVersion = maxVerStr.parseAsDecimalInteger();
+}
+
+
+CHelloMessage CComLink::receiveHello(int timeoutValue)
+{
+	CMessage *msg = CMessage::constructMessage(receiveMessageDirect(timeoutValue));
+
+	//TODO: deal with Nack reply (which is a valid reply)
+
+	if(msg->getTypeID() != CMessage::eHello)
+	{
+		delete msg;
+		throw CProtocolError("Expected hello message, got different message type");
+	}
+
+	CHelloMessage ret = *((CHelloMessage *)msg);
+	//TODO: make exception-safe
+	delete msg;
+
+	return ret;
 }
 
 
