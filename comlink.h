@@ -48,14 +48,10 @@ following state transitions:
 Sending and receiving of messages only happens in the operational state.
 As soon as the closed state is reached, the ComLink object should be deleted
 to free up system resources (such as memory, the thread and the network socket).
-
-This class also contains some factory infrastructure for creating objects from
-derived classes, based on an URI.
 */
 class CComLink : public CComInterface, public CThread
 {
 public:
-	SIMPLEEXCEPTIONCLASS(CConstructionFailed)
 	SIMPLEEXCEPTIONCLASS(CNoDataAvailable)
 
 	enum eState
@@ -148,79 +144,6 @@ private:
 	CSemaphore m_HasNewSendData;
 
 	CCriticalSection<eState> m_State;
-
-
-public:
-	/*
-	uri:
-	Reference to a properly formed CURI object (NOT CHECKED)
-	Reference lifetime: at least until the end of this function
-
-	Return value:
-	Pointer to a newly constructed communication link object
-	Pointer ownership is passed to the caller
-
-	Exceptions:
-	CConstructionFailed
-	*/
-	static CComLink *make(const CURI &uri);
-
-	/*
-	uri:
-	Reference to a properly formed CString object (NOT CHECKED)
-	Reference lifetime: at least until the end of this function
-
-	Return value:
-	Pointer to a newly constructed communication link object
-	Pointer ownership is passed to the caller
-
-	Exceptions:
-	CConstructionFailed
-	*/
-	static inline CComLink *make(const CString &uri)
-		{return make(CURI(uri));}
-
-
-protected:
-
-	/*
-	Handler function for a communication link URI scheme.
-
-	uri:
-	Reference to a properly formed CURI object (NOT CHECKED)
-	Reference lifetime: at least until the end of this function
-
-	Return value:
-	Pointer to a newly constructed communication link object
-	Pointer ownership is passed to the caller
-
-	Exceptions:
-	any CException-derived class
-	*/
-	typedef CComLink *(*t_schemeHandler)(const CURI &uri);
-
-	/*
-	scheme:
-	Reference to a properly formed CString object (NOT CHECKED)
-	Reference lifetime: at least until the end of this function
-
-	handler:
-	Function pointer to a function which conforms to the
-	description of t_schemeHandler
-
-	WARNING:
-	NOT thread-safe; only meant to be called at program initialization
-
-	Exceptions:
-	none
-	*/
-	static void registerSchemeHandler(const CString &scheme, t_schemeHandler handler);
-
-
-private:
-
-
-	static std::map<CString, t_schemeHandler> m_schemeHandlers;
 };
 
 #endif

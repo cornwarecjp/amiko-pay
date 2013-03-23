@@ -75,16 +75,6 @@ public:
 	~CAmikoComLink();
 
 	/*
-	scheme:
-	Reference to properly formed CString object (NOT CHECKED)
-	Reference lifetime: at least until the end of this function
-
-	Exceptions:
-	none
-	*/
-	static void registerForScheme(const CString &scheme);
-
-	/*
 	This object:
 	Uninitialized (NOT CHECKED)
 
@@ -152,20 +142,6 @@ private:
 	CProtocolError
 	*/
 	void receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion);
-
-	/*
-	uri:
-	Reference to a properly formed CURI object (NOT CHECKED)
-	Reference lifetime: at least until the end of this function
-
-	Return value:
-	Pointer to a newly constructed link object
-	Pointer ownership is passed to the caller
-
-	Exceptions:
-	CConstructionFailed
-	*/
-	static CComLink *makeNewInstance(const CURI &uri);
 };
 
 #endif

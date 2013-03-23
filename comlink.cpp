@@ -125,33 +125,3 @@ const CKey &CComLink::getLocalAddress() const
 }
 
 
-std::map<CString, CComLink::t_schemeHandler> CComLink::m_schemeHandlers;
-
-void CComLink::registerSchemeHandler(const CString &scheme, CComLink::t_schemeHandler handler)
-{
-	m_schemeHandlers[scheme] = handler;
-}
-
-CComLink *CComLink::make(const CURI &uri)
-{
-	CString scheme = uri.getScheme();
-	if(scheme == "")
-		throw CConstructionFailed("Empty scheme");
-
-	std::map<CString, t_schemeHandler>::const_iterator iterator =
-		m_schemeHandlers.find(scheme);
-
-	if(iterator == m_schemeHandlers.end())
-		throw CConstructionFailed("unknown scheme");
-
-	const t_schemeHandler handler = iterator->second;
-	try
-	{
-		return handler(uri);
-	}
-	catch(CException &e)
-	{
-		throw CConstructionFailed(e.what());
-	}
-}
-

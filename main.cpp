@@ -58,8 +58,6 @@ int main(int argc, char **argv)
 		SSL_library_init();
 		COpenSSLMutexes openSSLMutexes;
 
-		CAmikoComLink::registerForScheme("amikolink");
-
 		app();
 
 		ERR_free_strings();

@@ -48,18 +48,6 @@ CAmikoComLink::~CAmikoComLink()
 }
 
 
-CComLink *CAmikoComLink::makeNewInstance(const CURI &uri)
-{
-	return new CAmikoComLink(uri);
-}
-
-
-void CAmikoComLink::registerForScheme(const CString &scheme)
-{
-	registerSchemeHandler(scheme, makeNewInstance);
-}
-
-
 void CAmikoComLink::initialize()
 {
 	//TODO: catch exceptions
