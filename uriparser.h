@@ -82,6 +82,8 @@ public:
 		{return getText(m_URI.hostText);}
 	inline CString getPort() const
 		{return getText(m_URI.portText);}
+	inline CString getPath() const
+		{return getText(m_URI.pathHead, m_URI.pathTail);}
 
 	/*
 	dflt:
@@ -131,6 +133,15 @@ private:
 	none
 	*/
 	CString getText(const UriTextRangeA &range, const CString &dflt) const;
+
+	/*
+	Return value:
+	ASCII encoded (TODO: support unicode)
+
+	Exceptions:
+	CNotFound
+	*/
+	CString getText(const UriPathSegmentA *head, const UriPathSegmentA *tail) const;
 };
 
 #endif

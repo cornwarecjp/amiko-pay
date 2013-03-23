@@ -28,6 +28,11 @@ void getPort(void *arg)
 	((CURI *)arg)->getPort();
 }
 
+void getPath(void *arg)
+{
+	((CURI *)arg)->getPath();
+}
+
 /*
 TODO: document and expand
 */
@@ -44,10 +49,14 @@ class CUriParserTest : public CTest
 		test("  Port is found", url1.getPort() == "1234");
 		test("  Present port does not equal default value",
 			url1.getPort("42") == "1234");
+		test("  Path is found", url1.getPath() == "foo/bar");
 
-		CURI url2("scheme://host.domain/foo/bar");
+		CURI url2("scheme://host.domain");
 		test("  Request missing port gives exception",
 			throws<CURI::CNotFound>(getPort, &url2)
+			);
+		test("  Request missing path gives exception",
+			throws<CURI::CNotFound>(getPath, &url2)
 			);
 		test("  Missing port is given default value",
 			url2.getPort("1234") == "1234");

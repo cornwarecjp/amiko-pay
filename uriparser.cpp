@@ -44,9 +44,7 @@ CURI::~CURI()
 CString CURI::getText(const UriTextRangeA &range) const
 {
 	if(range.first == NULL || range.afterLast == NULL)
-	{
 		throw CNotFound("URI section not found");
-	}
 
 	size_t length = range.afterLast - range.first;
 	size_t position = range.first - m_URIText.c_str();
@@ -55,6 +53,7 @@ CString CURI::getText(const UriTextRangeA &range) const
 	ret.assign(m_URIText, position, length);
 	return ret;
 }
+
 
 CString CURI::getText(const UriTextRangeA &range, const CString &dflt) const
 {
@@ -66,5 +65,17 @@ CString CURI::getText(const UriTextRangeA &range, const CString &dflt) const
 	{} //ignore exception and fall through
 
 	return dflt;
+}
+
+
+CString CURI::getText(const UriPathSegmentA *head, const UriPathSegmentA *tail) const
+{
+	if(head == NULL || tail == NULL)
+		throw CNotFound("URI section not found");
+
+	UriTextRangeA range;
+	range.first = head->text.first;
+	range.afterLast = tail->text.afterLast;
+	return getText(range);
 }
 
