@@ -53,9 +53,33 @@ public:
 	*/
 	CURI(const CString &uri);
 
-	//TODO: copy constructor, assignment operator
+	/*
+	uri:
+	Reference to a correctly formed CURI object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Constructed object:
+	Deep copy of uri
+
+	Exceptions:
+	CParseFailure
+	*/
+	CURI(const CURI &uri);
 
 	~CURI();
+
+	/*
+	uri:
+	Reference to a correctly formed CURI object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Return value:
+	Reference to this object
+
+	Exceptions:
+	CParseFailure
+	*/
+	const CURI &operator=(const CURI &uri);
 
 	/*
 	Return value:

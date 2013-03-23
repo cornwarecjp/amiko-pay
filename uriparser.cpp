@@ -35,9 +35,41 @@ CURI::CURI(const CString &uri)
 }
 
 
+CURI::CURI(const CURI &uri)
+	: m_URIText(uri.getURI())
+{
+	UriParserStateA state;
+	state.uri = &m_URI;
+	if (uriParseUriA(&state, m_URIText.c_str()) != URI_SUCCESS)
+	{
+		//Note: this code path should never be triggered
+		//TODO: maybe free some structures?
+		throw CParseFailure("Failed to parse URI in copy constructor");
+	}
+}
+
+
 CURI::~CURI()
 {
 	uriFreeUriMembersA(&m_URI);
+}
+
+
+const CURI &CURI::operator=(const CURI &uri)
+{
+	uriFreeUriMembersA(&m_URI);
+
+	m_URIText = uri.getURI();
+	UriParserStateA state;
+	state.uri = &m_URI;
+	if (uriParseUriA(&state, m_URIText.c_str()) != URI_SUCCESS)
+	{
+		//Note: this code path should never be triggered
+		//TODO: maybe free some structures?
+		throw CParseFailure("Failed to parse URI in assignment operator");
+	}
+
+	return *this;
 }
 
 
