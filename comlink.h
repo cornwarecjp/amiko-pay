@@ -80,7 +80,7 @@ public:
 	Reference to properly formed CURI object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 	Contains a host and a path (NOT CHECKED)
-	Path equals m_remoteURI.getPath() of one link in settings (NOT CHECKED)
+	Path equals m_remoteURI.getPath() of one link in settings (CHECKED)
 
 	settings:
 	Reference to properly formed CAmikoSettings object (NOT CHECKED)
@@ -92,6 +92,7 @@ public:
 	Exceptions:
 	CURI::CNotFound
 	CTCPConnection::CConnectException
+	CLinkDoesNotExist
 	*/
 	CComLink(const CURI &uri, const CAmikoSettings &settings);
 
@@ -206,7 +207,7 @@ private:
 	CTCPConnection::CSendException
 	CTCPConnection::CReceiveException
 	*/
-	//void exchangeHello(); TODO
+	void exchangeHello();
 
 	/*
 	Exceptions:
