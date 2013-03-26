@@ -1,5 +1,5 @@
 /*
-    amikosettings.h
+    conffile.cpp
     Copyright (C) 2013 by CJP
 
     This file is part of Amiko Pay.
@@ -18,47 +18,45 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef AMIKOSETTINGS_H
-#define AMIKOSETTINGS_H
+#include <cstdio>
 
-#include <vector>
-
-#include "binbuffer.h"
-#include "uriparser.h"
-#include "key.h"
-#include "bitcoinaddress.h"
 #include "conffile.h"
 
-class CAmikoSettings
+//RAII file pointer micro-class:
+class CFilePointer
 {
 public:
-	//TODO: spec
-	CAmikoSettings();
-
-	//TODO: spec
-	CAmikoSettings(const CConfFile &file);
-
-	class CLink
-	{
-	public:
-		CLink() : m_remoteURI("dummy://localhost") {}
-		CURI m_remoteURI;
-		CKey m_localKey;
-		CKey m_remoteKey; //must either be empty or correspond with m_remoteURI
-	};
-	std::vector<CLink> m_links;
-
-	CString m_localHostname;
-	CString m_portNumber;
-
-	//TODO: spec
-	inline CString getLocalURL(const CKey &localKey)
-	{
-		return CString("amikolink://") +
-			m_localHostname + ":" + m_portNumber + "/" +
-			getBitcoinAddress(localKey);
-	}
+	CFilePointer(FILE *fp)
+		{m_FP = fp;}
+	~CFilePointer()
+		{if(m_FP != NULL) fclose(m_FP);}
+	FILE *m_FP;
 };
 
-#endif
+CConfFile::CConfFile()
+{
+}
+
+
+CConfFile::CConfFile(const CString &filename)
+{
+	load(filename);
+}
+
+
+CConfFile::~CConfFile()
+{
+}
+
+
+void CConfFile::load(const CString &filename)
+{
+	CFilePointer f(fopen(filename.c_str(), "rb"));
+
+	if(f.m_FP == NULL)
+		throw COpenError("CConfFile::load(const CString &): could not open file");
+
+	//TODO
+}
+
 

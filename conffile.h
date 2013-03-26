@@ -1,5 +1,5 @@
 /*
-    amikosettings.h
+    conffile.h
     Copyright (C) 2013 by CJP
 
     This file is part of Amiko Pay.
@@ -18,46 +18,53 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef AMIKOSETTINGS_H
-#define AMIKOSETTINGS_H
+#ifndef CONFFILE_H
+#define CONFFILE_H
 
 #include <vector>
 
-#include "binbuffer.h"
-#include "uriparser.h"
-#include "key.h"
-#include "bitcoinaddress.h"
-#include "conffile.h"
+#include "cstring.h"
+#include "exception.h"
 
-class CAmikoSettings
+
+class CConfFile
 {
 public:
-	//TODO: spec
-	CAmikoSettings();
+	SIMPLEEXCEPTIONCLASS(COpenError)
 
-	//TODO: spec
-	CAmikoSettings(const CConfFile &file);
+	/*
+	Constructed object:
+	empty CConfFile object
 
-	class CLink
-	{
-	public:
-		CLink() : m_remoteURI("dummy://localhost") {}
-		CURI m_remoteURI;
-		CKey m_localKey;
-		CKey m_remoteKey; //must either be empty or correspond with m_remoteURI
-	};
-	std::vector<CLink> m_links;
+	Exceptions:
+	none
+	*/
+	CConfFile();
 
-	CString m_localHostname;
-	CString m_portNumber;
+	/*
+	filename:
+	Reference to properly formed std::string object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
 
-	//TODO: spec
-	inline CString getLocalURL(const CKey &localKey)
-	{
-		return CString("amikolink://") +
-			m_localHostname + ":" + m_portNumber + "/" +
-			getBitcoinAddress(localKey);
-	}
+	Constructed object:
+	CConfFile object filled with values from file
+
+	Exceptions:
+	COpenError
+	*/
+	CConfFile(const CString &filename);
+
+	~CConfFile();
+
+	/*
+	filename:
+	Reference to properly formed std::string object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Exceptions:
+	COpenError
+	*/
+	void load(const CString &filename);
 };
 
 #endif
