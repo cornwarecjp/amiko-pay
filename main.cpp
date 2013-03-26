@@ -36,9 +36,6 @@
 void app()
 {
 	CAmikoSettings settings(CConfFile("amikopay.conf"));
-	settings.m_localHostname = "localhost";
-	settings.m_portNumber = AMIKO_DEFAULT_PORT;
-	//TODO: add some link info, or otherwise all connections will be rejected
 
 	CTCPListener listener(settings.m_portNumber);
 	CComLink *c2 = new CComLink(listener, settings);
