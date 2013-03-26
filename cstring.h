@@ -170,6 +170,12 @@ public:
 	uint32_t parseAsDecimalInteger() const;
 
 	/*
+	Exceptions:
+	none
+	*/
+	void strip();
+
+	/*
 	format:
 	Valid pointer (NOT CHECKED)
 	Pointed memory contains null-terminated C string (NOT CHECKED)

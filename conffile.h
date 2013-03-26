@@ -21,7 +21,8 @@
 #ifndef CONFFILE_H
 #define CONFFILE_H
 
-#include <vector>
+#include <cstdio>
+#include <map>
 
 #include "cstring.h"
 #include "exception.h"
@@ -31,6 +32,8 @@ class CConfFile
 {
 public:
 	SIMPLEEXCEPTIONCLASS(COpenError)
+	SIMPLEEXCEPTIONCLASS(CSyntaxError)
+	SIMPLEEXCEPTIONCLASS(CEndOfFile)
 
 	/*
 	Constructed object:
@@ -65,6 +68,25 @@ public:
 	COpenError
 	*/
 	void load(const CString &filename);
+
+	/*
+	Outer-level key is section name
+	Inner-level key is variable name
+	Inner-level value is variable value
+	*/
+	std::map<CString, std::map<CString, CString> > m_Data;
+
+
+private:
+
+	/*
+	fp:
+	File pointer of open file (NOT CHECKED)
+
+	Exceptions:
+	CEndOfFile
+	*/
+	CString readLine(FILE *fp);
 };
 
 #endif

@@ -35,7 +35,7 @@
 
 void app()
 {
-	CAmikoSettings settings;
+	CAmikoSettings settings(CConfFile("amikopay.conf"));
 	settings.m_localHostname = "localhost";
 	settings.m_portNumber = AMIKO_DEFAULT_PORT;
 	//TODO: add some link info, or otherwise all connections will be rejected

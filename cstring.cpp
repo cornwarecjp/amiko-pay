@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstdarg>
+#include <ctype.h>
 
 #include "cstring.h"
 
@@ -93,6 +94,15 @@ uint32_t CString::parseAsDecimalInteger() const
 		ret = 10*ret + (c - '0');
 	}
 	return ret;
+}
+
+
+void CString::strip()
+{
+	ssize_t start = 0, end = length();
+	while(start < end && isspace((*this)[start])) start++;
+	while(end > start && isspace((*this)[end-1])) end--;
+	(*this) = substr(start, end);
 }
 
 
