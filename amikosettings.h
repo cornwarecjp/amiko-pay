@@ -26,6 +26,7 @@
 #include "binbuffer.h"
 #include "uriparser.h"
 #include "key.h"
+#include "bitcoinaddress.h"
 
 class CAmikoSettings
 {
@@ -40,6 +41,16 @@ public:
 		CKey m_remoteKey; //must either be empty or correspond with m_remoteURI
 	};
 	std::vector<CLink> m_links;
+
+	CString m_localHostname;
+	CString m_portNumber;
+
+	inline CString getLocalURL(const CKey &localKey)
+	{
+		return CString("amikolink://") +
+			m_localHostname + ":" + m_portNumber + "/" +
+			getBitcoinAddress(localKey);
+	}
 };
 
 #endif

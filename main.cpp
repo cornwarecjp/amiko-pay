@@ -36,8 +36,11 @@
 void app()
 {
 	CAmikoSettings settings;
+	settings.m_localHostname = "localhost";
+	settings.m_portNumber = AMIKO_DEFAULT_PORT;
+	//TODO: add some link info, or otherwise all connections will be rejected
 
-	CTCPListener listener(AMIKO_DEFAULT_PORT);
+	CTCPListener listener(settings.m_portNumber);
 	CComLink *c2 = new CComLink(listener, settings);
 
 	c2->setReceiver(c2);

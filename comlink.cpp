@@ -341,6 +341,7 @@ void CComLink::exchangeHello()
 		helloReply.m_source = CRIPEMD160(CSHA256(m_LocalKey.getPublicKey()).toBinBuffer());
 		helloReply.m_destination = CRIPEMD160(CSHA256(m_RemoteKey.getPublicKey()).toBinBuffer());
 		helloReply.m_myPublicKey = m_LocalKey.getPublicKey();
+		helloReply.m_myPreferredURL = m_Settings.getLocalURL(m_LocalKey);
 		helloReply.m_yourAddress = getBitcoinAddress(helloReply.m_destination);
 		helloReply.sign(m_LocalKey);
 		sendMessageDirect(helloReply.serialize());
@@ -353,6 +354,7 @@ void CComLink::exchangeHello()
 		//TODO: remaining fields
 		hello.m_source = CRIPEMD160(CSHA256(m_LocalKey.getPublicKey()).toBinBuffer());
 		hello.m_myPublicKey = m_LocalKey.getPublicKey();
+		hello.m_myPreferredURL = m_Settings.getLocalURL(m_LocalKey);
 		hello.m_yourAddress = m_URI.getPath();
 		hello.sign(m_LocalKey);
 		sendMessageDirect(hello.serialize());

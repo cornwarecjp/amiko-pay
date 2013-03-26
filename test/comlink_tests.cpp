@@ -69,6 +69,10 @@ class CComLinkTest : public CTest
 	virtual void run()
 	{
 		CAmikoSettings settings1, settings2;
+		settings1.m_localHostname = "localhost";
+		settings2.m_localHostname = "localhost";
+		settings1.m_portNumber = AMIKO_DEFAULT_PORT;
+		settings2.m_portNumber = AMIKO_DEFAULT_PORT;
 		settings1.m_links.resize(1);
 		settings2.m_links.resize(1);
 		CAmikoSettings::CLink &link1 = settings1.m_links[0];
@@ -77,11 +81,10 @@ class CComLinkTest : public CTest
 		link2.m_localKey.makeNewKey();
 		link1.m_remoteKey.setPublicKey(link2.m_localKey.getPublicKey());
 		link2.m_remoteKey.setPublicKey(link1.m_localKey.getPublicKey());
-		link1.m_remoteURI =
-			CString("amikolink://localhost/") + getBitcoinAddress(link1.m_remoteKey);
+		link1.m_remoteURI = settings2.getLocalURL(link2.m_localKey);
 
 		//Start listening at TCP port
-		CTCPListener listener(AMIKO_DEFAULT_PORT);
+		CTCPListener listener(settings2.m_portNumber);
 
 		//Connect to TCP port
 		CComLink *c1 = new CComLink(link1.m_remoteURI, settings1);
