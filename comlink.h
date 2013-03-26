@@ -36,9 +36,6 @@
 #include "cthread.h"
 #include "cominterface.h"
 
-//TODO: choose a friendly default port
-#define AMIKO_DEFAULT_PORT "12345"
-
 #define AMIKO_MIN_PROTOCOL_VERSION 1
 #define AMIKO_MAX_PROTOCOL_VERSION 1
 

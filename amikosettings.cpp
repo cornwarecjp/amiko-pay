@@ -28,7 +28,12 @@ CAmikoSettings::CAmikoSettings()
 
 CAmikoSettings::CAmikoSettings(const CConfFile &file)
 {
-	//TODO
+	m_localHostname = file.getValue("receiveConnections", "hostname",
+		"");
+	m_portNumber = file.getValue("receiveConnections", "portNumber",
+		AMIKO_DEFAULT_PORT);
+
+	//TODO: other values
 }
 
 

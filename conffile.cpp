@@ -120,3 +120,23 @@ CString CConfFile::readLine(FILE *fp)
 	return ret;
 }
 
+
+CString CConfFile::getValue(const CString &section, const CString &key, const CString &deflt) const
+{
+	//find section
+	std::map<CString, std::map<CString, CString> >::const_iterator s =
+		m_Data.find(section);
+	if(s == m_Data.end()) return deflt;
+	const std::map<CString, CString> &sect = (*s).second;
+
+	//find key
+	std::map<CString, CString>::const_iterator v =
+		sect.find(key);
+	if(v == sect.end()) return deflt;
+
+	//return value
+	return (*v).second;
+}
+
+
+

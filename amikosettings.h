@@ -29,6 +29,9 @@
 #include "bitcoinaddress.h"
 #include "conffile.h"
 
+//TODO: choose a friendly default port
+#define AMIKO_DEFAULT_PORT "12345"
+
 class CAmikoSettings
 {
 public:
