@@ -25,8 +25,6 @@
 #include <vector>
 #include <algorithm>
 
-#include "ripemd160.h"
-
 #include "bitcoinaddress.h"
 
 
@@ -120,10 +118,8 @@ inline CString encodeBase58Check(const CBinBuffer &data)
 }
 
 
-CString getBitcoinAddress(const CSHA256 &hashedPublicKey)
+CString getBitcoinAddress(const CRIPEMD160 &address)
 {
-	CRIPEMD160 address(hashedPublicKey.toBinBuffer());
-
 	/*
 	PUBKEY_ADDRESS = 0,
 	SCRIPT_ADDRESS = 5,

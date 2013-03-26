@@ -27,6 +27,15 @@ class CRIPEMD160 : protected CBinBuffer
 {
 public:
 	/*
+	Constructed object:
+	Uninitialized CRIPEMD160 object
+
+	Exceptions:
+	none
+	*/
+	CRIPEMD160();
+
+	/*
 	data:
 	Reference to properly formed CBinBuffer object
 	Reference lifetime: at least until the end of this function
@@ -38,6 +47,19 @@ public:
 	none (TODO)
 	*/
 	CRIPEMD160(const CBinBuffer &data);
+
+	/*
+	hash2:
+	Reference to properly formed CRIPEMD160 object
+	Reference lifetime: at least until the end of this function
+	
+	Exceptions:
+	none
+	*/
+	inline bool operator==(const CRIPEMD160 &hash2) const
+		{return CBinBuffer::operator==(hash2.toBinBuffer());}
+	inline bool operator!=(const CRIPEMD160 &hash2) const
+		{return CBinBuffer::operator!=(hash2.toBinBuffer());}
 
 	/*
 	Return value:
@@ -60,8 +82,8 @@ public:
 	Exceptions:
 	none
 	*/
-	inline size_t getSize() const
-		{return size();}
+	inline static size_t getSize()
+		{return 20;}
 
 	/*
 	Return value:
@@ -87,17 +109,6 @@ public:
 	CBinBuffer::CReadError
 	*/
 	static CRIPEMD160 fromBinBuffer(const CBinBuffer &buffer);
-
-
-private:
-	/*
-	Constructed object:
-	Uninitialized CRIPEMD160 object
-
-	Exceptions:
-	none
-	*/
-	CRIPEMD160();
 };
 
 #endif

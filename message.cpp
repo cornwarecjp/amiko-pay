@@ -24,7 +24,6 @@
 #include "message.h"
 #include "messages.h"
 
-
 CMessage::CMessage()
 {
 	//TODO: sensible default values, e.g. for timestamp
@@ -136,10 +135,10 @@ void CMessage::setSignedBody(const CBinBuffer &data)
 			"CMessage::setSignedBody(const CBinBuffer &): ID in message (%d) does not match ID of message class (%d)",
 			256, ID, getTypeID()));
 
-	m_source = CSHA256::fromBinBuffer(
-		data.readRawBinBuffer(pos, CSHA256::getSize()));
-	m_destination = CSHA256::fromBinBuffer(
-		data.readRawBinBuffer(pos, CSHA256::getSize()));
+	m_source = CRIPEMD160::fromBinBuffer(
+		data.readRawBinBuffer(pos, CRIPEMD160::getSize()));
+	m_destination = CRIPEMD160::fromBinBuffer(
+		data.readRawBinBuffer(pos, CRIPEMD160::getSize()));
 	m_timestamp = data.readUint<uint64_t>(pos);
 	m_lastSentBySource = CSHA256::fromBinBuffer(
 		data.readRawBinBuffer(pos, CSHA256::getSize()));

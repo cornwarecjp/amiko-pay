@@ -305,7 +305,7 @@ void CComLink::exchangeHello()
 
 		//TODO: send nack reply in all the below error cases
 
-		if(hello.m_source != CSHA256(hello.m_myPublicKey))
+		if(hello.m_source != CRIPEMD160(CSHA256(hello.m_myPublicKey).toBinBuffer()))
 			throw CProtocolError(
 				"Source address and public key mismatch in received hello");
 
@@ -338,8 +338,8 @@ void CComLink::exchangeHello()
 
 		CHelloMessage helloReply;
 		//TODO: remaining fields
-		helloReply.m_source = CSHA256(m_LocalKey.getPublicKey());
-		helloReply.m_destination = CSHA256(m_RemoteKey.getPublicKey());
+		helloReply.m_source = CRIPEMD160(CSHA256(m_LocalKey.getPublicKey()).toBinBuffer());
+		helloReply.m_destination = CRIPEMD160(CSHA256(m_RemoteKey.getPublicKey()).toBinBuffer());
 		helloReply.m_myPublicKey = m_LocalKey.getPublicKey();
 		helloReply.m_yourAddress = getBitcoinAddress(helloReply.m_destination);
 		helloReply.sign(m_LocalKey);
@@ -351,7 +351,7 @@ void CComLink::exchangeHello()
 	{
 		CHelloMessage hello;
 		//TODO: remaining fields
-		hello.m_source = CSHA256(m_LocalKey.getPublicKey());
+		hello.m_source = CRIPEMD160(CSHA256(m_LocalKey.getPublicKey()).toBinBuffer());
 		hello.m_myPublicKey = m_LocalKey.getPublicKey();
 		hello.m_yourAddress = m_URI.getPath();
 		hello.sign(m_LocalKey);
@@ -370,11 +370,11 @@ void CComLink::exchangeHello()
 			throw CProtocolError(
 				"Mismatch between own hello source and received hello");
 
-		if(helloReply.m_destination != CSHA256(m_LocalKey.getPublicKey()))
+		if(helloReply.m_destination != CRIPEMD160(CSHA256(m_LocalKey.getPublicKey()).toBinBuffer()))
 			throw CProtocolError(
 				"Destination address and public key mismatch in received hello");
 
-		if(helloReply.m_source != CSHA256(helloReply.m_myPublicKey))
+		if(helloReply.m_source != CRIPEMD160(CSHA256(helloReply.m_myPublicKey).toBinBuffer()))
 			throw CProtocolError(
 				"Source address and public key mismatch in received hello");
 

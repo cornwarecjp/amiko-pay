@@ -23,8 +23,14 @@
 
 #include "key.h"
 #include "sha256.h"
+#include "ripemd160.h"
 
-CString getBitcoinAddress(const CSHA256 &hashedPublicKey);
+CString getBitcoinAddress(const CRIPEMD160 &address);
+
+inline CString getBitcoinAddress(const CSHA256 &hashedPublicKey)
+{
+	return getBitcoinAddress(CRIPEMD160(hashedPublicKey.toBinBuffer()));
+}
 
 inline CString getBitcoinAddress(const CBinBuffer &publicKey)
 {

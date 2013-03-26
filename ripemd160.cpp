@@ -25,22 +25,24 @@
 #include "ripemd160.h"
 
 
+CRIPEMD160::CRIPEMD160()
+{
+	resize(getSize());
+}
+
+
 CRIPEMD160::CRIPEMD160(const CBinBuffer &data)
 {
 	//TODO: can this fail?
-	resize(20);
+	resize(getSize());
 	static unsigned char pblank[1];
 	RIPEMD160((data.size()==0 ? pblank : &data[0]), data.size() * sizeof(unsigned char), &(*this)[0]);
 }
 
 
-CRIPEMD160::CRIPEMD160()
-{}
-
-
 CRIPEMD160 CRIPEMD160::fromBinBuffer(const CBinBuffer &buffer)
 {
-	if(buffer.size() != 20)
+	if(buffer.size() != getSize())
 		throw CBinBuffer::CReadError("CRIPEMD160::fromBinBuffer(const CBinBuffer &): incorrect input size");
 
 	CRIPEMD160 ret;

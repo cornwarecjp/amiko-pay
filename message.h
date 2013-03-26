@@ -27,6 +27,7 @@
 
 #include "binbuffer.h"
 #include "key.h"
+#include "ripemd160.h"
 #include "sha256.h"
 
 class CMessage
@@ -152,8 +153,8 @@ public:
 	bool verifySignature(const CKey &key) const;
 
 
-	CSHA256 m_source;       //hash of source public key
-	CSHA256 m_destination;  //hash of destination public key
+	CRIPEMD160 m_source;       //ripemd160 of sha256 of source public key
+	CRIPEMD160 m_destination;  //ripemd160 of sha256 of destination public key
 	CBinBuffer m_signature; //signature of source
 
 	CSHA256 m_lastSentBySource;     //hash of previous message sent by source

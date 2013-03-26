@@ -171,8 +171,8 @@ class CMessagesTest : public CTest
 
 	void setBaseMembervalues(CMessage &msg)
 	{
-		msg.m_source      = CSHA256(m_source.getPublicKey());
-		msg.m_destination = CSHA256(m_destination.getPublicKey());
+		msg.m_source      = CRIPEMD160(CSHA256(m_source.getPublicKey()).toBinBuffer());
+		msg.m_destination = CRIPEMD160(CSHA256(m_destination.getPublicKey()).toBinBuffer());
 		msg.m_lastSentBySource     = CSHA256(CBinBuffer("Hello"));
 		msg.m_lastAcceptedBySource = CSHA256(CBinBuffer("Goodbye"));
 		msg.m_timestamp = 42;
