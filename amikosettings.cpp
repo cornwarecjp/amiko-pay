@@ -25,6 +25,9 @@
 
 CAmikoSettings::CAmikoSettings()
 {
+	//defaults
+	m_localHostname = "";
+	m_portNumber = AMIKO_DEFAULT_PORT;
 }
 
 

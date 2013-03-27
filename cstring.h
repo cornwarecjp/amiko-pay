@@ -102,7 +102,8 @@ public:
 
 	/*
 	val:
-	Properly formed CString object (NOT CHECKED)
+	Reference to properly formed CString object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
 
 	Return value:
 	String concatenation of this object and val

@@ -38,10 +38,33 @@ class CAmikoSettings
 public:
 	SIMPLEEXCEPTIONCLASS(CConfigError)
 
-	//TODO: spec
+	/*
+	Constructed object:
+	Contains default settings
+
+	Exceptions:
+	none
+	*/
 	CAmikoSettings();
 
-	//TODO: spec
+	/*
+	file:
+	Reference to properly formed CConfFile object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Constructed object:
+	Settings object containing the settings from file, and containing
+	the default values for settings not present in file
+
+	Exceptions:
+	CString::CFormatException
+	CURI::CParseFailure
+	CURI::CNotFound
+	CKey::CConstructError
+	CKey::CKeyError
+	CBinBuffer::CWriteError
+	CConfigError
+	*/
 	CAmikoSettings(const CConfFile &file);
 
 	class CLink
