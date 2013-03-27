@@ -39,20 +39,20 @@ CAmikoSettings::CAmikoSettings(const CConfFile &file)
 	while(true)
 	{
 		CString section = CString::format("links/%d", 64, i);
-		CString remoteURL       = file.getValue(section, "remoteURL", "");
+		CString remoteURI       = file.getValue(section, "remoteURI", "");
 		CString remotePublicKey = file.getValue(section, "remotePublicKey", "");
 		CString localPrivateKey = file.getValue(section, "localPrivateKey", "");
-		if(remoteURL == "" && remotePublicKey == "" && localPrivateKey == "")
+		if(remoteURI == "" && remotePublicKey == "" && localPrivateKey == "")
 			break; //apparently, section does not exist
 
 		CLink link;
-		link.m_remoteURI = remoteURL;
+		link.m_remoteURI = remoteURI;
 		link.m_localKey.setPrivateKey(CBinBuffer::fromHex(localPrivateKey));
 		link.m_remoteKey.setPublicKey(CBinBuffer::fromHex(remotePublicKey));
 
 		if(link.m_remoteURI.getPath() != getBitcoinAddress(link.m_remoteKey))
 			throw CConfigError(
-				"Remote URL does not correspond with remote public key");
+				"Remote URI does not correspond with remote public key");
 
 		m_links.push_back(link);
 
