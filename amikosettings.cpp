@@ -20,6 +20,8 @@
 
 #include "amikosettings.h"
 
+#include "log.h"
+#include "bitcoinaddress.h"
 
 CAmikoSettings::CAmikoSettings()
 {
@@ -33,7 +35,36 @@ CAmikoSettings::CAmikoSettings(const CConfFile &file)
 	m_portNumber = file.getValue("receiveConnections", "portNumber",
 		AMIKO_DEFAULT_PORT);
 
-	//TODO: other values
+	unsigned int i = 0;
+	while(true)
+	{
+		CString section = CString::format("links/%d", 64, i);
+		CString remoteURL       = file.getValue(section, "remoteURL", "");
+		CString remotePublicKey = file.getValue(section, "remotePublicKey", "");
+		CString localPrivateKey = file.getValue(section, "localPrivateKey", "");
+		if(remoteURL == "" && remotePublicKey == "" && localPrivateKey == "")
+			break; //apparently, section does not exist
+
+		CLink link;
+		link.m_remoteURI = remoteURL;
+		link.m_localKey.setPrivateKey(CBinBuffer::fromHex(localPrivateKey));
+		link.m_remoteKey.setPublicKey(CBinBuffer::fromHex(remotePublicKey));
+
+		if(link.m_remoteURI.getPath() != getBitcoinAddress(link.m_remoteKey))
+			throw CConfigError(
+				"Remote URL does not correspond with remote public key");
+
+		m_links.push_back(link);
+
+		log(CString::format(
+			"Read from configuration file: link %d connecting local %s to remote %s\n",
+			1024, i,
+			getBitcoinAddress(link.m_localKey).c_str(),
+			link.m_remoteURI.getURI().c_str()
+			));
+
+		i++;
+	}
 }
 
 

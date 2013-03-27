@@ -28,6 +28,7 @@
 #include "key.h"
 #include "bitcoinaddress.h"
 #include "conffile.h"
+#include "exception.h"
 
 //TODO: choose a friendly default port
 #define AMIKO_DEFAULT_PORT "12345"
@@ -35,6 +36,8 @@
 class CAmikoSettings
 {
 public:
+	SIMPLEEXCEPTIONCLASS(CConfigError)
+
 	//TODO: spec
 	CAmikoSettings();
 
