@@ -18,7 +18,10 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
+
 #include "timer.h"
+#include "log.h"
 
 #include "comlistenerthread.h"
 
@@ -65,6 +68,24 @@ void CComListenerThread::threadFunc()
 		}
 		catch(CTCPConnection::CTimeoutException &e)
 		{}
+		catch(CException &e)
+		{
+			log(CString::format(
+				"CComListenerThread::threadFunc(): Caught application exception: %s\n",
+				256, e.what()));
+			//TODO: maybe app cleanup?
+			//e.g. with atexit, on_exit
+			exit(3);
+		}
+		catch(std::exception &e)
+		{
+			log(CString::format(
+				"CComListenerThread::threadFunc(): Caught standard library exception: %s\n",
+				256, e.what()));
+			//TODO: maybe app cleanup?
+			//e.g. with atexit, on_exit
+			exit(3);
+		}
 
 		//wait 100ms when there are no new connections
 		CTimer::sleep(100);
