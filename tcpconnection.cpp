@@ -108,6 +108,9 @@ CTCPConnection::CTCPConnection(const CTCPListener &listener)
 	m_FD = accept(listener.getFD(), &addr, &addrlen);
 	if(m_FD == -1)
 		throw CConnectException(CString::format("accept() failed: error code: %d", 256, errno));
+
+	//Set non-blocking
+	fcntl(m_FD, F_SETFL, O_NONBLOCK);
 }
 
 
