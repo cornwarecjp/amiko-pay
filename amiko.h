@@ -73,7 +73,7 @@ public:
 	CAmikoSettings object
 
 	Exceptions:
-	none
+	CMutex::CError
 	*/
 	inline CAmikoSettings getSettings()
 	{
