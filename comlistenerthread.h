@@ -46,7 +46,12 @@ public:
 	void threadFunc();
 
 
-	//TODO: pointer ownership spec
+	/*
+	As long as a pointer is listed here, pointer ownership remains with this
+	object.
+	Another object can take over pointer ownership by removing the pointer from
+	this list.
+	*/
 	CCriticalSection< std::list<CComLink *> > m_newComLinks;
 
 
