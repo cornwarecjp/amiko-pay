@@ -18,9 +18,6 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cstdio>
-#include <unistd.h>
-
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
@@ -28,20 +25,17 @@
 #include "log.h"
 #include "cthread.h"
 
-#include "comlink.h"
-#include "amikosettings.h"
-#include "comlistenerthread.h"
+#include "amiko.h"
 #include "timer.h"
 
 void app()
 {
-	CAmikoSettings settings(CConfFile("amikopay.conf"));
-	CComListenerThread listener(settings);
-	listener.start();
+	CAmiko amiko(CConfFile("amikopay.conf"));
+	amiko.start();
 
 	CTimer::sleep(10000); //10 s
 
-	listener.stop();
+	amiko.stop();
 }
 
 int main(int argc, char **argv)

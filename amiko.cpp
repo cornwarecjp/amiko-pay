@@ -21,18 +21,35 @@
 #include "amiko.h"
 
 
-CAmiko::CAmiko()
+CAmiko::CAmiko(const CAmikoSettings &settings) :
+	m_Settings(settings),
+	m_ListenerThread(m_Settings)
 {
 }
+
 
 CAmiko::~CAmiko()
 {
 	CMutexLocker lock(m_ComLinks);
-	for(size_t i=0; i < m_ComLinks.m_Value.size(); i++)
+	for(std::list<CComLink *>::iterator i=m_ComLinks.m_Value.begin();
+		i != m_ComLinks.m_Value.end(); i++)
 	{
-		m_ComLinks.m_Value[i]->setReceiver(NULL);
-		m_ComLinks.m_Value[i]->stop();
-		delete m_ComLinks.m_Value[i];
+		(*i)->setReceiver(NULL);
+		(*i)->stop();
+		delete (*i);
 	}
 }
+
+
+void CAmiko::start()
+{
+	m_ListenerThread.start();
+}
+
+
+void CAmiko::stop()
+{
+	m_ListenerThread.stop();
+}
+
 

@@ -21,11 +21,13 @@
 #ifndef AMIKO_H
 #define AMIKO_H
 
-#include <vector>
+#include <list>
 
 #include "cthread.h"
 
+#include "amikosettings.h"
 #include "comlink.h"
+#include "comlistenerthread.h"
 
 /*
 Container of application-level data
@@ -34,20 +36,43 @@ class CAmiko
 {
 public:
 	/*
+	settings:
+	Reference to properly formed CAmikoSettings object (NOT CHECKED)
+	Reference lifetime: at least the lifetime of this object
+
 	Constructed object:
 	Empty Amiko object
 
 	Exceptions:
 	none
 	*/
-	CAmiko();
+	CAmiko(const CAmikoSettings &settings);
 
 	~CAmiko();
 
+	/*
+	this object:
+	not running (CHECKED)
+
+	Exceptions:
+	CThread::CAlreadyRunningError
+	CThread::CStartFailedError
+	*/
+	void start();
+
+	/*
+	Note: waits until threads stop
+
+	Exceptions:
+	CThread::CStopFailedError
+	*/
+	void stop();
 
 protected:
+	CAmikoSettings m_Settings;
+	CComListenerThread m_ListenerThread;
 
-	CCriticalSection< std::vector<CComLink *> > m_ComLinks;
+	CCriticalSection< std::list<CComLink *> > m_ComLinks;
 };
 
 #endif

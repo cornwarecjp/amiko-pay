@@ -32,6 +32,10 @@ class CComListenerThread : public CThread
 {
 public:
 	/*
+	settings:
+	Reference to properly formed CAmikoSettings object (NOT CHECKED)
+	Reference lifetime: at least the lifetime of this object
+
 	Constructed object:
 	non-running thread, listening for incoming TCP connection requests on port
 	number indicated by service
