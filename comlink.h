@@ -108,6 +108,7 @@ public:
 
 	Exceptions:
 	CTCPConnection::CConnectException
+	CTCPConnection::CTimeoutException
 	*/
 	CComLink(const CTCPListener &listener, const CAmikoSettings &settings);
 

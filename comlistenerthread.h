@@ -1,0 +1,64 @@
+/*
+    comlistenerthread.h
+    Copyright (C) 2013 by CJP
+
+    This file is part of Amiko Pay.
+
+    Amiko Pay is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Amiko Pay is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef COMLISTENERTHREAD_H
+#define COMLISTENERTHREAD_H
+
+#include <list>
+
+#include "tcplistener.h"
+#include "comlink.h"
+
+#include "cthread.h"
+
+class CComListenerThread : public CThread
+{
+public:
+	/*
+	service:
+	Reference to properly formed CString object (NOT CHECKED)
+	ASCII encoded (TODO: check whether UTF-8 is supported) (NOT CHECKED)
+	This can be for instance a decimal port number
+
+	Constructed object:
+	non-running thread, listening for incoming TCP connection requests on port
+	number indicated by service
+
+	Exceptions:
+	CTCPListener::CConnectException
+	*/
+	CComListenerThread(const CString &service, const CAmikoSettings &settings);
+
+	~CComListenerThread();
+
+	void threadFunc();
+
+
+	//TODO: pointer ownership spec
+	CCriticalSection< std::list<CComLink *> > m_newComLinks;
+
+
+private:
+	CTCPListener m_Listener;
+	CAmikoSettings m_Settings;
+};
+
+#endif
+
