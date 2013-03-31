@@ -122,6 +122,8 @@ void CComListenerThread::processPendingConnections()
 		else if((*i)->getState() == CComLink::eOperational)
 		{
 			//Move operational links to Amiko object
+			//Note: pointer ownership is passed to Amiko object,
+			//so we can safely forget the pointer
 			m_Amiko->addComLink(*i);
 
 			std::list<CComLink *>::iterator j = i; i++;

@@ -63,9 +63,18 @@ public:
 private:
 
 	/*
-	TODO: spec
+	Exceptions:
+	CMutex::CError
+	CTCPConnection::CConnectException
+	CThread::CStartFailedError
 	*/
 	void acceptNewConnections();
+
+	/*
+	Exceptions:
+	CMutex::CError
+	CThread::CStopFailedError
+	*/
 	void processPendingConnections();
 
 	CAmiko *m_Amiko;

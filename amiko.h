@@ -81,7 +81,14 @@ public:
 		return m_Settings.m_Value;
 	}
 
-	//TODO: spec
+	/*
+	link:
+	Pointer to properly formed CComLink object (NOT CHECKED)
+	Pointer ownership: passed to this object
+
+	Exceptions:
+	CMutex::CError
+	*/
 	void addComLink(CComLink *link);
 
 protected:

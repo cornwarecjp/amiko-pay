@@ -179,6 +179,9 @@ public:
 	Reference lifetime: at least the lifetime of this object
 
 	Note: locks the mutex
+
+	Exceptions:
+	CMutex::CError
 	*/
 	CMutexLocker(CMutex &mutex);
 
