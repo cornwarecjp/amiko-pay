@@ -56,23 +56,22 @@ public:
 
 	~CComListenerThread();
 
-	/*
-	Return value:
-	NULL, or:
-	Valid pointer
-	Pointed memory contains CComLink object
-	Pointer ownership: passed to caller
-	*/
-	CComLink *getNewComLink();
 
 	void threadFunc();
 
 
 private:
+
+	/*
+	TODO: spec
+	*/
+	void acceptNewConnections();
+	void processPendingConnections();
+
 	CAmiko *m_Amiko;
 	CTCPListener m_Listener;
 
-	CCriticalSection< std::list<CComLink *> > m_newComLinks;
+	CCriticalSection< std::list<CComLink *> > m_pendingComLinks;
 };
 
 #include "amiko.h"

@@ -81,6 +81,8 @@ public:
 		return m_Settings.m_Value;
 	}
 
+	//TODO: spec
+	void addComLink(CComLink *link);
 
 protected:
 	CCriticalSection<CAmikoSettings> m_Settings;

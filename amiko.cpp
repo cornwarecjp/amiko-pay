@@ -53,3 +53,11 @@ void CAmiko::stop()
 }
 
 
+void CAmiko::addComLink(CComLink *link)
+{
+	//TODO
+	link->stop();
+	delete link;
+}
+
+
