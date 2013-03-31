@@ -23,6 +23,10 @@
 
 #include "cominterface.h"
 
+/*
+A FinLink object maintains the financial state of a link. It is usually
+paired with a ComLink object, which performs communication with the peer.
+*/
 class CFinLink : public CComInterface
 {
 public:
