@@ -27,6 +27,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 
 #include "tcplistener.h"
 
@@ -92,9 +93,13 @@ CTCPListener::CTCPListener(const CString &service)
 	if(rp == NULL) // No address succeeded
 		throw CConnectException("Failed to bind to port");
 
-	//TODO: make the '100' configurable (see listen manpage)
+	//TODO: make the '100' configurable (see listen manpage):
+	//This is the incoming connection queue size.
 	if(listen(m_FD, 100) == -1)
 		throw CConnectException(CString::format("listen() failed: error code: %d", 256, errno));
+
+	//Set non-blocking
+	fcntl(m_FD, F_SETFL, O_NONBLOCK);
 }
 
 

@@ -72,6 +72,7 @@ public:
 
 	Exceptions:
 	CConnectException
+	CTimeoutException
 	*/
 	CTCPConnection(const CTCPListener &listener);
 
