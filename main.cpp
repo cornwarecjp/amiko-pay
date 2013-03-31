@@ -30,27 +30,18 @@
 
 #include "comlink.h"
 #include "amikosettings.h"
-#include "tcplistener.h"
+#include "comlistenerthread.h"
 #include "timer.h"
 
 void app()
 {
 	CAmikoSettings settings(CConfFile("amikopay.conf"));
-
-	CTCPListener listener(settings.m_portNumber);
-	CComLink *c2 = new CComLink(listener, settings);
-
-	c2->setReceiver(c2);
-	c2->start();
+	CComListenerThread listener(settings);
+	listener.start();
 
 	CTimer::sleep(10000); //10 s
 
-	//Note that this is not really exception-safe:
-	//this should be deleted in case of any exception.
-	//TODO: use some kind of RAII pointer class.
-	c2->setReceiver(NULL);
-	c2->stop();
-	delete c2;
+	listener.stop();
 }
 
 int main(int argc, char **argv)

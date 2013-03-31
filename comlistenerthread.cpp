@@ -23,10 +23,9 @@
 #include "comlistenerthread.h"
 
 
-CComListenerThread::CComListenerThread(
-	const CString &service, const CAmikoSettings &settings) :
+CComListenerThread::CComListenerThread(const CAmikoSettings &settings) :
 
-	m_Listener(service),
+	m_Listener(settings.m_portNumber),
 	m_Settings(settings)
 {
 }
@@ -34,6 +33,16 @@ CComListenerThread::CComListenerThread(
 
 CComListenerThread::~CComListenerThread()
 {
+	stop(); //stop listener thread
+
+	//Clean up m_newComLinks list
+	CMutexLocker lock(m_newComLinks);
+	while(!m_newComLinks.m_Value.empty())
+	{
+		m_newComLinks.m_Value.back()->stop(); //stop link thread
+		delete m_newComLinks.m_Value.back();
+		m_newComLinks.m_Value.pop_back();
+	}
 }
 
 

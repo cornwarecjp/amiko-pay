@@ -32,11 +32,6 @@ class CComListenerThread : public CThread
 {
 public:
 	/*
-	service:
-	Reference to properly formed CString object (NOT CHECKED)
-	ASCII encoded (TODO: check whether UTF-8 is supported) (NOT CHECKED)
-	This can be for instance a decimal port number
-
 	Constructed object:
 	non-running thread, listening for incoming TCP connection requests on port
 	number indicated by service
@@ -44,7 +39,7 @@ public:
 	Exceptions:
 	CTCPListener::CConnectException
 	*/
-	CComListenerThread(const CString &service, const CAmikoSettings &settings);
+	CComListenerThread(const CAmikoSettings &settings);
 
 	~CComListenerThread();
 
