@@ -43,21 +43,23 @@ public:
 
 	~CComListenerThread();
 
-	void threadFunc();
-
-
 	/*
-	As long as a pointer is listed here, pointer ownership remains with this
-	object.
-	Another object can take over pointer ownership by removing the pointer from
-	this list.
+	Return value:
+	NULL, or:
+	Valid pointer
+	Pointed memory contains CComLink object
+	Pointer ownership: passed to caller
 	*/
-	CCriticalSection< std::list<CComLink *> > m_newComLinks;
+	CComLink *getNewComLink();
+
+	void threadFunc();
 
 
 private:
 	CTCPListener m_Listener;
 	CAmikoSettings m_Settings;
+
+	CCriticalSection< std::list<CComLink *> > m_newComLinks;
 };
 
 #endif

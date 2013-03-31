@@ -93,3 +93,39 @@ void CComListenerThread::threadFunc()
 }
 
 
+CComLink *CComListenerThread::getNewComLink()
+{
+	CMutexLocker lock(m_newComLinks);
+	CComLink *ret = NULL;
+
+	for(std::list<CComLink *>::iterator i = m_newComLinks.m_Value.begin();
+		i != m_newComLinks.m_Value.end(); i++)
+	{
+		if((*i)->getState() == CComLink::eClosed)
+		{
+			//Erase closed links (apparently initialization failed for these)
+			CComLink *link = *i;
+			link->stop();
+			delete link;
+
+			std::list<CComLink *>::iterator j = i; i++;
+			m_newComLinks.m_Value.erase(j);
+		}
+
+		else if(ret == NULL && (*i)->getState() == CComLink::eOperational)
+		{
+			//Take first operational link as return value
+			ret = *i;
+
+			std::list<CComLink *>::iterator j = i; i++;
+			m_newComLinks.m_Value.erase(j);
+		}
+
+		//This can happen if the above code erased an item
+		if(i == m_newComLinks.m_Value.end()) break;
+	}
+
+	return ret;
+}
+
+
