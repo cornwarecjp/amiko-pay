@@ -26,10 +26,9 @@
 #include "comlistenerthread.h"
 
 
-CComListenerThread::CComListenerThread(const CAmikoSettings &settings) :
-
-	m_Listener(settings.m_portNumber),
-	m_Settings(settings)
+CComListenerThread::CComListenerThread(CAmiko *amiko, const CString &service) :
+	m_Amiko(amiko),
+	m_Listener(service)
 {
 }
 
@@ -61,7 +60,7 @@ void CComListenerThread::threadFunc()
 			while(m_newComLinks.m_Value.size() < 100)
 			{
 				m_newComLinks.m_Value.push_back(
-					new CComLink(m_Listener, m_Settings)
+					new CComLink(m_Listener, m_Amiko->getSettings())
 					);
 				m_newComLinks.m_Value.back()->start(); //start comlink thread
 			}

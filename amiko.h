@@ -68,8 +68,22 @@ public:
 	*/
 	void stop();
 
+	/*
+	Return value:
+	CAmikoSettings object
+
+	Exceptions:
+	none
+	*/
+	inline CAmikoSettings getSettings()
+	{
+		CMutexLocker lock(m_Settings);
+		return m_Settings.m_Value;
+	}
+
+
 protected:
-	CAmikoSettings m_Settings;
+	CCriticalSection<CAmikoSettings> m_Settings;
 	CComListenerThread m_ListenerThread;
 
 	CCriticalSection< std::list<CComLink *> > m_ComLinks;

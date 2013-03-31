@@ -28,13 +28,22 @@
 
 #include "cthread.h"
 
+class CAmiko;
+
 class CComListenerThread : public CThread
 {
 public:
 	/*
-	settings:
-	Reference to properly formed CAmikoSettings object (NOT CHECKED)
-	Reference lifetime: at least the lifetime of this object
+	amiko:
+	Pointer to CAmiko object (NOT CHECKED)
+	Pointer ownership: remains with the caller
+	Pointer lifetime: at least the lifetime of this object
+	Note: pointed object does not have to be fully initialized
+	(constructor may not be finished)
+
+	service:
+	Reference to properly formed CString object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
 
 	Constructed object:
 	non-running thread, listening for incoming TCP connection requests on port
@@ -43,7 +52,7 @@ public:
 	Exceptions:
 	CTCPListener::CConnectException
 	*/
-	CComListenerThread(const CAmikoSettings &settings);
+	CComListenerThread(CAmiko *amiko, const CString &service);
 
 	~CComListenerThread();
 
@@ -60,11 +69,13 @@ public:
 
 
 private:
+	CAmiko *m_Amiko;
 	CTCPListener m_Listener;
-	CAmikoSettings m_Settings;
 
 	CCriticalSection< std::list<CComLink *> > m_newComLinks;
 };
+
+#include "amiko.h"
 
 #endif
 

@@ -23,7 +23,7 @@
 
 CAmiko::CAmiko(const CAmikoSettings &settings) :
 	m_Settings(settings),
-	m_ListenerThread(m_Settings)
+	m_ListenerThread(this, m_Settings.m_Value.m_portNumber)
 {
 }
 
