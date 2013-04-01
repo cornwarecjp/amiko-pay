@@ -23,7 +23,8 @@
 
 CAmiko::CAmiko(const CAmikoSettings &settings) :
 	m_Settings(settings),
-	m_ListenerThread(this, m_Settings.m_Value.m_portNumber)
+	m_ListenerThread(this, m_Settings.m_Value.m_portNumber),
+	m_MakerThread(this)
 {
 }
 
@@ -59,12 +60,14 @@ CAmiko::~CAmiko()
 void CAmiko::start()
 {
 	m_ListenerThread.start();
+	m_MakerThread.start();
 }
 
 
 void CAmiko::stop()
 {
 	m_ListenerThread.stop();
+	m_MakerThread.stop();
 }
 
 

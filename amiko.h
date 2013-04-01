@@ -28,6 +28,7 @@
 #include "amikosettings.h"
 #include "comlink.h"
 #include "comlistenerthread.h"
+#include "commakerthread.h"
 
 /*
 Container of application-level data
@@ -118,7 +119,9 @@ public:
 
 private:
 	CCriticalSection<CAmikoSettings> m_Settings;
+
 	CComListenerThread m_ListenerThread;
+	CComMakerThread m_MakerThread;
 
 	CCriticalSection< std::list<CComLink *> > m_PendingComLinks;
 	CCriticalSection< std::list<CComLink *> > m_OperationalComLinks;
