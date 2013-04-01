@@ -30,13 +30,28 @@ CAmiko::CAmiko(const CAmikoSettings &settings) :
 
 CAmiko::~CAmiko()
 {
-	CMutexLocker lock(m_ComLinks);
-	for(std::list<CComLink *>::iterator i=m_ComLinks.m_Value.begin();
-		i != m_ComLinks.m_Value.end(); i++)
+	stop();
+
 	{
-		(*i)->setReceiver(NULL);
-		(*i)->stop();
-		delete (*i);
+		CMutexLocker lock(m_PendingComLinks);
+		for(std::list<CComLink *>::iterator i=m_PendingComLinks.m_Value.begin();
+			i != m_PendingComLinks.m_Value.end(); i++)
+		{
+			(*i)->setReceiver(NULL);
+			(*i)->stop();
+			delete (*i);
+		}
+	}
+
+	{
+		CMutexLocker lock(m_OperationalComLinks);
+		for(std::list<CComLink *>::iterator i=m_OperationalComLinks.m_Value.begin();
+			i != m_OperationalComLinks.m_Value.end(); i++)
+		{
+			(*i)->setReceiver(NULL);
+			(*i)->stop();
+			delete (*i);
+		}
 	}
 }
 
@@ -53,11 +68,43 @@ void CAmiko::stop()
 }
 
 
-void CAmiko::addComLink(CComLink *link)
+void CAmiko::addPendingComLink(CComLink *link)
 {
-	//TODO
-	link->stop();
-	delete link;
+	CMutexLocker lock(m_PendingComLinks);	
+	m_PendingComLinks.m_Value.push_back(link);
 }
 
+
+void CAmiko::processPendingComLinks()
+{
+	CMutexLocker lock1(m_PendingComLinks);
+	CMutexLocker lock2(m_OperationalComLinks);
+
+	for(std::list<CComLink *>::iterator i = m_PendingComLinks.m_Value.begin();
+		i != m_PendingComLinks.m_Value.end(); i++)
+	{
+		if((*i)->getState() == CComLink::eClosed)
+		{
+			//Delete closed links (apparently initialization failed for these)
+			CComLink *link = *i;
+			link->stop();
+			delete link;
+
+			std::list<CComLink *>::iterator j = i; i++;
+			m_PendingComLinks.m_Value.erase(j);
+		}
+		else if((*i)->getState() == CComLink::eOperational)
+		{
+			//Move to operational list
+			//TODO: set receiver
+			m_OperationalComLinks.m_Value.push_back(*i);
+
+			std::list<CComLink *>::iterator j = i; i++;
+			m_PendingComLinks.m_Value.erase(j);
+		}
+
+		//This can happen if the above code erased an item
+		if(i == m_PendingComLinks.m_Value.end()) break;
+	}
+}
 

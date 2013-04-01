@@ -21,10 +21,7 @@
 #ifndef COMLISTENERTHREAD_H
 #define COMLISTENERTHREAD_H
 
-#include <list>
-
 #include "tcplistener.h"
-#include "comlink.h"
 
 #include "cthread.h"
 
@@ -70,17 +67,9 @@ private:
 	*/
 	void acceptNewConnections();
 
-	/*
-	Exceptions:
-	CMutex::CError
-	CThread::CStopFailedError
-	*/
-	void processPendingConnections();
 
 	CAmiko *m_Amiko;
 	CTCPListener m_Listener;
-
-	CCriticalSection< std::list<CComLink *> > m_pendingComLinks;
 };
 
 #include "amiko.h"

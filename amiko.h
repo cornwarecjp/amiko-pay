@@ -85,17 +85,36 @@ public:
 	link:
 	Pointer to properly formed CComLink object (NOT CHECKED)
 	Pointer ownership: passed to this object
+	ComLink thread is already started
 
 	Exceptions:
 	CMutex::CError
 	*/
-	void addComLink(CComLink *link);
+	void addPendingComLink(CComLink *link);
 
-protected:
+	/*
+	Exceptions:
+	CMutex::CError
+	CThread::CStopFailedError
+	*/
+	void processPendingComLinks();
+
+	/*
+	Exceptions:
+	CMutex::CError
+	*/
+	inline size_t getNumPendingComLinks()
+	{
+		CMutexLocker lock(m_PendingComLinks);
+		return m_PendingComLinks.m_Value.size();
+	}
+
+private:
 	CCriticalSection<CAmikoSettings> m_Settings;
 	CComListenerThread m_ListenerThread;
 
-	CCriticalSection< std::list<CComLink *> > m_ComLinks;
+	CCriticalSection< std::list<CComLink *> > m_PendingComLinks;
+	CCriticalSection< std::list<CComLink *> > m_OperationalComLinks;
 };
 
 #endif
