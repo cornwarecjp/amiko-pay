@@ -139,7 +139,40 @@ void CAmiko::removeClosedComLinks()
 
 void CAmiko::makeMissingComLinks()
 {
-	//TODO
+	std::list<CAmikoSettings::CLink> missingLinks;
+	{
+		CMutexLocker lock(m_Settings);
+		missingLinks.assign(
+			m_Settings.m_Value.m_links.begin(), m_Settings.m_Value.m_links.end());
+	}
+
+	{
+		CMutexLocker lock(m_OperationalComLinks);
+		for(std::list<CComLink *>::iterator i = m_OperationalComLinks.m_Value.begin();
+			i != m_OperationalComLinks.m_Value.end(); i++)
+		{
+			CBinBuffer localPubKey = (*i)->getLocalKey().getPublicKey();
+			for(std::list<CAmikoSettings::CLink>::iterator j = missingLinks.begin();
+				j != missingLinks.end(); j++)
+			if(j->m_localKey.getPublicKey() == localPubKey)
+			{
+				std::list<CAmikoSettings::CLink>::iterator k = j;
+				missingLinks.erase(k);
+				j++;
+				if(j == missingLinks.end()) break;
+			}
+		}
+	}
+
+	for(std::list<CAmikoSettings::CLink>::iterator i = missingLinks.begin();
+		i != missingLinks.end(); i++)
+			if(i->m_remoteURI.getURI() != "")
+			{
+				CComLink *link = new CComLink(i->m_remoteURI, getSettings());
+				//TODO: if in the below code an exception occurs, delete the above object
+				link->start();
+				addPendingComLink(link);
+			}
 }
 
 
