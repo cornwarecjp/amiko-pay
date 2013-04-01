@@ -102,6 +102,13 @@ public:
 	/*
 	Exceptions:
 	CMutex::CError
+	CThread::CStopFailedError
+	*/
+	void removeClosedComLinks();
+
+	/*
+	Exceptions:
+	CMutex::CError
 	*/
 	inline size_t getNumPendingComLinks()
 	{

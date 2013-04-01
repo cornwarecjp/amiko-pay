@@ -46,6 +46,7 @@ void CComListenerThread::threadFunc()
 		try
 		{
 			acceptNewConnections();
+			m_Amiko->removeClosedComLinks();
 			m_Amiko->processPendingComLinks();
 		}
 		catch(CException &e)

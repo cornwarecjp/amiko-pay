@@ -108,3 +108,29 @@ void CAmiko::processPendingComLinks()
 	}
 }
 
+
+void CAmiko::removeClosedComLinks()
+{
+	CMutexLocker lock(m_OperationalComLinks);
+
+	for(std::list<CComLink *>::iterator i = m_OperationalComLinks.m_Value.begin();
+		i != m_OperationalComLinks.m_Value.end(); i++)
+	{
+		if((*i)->getState() == CComLink::eClosed)
+		{
+			//TODO: de-register (as) listener
+
+			CComLink *link = *i;
+			link->stop();
+			delete link;
+
+			std::list<CComLink *>::iterator j = i; i++;
+			m_OperationalComLinks.m_Value.erase(j);
+		}
+
+		//This can happen if the above code erased an item
+		if(i == m_OperationalComLinks.m_Value.end()) break;
+	}
+}
+
+
