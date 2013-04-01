@@ -18,6 +18,8 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "log.h"
+
 #include "amiko.h"
 
 
@@ -139,13 +141,14 @@ void CAmiko::removeClosedComLinks()
 
 void CAmiko::makeMissingComLinks()
 {
+	log("Start making missing com links\n");
+
 	std::list<CAmikoSettings::CLink> missingLinks;
 	{
 		CMutexLocker lock(m_Settings);
 		missingLinks.assign(
 			m_Settings.m_Value.m_links.begin(), m_Settings.m_Value.m_links.end());
 	}
-
 	{
 		CMutexLocker lock(m_OperationalComLinks);
 		for(std::list<CComLink *>::iterator i = m_OperationalComLinks.m_Value.begin();
@@ -154,15 +157,19 @@ void CAmiko::makeMissingComLinks()
 			CBinBuffer localPubKey = (*i)->getLocalKey().getPublicKey();
 			for(std::list<CAmikoSettings::CLink>::iterator j = missingLinks.begin();
 				j != missingLinks.end(); j++)
-			if(j->m_localKey.getPublicKey() == localPubKey)
 			{
-				std::list<CAmikoSettings::CLink>::iterator k = j;
-				missingLinks.erase(k);
-				j++;
-				if(j == missingLinks.end()) break;
+				if(j->m_localKey.getPublicKey() == localPubKey)
+				{
+					std::list<CAmikoSettings::CLink>::iterator k = j;
+					j++;
+					missingLinks.erase(k);
+					if(j == missingLinks.end()) break;
+				}
 			}
 		}
 	}
+
+	log(CString::format("There are %d missing com links\n", 256, missingLinks.size()));
 
 	for(std::list<CAmikoSettings::CLink>::iterator i = missingLinks.begin();
 		i != missingLinks.end(); i++)
@@ -173,6 +180,8 @@ void CAmiko::makeMissingComLinks()
 				link->start();
 				addPendingComLink(link);
 			}
+
+	log("End making missing com links\n");
 }
 
 
