@@ -144,6 +144,13 @@ void CComLink::threadFunc()
 			256, e.what()));
 	}
 
+	log(CString::format(
+		"Disconnected (local: %s remote: %s)\n",
+		1024,
+		getBitcoinAddress(m_LocalKey).c_str(),
+		getBitcoinAddress(m_RemoteKey).c_str()
+		));
+
 	{
 		CMutexLocker lock(m_State);
 		m_State.m_Value = eClosed;
