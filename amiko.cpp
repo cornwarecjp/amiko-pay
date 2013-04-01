@@ -149,6 +149,7 @@ void CAmiko::makeMissingComLinks()
 		missingLinks.assign(
 			m_Settings.m_Value.m_links.begin(), m_Settings.m_Value.m_links.end());
 	}
+
 	{
 		CMutexLocker lock(m_OperationalComLinks);
 		for(std::list<CComLink *>::iterator i = m_OperationalComLinks.m_Value.begin();

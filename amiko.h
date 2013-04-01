@@ -110,7 +110,7 @@ public:
 	/*
 	Exceptions:
 	CMutex::CError
-	TODO
+	CThread::CStartFailedError
 	*/
 	void makeMissingComLinks();
 
