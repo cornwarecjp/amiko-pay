@@ -110,6 +110,13 @@ public:
 	/*
 	Exceptions:
 	CMutex::CError
+	TODO
+	*/
+	void makeMissingComLinks();
+
+	/*
+	Exceptions:
+	CMutex::CError
 	*/
 	inline size_t getNumPendingComLinks()
 	{

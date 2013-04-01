@@ -137,3 +137,9 @@ void CAmiko::removeClosedComLinks()
 }
 
 
+void CAmiko::makeMissingComLinks()
+{
+	//TODO
+}
+
+

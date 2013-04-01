@@ -18,8 +18,10 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "commakerthread.h"
+#include "timer.h"
+#include "log.h"
 
+#include "commakerthread.h"
 
 CComMakerThread::CComMakerThread(CAmiko *amiko) :
 	m_Amiko(amiko)
@@ -34,7 +36,40 @@ CComMakerThread::~CComMakerThread()
 
 void CComMakerThread::threadFunc()
 {
-	//TODO
+	unsigned int count = 0;
+	while(!m_terminate)
+	{
+		if(count == 0)
+			makeMissingComLinks_noExceptions();
+
+		//every iteration takes 1 s
+		CTimer::sleep(1000);
+
+		//once every 60 iterations, we try again
+		//TODO: randomize, to reduce collision risk
+		count = (count+1) % 60;
+	}
+}
+
+
+void CComMakerThread::makeMissingComLinks_noExceptions()
+{
+	try
+	{
+		m_Amiko->makeMissingComLinks();
+	}
+	catch(CException &e)
+	{
+		log(CString::format(
+			"CComMakerThread: Caught application exception: %s\n",
+			256, e.what()));
+	}
+	catch(std::exception &e)
+	{
+		log(CString::format(
+			"CComMakerThread: Caught standard library exception: %s\n",
+			256, e.what()));
+	}
 }
 
 

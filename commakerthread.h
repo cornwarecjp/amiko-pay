@@ -50,6 +50,13 @@ public:
 
 
 private:
+
+	/*
+	Exceptions:
+	none
+	*/
+	void makeMissingComLinks_noExceptions();
+
 	CAmiko *m_Amiko;
 };
 
