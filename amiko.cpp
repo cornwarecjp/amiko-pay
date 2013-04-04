@@ -30,6 +30,9 @@ CAmiko::CAmiko(const CAmikoSettings &settings) :
 {
 	CMutexLocker lock(m_Settings);
 
+	//TODO: put some lock on the data folder to prevent data mess-up when
+	//accidentally multiple amikopay processes are started
+
 	for(size_t i=0; i < m_Settings.m_Value.m_links.size(); i++)
 		m_FinLinks.push_back(new CFinLink(m_Settings.m_Value.m_links[i]));
 }

@@ -104,27 +104,43 @@ void CFinLink::load()
 
 void CFinLink::save() const
 {
-	CBinBuffer data = serialize();
+	CString tmpfile = m_Filename + ".tmp";
 
-	//TODO: use tmp file to prevent overwriting with unfinished data
-	CFilePointer f(fopen(m_Filename.c_str(), "wb"));
-	if(f.m_FP == NULL)
+	//Save as tmpfile
+	{
+		CBinBuffer data = serialize();
+
+		//TODO: use tmp file to prevent overwriting with unfinished data
+		CFilePointer f(fopen(tmpfile.c_str(), "wb"));
+		if(f.m_FP == NULL)
+		{
+			//TODO: make this an exception?
+			//In that case, catch the exception in the destructor
+			log(CString::format("ERROR: Could not store %s!!!\n",
+				256, tmpfile.c_str()));
+			return;
+		}	
+
+		size_t ret = fwrite(&data[0], data.size(), 1, f.m_FP);
+		if(ret != 1)
+		{
+			//TODO: make this an exception?
+			//In that case, catch the exception in the destructor
+			log(CString::format("ERROR while storing in %s!!!\n",
+				256, tmpfile.c_str()));
+			return;
+		}
+	}
+
+	//Overwrite file in m_Filename with tmpfile
+	if(rename(tmpfile.c_str(), m_Filename.c_str()) != 0)
 	{
 		//TODO: make this an exception?
 		//In that case, catch the exception in the destructor
-		log(CString::format("ERROR: Could not store %s!!!\n",
-			256, m_Filename.c_str()));
-		return;
-	}	
-
-	size_t ret = fwrite(&data[0], data.size(), 1, f.m_FP);
-	if(ret != 1)
-	{
-		//TODO: make this an exception?
-		//In that case, catch the exception in the destructor
-		log(CString::format("ERROR while storing in %s!!!\n",
-			256, m_Filename.c_str()));
-		return;
+		log(CString::format(
+			"ERROR while storing in %s; new data can be found in %s!!!\n",
+			1024, m_Filename.c_str(), tmpfile.c_str()
+			));
 	}
 }
 
