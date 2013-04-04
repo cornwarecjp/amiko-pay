@@ -127,6 +127,10 @@ public:
 	}
 
 private:
+
+	//TODO: spec
+	void removeComLink(std::list<CComLink *>::iterator &iter);
+
 	CCriticalSection<CAmikoSettings> m_Settings;
 	std::vector<CFinLink *> m_FinLinks;
 

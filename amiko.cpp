@@ -135,20 +135,22 @@ void CAmiko::removeClosedComLinks()
 		i != m_OperationalComLinks.m_Value.end(); i++)
 	{
 		if((*i)->getState() == CComLink::eClosed)
-		{
-			//TODO: de-register (as) listener
-
-			CComLink *link = *i;
-			link->stop();
-			delete link;
-
-			std::list<CComLink *>::iterator j = i; i++;
-			m_OperationalComLinks.m_Value.erase(j);
-		}
-
-		//This can happen if the above code erased an item
+			removeComLink(i);
 		if(i == m_OperationalComLinks.m_Value.end()) break;
 	}
+}
+
+
+void CAmiko::removeComLink(std::list<CComLink *>::iterator &iter)
+{
+	//TODO: de-register (as) listener
+
+	CComLink *link = *iter;
+	link->stop();
+	delete link;
+
+	std::list<CComLink *>::iterator j = iter; iter++;
+	m_OperationalComLinks.m_Value.erase(j);
 }
 
 
