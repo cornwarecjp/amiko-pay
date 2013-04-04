@@ -51,8 +51,17 @@ public:
 
 	~CFinLink();
 
-	//TODO: spec
 	void sendMessage(const CBinBuffer &message);
+
+	/*
+	Return value:
+	Reference to properly formed CKey object
+	Reference lifetime: equal to lifetime of this object
+	*/
+	inline const CKey &getRemoteKey() const
+		{return m_RemoteKey;}
+	inline const CKey &getLocalKey() const
+		{return m_LocalKey;}
 
 
 private:

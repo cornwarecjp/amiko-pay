@@ -67,6 +67,8 @@ CComLink::CComLink(const CTCPListener &listener, const CAmikoSettings &settings)
 
 CComLink::~CComLink()
 {
+	//stop the thread before members are deleted
+	stop();
 }
 
 

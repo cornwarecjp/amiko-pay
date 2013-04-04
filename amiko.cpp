@@ -127,8 +127,38 @@ void CAmiko::processPendingComLinks()
 
 void CAmiko::addOperationalComLink(CComLink *link)
 {
+	//Find the FinLink for this link
+	CBinBuffer localPubKey = link->getLocalKey().getPublicKey();
+	CFinLink *finlink = NULL;
+	for(size_t i=0; i < m_FinLinks.size(); i++)
+		if(m_FinLinks[i]->getLocalKey().getPublicKey() == localPubKey)
+		{
+			finlink = m_FinLinks[i];
+			break;
+		}
+
+	if(finlink == NULL)
+	{
+		//No corresponding finlink found
+		//This is an application bug: link should never have become operational
+		//Anyway, just delete the link and throw an exception:
+		delete link;
+		throw CException("Bug: no finlink found for new comlink; deleted the comlink");
+	}
+
+	//If there is any conflicting comlink, keep the first one and delete the new one:
+	if(finlink->getReceiver() != NULL)
+	{
+		log("Detected double link; closing the latest link.\n");
+		delete link;
+		return;
+	}
+
+	//Set receiver in both directions
+	link->setReceiver(finlink);
+	finlink->setReceiver(link);
+
 	//Move to operational list
-	//TODO: set receiver
 	m_OperationalComLinks.m_Value.push_back(link);
 }
 
