@@ -143,10 +143,15 @@ void CAmiko::removeClosedComLinks()
 
 void CAmiko::removeComLink(std::list<CComLink *>::iterator &iter)
 {
-	//TODO: de-register (as) listener
-
 	CComLink *link = *iter;
 	link->stop();
+
+	//De-register (as) receiver:
+	link->setReceiver(NULL);
+	for(size_t i=0; i < m_FinLinks.size(); i++)
+		if(m_FinLinks[i]->getReceiver() == link)
+			m_FinLinks[i]->setReceiver(NULL);
+
 	delete link;
 
 	std::list<CComLink *>::iterator j = iter; iter++;

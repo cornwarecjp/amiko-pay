@@ -72,6 +72,12 @@ public:
 	*/
 	void setReceiver(CComInterface *receiver);
 
+	//TODO: spec
+	inline CComInterface *getReceiver()
+	{
+		CMutexLocker lock(m_Receiver);
+		return m_Receiver.m_Value;
+	}
 
 protected:
 	/*
