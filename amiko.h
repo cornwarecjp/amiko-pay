@@ -129,6 +129,9 @@ public:
 private:
 
 	//TODO: spec
+	void addOperationalComLink(CComLink *link);
+
+	//TODO: spec
 	void removeComLink(std::list<CComLink *>::iterator &iter);
 
 	CCriticalSection<CAmikoSettings> m_Settings;

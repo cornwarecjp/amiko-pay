@@ -113,9 +113,7 @@ void CAmiko::processPendingComLinks()
 		}
 		else if((*i)->getState() == CComLink::eOperational)
 		{
-			//Move to operational list
-			//TODO: set receiver
-			m_OperationalComLinks.m_Value.push_back(*i);
+			addOperationalComLink(*i);
 
 			std::list<CComLink *>::iterator j = i; i++;
 			m_PendingComLinks.m_Value.erase(j);
@@ -124,6 +122,14 @@ void CAmiko::processPendingComLinks()
 		//This can happen if the above code erased an item
 		if(i == m_PendingComLinks.m_Value.end()) break;
 	}
+}
+
+
+void CAmiko::addOperationalComLink(CComLink *link)
+{
+	//Move to operational list
+	//TODO: set receiver
+	m_OperationalComLinks.m_Value.push_back(link);
 }
 
 
