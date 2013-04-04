@@ -24,6 +24,7 @@
 #include "amikosettings.h"
 #include "key.h"
 #include "cstring.h"
+#include "exception.h"
 
 #include "cominterface.h"
 
@@ -34,6 +35,8 @@ paired with a ComLink object, which performs communication with the peer.
 class CFinLink : public CComInterface
 {
 public:
+	SIMPLEEXCEPTIONCLASS(CSaveError)
+
 	/*
 	linkInfo:
 	TODO
@@ -42,7 +45,7 @@ public:
 	TODO
 
 	Exceptions:
-	TODO
+	CSaveError
 	*/
 	CFinLink(const CAmikoSettings::CLink &linkInfo);
 
@@ -56,7 +59,10 @@ private:
 	//TODO: spec
 	void load();
 
-	//TODO: spec
+	/*
+	Exceptions:
+	CSaveError
+	*/
 	void save() const;
 
 	//TODO: spec

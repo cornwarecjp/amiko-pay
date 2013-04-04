@@ -63,7 +63,16 @@ CFinLink::CFinLink(const CAmikoSettings::CLink &linkInfo) :
 CFinLink::~CFinLink()
 {
 	//Should already be saved; just do it one final time just to be sure
-	save();
+	try
+	{
+		save();
+	}
+	catch(CSaveError &e)
+	{
+		log(CString::format("An error occurred during final save: %s\n",
+			1024, e.what()
+			));
+	}
 }
 
 
@@ -113,35 +122,23 @@ void CFinLink::save() const
 		//TODO: use tmp file to prevent overwriting with unfinished data
 		CFilePointer f(fopen(tmpfile.c_str(), "wb"));
 		if(f.m_FP == NULL)
-		{
-			//TODO: make this an exception?
-			//In that case, catch the exception in the destructor
-			log(CString::format("ERROR: Could not store %s!!!\n",
-				256, tmpfile.c_str()));
-			return;
-		}	
+			throw CSaveError(CString::format("ERROR: Could not store %s!!!",
+				256, tmpfile.c_str()
+				));
 
 		size_t ret = fwrite(&data[0], data.size(), 1, f.m_FP);
 		if(ret != 1)
-		{
-			//TODO: make this an exception?
-			//In that case, catch the exception in the destructor
-			log(CString::format("ERROR while storing in %s!!!\n",
-				256, tmpfile.c_str()));
-			return;
-		}
+			throw CSaveError(CString::format("ERROR while storing in %s!!!",
+				256, tmpfile.c_str()
+				));
 	}
 
 	//Overwrite file in m_Filename with tmpfile
 	if(rename(tmpfile.c_str(), m_Filename.c_str()) != 0)
-	{
-		//TODO: make this an exception?
-		//In that case, catch the exception in the destructor
-		log(CString::format(
-			"ERROR while storing in %s; new data can be found in %s!!!\n",
+		throw CSaveError(CString::format(
+			"ERROR while storing in %s; new data can be found in %s!!!",
 			1024, m_Filename.c_str(), tmpfile.c_str()
 			));
-	}
 }
 
 

@@ -47,7 +47,7 @@ public:
 	Empty Amiko object
 
 	Exceptions:
-	none
+	CFinLink::CSaveError
 	*/
 	CAmiko(const CAmikoSettings &settings);
 
