@@ -28,6 +28,10 @@ CAmiko::CAmiko(const CAmikoSettings &settings) :
 	m_ListenerThread(this, m_Settings.m_Value.m_portNumber),
 	m_MakerThread(this)
 {
+	CMutexLocker lock(m_Settings);
+
+	for(size_t i=0; i < m_Settings.m_Value.m_links.size(); i++)
+		m_FinLinks.push_back(new CFinLink(m_Settings.m_Value.m_links[i]));
 }
 
 
@@ -44,6 +48,7 @@ CAmiko::~CAmiko()
 			(*i)->stop();
 			delete (*i);
 		}
+		m_PendingComLinks.m_Value.clear();
 	}
 
 	{
@@ -55,7 +60,12 @@ CAmiko::~CAmiko()
 			(*i)->stop();
 			delete (*i);
 		}
+		m_OperationalComLinks.m_Value.clear();
 	}
+
+	for(size_t i=0; i < m_FinLinks.size(); i++)
+		delete m_FinLinks[i];
+	m_FinLinks.clear();
 }
 
 

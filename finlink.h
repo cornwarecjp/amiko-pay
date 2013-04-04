@@ -21,6 +21,10 @@
 #ifndef FINLINK_H
 #define FINLINK_H
 
+#include "amikosettings.h"
+#include "key.h"
+#include "cstring.h"
+
 #include "cominterface.h"
 
 /*
@@ -31,15 +35,38 @@ class CFinLink : public CComInterface
 {
 public:
 	/*
+	linkInfo:
+	TODO
+
 	Constructed object:
+	TODO
 
 	Exceptions:
+	TODO
 	*/
-	CFinLink();
+	CFinLink(const CAmikoSettings::CLink &linkInfo);
 
 	~CFinLink();
 
+	//TODO: spec
 	void sendMessage(const CBinBuffer &message);
+
+
+private:
+	//TODO: spec
+	void load();
+
+	//TODO: spec
+	void save() const;
+
+	//TODO: spec
+	CBinBuffer serialize() const;
+
+	//TODO: spec
+	void deserialize(const CBinBuffer &data);
+
+	CKey m_LocalKey, m_RemoteKey;
+	CString m_Filename;
 };
 
 #endif

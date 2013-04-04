@@ -22,6 +22,7 @@
 #define AMIKO_H
 
 #include <list>
+#include <vector>
 
 #include "cthread.h"
 
@@ -29,6 +30,7 @@
 #include "comlink.h"
 #include "comlistenerthread.h"
 #include "commakerthread.h"
+#include "finlink.h"
 
 /*
 Container of application-level data
@@ -126,6 +128,7 @@ public:
 
 private:
 	CCriticalSection<CAmikoSettings> m_Settings;
+	std::vector<CFinLink *> m_FinLinks;
 
 	CComListenerThread m_ListenerThread;
 	CComMakerThread m_MakerThread;

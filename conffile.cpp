@@ -23,6 +23,7 @@
 #include "conffile.h"
 
 //RAII file pointer micro-class:
+//TODO: put in separate file with FS utilities
 class CFilePointer
 {
 public:
