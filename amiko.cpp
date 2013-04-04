@@ -142,8 +142,9 @@ void CAmiko::addOperationalComLink(CComLink *link)
 		//No corresponding finlink found
 		//This is an application bug: link should never have become operational
 		//Anyway, just delete the link and throw an exception:
+		log("Bug: no finlink found for new comlink; deleted the comlink\n");
 		delete link;
-		throw CException("Bug: no finlink found for new comlink; deleted the comlink");
+		return;
 	}
 
 	//If there is any conflicting comlink, keep the first one and delete the new one:
