@@ -32,6 +32,8 @@
 //TODO: make this a setting:
 #define LINKSDIR "./links/"
 
+#define LINKFILE_FORMAT_VERSION 1
+
 //RAII file pointer micro-class:
 //TODO: put in separate file with FS utilities
 class CFilePointer
@@ -144,7 +146,9 @@ void CFinLink::save() const
 
 CBinBuffer CFinLink::serialize() const
 {
-	return CBinBuffer("dummy data");
+	CBinBuffer ret;
+	ret.appendUint<uint32_t>(LINKFILE_FORMAT_VERSION);
+	return ret;
 }
 
 
