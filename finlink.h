@@ -68,6 +68,7 @@ public:
 	inline const CKey &getLocalKey() const
 		{return m_LocalKey;}
 
+	void processInbox();
 
 private:
 	/*

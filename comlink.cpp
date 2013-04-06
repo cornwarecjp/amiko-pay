@@ -108,7 +108,7 @@ void CComLink::threadFunc()
 			try
 			{
 				while(true)
-					deliverReceivedMessage(receiveMessageDirect());
+					deliverMessage(receiveMessageDirect());
 			}
 			catch(CNoDataAvailable &e)
 			{

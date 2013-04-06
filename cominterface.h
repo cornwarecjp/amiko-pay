@@ -89,7 +89,7 @@ protected:
 	CMessageLost
 	TODO (same as sendMessage)
 	*/
-	void deliverReceivedMessage(const CBinBuffer &message);
+	void deliverMessage(const CBinBuffer &message);
 
 	CCriticalSection<CComInterface *> m_Receiver;
 };

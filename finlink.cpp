@@ -26,6 +26,7 @@
 
 #include "log.h"
 #include "bitcoinaddress.h"
+#include "messages.h"
 
 #include "finlink.h"
 
@@ -82,6 +83,25 @@ void CFinLink::sendMessage(const CBinBuffer &message)
 {
 	CMutexLocker lock(m_Inbox);
 	m_Inbox.m_Value.push(message);
+}
+
+
+void CFinLink::processInbox()
+{
+	CMutexLocker lock(m_Inbox);
+
+	while(!m_Inbox.m_Value.empty())
+	{
+		CBinBuffer receivedMessage = m_Inbox.m_Value.front();
+		m_Inbox.m_Value.pop();
+
+		//TODO
+		CNackMessage nack;
+		nack.m_rejectedBySource = CSHA256(receivedMessage);
+		nack.m_reasonCode = CNackMessage::eNonstandardReason;
+		nack.m_reason = "Message receiving is not yet fully implemented";
+		deliverMessage(nack.serialize());
+	}
 }
 
 

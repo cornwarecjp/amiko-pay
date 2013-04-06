@@ -38,7 +38,7 @@ void CComInterface::setReceiver(CComInterface *receiver)
 }
 
 
-void CComInterface::deliverReceivedMessage(const CBinBuffer &message)
+void CComInterface::deliverMessage(const CBinBuffer &message)
 {
 	CMutexLocker lock(m_Receiver);
 	if(m_Receiver.m_Value == NULL)
