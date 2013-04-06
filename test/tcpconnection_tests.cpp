@@ -104,7 +104,7 @@ class CTCPConnectionTest : public CTest
 		delete c1;
 
 		test("  receive gives exception when peer closes",
-			throws<CTCPConnection::CReceiveException>(receiveWithTimeout, c2)
+			throws<CTCPConnection::CClosedException>(receiveWithTimeout, c2)
 			);
 
 		delete c2;
