@@ -80,7 +80,8 @@ CFinLink::~CFinLink()
 
 void CFinLink::sendMessage(const CBinBuffer &message)
 {
-	//TODO (for now, the message is thrown away)
+	CMutexLocker lock(m_Inbox);
+	m_Inbox.m_Value.push(message);
 }
 
 
