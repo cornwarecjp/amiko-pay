@@ -98,7 +98,7 @@ void CFinLink::load()
 	chunk.resize(1024);
 	while(true)
 	{
-		size_t ret = fread(&chunk[0], chunk.size(), 1, f.m_FP);
+		size_t ret = fread(&chunk[0], 1, chunk.size(), f.m_FP);
 		if(ret < chunk.size())
 		{
 			//TODO: distinguish between EOF and error
@@ -147,13 +147,49 @@ void CFinLink::save() const
 CBinBuffer CFinLink::serialize() const
 {
 	CBinBuffer ret;
+
+	//Format version
 	ret.appendUint<uint32_t>(LINKFILE_FORMAT_VERSION);
+
+	//My messages
+	ret.appendUint<uint32_t>(m_myMessages.size());
+	for(std::list<CBinBuffer>::const_iterator i=m_myMessages.begin();
+		i != m_myMessages.end(); i++)
+			ret.appendBinBuffer(*i);
+
+	//Your messages
+	ret.appendUint<uint32_t>(m_yourMessages.size());
+	for(std::list<CBinBuffer>::const_iterator i=m_yourMessages.begin();
+		i != m_yourMessages.end(); i++)
+			ret.appendBinBuffer(*i);
+
 	return ret;
 }
 
 
 void CFinLink::deserialize(const CBinBuffer &data)
 {
+	try
+	{
+		size_t pos = 0;
+		uint32_t formatVersion = data.readUint<uint32_t>(pos);
+		if(formatVersion != LINKFILE_FORMAT_VERSION)
+			throw CLoadError("File format version mismatch");
+
+		uint32_t numMessages = data.readUint<uint32_t>(pos);
+		//TODO: check whether numMessages makes sense
+		for(uint32_t i=0; i < numMessages; i++)
+			m_myMessages.push_back(data.readBinBuffer(pos));
+
+		numMessages = data.readUint<uint32_t>(pos);
+		//TODO: check whether numMessages makes sense
+		for(uint32_t i=0; i < numMessages; i++)
+			m_yourMessages.push_back(data.readBinBuffer(pos));
+	}
+	catch(CBinBuffer::CReadError &e)
+	{
+		throw CLoadError(CString(e.what()));
+	}
 }
 
 

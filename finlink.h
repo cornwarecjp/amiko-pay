@@ -21,6 +21,9 @@
 #ifndef FINLINK_H
 #define FINLINK_H
 
+#include <list>
+#include <queue>
+
 #include "amikosettings.h"
 #include "key.h"
 #include "cstring.h"
@@ -35,6 +38,7 @@ paired with a ComLink object, which performs communication with the peer.
 class CFinLink : public CComInterface
 {
 public:
+	SIMPLEEXCEPTIONCLASS(CLoadError)
 	SIMPLEEXCEPTIONCLASS(CSaveError)
 
 	/*
@@ -45,6 +49,7 @@ public:
 	TODO
 
 	Exceptions:
+	CLoadError
 	CSaveError
 	*/
 	CFinLink(const CAmikoSettings::CLink &linkInfo);
@@ -65,7 +70,10 @@ public:
 
 
 private:
-	//TODO: spec
+	/*
+	Exceptions:
+	CLoadError
+	*/
 	void load();
 
 	/*
@@ -77,11 +85,19 @@ private:
 	//TODO: spec
 	CBinBuffer serialize() const;
 
-	//TODO: spec
+	/*
+	Exceptions:
+	CLoadError
+	*/
 	void deserialize(const CBinBuffer &data);
 
 	CKey m_LocalKey, m_RemoteKey;
 	CString m_Filename;
+
+	//To-be-checked-and-processed:
+	CCriticalSection< std::queue<CBinBuffer> > m_Inbox;
+
+	std::list<CBinBuffer> m_myMessages, m_yourMessages;
 };
 
 #endif
