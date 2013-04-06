@@ -133,6 +133,14 @@ void CComLink::threadFunc()
 			}
 		}
 	}
+	catch(CTCPConnection::CClosedException &e)
+	{
+		log(CString::format(
+			"Connection closed by peer (local: %s)\n",
+			1024,
+			getBitcoinAddress(m_LocalKey).c_str()
+			));
+	}
 	catch(CException &e)
 	{
 		log(CString::format(

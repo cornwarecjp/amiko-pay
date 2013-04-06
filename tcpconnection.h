@@ -38,6 +38,7 @@ public:
 	SIMPLEEXCEPTIONCLASS(CConnectException)
 	SIMPLEEXCEPTIONCLASS(CReceiveException)
 	SIMPLEEXCEPTIONCLASS(CSendException)
+	SIMPLEEXCEPTIONCLASS(CClosedException)
 	SIMPLEEXCEPTIONCLASS(CTimeoutException)
 
 	/*
@@ -110,6 +111,7 @@ public:
 	Exceptions:
 	CReceiveException
 	CTimeoutException
+	CClosedException
 	*/
 	virtual void receive(CBinBuffer &buffer, int timeout);
 

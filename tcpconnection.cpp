@@ -182,7 +182,7 @@ void CTCPConnection::receive(CBinBuffer &buffer, int timeout)
 		ssize_t read_ret = read(m_FD, &(newBytes[0]), newBytes.size());
 
 		if(read_ret == 0)
-			throw CReceiveException("Unexpected close of TCP connection");
+			throw CClosedException("Unexpected close of TCP connection");
 
 		if(read_ret < 0)
 		{
