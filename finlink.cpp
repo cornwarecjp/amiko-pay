@@ -188,6 +188,8 @@ CBinBuffer CFinLink::serialize() const
 		i != m_yourMessages.end(); i++)
 			ret.appendBinBuffer(*i);
 
+	//TODO: transactions
+
 	return ret;
 }
 
@@ -210,6 +212,8 @@ void CFinLink::deserialize(const CBinBuffer &data)
 		//TODO: check whether numMessages makes sense
 		for(uint32_t i=0; i < numMessages; i++)
 			m_yourMessages.push_back(data.readBinBuffer(pos));
+
+		//TODO: transactions
 	}
 	catch(CBinBuffer::CReadError &e)
 	{

@@ -26,6 +26,7 @@
 
 #include "amikosettings.h"
 #include "key.h"
+#include "transaction.h"
 #include "cstring.h"
 #include "exception.h"
 
@@ -101,6 +102,8 @@ private:
 	CCriticalSection< std::queue<CBinBuffer> > m_Inbox;
 
 	std::list<CBinBuffer> m_myMessages, m_yourMessages;
+
+	std::list<CTransaction> m_InboundTransactions, m_OutboundTransactions;
 };
 
 #endif
