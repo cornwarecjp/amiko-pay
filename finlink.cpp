@@ -87,11 +87,13 @@ void CFinLink::sendMessage(const CBinBuffer &message)
 
 void CFinLink::load()
 {
-	CFilePointer f(fopen(m_Filename.c_str(), "rb"));
+	CMutexLocker lock(m_Filename);
+
+	CFilePointer f(fopen(m_Filename.m_Value.c_str(), "rb"));
 	if(f.m_FP == NULL)
 	{
 		log(CString::format("Could not load %s; assuming this is a new link\n",
-			256, m_Filename.c_str()));
+			256, m_Filename.m_Value.c_str()));
 		return;
 	}
 
@@ -114,9 +116,11 @@ void CFinLink::load()
 }
 
 
-void CFinLink::save() const
+void CFinLink::save()
 {
-	CString tmpfile = m_Filename + ".tmp";
+	CMutexLocker lock(m_Filename);
+
+	CString tmpfile = m_Filename.m_Value + ".tmp";
 
 	//Save as tmpfile
 	{
@@ -137,10 +141,10 @@ void CFinLink::save() const
 	}
 
 	//Overwrite file in m_Filename with tmpfile
-	if(rename(tmpfile.c_str(), m_Filename.c_str()) != 0)
+	if(rename(tmpfile.c_str(), m_Filename.m_Value.c_str()) != 0)
 		throw CSaveError(CString::format(
 			"ERROR while storing in %s; new data can be found in %s!!!",
-			1024, m_Filename.c_str(), tmpfile.c_str()
+			1024, m_Filename.m_Value.c_str(), tmpfile.c_str()
 			));
 }
 

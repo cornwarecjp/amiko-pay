@@ -80,7 +80,7 @@ private:
 	Exceptions:
 	CSaveError
 	*/
-	void save() const;
+	void save();
 
 	//TODO: spec
 	CBinBuffer serialize() const;
@@ -92,7 +92,9 @@ private:
 	void deserialize(const CBinBuffer &data);
 
 	CKey m_LocalKey, m_RemoteKey;
-	CString m_Filename;
+
+	//Mutex is there to protect file loading and saving
+	CCriticalSection<CString> m_Filename;
 
 	//To-be-checked-and-processed:
 	CCriticalSection< std::queue<CBinBuffer> > m_Inbox;
