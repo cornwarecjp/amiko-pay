@@ -21,18 +21,8 @@
 #include <cstdio>
 
 #include "conffile.h"
+#include "file.h"
 
-//RAII file pointer micro-class:
-//TODO: put in separate file with FS utilities
-class CFilePointer
-{
-public:
-	CFilePointer(FILE *fp)
-		{m_FP = fp;}
-	~CFilePointer()
-		{if(m_FP != NULL) fclose(m_FP);}
-	FILE *m_FP;
-};
 
 CConfFile::CConfFile()
 {
@@ -52,7 +42,7 @@ CConfFile::~CConfFile()
 
 void CConfFile::load(const CString &filename)
 {
-	CFilePointer f(fopen(filename.c_str(), "rb"));
+	CFile f(filename, "rb");
 
 	if(f.m_FP == NULL)
 		throw COpenError("CConfFile::load(const CString &): could not open file");

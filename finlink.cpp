@@ -27,6 +27,7 @@
 #include "log.h"
 #include "bitcoinaddress.h"
 #include "messages.h"
+#include "file.h"
 
 #include "finlink.h"
 
@@ -35,26 +36,18 @@
 
 #define LINKFILE_FORMAT_VERSION 1
 
-//RAII file pointer micro-class:
-//TODO: put in separate file with FS utilities
-class CFilePointer
-{
-public:
-	CFilePointer(FILE *fp)
-		{m_FP = fp;}
-	~CFilePointer()
-		{if(m_FP != NULL) fclose(m_FP);}
-	FILE *m_FP;
-};
-
 
 CFinLink::CFinLink(const CAmikoSettings::CLink &linkInfo) :
 	m_LocalKey(linkInfo.m_localKey),
 	m_RemoteKey(linkInfo.m_remoteKey),
 	m_Filename(CString(LINKSDIR) + getBitcoinAddress(m_LocalKey))
 {
-	if(mkdir(LINKSDIR, S_IRUSR | S_IWUSR | S_IXUSR) != 0 && errno != EEXIST)
-		log(CString::format("Error when creating directory %s\n", 256, LINKSDIR));
+	try
+		{CFile::makeDirectory(LINKSDIR);}
+	catch(CFile::CError &e)
+	{
+		log(CString(e.what()) + "\n");
+	}
 
 	load();
 
@@ -109,7 +102,7 @@ void CFinLink::load()
 {
 	CMutexLocker lock(m_Filename);
 
-	CFilePointer f(fopen(m_Filename.m_Value.c_str(), "rb"));
+	CFile f(m_Filename.m_Value, "rb");
 	if(f.m_FP == NULL)
 	{
 		log(CString::format("Could not load %s; assuming this is a new link\n",
@@ -147,7 +140,7 @@ void CFinLink::save()
 		CBinBuffer data = serialize();
 
 		//TODO: use tmp file to prevent overwriting with unfinished data
-		CFilePointer f(fopen(tmpfile.c_str(), "wb"));
+		CFile f(tmpfile, "wb");
 		if(f.m_FP == NULL)
 			throw CSaveError(CString::format("ERROR: Could not store %s!!!",
 				256, tmpfile.c_str()
@@ -161,11 +154,17 @@ void CFinLink::save()
 	}
 
 	//Overwrite file in m_Filename with tmpfile
-	if(rename(tmpfile.c_str(), m_Filename.m_Value.c_str()) != 0)
+	try
+	{
+		CFile::rename(tmpfile, m_Filename.m_Value);
+	}
+	catch(CFile::CError &e)
+	{
 		throw CSaveError(CString::format(
 			"ERROR while storing in %s; new data can be found in %s!!!",
 			1024, m_Filename.m_Value.c_str(), tmpfile.c_str()
 			));
+	}
 }
 
 
