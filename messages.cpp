@@ -77,8 +77,8 @@ void CNackMessage::setSerializedBody(const CBinBuffer &data)
 	switch(reasonCode)
 	{
 	case eNonstandardReason:
+	case eFormatError:
 	case eBadSignature:
-	case eWrongBalance:
 		m_reasonCode = eReason(reasonCode);
 		break;
 	default:

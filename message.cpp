@@ -40,33 +40,47 @@ CMessage *CMessage::constructMessage(const CBinBuffer &data)
 	//The ID is located at bytes 4..8
 	if(data.size() < 8)
 		throw CSerializationError("Message does not contain a type ID");
-	size_t pos = 4;
-	uint32_t ID = data.readUint<uint32_t>(pos);
 
-	CMessage *ret = NULL;
-
-	switch(ID)
+	try
 	{
-	case eHello:
-		ret = new CHelloMessage;
-		break;
-	case eAck:
-		ret = new CAckMessage;
-		break;
-	case eNack:
-		ret = new CNackMessage;
-		break;
-	case eFinState:
-		ret = new CFinStateMessage;
-		break;
-	default:
-		throw CSerializationError("Invalid message type ID");
+		size_t pos = 4;
+		uint32_t ID = data.readUint<uint32_t>(pos);
+
+		CMessage *ret = NULL;
+
+		switch(ID)
+		{
+		case eHello:
+			ret = new CHelloMessage;
+			break;
+		case eAck:
+			ret = new CAckMessage;
+			break;
+		case eNack:
+			ret = new CNackMessage;
+			break;
+		case eFinState:
+			ret = new CFinStateMessage;
+			break;
+		default:
+			throw CSerializationError("Invalid message type ID");
+		}
+
+		//TODO: in case of any exception here, delete the object to prevent a memory leak
+		ret->deserialize(data);
+
+		return ret;
+	}
+	catch(CBinBuffer::CReadError &e)
+	{
+		throw CSerializationError(
+			CString("Deserialization error: %s") +
+			e.what()
+			);
 	}
 
-	//TODO: in case of any exception here, delete the object to prevent a memory leak
-	ret->deserialize(data);
-
-	return ret;
+	//Should never be reached (see above code)
+	return NULL;
 }
 
 

@@ -79,25 +79,6 @@ void CFinLink::sendMessage(const CBinBuffer &message)
 }
 
 
-void CFinLink::processInbox()
-{
-	CMutexLocker lock(m_Inbox);
-
-	while(!m_Inbox.m_Value.empty())
-	{
-		CBinBuffer receivedMessage = m_Inbox.m_Value.front();
-		m_Inbox.m_Value.pop();
-
-		//TODO
-		CNackMessage nack;
-		nack.m_rejectedBySource = CSHA256(receivedMessage);
-		nack.m_reasonCode = CNackMessage::eNonstandardReason;
-		nack.m_reason = "Message receiving is not yet fully implemented";
-		deliverMessage(nack.serialize());
-	}
-}
-
-
 void CFinLink::load()
 {
 	CMutexLocker lock(m_Filename);
@@ -218,6 +199,82 @@ void CFinLink::deserialize(const CBinBuffer &data)
 	{
 		throw CLoadError(CString(e.what()));
 	}
+}
+
+
+void CFinLink::processInbox()
+{
+	CMutexLocker lock(m_Inbox);
+
+	while(!m_Inbox.m_Value.empty())
+	{
+		CBinBuffer msgData = m_Inbox.m_Value.front();
+		m_Inbox.m_Value.pop();
+
+		CMessage *msg = NULL;
+		try
+		{
+			msg = CMessage::constructMessage(msgData);
+		}
+		catch(CMessage::CSerializationError &e)
+		{
+			log(CString::format("Received incorrectly formatted message on %s: %s",
+				1024,
+				getBitcoinAddress(getLocalKey()).c_str(),
+				e.what()
+				));
+			sendNackMessage(
+				CNackMessage::eFormatError,
+				"Message format error",
+				CSHA256(msgData));
+
+			//Ignore the incorrect message
+			return;
+		}
+
+		//TODO
+		sendNackMessage(
+			CNackMessage::eNonstandardReason,
+			"Message receiving is not yet fully implemented",
+			CSHA256(msgData));
+	}
+}
+
+
+void CFinLink::sendNackMessage(
+	CNackMessage::eReason reasonCode,
+	const CString &reason,
+	const CSHA256 &rejectedMessage)
+{
+	CNackMessage nack;
+	nack.m_reasonCode = reasonCode;
+	nack.m_reason = reason;
+	nack.m_rejectedBySource = rejectedMessage;
+	setOutboundMessageFields(nack);
+	deliverMessage(nack.serialize());
+}
+
+
+void CFinLink::setOutboundMessageFields(CMessage &msg)
+{
+	msg.m_source = CRIPEMD160(
+		CSHA256(getLocalKey().getPublicKey()).toBinBuffer()
+		);
+	msg.m_destination = CRIPEMD160(
+		CSHA256(getRemoteKey().getPublicKey()).toBinBuffer()
+		);
+
+	msg.m_lastSentBySource = CSHA256(
+		m_myMessages.empty()? CBinBuffer() : m_myMessages.back()
+		);
+
+	msg.m_lastAcceptedBySource = CSHA256(
+		m_yourMessages.empty()? CBinBuffer() : m_yourMessages.back()
+		);
+
+	//TODO: timestamp
+
+	msg.sign(getLocalKey());
 }
 
 

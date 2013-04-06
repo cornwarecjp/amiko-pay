@@ -27,6 +27,7 @@
 #include "amikosettings.h"
 #include "key.h"
 #include "transaction.h"
+#include "messages.h"
 #include "cstring.h"
 #include "exception.h"
 
@@ -92,6 +93,15 @@ private:
 	CLoadError
 	*/
 	void deserialize(const CBinBuffer &data);
+
+	//TODO: spec
+	void sendNackMessage(
+		CNackMessage::eReason reasonCode,
+		const CString &reason,
+		const CSHA256 &rejectedMessage);
+
+	//TODO: spec
+	void setOutboundMessageFields(CMessage &msg);
 
 	CKey m_LocalKey, m_RemoteKey;
 
