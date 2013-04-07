@@ -61,6 +61,10 @@ public:
 	}
 
 private:
+	//Disable assignment and copy construction:
+	CPointerOwner(CPointerOwner &p);
+	CPointerOwner &operator=(CPointerOwner &p);
+
 	T *m_Pointer;
 };
 
