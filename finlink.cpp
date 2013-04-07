@@ -260,6 +260,20 @@ void CFinLink::processInbox()
 			return;
 		}
 
+		if(!msg->verifySignature(getRemoteKey()))
+		{
+			sendNackMessage(
+				CNackMessage::eBadSignature,
+				"Signature is incorrect",
+				CSHA256(msgData));
+
+			//Ignore the incorrect message
+			return;
+		}
+
+		//TODO: check lastSentBySource
+		//TODO: check lastAcceptedBySource
+
 		//TODO
 		sendNackMessage(
 			CNackMessage::eNonstandardReason,
