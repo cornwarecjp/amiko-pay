@@ -77,7 +77,8 @@ public:
 	//Amiko link protocol version 1
 	eNonstandardReason=0,
 	eFormatError=1,
-	eBadSignature=2
+	eAddressError=2,
+	eBadSignature=3
 	};
 
 

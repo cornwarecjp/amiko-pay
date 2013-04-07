@@ -219,15 +219,11 @@ void CFinLink::processInbox()
 		}
 		catch(CMessage::CSerializationError &e)
 		{
-			log(CString::format("Received incorrectly formatted message on %s: %s",
-				1024,
-				getBitcoinAddress(getLocalKey()).c_str(),
-				e.what()
-				));
 			sendNackMessage(
 				CNackMessage::eFormatError,
 				"Message format error",
-				CSHA256(msgData));
+				CSHA256(msgData),
+				e.what());
 
 			//Ignore the incorrect message
 			return;
@@ -235,6 +231,34 @@ void CFinLink::processInbox()
 
 		//This object will take care of deleting msg:
 		CPointerOwner<CMessage> messageOwner(msg);
+
+		//Check source address
+		if(msg->m_source != CRIPEMD160(
+			CSHA256(getRemoteKey().getPublicKey()).toBinBuffer()
+			))
+		{
+			sendNackMessage(
+				CNackMessage::eAddressError,
+				"Source address incorrect",
+				CSHA256(msgData));
+
+			//Ignore the incorrect message
+			return;
+		}
+
+		//Check destination address
+		if(msg->m_destination != CRIPEMD160(
+			CSHA256(getLocalKey().getPublicKey()).toBinBuffer()
+			))
+		{
+			sendNackMessage(
+				CNackMessage::eAddressError,
+				"Destination address incorrect",
+				CSHA256(msgData));
+
+			//Ignore the incorrect message
+			return;
+		}
 
 		//TODO
 		sendNackMessage(
@@ -248,8 +272,16 @@ void CFinLink::processInbox()
 void CFinLink::sendNackMessage(
 	CNackMessage::eReason reasonCode,
 	const CString &reason,
-	const CSHA256 &rejectedMessage)
+	const CSHA256 &rejectedMessage,
+	const CString &reasonInLog)
 {
+	log(CString::format("Refused message on %s: %s : %s\n",
+		1024,
+		getBitcoinAddress(getLocalKey()).c_str(),
+		reason.c_str(),
+		reasonInLog.c_str()
+		));
+
 	CNackMessage nack;
 	nack.m_reasonCode = reasonCode;
 	nack.m_reason = reason;

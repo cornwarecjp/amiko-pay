@@ -98,7 +98,8 @@ private:
 	void sendNackMessage(
 		CNackMessage::eReason reasonCode,
 		const CString &reason,
-		const CSHA256 &rejectedMessage);
+		const CSHA256 &rejectedMessage,
+		const CString &reasonInLog="");
 
 	//TODO: spec
 	void setOutboundMessageFields(CMessage &msg);
