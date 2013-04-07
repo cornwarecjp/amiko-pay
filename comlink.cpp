@@ -20,6 +20,7 @@
 
 #include "log.h"
 #include "bitcoinaddress.h"
+#include "pointerowner.h"
 
 #include "comlink.h"
 
@@ -410,17 +411,15 @@ CHelloMessage CComLink::receiveHello(int timeoutValue)
 {
 	CMessage *msg = CMessage::constructMessage(receiveMessageDirect(timeoutValue));
 
+	//This object takes care of deleting msg
+	CPointerOwner<CMessage> msgOwner(msg);
+
 	//TODO: deal with Nack reply (which is a valid reply)
 
 	if(msg->getTypeID() != CMessage::eHello)
-	{
-		delete msg;
 		throw CProtocolError("Expected hello message, got different message type");
-	}
 
 	CHelloMessage ret = *((CHelloMessage *)msg);
-	//TODO: make exception-safe
-	delete msg;
 
 	return ret;
 }

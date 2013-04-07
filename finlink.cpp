@@ -28,6 +28,7 @@
 #include "bitcoinaddress.h"
 #include "messages.h"
 #include "file.h"
+#include "pointerowner.h"
 
 #include "finlink.h"
 
@@ -231,6 +232,9 @@ void CFinLink::processInbox()
 			//Ignore the incorrect message
 			return;
 		}
+
+		//This object will take care of deleting msg:
+		CPointerOwner<CMessage> messageOwner(msg);
 
 		//TODO
 		sendNackMessage(
