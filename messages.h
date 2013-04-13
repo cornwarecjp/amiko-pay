@@ -62,9 +62,7 @@ public:
 	CBinBuffer getSerializedBody() const;
 	void setSerializedBody(const CBinBuffer &data);
 
-	//No contents here:
-	//The purpose of this message is purely to
-	//update m_lastAcceptedBySource
+	CSHA256 m_acceptedBySource; //hash of message accepted by source
 };
 
 
@@ -90,6 +88,7 @@ public:
 	CBinBuffer getSerializedBody() const;
 	void setSerializedBody(const CBinBuffer &data);
 
+	CSHA256 m_acceptedBySource; //hash of last message accepted by source
 	CSHA256 m_rejectedBySource; //hash of message rejected by source
 	eReason m_reasonCode;       //machine-readable reason code
 	CString m_reason;           //reason why the message was rejected

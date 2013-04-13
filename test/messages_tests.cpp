@@ -85,6 +85,7 @@ class CMessagesTest : public CTest
 	{
 		//Construct the message
 		CAckMessage startMessage;
+		startMessage.m_acceptedBySource = CSHA256(CBinBuffer("your money is yours"));
 
 		//Serialize the message
 		CBinBuffer serializedMessage = startMessage.serialize();
@@ -94,6 +95,9 @@ class CMessagesTest : public CTest
 
 		test("  CAckMessage serialization conserves CMessage members",
 			baseMembersAreEqual(&startMessage, endMessage));
+		CAckMessage *endMessage2 = (CAckMessage *)endMessage;
+		test("  CAckMessage serialization conserves accepted hash",
+			endMessage2->m_acceptedBySource == startMessage.m_acceptedBySource);
 
 		//Delete constructed message
 		delete endMessage;
@@ -104,6 +108,7 @@ class CMessagesTest : public CTest
 	{
 		//Construct the message
 		CNackMessage startMessage;
+		startMessage.m_acceptedBySource = CSHA256(CBinBuffer("your money is yours"));
 		startMessage.m_rejectedBySource = CSHA256(CBinBuffer("give me all your money"));
 		startMessage.m_reasonCode = CNackMessage::eNonstandardReason;
 		startMessage.m_reason = "I want to keep it for myself";
@@ -118,6 +123,8 @@ class CMessagesTest : public CTest
 		test("  CNackMessage serialization conserves CMessage members",
 			baseMembersAreEqual(&startMessage, endMessage));
 		CNackMessage *endMessage2 = (CNackMessage *)endMessage;
+		test("  CNackMessage serialization conserves accepted hash",
+			endMessage2->m_acceptedBySource == startMessage.m_acceptedBySource);
 		test("  CNackMessage serialization conserves rejected hash",
 			endMessage2->m_rejectedBySource == startMessage.m_rejectedBySource);
 		test("  CNackMessage serialization conserves reason code",
