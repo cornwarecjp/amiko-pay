@@ -105,7 +105,7 @@ class CMessagesTest : public CTest
 		//Construct the message
 		CNackMessage startMessage;
 		startMessage.m_rejectedBySource = CSHA256(CBinBuffer("give me all your money"));
-		startMessage.m_reasonCode = CNackMessage::eWrongBalance;
+		startMessage.m_reasonCode = CNackMessage::eNonstandardReason;
 		startMessage.m_reason = "I want to keep it for myself";
 		setBaseMembervalues(startMessage);
 
@@ -173,8 +173,7 @@ class CMessagesTest : public CTest
 	{
 		msg.m_source      = CRIPEMD160(CSHA256(m_source.getPublicKey()).toBinBuffer());
 		msg.m_destination = CRIPEMD160(CSHA256(m_destination.getPublicKey()).toBinBuffer());
-		msg.m_lastSentBySource     = CSHA256(CBinBuffer("Hello"));
-		msg.m_lastAcceptedBySource = CSHA256(CBinBuffer("Goodbye"));
+		msg.m_previousMessage = CSHA256(CBinBuffer("Hello"));
 		msg.m_timestamp = 42;
 		msg.sign(m_source);
 	}
@@ -186,8 +185,7 @@ class CMessagesTest : public CTest
 		if(msg1->m_source != msg2->m_source) return false;
 		if(msg1->m_destination != msg2->m_destination) return false;
 		if(msg1->m_signature != msg2->m_signature) return false;
-		if(msg1->m_lastSentBySource != msg2->m_lastSentBySource) return false;
-		if(msg1->m_lastAcceptedBySource != msg2->m_lastAcceptedBySource) return false;
+		if(msg1->m_previousMessage != msg2->m_previousMessage) return false;
 		if(msg1->m_timestamp != msg2->m_timestamp) return false;
 		return true;
 	}

@@ -156,8 +156,7 @@ public:
 	CRIPEMD160 m_destination;  //ripemd160 of sha256 of destination public key
 	CBinBuffer m_signature; //signature of source
 
-	CSHA256 m_lastSentBySource;     //hash of previous message sent by source
-	CSHA256 m_lastAcceptedBySource; //hash of last message accepted by source
+	CSHA256 m_previousMessage; //hash of previous message sent by source
 
 	uint64_t m_timestamp; //timestamp when this message was created by source
 

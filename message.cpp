@@ -132,8 +132,7 @@ CBinBuffer CMessage::getSignedBody() const
 	ret.appendRawBinBuffer(m_source.toBinBuffer());
 	ret.appendRawBinBuffer(m_destination.toBinBuffer());
 	ret.appendUint<uint64_t>(m_timestamp);
-	ret.appendRawBinBuffer(m_lastSentBySource.toBinBuffer());
-	ret.appendRawBinBuffer(m_lastAcceptedBySource.toBinBuffer());
+	ret.appendRawBinBuffer(m_previousMessage.toBinBuffer());
 	ret.appendRawBinBuffer(getSerializedBody());
 	return ret;
 }
@@ -154,9 +153,7 @@ void CMessage::setSignedBody(const CBinBuffer &data)
 	m_destination = CRIPEMD160::fromBinBuffer(
 		data.readRawBinBuffer(pos, CRIPEMD160::getSize()));
 	m_timestamp = data.readUint<uint64_t>(pos);
-	m_lastSentBySource = CSHA256::fromBinBuffer(
-		data.readRawBinBuffer(pos, CSHA256::getSize()));
-	m_lastAcceptedBySource = CSHA256::fromBinBuffer(
+	m_previousMessage = CSHA256::fromBinBuffer(
 		data.readRawBinBuffer(pos, CSHA256::getSize()));
 	setSerializedBody(data.readRawBinBuffer(pos, data.size()-pos));
 

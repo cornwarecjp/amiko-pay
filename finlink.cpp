@@ -314,12 +314,8 @@ void CFinLink::setOutboundMessageFields(CMessage &msg)
 		CSHA256(getRemoteKey().getPublicKey()).toBinBuffer()
 		);
 
-	msg.m_lastSentBySource = CSHA256(
+	msg.m_previousMessage = CSHA256(
 		m_myMessages.empty()? CBinBuffer() : m_myMessages.back()
-		);
-
-	msg.m_lastAcceptedBySource = CSHA256(
-		m_yourMessages.empty()? CBinBuffer() : m_yourMessages.back()
 		);
 
 	//TODO: timestamp
