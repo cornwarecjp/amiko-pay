@@ -22,6 +22,7 @@
 #define MESSAGES_H
 
 #include <vector>
+#include <utility>
 
 #include <stdint.h>
 
@@ -94,6 +95,28 @@ public:
 	CSHA256 m_rejectedBySource; //hash of message rejected by source
 	eReason m_reasonCode;       //machine-readable reason code
 	CString m_reason;           //reason why the message was rejected
+};
+
+
+class CRouteInfoMessage : public CMessage
+{
+public:
+	virtual ~CRouteInfoMessage();
+
+	eTypeID getTypeID() const
+		{return eRouteInfo;}
+
+	CBinBuffer getSerializedBody() const;
+	void setSerializedBody(const CBinBuffer &data);
+
+	class CInfo
+	{
+	public:
+		unsigned int m_expectedHopCount;
+		uint64_t m_expectedMaxSend;
+		uint64_t m_expectedMaxReceive;
+	};
+	std::vector< std::pair<CRIPEMD160, CInfo> > m_entries;
 };
 
 

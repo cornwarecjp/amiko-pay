@@ -59,6 +59,9 @@ CMessage *CMessage::constructMessage(const CBinBuffer &data)
 		case eNack:
 			ret = new CNackMessage;
 			break;
+		case eRouteInfo:
+			ret = new CRouteInfoMessage;
+			break;
 		case eFinState:
 			ret = new CFinStateMessage;
 			break;

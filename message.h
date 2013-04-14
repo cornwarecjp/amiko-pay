@@ -41,7 +41,8 @@ public:
 	eHello=0,
 	eAck=1,
 	eNack=2,
-	eFinState=3
+	eRouteInfo=3,
+	eFinState=4,
 	};
 
 	/*

@@ -46,6 +46,7 @@ class CMessagesTest : public CTest
 		testHelloMessage();
 		testAckMessage();
 		testNackMessage();
+		testRouteInfoMessage();
 		testFinStateMessage();
 	}
 
@@ -131,6 +132,58 @@ class CMessagesTest : public CTest
 			endMessage2->m_reasonCode == startMessage.m_reasonCode);
 		test("  CNackMessage serialization conserves reason text",
 			endMessage2->m_reason == startMessage.m_reason);
+
+		//Delete constructed message
+		delete endMessage;
+	}
+
+
+	void testRouteInfoMessage()
+	{
+		//Construct the message
+		CRouteInfoMessage::CInfo info1, info2;
+		info1.m_expectedHopCount = 1;
+		info1.m_expectedMaxSend = 2100000000000000;
+		info1.m_expectedMaxReceive = 300000000;
+		info2.m_expectedHopCount = 1234;
+		info2.m_expectedMaxSend = 4000000000;
+		info2.m_expectedMaxReceive = 42000000;
+		CRouteInfoMessage startMessage;
+		startMessage.m_entries.push_back(
+			std::pair<CRIPEMD160, CRouteInfoMessage::CInfo>(
+				CRIPEMD160(CBinBuffer("meetingpoint 1")), info1
+			));
+		startMessage.m_entries.push_back(
+			std::pair<CRIPEMD160, CRouteInfoMessage::CInfo>(
+				CRIPEMD160(CBinBuffer("meetingpoint 2")), info2
+			));
+		setBaseMembervalues(startMessage);
+
+		//Serialize the message
+		CBinBuffer serializedMessage = startMessage.serialize();
+
+		//Reconstruct message from serialized data
+		CMessage *endMessage = CMessage::constructMessage(serializedMessage);
+
+		test("  CRouteInfoMessage serialization conserves CMessage members",
+			baseMembersAreEqual(&startMessage, endMessage));
+		CRouteInfoMessage *endMessage2 = (CRouteInfoMessage *)endMessage;
+		test("  CRouteInfoMessage serialization conserves number of entries",
+			endMessage2->m_entries.size() == startMessage.m_entries.size());
+		for(size_t i=0; i < startMessage.m_entries.size(); i++)
+		{
+			test("  CRouteInfoMessage serialization conserves meeting point",
+				endMessage2->m_entries[i].first == startMessage.m_entries[i].first);
+			test("  CRouteInfoMessage serialization conserves hop count",
+				endMessage2->m_entries[i].second.m_expectedHopCount ==
+				startMessage.m_entries[i].second.m_expectedHopCount);
+			test("  CRouteInfoMessage serialization conserves max send",
+				endMessage2->m_entries[i].second.m_expectedMaxSend ==
+				startMessage.m_entries[i].second.m_expectedMaxSend);
+			test("  CRouteInfoMessage serialization conserves max receive",
+				endMessage2->m_entries[i].second.m_expectedMaxReceive ==
+				startMessage.m_entries[i].second.m_expectedMaxReceive);
+		}
 
 		//Delete constructed message
 		delete endMessage;

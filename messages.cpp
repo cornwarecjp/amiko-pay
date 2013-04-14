@@ -99,6 +99,44 @@ void CNackMessage::setSerializedBody(const CBinBuffer &data)
 
 
 //=====================================
+CRouteInfoMessage::~CRouteInfoMessage()
+{}
+
+CBinBuffer CRouteInfoMessage::getSerializedBody() const
+{
+	//TODO: assert that everything fits within specified integer sizes
+
+	CBinBuffer ret;
+	for(size_t i=0; i < m_entries.size(); i++)
+	{
+		ret.appendRawBinBuffer(m_entries[i].first.toBinBuffer());
+		ret.appendUint<uint16_t>(m_entries[i].second.m_expectedHopCount);
+		ret.appendUint<uint64_t>(m_entries[i].second.m_expectedMaxSend);
+		ret.appendUint<uint64_t>(m_entries[i].second.m_expectedMaxReceive);
+	}
+	return ret;
+}
+
+void CRouteInfoMessage::setSerializedBody(const CBinBuffer &data)
+{
+	size_t pos = 0;
+
+	const unsigned int infoSize = CRIPEMD160::getSize() + 2 + 8 + 8;
+	unsigned int numEntries = data.size() / infoSize; //rounds down for incorrect messages
+	m_entries.resize(numEntries);
+
+	for(size_t i=0; i < m_entries.size(); i++)
+	{
+		m_entries[i].first = CRIPEMD160::fromBinBuffer(
+			data.readRawBinBuffer(pos, CRIPEMD160::getSize())
+			);
+		m_entries[i].second.m_expectedHopCount = data.readUint<uint16_t>(pos);
+		m_entries[i].second.m_expectedMaxSend = data.readUint<uint64_t>(pos);
+		m_entries[i].second.m_expectedMaxReceive = data.readUint<uint64_t>(pos);
+	}
+}
+
+//=====================================
 CFinStateMessage::~CFinStateMessage()
 {}
 
