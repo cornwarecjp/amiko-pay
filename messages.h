@@ -21,8 +21,9 @@
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
-#include <stdint.h>
 #include <vector>
+
+#include <stdint.h>
 
 #include "message.h"
 
@@ -76,7 +77,8 @@ public:
 	eNonstandardReason=0,
 	eFormatError=1,
 	eAddressError=2,
-	eBadSignature=3
+	eBadSignature=3,
+	eUnknownPreviousMessage=4
 	};
 
 

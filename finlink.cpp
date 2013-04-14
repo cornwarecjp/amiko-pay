@@ -271,10 +271,22 @@ void CFinLink::processInbox()
 			return;
 		}
 
-		//TODO: check lastSentBySource
-		//TODO: check lastAcceptedBySource
+		//TODO: ignore known messages
 
-		//TODO
+		if(msg->m_previousMessage != CSHA256(
+			m_yourMessages.empty()? CBinBuffer() : m_yourMessages.back()
+			))
+		{
+			sendNackMessage(
+				CNackMessage::eUnknownPreviousMessage,
+				"Unknown previous message",
+				CSHA256(msgData));
+
+			//Ignore the incorrect message
+			return;
+		}
+
+		//TODO: process message
 		sendNackMessage(
 			CNackMessage::eNonstandardReason,
 			"Message receiving is not yet fully implemented",
@@ -299,6 +311,9 @@ void CFinLink::sendNackMessage(
 	CNackMessage nack;
 	nack.m_reasonCode = reasonCode;
 	nack.m_reason = reason;
+	nack.m_acceptedBySource = CSHA256(
+		m_yourMessages.empty()? CBinBuffer() : m_yourMessages.back()
+		);
 	nack.m_rejectedBySource = rejectedMessage;
 	setOutboundMessageFields(nack);
 	deliverMessage(nack.serialize());
