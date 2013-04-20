@@ -141,7 +141,7 @@ class CMessagesTest : public CTest
 	void testRouteInfoMessage()
 	{
 		//Construct the message
-		CRouteInfoMessage::CInfo info1, info2;
+		CRouteTableEntry info1, info2;
 		info1.m_expectedHopCount = 1;
 		info1.m_expectedMaxSend = 2100000000000000;
 		info1.m_expectedMaxReceive = 300000000;
@@ -150,11 +150,11 @@ class CMessagesTest : public CTest
 		info2.m_expectedMaxReceive = 42000000;
 		CRouteInfoMessage startMessage;
 		startMessage.m_entries.push_back(
-			std::pair<CRIPEMD160, CRouteInfoMessage::CInfo>(
+			std::pair<CRIPEMD160, CRouteTableEntry>(
 				CRIPEMD160(CBinBuffer("meetingpoint 1")), info1
 			));
 		startMessage.m_entries.push_back(
-			std::pair<CRIPEMD160, CRouteInfoMessage::CInfo>(
+			std::pair<CRIPEMD160, CRouteTableEntry>(
 				CRIPEMD160(CBinBuffer("meetingpoint 2")), info2
 			));
 		setBaseMembervalues(startMessage);

@@ -27,7 +27,7 @@
 #include <stdint.h>
 
 #include "message.h"
-
+#include "routetable.h"
 
 /*
 Greeting message sent during initialization.
@@ -109,14 +109,7 @@ public:
 	CBinBuffer getSerializedBody() const;
 	void setSerializedBody(const CBinBuffer &data);
 
-	class CInfo
-	{
-	public:
-		unsigned int m_expectedHopCount;
-		uint64_t m_expectedMaxSend;
-		uint64_t m_expectedMaxReceive;
-	};
-	std::vector< std::pair<CRIPEMD160, CInfo> > m_entries;
+	std::vector< std::pair<CRIPEMD160, CRouteTableEntry> > m_entries;
 };
 
 

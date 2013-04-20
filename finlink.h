@@ -32,6 +32,7 @@
 #include "messages.h"
 #include "cstring.h"
 #include "exception.h"
+#include "routetable.h"
 
 #include "cominterface.h"
 
@@ -120,7 +121,7 @@ private:
 
 	std::list<CTransaction> m_InboundTransactions, m_OutboundTransactions;
 
-	std::map<CBinBuffer, CRouteInfoMessage::CInfo> m_RouteTable;
+	CRouteTable m_RouteTable;
 	std::set<CBinBuffer> m_ChangedRoutes;
 };
 
