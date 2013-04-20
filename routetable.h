@@ -24,9 +24,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <set>
 
 #include "binbuffer.h"
-
+#include "ripemd160.h"
 
 class CRouteTableEntry
 {
@@ -40,15 +41,11 @@ public:
 class CRouteTable : public std::map<CBinBuffer, CRouteTableEntry>
 {
 public:
-	/*
-	Constructed object:
 
-	Exceptions:
-	*/
-	CRouteTable();
+	//TODO: spec
+	void updateRoute(const CRIPEMD160 &node, const CRouteTableEntry &entry);
 
-	~CRouteTable();
-
+	std::set<CBinBuffer> m_ChangedRoutes;
 };
 
 #endif

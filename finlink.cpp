@@ -313,12 +313,7 @@ void CFinLink::processRouteInfoMessage(const CRouteInfoMessage *msg)
 {
 	//TODO: can we completely trust route info of the peer?
 	for(size_t i=0; i < msg->m_entries.size(); i++)
-	{
-		m_RouteTable[msg->m_entries[i].first.toBinBuffer()] = msg->m_entries[i].second;
-		m_ChangedRoutes.insert(msg->m_entries[i].first.toBinBuffer());
-	}
-
-	//TODO: remove unimportant entries from the route table
+		m_RouteTable.updateRoute(msg->m_entries[i].first, msg->m_entries[i].second);
 }
 
 
