@@ -20,10 +20,10 @@
 
 #include "routetable.h"
 
-void CRouteTable::updateRoute(const CRIPEMD160 &node, const CRouteTableEntry &entry)
+void CRouteTable::updateRoute(const CRIPEMD160 &destination, const CRouteTableEntry &entry)
 {
-	(*this)[node.toBinBuffer()] = entry;
-	m_ChangedRoutes.insert(node.toBinBuffer());
+	(*this)[destination.toBinBuffer()] = entry;
+	m_ChangedDestinations.insert(destination.toBinBuffer());
 
 	//TODO: remove unimportant entries from the route table
 }

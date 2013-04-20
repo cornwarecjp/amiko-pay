@@ -43,9 +43,10 @@ class CRouteTable : public std::map<CBinBuffer, CRouteTableEntry>
 public:
 
 	//TODO: spec
-	void updateRoute(const CRIPEMD160 &node, const CRouteTableEntry &entry);
+	void updateRoute(const CRIPEMD160 &destination, const CRouteTableEntry &entry);
 
-	std::set<CBinBuffer> m_ChangedRoutes;
+
+	std::set<CBinBuffer> m_ChangedDestinations;
 };
 
 #endif

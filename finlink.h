@@ -73,6 +73,9 @@ public:
 
 	void processInbox();
 
+
+	CCriticalSection<CRouteTable> m_RouteTable;
+
 private:
 	/*
 	Exceptions:
@@ -118,8 +121,6 @@ private:
 	std::list<CBinBuffer> m_myMessages, m_yourMessages;
 
 	std::list<CTransaction> m_InboundTransactions, m_OutboundTransactions;
-
-	CRouteTable m_RouteTable;
 };
 
 #endif

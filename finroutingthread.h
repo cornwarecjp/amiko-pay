@@ -21,6 +21,8 @@
 #ifndef FINROUTINGTHREAD_H
 #define FINROUTINGTHREAD_H
 
+#include "routetable.h"
+
 #include "cthread.h"
 
 class CAmiko;
@@ -38,7 +40,15 @@ public:
 
 
 private:
+
+	//TODO: spec
+	void processIncomingMessages();
+
+	//TODO: spec
+	void processRoutingChanges();
+
 	CAmiko *m_Amiko;
+	CRouteTable m_RouteTable;
 };
 
 #include "amiko.h"

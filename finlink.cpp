@@ -312,8 +312,11 @@ void CFinLink::processInbox()
 void CFinLink::processRouteInfoMessage(const CRouteInfoMessage *msg)
 {
 	//TODO: can we completely trust route info of the peer?
+
+	CMutexLocker lock(m_RouteTable);
 	for(size_t i=0; i < msg->m_entries.size(); i++)
-		m_RouteTable.updateRoute(msg->m_entries[i].first, msg->m_entries[i].second);
+		m_RouteTable.m_Value.updateRoute(
+			msg->m_entries[i].first, msg->m_entries[i].second);
 }
 
 

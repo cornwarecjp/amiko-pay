@@ -127,6 +127,9 @@ public:
 		return m_PendingComLinks.m_Value.size();
 	}
 
+
+	std::vector<CFinLink *> m_FinLinks;
+
 private:
 
 	//TODO: spec
@@ -136,7 +139,6 @@ private:
 	void removeComLink(std::list<CComLink *>::iterator &iter);
 
 	CCriticalSection<CAmikoSettings> m_Settings;
-	std::vector<CFinLink *> m_FinLinks;
 
 	CComListenerThread m_ListenerThread;
 	CComMakerThread m_MakerThread;
