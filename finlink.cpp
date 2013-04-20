@@ -315,6 +315,7 @@ void CFinLink::processRouteInfoMessage(const CRouteInfoMessage *msg)
 	for(size_t i=0; i < msg->m_entries.size(); i++)
 	{
 		m_RouteTable[msg->m_entries[i].first.toBinBuffer()] = msg->m_entries[i].second;
+		m_ChangedRoutes.insert(msg->m_entries[i].first.toBinBuffer());
 	}
 
 	//TODO: remove unimportant entries from the route table

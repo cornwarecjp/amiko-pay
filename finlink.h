@@ -24,6 +24,7 @@
 #include <list>
 #include <queue>
 #include <map>
+#include <set>
 
 #include "amikosettings.h"
 #include "key.h"
@@ -120,6 +121,7 @@ private:
 	std::list<CTransaction> m_InboundTransactions, m_OutboundTransactions;
 
 	std::map<CBinBuffer, CRouteInfoMessage::CInfo> m_RouteTable;
+	std::set<CBinBuffer> m_ChangedRoutes;
 };
 
 #endif
