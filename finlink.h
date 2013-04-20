@@ -23,6 +23,7 @@
 
 #include <list>
 #include <queue>
+#include <map>
 
 #include "amikosettings.h"
 #include "key.h"
@@ -94,6 +95,8 @@ private:
 	*/
 	void deserialize(const CBinBuffer &data);
 
+	void processRouteInfoMessage(const CRouteInfoMessage *msg);
+
 	//TODO: spec
 	void sendNackMessage(
 		CNackMessage::eReason reasonCode,
@@ -115,6 +118,8 @@ private:
 	std::list<CBinBuffer> m_myMessages, m_yourMessages;
 
 	std::list<CTransaction> m_InboundTransactions, m_OutboundTransactions;
+
+	std::map<CBinBuffer, CRouteInfoMessage::CInfo> m_RouteTable;
 };
 
 #endif

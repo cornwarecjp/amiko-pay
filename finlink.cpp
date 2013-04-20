@@ -286,12 +286,38 @@ void CFinLink::processInbox()
 			return;
 		}
 
-		//TODO: process message
-		sendNackMessage(
-			CNackMessage::eNonstandardReason,
-			"Message receiving is not yet fully implemented",
-			CSHA256(msgData));
+		//Process message contents
+		switch(msg->getTypeID())
+		{
+		case CMessage::eRouteInfo:
+			processRouteInfoMessage((const CRouteInfoMessage *)msg);
+			break;
+		default:
+			sendNackMessage(
+				CNackMessage::eNonstandardReason,
+				"Message type not supported",
+				CSHA256(msgData));
+		}
+
+		//If all went well, we can add the message to the list:
+		m_yourMessages.push_back(msgData);
+
+		//TODO: ack if necessary
+
+		save();
 	}
+}
+
+
+void CFinLink::processRouteInfoMessage(const CRouteInfoMessage *msg)
+{
+	//TODO: can we completely trust route info of the peer?
+	for(size_t i=0; i < msg->m_entries.size(); i++)
+	{
+		m_RouteTable[msg->m_entries[i].first.toBinBuffer()] = msg->m_entries[i].second;
+	}
+
+	//TODO: remove unimportant entries from the route table
 }
 
 
