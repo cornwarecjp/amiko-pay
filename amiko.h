@@ -28,9 +28,10 @@
 
 #include "amikosettings.h"
 #include "comlink.h"
+#include "finlink.h"
 #include "comlistenerthread.h"
 #include "commakerthread.h"
-#include "finlink.h"
+#include "finroutingthread.h"
 
 /*
 Container of application-level data
@@ -139,6 +140,7 @@ private:
 
 	CComListenerThread m_ListenerThread;
 	CComMakerThread m_MakerThread;
+	CFinRoutingThread m_FinRoutingThread;
 
 	CCriticalSection< std::list<CComLink *> > m_PendingComLinks;
 	CCriticalSection< std::list<CComLink *> > m_OperationalComLinks;

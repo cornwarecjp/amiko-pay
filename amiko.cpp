@@ -26,7 +26,8 @@
 CAmiko::CAmiko(const CAmikoSettings &settings) :
 	m_Settings(settings),
 	m_ListenerThread(this, m_Settings.m_Value.m_portNumber),
-	m_MakerThread(this)
+	m_MakerThread(this),
+	m_FinRoutingThread(this)
 {
 	CMutexLocker lock(m_Settings);
 
@@ -76,6 +77,7 @@ void CAmiko::start()
 {
 	m_ListenerThread.start();
 	m_MakerThread.start();
+	m_FinRoutingThread.start();
 }
 
 
@@ -83,6 +85,7 @@ void CAmiko::stop()
 {
 	m_ListenerThread.stop();
 	m_MakerThread.stop();
+	m_FinRoutingThread.stop();
 }
 
 
