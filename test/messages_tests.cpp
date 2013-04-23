@@ -142,12 +142,16 @@ class CMessagesTest : public CTest
 	{
 		//Construct the message
 		CRouteTableEntry info1, info2;
-		info1.m_expectedHopCount = 1;
-		info1.m_expectedMaxSend = 2100000000000000;
-		info1.m_expectedMaxReceive = 300000000;
-		info2.m_expectedHopCount = 1234;
-		info2.m_expectedMaxSend = 4000000000;
-		info2.m_expectedMaxReceive = 42000000;
+		info1.m_minHopCount = 1;
+		info1.m_maxSendHopCount = 3;
+		info1.m_maxReceiveHopCount = 2;
+		info1.m_maxSend = 2100000000000000;
+		info1.m_maxReceive = 300000000;
+		info2.m_minHopCount = 42;
+		info2.m_maxSendHopCount = 1234;
+		info2.m_maxReceiveHopCount = 4321;
+		info2.m_maxSend = 4000000000;
+		info2.m_maxReceive = 42000000;
 		CRouteInfoMessage startMessage;
 		startMessage.m_entries.push_back(
 			std::pair<CRIPEMD160, CRouteTableEntry>(
@@ -174,15 +178,21 @@ class CMessagesTest : public CTest
 		{
 			test("  CRouteInfoMessage serialization conserves meeting point",
 				endMessage2->m_entries[i].first == startMessage.m_entries[i].first);
-			test("  CRouteInfoMessage serialization conserves hop count",
-				endMessage2->m_entries[i].second.m_expectedHopCount ==
-				startMessage.m_entries[i].second.m_expectedHopCount);
+			test("  CRouteInfoMessage serialization conserves min hop count",
+				endMessage2->m_entries[i].second.m_minHopCount ==
+				startMessage.m_entries[i].second.m_minHopCount);
+			test("  CRouteInfoMessage serialization conserves max send hop count",
+				endMessage2->m_entries[i].second.m_maxSendHopCount ==
+				startMessage.m_entries[i].second.m_maxSendHopCount);
+			test("  CRouteInfoMessage serialization conserves max receive hop count",
+				endMessage2->m_entries[i].second.m_maxReceiveHopCount ==
+				startMessage.m_entries[i].second.m_maxReceiveHopCount);
 			test("  CRouteInfoMessage serialization conserves max send",
-				endMessage2->m_entries[i].second.m_expectedMaxSend ==
-				startMessage.m_entries[i].second.m_expectedMaxSend);
+				endMessage2->m_entries[i].second.m_maxSend ==
+				startMessage.m_entries[i].second.m_maxSend);
 			test("  CRouteInfoMessage serialization conserves max receive",
-				endMessage2->m_entries[i].second.m_expectedMaxReceive ==
-				startMessage.m_entries[i].second.m_expectedMaxReceive);
+				endMessage2->m_entries[i].second.m_maxReceive ==
+				startMessage.m_entries[i].second.m_maxReceive);
 		}
 
 		//Delete constructed message

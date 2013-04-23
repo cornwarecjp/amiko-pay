@@ -94,17 +94,19 @@ void CFinRoutingThread::processRoutingChanges()
 	for(std::set<CBinBuffer>::iterator dest=changedDestinations.begin();
 		dest != changedDestinations.end(); dest++)
 	{
-		CRouteTableEntry bestEntry; //TODO: make constructor with worst-possible data
+		std::vector<CRouteTableEntry> routes;
+		routes.resize(m_Amiko->m_FinLinks.size());
 
 		for(size_t i=0; i < m_Amiko->m_FinLinks.size(); i++)
 		{
 			CMutexLocker lock(m_Amiko->m_FinLinks[i]->m_RouteTable);
 			CRouteTable &linkTable = m_Amiko->m_FinLinks[i]->m_RouteTable.m_Value;
-			const CRouteTableEntry &entry = linkTable[*dest];
-			//TODO: combine entry and bestEntry
+			routes[i] = linkTable[*dest];
 		}
 
-		//TODO: put bestEntry in m_RouteTable
+		CRouteTableEntry mergedRouteInfo(routes);
+
+		m_RouteTable[*dest] = mergedRouteInfo;
 	}
 }
 

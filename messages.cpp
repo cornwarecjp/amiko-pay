@@ -110,9 +110,11 @@ CBinBuffer CRouteInfoMessage::getSerializedBody() const
 	for(size_t i=0; i < m_entries.size(); i++)
 	{
 		ret.appendRawBinBuffer(m_entries[i].first.toBinBuffer());
-		ret.appendUint<uint16_t>(m_entries[i].second.m_expectedHopCount);
-		ret.appendUint<uint64_t>(m_entries[i].second.m_expectedMaxSend);
-		ret.appendUint<uint64_t>(m_entries[i].second.m_expectedMaxReceive);
+		ret.appendUint<uint16_t>(m_entries[i].second.m_minHopCount);
+		ret.appendUint<uint16_t>(m_entries[i].second.m_maxSendHopCount);
+		ret.appendUint<uint16_t>(m_entries[i].second.m_maxReceiveHopCount);
+		ret.appendUint<uint64_t>(m_entries[i].second.m_maxSend);
+		ret.appendUint<uint64_t>(m_entries[i].second.m_maxReceive);
 	}
 	return ret;
 }
@@ -130,9 +132,12 @@ void CRouteInfoMessage::setSerializedBody(const CBinBuffer &data)
 		m_entries[i].first = CRIPEMD160::fromBinBuffer(
 			data.readRawBinBuffer(pos, CRIPEMD160::getSize())
 			);
-		m_entries[i].second.m_expectedHopCount = data.readUint<uint16_t>(pos);
-		m_entries[i].second.m_expectedMaxSend = data.readUint<uint64_t>(pos);
-		m_entries[i].second.m_expectedMaxReceive = data.readUint<uint64_t>(pos);
+
+		m_entries[i].second.m_minHopCount       = data.readUint<uint16_t>(pos);
+		m_entries[i].second.m_maxSendHopCount    = data.readUint<uint16_t>(pos);
+		m_entries[i].second.m_maxReceiveHopCount = data.readUint<uint16_t>(pos);
+		m_entries[i].second.m_maxSend    = data.readUint<uint64_t>(pos);
+		m_entries[i].second.m_maxReceive = data.readUint<uint64_t>(pos);
 	}
 }
 

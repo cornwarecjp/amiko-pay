@@ -25,6 +25,7 @@
 
 #include <map>
 #include <set>
+#include <vector>
 
 #include "binbuffer.h"
 #include "ripemd160.h"
@@ -32,9 +33,19 @@
 class CRouteTableEntry
 {
 public:
-	unsigned int m_expectedHopCount;
-	uint64_t m_expectedMaxSend;
-	uint64_t m_expectedMaxReceive;
+	//TODO: spec
+	CRouteTableEntry();
+
+	//TODO: spec
+	CRouteTableEntry(const std::vector<CRouteTableEntry> &entries);
+
+
+	uint16_t m_minHopCount;        //expected hop count at zero amount
+	uint16_t m_maxSendHopCount;    //expected hop count at max send amount
+	uint16_t m_maxReceiveHopCount; //expected hop count at max receive amount
+
+	uint64_t m_maxSend;     //expected maximum send capacity
+	uint64_t m_maxReceive;  //expected maximum receive capacity
 };
 
 
