@@ -39,6 +39,13 @@ public:
 	//TODO: spec
 	CRouteTableEntry(const std::vector<CRouteTableEntry> &entries);
 
+	//TODO: spec
+	bool operator==(const CRouteTableEntry &e2) const;
+
+	//TODO: spec
+	inline bool operator!=(const CRouteTableEntry &e2) const
+		{return !operator==(e2);}
+
 
 	uint16_t m_minHopCount;        //expected hop count at zero amount
 	uint16_t m_maxSendHopCount;    //expected hop count at max send amount

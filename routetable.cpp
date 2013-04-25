@@ -80,6 +80,17 @@ CRouteTableEntry::CRouteTableEntry(
 }
 
 
+bool CRouteTableEntry::operator==(const CRouteTableEntry &e2) const
+{
+	return
+		m_minHopCount        == e2.m_minHopCount        &&
+		m_maxSendHopCount    == e2.m_maxSendHopCount    &&
+		m_maxReceiveHopCount == e2.m_maxReceiveHopCount &&
+		m_maxSend            == e2.m_maxSend            &&
+		m_maxReceive         == e2.m_maxReceive;
+}
+
+
 CRouteTable::CRouteTable()
 {
 }
@@ -116,8 +127,10 @@ CRouteTable::CRouteTable(const std::vector<CRouteTable> &tables)
 
 void CRouteTable::updateRoute(const CRIPEMD160 &destination, const CRouteTableEntry &entry)
 {
+	if(entry != (*this)[destination.toBinBuffer()])
+		m_ChangedDestinations.insert(destination.toBinBuffer());
+
 	(*this)[destination.toBinBuffer()] = entry;
-	m_ChangedDestinations.insert(destination.toBinBuffer());
 
 	//TODO: remove unimportant entries from the route table
 }

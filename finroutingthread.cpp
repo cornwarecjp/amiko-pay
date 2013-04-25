@@ -128,7 +128,7 @@ void CFinRoutingThread::processRoutingChanges()
 
 		CRouteTableEntry mergedRouteInfo(routes);
 
-		m_RouteTable[*dest] = mergedRouteInfo;
+		m_RouteTable.updateRoute(*dest, mergedRouteInfo);
 	}
 }
 
