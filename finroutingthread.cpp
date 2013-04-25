@@ -21,6 +21,7 @@
 #include "timer.h"
 #include "log.h"
 #include "exception.h"
+#include "messages.h"
 
 #include "finroutingthread.h"
 
@@ -94,6 +95,7 @@ void CFinRoutingThread::processIncomingMessages()
 
 void CFinRoutingThread::processRoutingChanges()
 {
+	//All destinations changed by all peers
 	std::set<CBinBuffer> changedDestinations;
 
 	for(size_t i=0; i < m_Amiko->m_FinLinks.size(); i++)
@@ -111,6 +113,7 @@ void CFinRoutingThread::processRoutingChanges()
 	//data is better anyway, and it will also be processed automatically in the
 	//next iteration.
 
+	//Find the best routes for all changed destinations
 	for(std::set<CBinBuffer>::iterator dest=changedDestinations.begin();
 		dest != changedDestinations.end(); dest++)
 	{
@@ -130,6 +133,32 @@ void CFinRoutingThread::processRoutingChanges()
 
 		m_RouteTable.updateRoute(*dest, mergedRouteInfo);
 	}
+
+	//We're finished if nothing has changed
+	if(m_RouteTable.m_ChangedDestinations.empty()) return;
+
+	//Make an update message for our peers:
+	CRouteInfoMessage msg;
+	for(
+		std::set<CBinBuffer>::iterator i = m_RouteTable.m_ChangedDestinations.begin();
+		i != m_RouteTable.m_ChangedDestinations.end();
+		i++)
+	{
+		msg.m_entries.push_back(std::pair<CRIPEMD160, CRouteTableEntry>(
+			CRIPEMD160::fromBinBuffer(*i),
+			m_RouteTable[*i]
+			));
+	}
+
+	//Send the update to all peers:
+	for(size_t i=0; i < m_Amiko->m_FinLinks.size(); i++)
+	{
+		m_Amiko->m_FinLinks[i]->sendOutboundMessage(msg);
+	}
+
+	//Clear the list of changed destinations,
+	//since we've sent the update to all peers
+	m_RouteTable.m_ChangedDestinations.clear();
 }
 
 

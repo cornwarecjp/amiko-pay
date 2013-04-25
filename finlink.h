@@ -71,8 +71,12 @@ public:
 	inline const CKey &getLocalKey() const
 		{return m_LocalKey;}
 
+	//TODO: spec
 	void processInbox();
 
+	//TODO: spec
+	//note: changes msg
+	void sendOutboundMessage(CMessage &msg);
 
 	CCriticalSection<CRouteTable> m_RouteTable;
 

@@ -309,6 +309,15 @@ void CFinLink::processInbox()
 }
 
 
+void CFinLink::sendOutboundMessage(CMessage &msg)
+{
+	setOutboundMessageFields(msg);
+	CBinBuffer data = msg.serialize();
+	m_myMessages.push_back(data);
+	deliverMessage(data);
+}
+
+
 void CFinLink::processRouteInfoMessage(const CRouteInfoMessage *msg)
 {
 	//TODO: can we completely trust route info of the peer?
