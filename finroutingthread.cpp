@@ -39,6 +39,8 @@ CFinRoutingThread::~CFinRoutingThread()
 
 void CFinRoutingThread::threadFunc()
 {
+	initializeRoutingTable();
+
 	while(!m_terminate)
 	{
 		try
@@ -62,6 +64,24 @@ void CFinRoutingThread::threadFunc()
 				256, e.what()));
 		}
 	}
+}
+
+
+void CFinRoutingThread::initializeRoutingTable()
+{
+	//TODO: more efficient memory usage
+
+	std::vector<CRouteTable> tables;
+	tables.resize(m_Amiko->m_FinLinks.size());
+
+	for(size_t i=0; i < m_Amiko->m_FinLinks.size(); i++)
+	{
+		CMutexLocker lock(m_Amiko->m_FinLinks[i]->m_RouteTable);
+		CRouteTable &linkTable = m_Amiko->m_FinLinks[i]->m_RouteTable.m_Value;
+		tables[i] = linkTable;
+	}
+
+	m_RouteTable = CRouteTable(tables);
 }
 
 
@@ -95,13 +115,15 @@ void CFinRoutingThread::processRoutingChanges()
 		dest != changedDestinations.end(); dest++)
 	{
 		std::vector<CRouteTableEntry> routes;
-		routes.resize(m_Amiko->m_FinLinks.size());
 
 		for(size_t i=0; i < m_Amiko->m_FinLinks.size(); i++)
 		{
 			CMutexLocker lock(m_Amiko->m_FinLinks[i]->m_RouteTable);
 			CRouteTable &linkTable = m_Amiko->m_FinLinks[i]->m_RouteTable.m_Value;
-			routes[i] = linkTable[*dest];
+
+			CRouteTable::const_iterator iter = linkTable.find(*dest);
+			if(iter != linkTable.end())
+				routes.push_back(iter->second);
 		}
 
 		CRouteTableEntry mergedRouteInfo(routes);

@@ -52,6 +52,11 @@ public:
 class CRouteTable : public std::map<CBinBuffer, CRouteTableEntry>
 {
 public:
+	//TODO: spec
+	CRouteTable();
+
+	//TODO: spec
+	CRouteTable(const std::vector<CRouteTable> &tables);
 
 	//TODO: spec
 	void updateRoute(const CRIPEMD160 &destination, const CRouteTableEntry &entry);

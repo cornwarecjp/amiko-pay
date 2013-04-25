@@ -42,6 +42,9 @@ public:
 private:
 
 	//TODO: spec
+	void initializeRoutingTable();
+
+	//TODO: spec
 	void processIncomingMessages();
 
 	//TODO: spec

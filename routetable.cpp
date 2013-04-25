@@ -75,6 +75,40 @@ CRouteTableEntry::CRouteTableEntry(
 }
 
 
+CRouteTable::CRouteTable()
+{
+}
+
+
+CRouteTable::CRouteTable(const std::vector<CRouteTable> &tables)
+{
+	std::set<CBinBuffer> destinations;
+	for(size_t i=0; i < tables.size(); i++)
+	{
+		const CRouteTable &t = tables[i];
+		for(CRouteTable::const_iterator j = t.begin(); j != t.end(); j++)
+			destinations.insert(j->first);
+	}
+
+	for(std::set<CBinBuffer>::iterator dest=destinations.begin();
+		dest != destinations.end(); dest++)
+	{
+		std::vector<CRouteTableEntry> routes;
+
+		for(size_t i=0; i < tables.size(); i++)
+		{
+			CRouteTable::const_iterator iter = tables[i].find(*dest);
+			if(iter != tables[i].end())
+				routes.push_back(iter->second);
+		}
+
+		CRouteTableEntry mergedRouteInfo(routes);
+
+		(*this)[*dest] = mergedRouteInfo;
+	}
+}
+
+
 void CRouteTable::updateRoute(const CRIPEMD160 &destination, const CRouteTableEntry &entry)
 {
 	(*this)[destination.toBinBuffer()] = entry;
