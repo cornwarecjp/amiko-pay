@@ -72,6 +72,11 @@ CRouteTableEntry::CRouteTableEntry(
 			m_maxReceive = entries[i].m_maxReceive;
 		}
 	}
+
+	//Include ourselves in the hop count:
+	m_minHopCount++;
+	m_maxSendHopCount++;
+	m_maxReceiveHopCount++;
 }
 
 
