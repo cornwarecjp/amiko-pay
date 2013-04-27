@@ -50,6 +50,9 @@ private:
 	//TODO: spec
 	void processRoutingChanges();
 
+	//TODO: spec
+	void sendRoutingChanges();
+
 	CAmiko *m_Amiko;
 	CRouteTable m_RouteTable;
 };

@@ -18,6 +18,8 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <limits>
+
 #include "timer.h"
 #include "log.h"
 #include "exception.h"
@@ -29,8 +31,6 @@
 CFinRoutingThread::CFinRoutingThread(CAmiko *amiko) :
 	m_Amiko(amiko)
 {
-	//Initialize routing table:
-	//TODO
 }
 
 CFinRoutingThread::~CFinRoutingThread()
@@ -82,7 +82,27 @@ void CFinRoutingThread::initializeRoutingTable()
 		tables[i] = linkTable;
 	}
 
+	//Routes through links:
 	m_RouteTable = CRouteTable(tables);
+
+	//Route to own meeting point:
+	CAmikoSettings settings = m_Amiko->getSettings();
+	CBinBuffer &ownMeetinPointPubKey = settings.m_MeetingPointPubKey;
+	if(!ownMeetinPointPubKey.empty())
+	{
+		CRIPEMD160 address(CSHA256(ownMeetinPointPubKey).toBinBuffer());
+		CRouteTableEntry entry;
+		entry.m_minHopCount = 1;
+		entry.m_maxSendHopCount = 1;
+		entry.m_maxReceiveHopCount = 1;
+		//Note: maximum amounts will be limited by the interface maxima
+		//TODO: maybe make these equal to "21 million BTC"?
+		entry.m_maxSend = std::numeric_limits<uint64_t>::max();
+		entry.m_maxReceive = std::numeric_limits<uint64_t>::max();
+		m_RouteTable.updateRoute(address, entry);
+	}
+
+	sendRoutingChanges();
 }
 
 
@@ -134,6 +154,12 @@ void CFinRoutingThread::processRoutingChanges()
 		m_RouteTable.updateRoute(*dest, mergedRouteInfo);
 	}
 
+	sendRoutingChanges();
+}
+
+
+void CFinRoutingThread::sendRoutingChanges()
+{
 	//We're finished if nothing has changed
 	if(m_RouteTable.m_ChangedDestinations.empty()) return;
 
@@ -160,5 +186,4 @@ void CFinRoutingThread::processRoutingChanges()
 	//since we've sent the update to all peers
 	m_RouteTable.m_ChangedDestinations.clear();
 }
-
 
