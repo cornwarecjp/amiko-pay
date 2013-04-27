@@ -314,7 +314,15 @@ void CFinLink::sendOutboundMessage(CMessage &msg)
 	setOutboundMessageFields(msg);
 	CBinBuffer data = msg.serialize();
 	m_myMessages.push_back(data);
-	deliverMessage(data);
+	try
+	{
+		deliverMessage(data);
+	}
+	catch(CComInterface::CMessageLost &e)
+	{
+		log("Could not send message now; "
+			"will be re-sent as soon as the link is restored\n");
+	}
 }
 
 
