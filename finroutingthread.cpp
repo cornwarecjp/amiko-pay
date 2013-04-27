@@ -102,6 +102,14 @@ void CFinRoutingThread::initializeRoutingTable()
 		m_RouteTable.updateRoute(address, entry);
 	}
 
+	//Invalidate all entries.
+	//The effect is that, on start-up, the entire routing table is re-sent to
+	//all neighbors. This is extremely resource-consuming on large networks,
+	//but for a prototype it's OK.
+	//TODO: replace this with a production-level concept.
+	for(CRouteTable::iterator i = m_RouteTable.begin(); i != m_RouteTable.end(); i++)
+		m_RouteTable.m_ChangedDestinations.insert(i->first);
+
 	sendRoutingChanges();
 }
 
