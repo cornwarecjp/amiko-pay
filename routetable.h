@@ -33,16 +33,46 @@
 class CRouteTableEntry
 {
 public:
-	//TODO: spec
+	/*
+	Constructed object:
+	Route table entry with 'worst-possible' route
+
+	Exceptions:
+	none
+	*/
 	CRouteTableEntry();
 
-	//TODO: spec
+	/*
+	entries:
+	Reference to properly formed object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Constructed object:
+	Merge of the given entries, and increments the hop count
+
+	Exceptions:
+	none
+	*/
 	CRouteTableEntry(const std::vector<CRouteTableEntry> &entries);
 
-	//TODO: spec
+	/*
+	e2:
+	Reference to properly formed CRouteTableEntry object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Exceptions:
+	none
+	*/
 	bool operator==(const CRouteTableEntry &e2) const;
 
-	//TODO: spec
+	/*
+	e2:
+	Reference to properly formed CRouteTableEntry object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Exceptions:
+	none
+	*/
 	inline bool operator!=(const CRouteTableEntry &e2) const
 		{return !operator==(e2);}
 
@@ -59,13 +89,41 @@ public:
 class CRouteTable : public std::map<CBinBuffer, CRouteTableEntry>
 {
 public:
-	//TODO: spec
+	/*
+	Constructed object:
+	Empty route table
+
+	Exceptions:
+	none
+	*/
 	CRouteTable();
 
-	//TODO: spec
+	/*
+	tables:
+	Reference to properly formed object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Constructed object:
+	Merge of the given tables, with incremented hop count
+	m_ChangedDestinations is empty
+
+	Exceptions:
+	none
+	*/
 	CRouteTable(const std::vector<CRouteTable> &tables);
 
-	//TODO: spec
+	/*
+	destination:
+	Reference to properly formed CRIPEMD160 object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	entry:
+	Reference to properly formed CRouteTableEntry object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Exceptions:
+	none
+	*/
 	void updateRoute(const CRIPEMD160 &destination, const CRouteTableEntry &entry);
 
 
