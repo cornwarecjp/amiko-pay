@@ -74,9 +74,13 @@ CRouteTableEntry::CRouteTableEntry(
 	}
 
 	//Include ourselves in the hop count:
-	m_minHopCount++;
-	m_maxSendHopCount++;
-	m_maxReceiveHopCount++;
+	//Make sure not to overflow the hop count
+	if(m_minHopCount < std::numeric_limits<uint16_t>::max())
+		m_minHopCount++;
+	if(m_maxSendHopCount < std::numeric_limits<uint16_t>::max())
+		m_maxSendHopCount++;
+	if(m_maxReceiveHopCount < std::numeric_limits<uint16_t>::max())
+		m_maxReceiveHopCount++;
 }
 
 
