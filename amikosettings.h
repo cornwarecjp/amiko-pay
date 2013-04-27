@@ -80,6 +80,9 @@ public:
 	CString m_localHostname;
 	CString m_portNumber;
 
+	//public key, or empty if there is no meeting point
+	CBinBuffer m_MeetingPointPubKey;
+
 	//TODO: spec
 	inline CString getLocalURL(const CKey &localKey)
 	{

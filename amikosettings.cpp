@@ -23,11 +23,12 @@
 #include "log.h"
 #include "bitcoinaddress.h"
 
-CAmikoSettings::CAmikoSettings()
-{
+CAmikoSettings::CAmikoSettings() :
 	//defaults
-	m_localHostname = "";
-	m_portNumber = AMIKO_DEFAULT_PORT;
+	m_localHostname(""),
+	m_portNumber(AMIKO_DEFAULT_PORT),
+	m_MeetingPointPubKey()
+{
 }
 
 
@@ -37,6 +38,23 @@ CAmikoSettings::CAmikoSettings(const CConfFile &file)
 		"");
 	m_portNumber = file.getValue("receiveConnections", "portNumber",
 		AMIKO_DEFAULT_PORT);
+
+	CString meetingPointPubKeyStr = file.getValue("meetingPoint", "publicKey",
+		"");
+	if(meetingPointPubKeyStr.empty())
+	{
+		log("Read from configuration file: no meeting point configured\n");
+	}
+	else
+	{
+		m_MeetingPointPubKey = CBinBuffer::fromHex(meetingPointPubKeyStr);
+
+		log(CString::format(
+			"Read from configuration file: configured meeting point %s\n",
+			256,
+			getBitcoinAddress(m_MeetingPointPubKey).c_str()
+			));
+	}
 
 	unsigned int i = 0;
 	while(true)
