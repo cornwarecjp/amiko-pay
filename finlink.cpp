@@ -150,7 +150,7 @@ void CFinLink::save()
 }
 
 
-CBinBuffer CFinLink::serialize() const
+CBinBuffer CFinLink::serialize()
 {
 	CBinBuffer ret;
 
@@ -170,6 +170,28 @@ CBinBuffer CFinLink::serialize() const
 			ret.appendBinBuffer(*i);
 
 	//TODO: transactions
+
+	//Route table
+	{
+		CMutexLocker lock(m_RouteTable);
+		CRouteTable &t = m_RouteTable.m_Value;
+
+		ret.appendUint<uint32_t>(t.size());
+		for(CRouteTable::iterator i = t.begin(); i != t.end(); i++)
+		{
+			ret.appendBinBuffer(i->first);
+			ret.appendUint<uint16_t>(i->second.m_minHopCount);
+			ret.appendUint<uint16_t>(i->second.m_maxSendHopCount);
+			ret.appendUint<uint16_t>(i->second.m_maxReceiveHopCount);
+			ret.appendUint<uint64_t>(i->second.m_maxSend);
+			ret.appendUint<uint64_t>(i->second.m_maxReceive);
+		}
+
+		if(!t.m_ChangedDestinations.empty())
+			log("Warning: not all route table changes were processed. "
+				"It might be possible that neighbors will not be informed "
+				"about the most recent route changes.\n");
+	}
 
 	return ret;
 }
@@ -195,6 +217,27 @@ void CFinLink::deserialize(const CBinBuffer &data)
 			m_yourMessages.push_back(data.readBinBuffer(pos));
 
 		//TODO: transactions
+
+		//Route table
+		{
+			CMutexLocker lock(m_RouteTable);
+			CRouteTable &t = m_RouteTable.m_Value;
+
+			uint32_t numEntries = data.readUint<uint32_t>(pos);
+			for(uint32_t i=0; i < numEntries; i++)
+			{
+				CBinBuffer destination(data.readBinBuffer(pos));
+				CRouteTableEntry entry;
+				entry.m_minHopCount        = data.readUint<uint16_t>(pos);
+				entry.m_maxSendHopCount    = data.readUint<uint16_t>(pos);
+				entry.m_maxReceiveHopCount = data.readUint<uint16_t>(pos);
+				entry.m_maxSend    = data.readUint<uint64_t>(pos);
+				entry.m_maxReceive = data.readUint<uint64_t>(pos);
+				t.updateRoute(destination, entry);
+			}
+
+			t.m_ChangedDestinations.clear();
+		}
 	}
 	catch(CBinBuffer::CReadError &e)
 	{

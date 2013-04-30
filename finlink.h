@@ -94,7 +94,7 @@ private:
 	void save();
 
 	//TODO: spec
-	CBinBuffer serialize() const;
+	CBinBuffer serialize();
 
 	/*
 	Exceptions:
