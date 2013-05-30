@@ -55,9 +55,7 @@ log = logging.getLogger("BitcoinRPC")
 
 class JSONRPCException(Exception):
     def __init__(self, rpc_error):
-        Exception.__init__(self)
-        self.error = rpc_error
-
+        Exception.__init__(self, rpc_error)
 
 def EncodeDecimal(o):
     if isinstance(o, decimal.Decimal):
