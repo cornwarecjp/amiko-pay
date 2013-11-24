@@ -26,9 +26,10 @@
 
 #include "cstring.h"
 #include "exception.h"
+#include "settingssource.h"
 
 
-class CConfFile
+class CConfFile : public CSettingsSource
 {
 public:
 	SIMPLEEXCEPTIONCLASS(COpenError)
@@ -85,7 +86,7 @@ public:
 	Exceptions:
 	none
 	*/
-	CString getValue(const CString &section, const CString &key, const CString &deflt) const;
+	virtual CString getValue(const CString &section, const CString &key, const CString &deflt) const;
 
 private:
 

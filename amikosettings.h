@@ -27,7 +27,7 @@
 #include "uriparser.h"
 #include "key.h"
 #include "bitcoinaddress.h"
-#include "conffile.h"
+#include "settingssource.h"
 #include "exception.h"
 
 //TODO: choose a friendly default port
@@ -48,11 +48,10 @@ public:
 	CAmikoSettings();
 
 	/*
-	file:
-	Reference to properly formed CConfFile object (NOT CHECKED)
+	src:
+	Reference to properly formed CSettingsSource object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
-	This object:
 	All original link settings are removed.
 	Settings present in the file are loaded.
 	Settings not present in the file are unchanged.
@@ -66,7 +65,7 @@ public:
 	CBinBuffer::CWriteError
 	CConfigError
 	*/
-	void loadFrom(const CConfFile &file);
+	void loadFrom(const CSettingsSource &src);
 
 	class CLink
 	{

@@ -32,14 +32,14 @@ CAmikoSettings::CAmikoSettings() :
 }
 
 
-void CAmikoSettings::loadFrom(const CConfFile &file)
+void CAmikoSettings::loadFrom(const CSettingsSource &src)
 {
-	m_localHostname = file.getValue("receiveConnections", "hostname",
+	m_localHostname = src.getValue("receiveConnections", "hostname",
 		m_localHostname);
-	m_portNumber = file.getValue("receiveConnections", "portNumber",
+	m_portNumber = src.getValue("receiveConnections", "portNumber",
 		m_portNumber);
 
-	CString meetingPointPubKeyStr = file.getValue("meetingPoint", "publicKey",
+	CString meetingPointPubKeyStr = src.getValue("meetingPoint", "publicKey",
 		m_MeetingPointPubKey.hexDump());
 	if(meetingPointPubKeyStr.empty())
 	{
@@ -61,9 +61,9 @@ void CAmikoSettings::loadFrom(const CConfFile &file)
 	while(true)
 	{
 		CString section = CString::format("links/%d", 64, i);
-		CString remoteURI       = file.getValue(section, "remoteURI", "");
-		CString remotePublicKey = file.getValue(section, "remotePublicKey", "");
-		CString localPrivateKey = file.getValue(section, "localPrivateKey", "");
+		CString remoteURI       = src.getValue(section, "remoteURI", "");
+		CString remotePublicKey = src.getValue(section, "remotePublicKey", "");
+		CString localPrivateKey = src.getValue(section, "localPrivateKey", "");
 		if(remoteURI == "" && remotePublicKey == "" && localPrivateKey == "")
 			break; //apparently, section does not exist
 

@@ -27,6 +27,7 @@
 #include "log.h"
 #include "cthread.h"
 
+#include "conffile.h"
 #include "amiko.h"
 #include "timer.h"
 #include "key.h"
