@@ -47,7 +47,9 @@ CString getInput(CString question="")
 
 void app(const std::vector<CString> &arguments)
 {
-	CAmiko amiko(CConfFile("amikopay.conf"));
+	CAmikoSettings settings;
+	settings.loadFrom(CConfFile("amikopay.conf"));
+	CAmiko amiko(settings);
 	amiko.start();
 
 	//Wait some time to allow initialization to finish

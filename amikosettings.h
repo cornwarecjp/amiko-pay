@@ -52,9 +52,10 @@ public:
 	Reference to properly formed CConfFile object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
-	Constructed object:
-	Settings object containing the settings from file, and containing
-	the default values for settings not present in file
+	This object:
+	All original link settings are removed.
+	Settings present in the file are loaded.
+	Settings not present in the file are unchanged.
 
 	Exceptions:
 	CString::CFormatException
@@ -65,7 +66,7 @@ public:
 	CBinBuffer::CWriteError
 	CConfigError
 	*/
-	CAmikoSettings(const CConfFile &file);
+	void loadFrom(const CConfFile &file);
 
 	class CLink
 	{

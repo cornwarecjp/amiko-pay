@@ -32,15 +32,15 @@ CAmikoSettings::CAmikoSettings() :
 }
 
 
-CAmikoSettings::CAmikoSettings(const CConfFile &file)
+void CAmikoSettings::loadFrom(const CConfFile &file)
 {
 	m_localHostname = file.getValue("receiveConnections", "hostname",
-		"");
+		m_localHostname);
 	m_portNumber = file.getValue("receiveConnections", "portNumber",
-		AMIKO_DEFAULT_PORT);
+		m_portNumber);
 
 	CString meetingPointPubKeyStr = file.getValue("meetingPoint", "publicKey",
-		"");
+		m_MeetingPointPubKey.hexDump());
 	if(meetingPointPubKeyStr.empty())
 	{
 		log("Read from configuration file: no meeting point configured\n");
@@ -56,6 +56,7 @@ CAmikoSettings::CAmikoSettings(const CConfFile &file)
 			));
 	}
 
+	m_links.clear();
 	unsigned int i = 0;
 	while(true)
 	{
