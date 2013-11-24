@@ -45,7 +45,7 @@ CString getInput(CString question="")
 }
 
 
-void app()
+void app(const std::vector<CString> &arguments)
 {
 	CAmiko amiko(CConfFile("amikopay.conf"));
 	amiko.start();
@@ -113,7 +113,11 @@ int main(int argc, char **argv)
 		SSL_library_init();
 		COpenSSLMutexes openSSLMutexes;
 
-		app();
+		std::vector<CString> arguments;
+		for(int i=0; i<argc; i++)
+			arguments.push_back(CString(argv[i]));
+
+		app(arguments);
 
 		ERR_free_strings();
 
