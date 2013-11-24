@@ -31,20 +31,69 @@ class CFile
 public:
 	SIMPLEEXCEPTIONCLASS(CError)
 
-	//TODO: spec
+	/*
+	path:
+	Reference to properly formed std::string object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	mode:
+	Reference to properly formed std::string object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Opens a file with the standard C function fopen.
+
+	Constructed object:
+	CFile object
+	If file opening succeeded:
+		m_FP is the file pointer of the opened file
+	Else:
+		m_FP is NULL
+	Pointer ownership of m_FP belong to this object.
+
+	Exceptions:
+	None
+	*/
 	CFile(const CString &path, const CString &mode);
 
-	//TODO: spec
+	/*
+	If m_FP is non-NULL:
+		closes m_FP with the standard C function fclose.
+	*/
 	~CFile();
 
-	//TODO: spec
+	/*
+	dir:
+	Reference to properly formed std::string object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Creates a directory.
+
+	Exceptions:
+	CError
+	*/
 	static void makeDirectory(const CString &dir);
 
-	//TODO: spec
+	/*
+	from:
+	Reference to properly formed std::string object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	to:
+	Reference to properly formed std::string object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Renames a file.
+
+	Exceptions:
+	CError
+	*/
 	static void rename(const CString &from, const CString &to);
 
 
-	//TODO: spec
+	/*
+	File pointer to an open file,
+	or NULL if the file is not open.
+	*/
 	FILE *m_FP;
 };
 

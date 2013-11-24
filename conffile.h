@@ -54,6 +54,7 @@ public:
 
 	Exceptions:
 	COpenError
+	CSyntaxError
 	*/
 	CConfFile(const CString &filename);
 
@@ -66,6 +67,7 @@ public:
 
 	Exceptions:
 	COpenError
+	CSyntaxError
 	*/
 	void load(const CString &filename);
 
