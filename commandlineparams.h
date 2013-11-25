@@ -1,5 +1,5 @@
 /*
-    settingssource.h
+    commandlineparams.h
     Copyright (C) 2013 by CJP
 
     This file is part of Amiko Pay.
@@ -18,42 +18,31 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SETTINGSSOURCE_H
-#define SETTINGSSOURCE_H
+#ifndef COMMANDLINEPARAMS_H
+#define COMMANDLINEPARAMS_H
 
-#include <map>
+#include <vector>
 
 #include "cstring.h"
+#include "settingssource.h"
 
-/*
-Base-class for anything that acts as a source of setting values
-*/
-class CSettingsSource
+class CCommandlineParams : public CSettingsSource
 {
 public:
 	/*
-	section:
-	key:
-	deflt:
-	Reference to properly formed CString object (NOT CHECKED)
+	arguments:
+	Reference to properly formed std::vector<CString> object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
-	Return value:
-	The value corresponding to section,key, or
-	deflt if section,key does not exist.
+	Constructed object:
+	CCommandlineParams object filled with values from argument
 
 	Exceptions:
 	none
 	*/
-	CString getValue(const CString &section, const CString &key, const CString &deflt) const;
+	CCommandlineParams(const std::vector<CString> &arguments);
 
-protected:
-	/*
-	Outer-level key is section name
-	Inner-level key is variable name
-	Inner-level value is variable value
-	*/
-	std::map<CString, std::map<CString, CString> > m_Data;
+	~CCommandlineParams();
 };
 
 #endif

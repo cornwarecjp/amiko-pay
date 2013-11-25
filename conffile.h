@@ -22,7 +22,6 @@
 #define CONFFILE_H
 
 #include <cstdio>
-#include <map>
 
 #include "cstring.h"
 #include "exception.h"
@@ -47,7 +46,7 @@ public:
 
 	/*
 	filename:
-	Reference to properly formed std::string object (NOT CHECKED)
+	Reference to properly formed CString object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
 	Constructed object:
@@ -72,22 +71,6 @@ public:
 	*/
 	void load(const CString &filename);
 
-	/*
-	section:
-	key:
-	deflt:
-	Reference to properly formed CString object (NOT CHECKED)
-	Reference lifetime: at least until the end of this function
-
-	Return value:
-	The value corresponding to section,key, or
-	deflt if section,key does not exist.
-
-	Exceptions:
-	none
-	*/
-	virtual CString getValue(const CString &section, const CString &key, const CString &deflt) const;
-
 private:
 
 	/*
@@ -98,13 +81,6 @@ private:
 	CEndOfFile
 	*/
 	CString readLine(FILE *fp);
-
-	/*
-	Outer-level key is section name
-	Inner-level key is variable name
-	Inner-level value is variable value
-	*/
-	std::map<CString, std::map<CString, CString> > m_Data;
 };
 
 #endif

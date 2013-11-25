@@ -28,6 +28,7 @@
 #include "cthread.h"
 
 #include "conffile.h"
+#include "commandlineparams.h"
 #include "amiko.h"
 #include "timer.h"
 #include "key.h"
@@ -49,7 +50,8 @@ CString getInput(CString question="")
 void app(const std::vector<CString> &arguments)
 {
 	CAmikoSettings settings;
-	settings.loadFrom(CConfFile("amikopay.conf"));
+	settings.loadFrom(CConfFile("amikopay.conf")); //TODO: override with commandline
+	settings.loadFrom(CCommandlineParams(arguments));
 	CAmiko amiko(settings);
 	amiko.start();
 
@@ -117,8 +119,9 @@ int main(int argc, char **argv)
 		COpenSSLMutexes openSSLMutexes;
 
 		std::vector<CString> arguments;
-		for(int i=0; i<argc; i++)
-			arguments.push_back(CString(argv[i]));
+		if(argc > 1)
+			for(int i=1; i<argc; i++)
+				arguments.push_back(CString(argv[i]));
 
 		app(arguments);
 

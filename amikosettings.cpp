@@ -43,14 +43,14 @@ void CAmikoSettings::loadFrom(const CSettingsSource &src)
 		m_MeetingPointPubKey.hexDump());
 	if(meetingPointPubKeyStr.empty())
 	{
-		log("Read from configuration file: no meeting point configured\n");
+		log("No meeting point configured\n");
 	}
 	else
 	{
 		m_MeetingPointPubKey = CBinBuffer::fromHex(meetingPointPubKeyStr);
 
 		log(CString::format(
-			"Read from configuration file: configured meeting point %s\n",
+			"Configured meeting point %s\n",
 			256,
 			getBitcoinAddress(m_MeetingPointPubKey).c_str()
 			));
@@ -79,7 +79,7 @@ void CAmikoSettings::loadFrom(const CSettingsSource &src)
 		m_links.push_back(link);
 
 		log(CString::format(
-			"Read from configuration file: link %d connecting local %s to remote %s\n",
+			"Link %d connecting local %s to remote %s\n",
 			1024, i,
 			getBitcoinAddress(link.m_localKey).c_str(),
 			link.m_remoteURI.getURI().c_str()
