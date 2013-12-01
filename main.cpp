@@ -51,7 +51,7 @@ void app(const std::vector<CString> &arguments)
 {
 	CAmikoSettings settings;
 	settings.loadFrom(CConfFile("amikopay.conf")); //TODO: override with commandline
-	settings.loadFrom(CCommandlineParams(arguments));
+	//settings.loadFrom(CCommandlineParams(arguments)); //TODO
 	CAmiko amiko(settings);
 	amiko.start();
 
