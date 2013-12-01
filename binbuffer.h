@@ -137,12 +137,22 @@ public:
 	/*
 	value:
 	Reference to properly formed CBinBuffer object (NOT CHECKED)
+	length: less than 2^32 (CHECKED)
 	Reference lifetime: at least until the end of this function
 
 	Exceptions:
 	CWriteError
 	*/
 	void appendBinBuffer(const CBinBuffer &value);
+
+	/*
+	value:
+	Reference to properly formed CBinBuffer object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Exceptions:
+	none
+	*/
 	void appendRawBinBuffer(const CBinBuffer &value);
 
 	/*
