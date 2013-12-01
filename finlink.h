@@ -80,7 +80,7 @@ public:
 
 	CCriticalSection<CRouteTable> m_RouteTable;
 
-private:
+protected:
 	/*
 	Exceptions:
 	CLoadError

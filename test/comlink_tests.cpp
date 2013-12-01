@@ -1,5 +1,5 @@
 /*
-    key_tests.cpp
+    comlink_tests.cpp
     Copyright (C) 2013 by CJP
 
     This file is part of Amiko Pay.
