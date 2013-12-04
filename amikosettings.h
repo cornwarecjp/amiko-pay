@@ -79,16 +79,6 @@ public:
 	*/
 	void loadFrom(const CSettingsSource &src);
 
-	class CLink
-	{
-	public:
-		CLink() : m_remoteURI("dummy://localhost") {}
-		CURI m_remoteURI;
-		CKey m_localKey;
-		CKey m_remoteKey; //must either be empty or correspond with m_remoteURI
-	};
-	std::vector<CLink> m_links;
-
 	CString m_localHostname;
 	CString m_portNumber;
 

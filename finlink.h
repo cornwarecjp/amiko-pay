@@ -55,7 +55,7 @@ public:
 	CLoadError
 	CSaveError
 	*/
-	CFinLink(const CAmikoSettings::CLink &linkInfo);
+	CFinLink(const CLinkConfig &linkInfo);
 
 	~CFinLink();
 

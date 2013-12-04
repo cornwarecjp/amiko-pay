@@ -55,38 +55,6 @@ void CAmikoSettings::loadFrom(const CSettingsSource &src)
 			getBitcoinAddress(m_MeetingPointPubKey).c_str()
 			));
 	}
-
-	m_links.clear();
-	unsigned int i = 0;
-	while(true)
-	{
-		CString section = CString::format("links/%d", 64, i);
-		CString remoteURI       = src.getValue(section, "remoteURI", "");
-		CString remotePublicKey = src.getValue(section, "remotePublicKey", "");
-		CString localPrivateKey = src.getValue(section, "localPrivateKey", "");
-		if(remoteURI == "" && remotePublicKey == "" && localPrivateKey == "")
-			break; //apparently, section does not exist
-
-		CLink link;
-		link.m_remoteURI = remoteURI;
-		link.m_localKey.setPrivateKey(CBinBuffer::fromHex(localPrivateKey));
-		link.m_remoteKey.setPublicKey(CBinBuffer::fromHex(remotePublicKey));
-
-		if(link.m_remoteURI.getPath() != getBitcoinAddress(link.m_remoteKey))
-			throw CConfigError(
-				"Remote URI does not correspond with remote public key");
-
-		m_links.push_back(link);
-
-		log(CString::format(
-			"Link %d connecting local %s to remote %s\n",
-			1024, i,
-			getBitcoinAddress(link.m_localKey).c_str(),
-			link.m_remoteURI.getURI().c_str()
-			));
-
-		i++;
-	}
 }
 
 

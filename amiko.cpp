@@ -34,8 +34,9 @@ CAmiko::CAmiko(const CAmikoSettings &settings) :
 	//TODO: put some lock on the data folder to prevent data mess-up when
 	//accidentally multiple amikopay processes are started
 
-	for(size_t i=0; i < m_Settings.m_Value.m_links.size(); i++)
-		m_FinLinks.push_back(new CFinLink(m_Settings.m_Value.m_links[i]));
+	//TODO: construct finlinks based on directory contents
+	//for(size_t i=0; i < m_Settings.m_Value.m_links.size(); i++)
+	//	m_FinLinks.push_back(new CFinLink(m_Settings.m_Value.m_links[i]));
 }
 
 

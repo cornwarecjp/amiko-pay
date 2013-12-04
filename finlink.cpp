@@ -38,7 +38,7 @@
 #define LINKFILE_FORMAT_VERSION 1
 
 
-CFinLink::CFinLink(const CAmikoSettings::CLink &linkInfo) :
+CFinLink::CFinLink(const CLinkConfig &linkInfo) :
 	m_LocalKey(linkInfo.m_localKey),
 	m_RemoteKey(linkInfo.m_remoteKey),
 	m_Filename(CString(LINKSDIR) + getBitcoinAddress(m_LocalKey))
