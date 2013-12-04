@@ -208,11 +208,13 @@ void CFinLink::deserialize(const CBinBuffer &data)
 
 		uint32_t numMessages = data.readUint<uint32_t>(pos);
 		//TODO: check whether numMessages makes sense
+		m_myMessages.clear();
 		for(uint32_t i=0; i < numMessages; i++)
 			m_myMessages.push_back(data.readBinBuffer(pos));
 
 		numMessages = data.readUint<uint32_t>(pos);
 		//TODO: check whether numMessages makes sense
+		m_yourMessages.clear();
 		for(uint32_t i=0; i < numMessages; i++)
 			m_yourMessages.push_back(data.readBinBuffer(pos));
 
