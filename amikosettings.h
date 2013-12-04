@@ -33,6 +33,18 @@
 //TODO: choose a friendly default port
 #define AMIKO_DEFAULT_PORT "12345"
 
+
+//TODO: find a better place for this class
+class CLinkConfig
+{
+public:
+	CLinkConfig() : m_remoteURI("dummy://localhost") {}
+	CURI m_remoteURI;
+	CKey m_localKey;
+	CKey m_remoteKey; //must either be empty or correspond with m_remoteURI
+};
+
+
 class CAmikoSettings
 {
 public:

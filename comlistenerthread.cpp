@@ -81,7 +81,7 @@ void CComListenerThread::acceptNewConnections()
 		// Limit number of pending links
 		while(m_Amiko->getNumPendingComLinks() < 100)
 		{
-			CComLink *link = new CComLink(m_Listener, m_Amiko->getSettings());
+			CComLink *link = new CComLink(m_Listener, m_Amiko->getSettings(), m_Amiko->getLinkConfigs());
 			//TODO: if in the below code an exception occurs, delete the above object
 			link->start(); //start comlink thread
 			m_Amiko->addPendingComLink(link);

@@ -89,6 +89,12 @@ void CAmiko::stop()
 }
 
 
+std::vector<CLinkConfig> CAmiko::getLinkConfigs() const
+{
+	return std::vector<CLinkConfig>(); //TODO
+}
+
+
 void CAmiko::addPendingComLink(CComLink *link)
 {
 	CMutexLocker lock(m_PendingComLinks);	
@@ -203,11 +209,11 @@ void CAmiko::makeMissingComLinks()
 {
 	log("Start making missing com links\n");
 
-	std::list<CAmikoSettings::CLink> missingLinks;
+	std::list<CLinkConfig> missingLinks;
 	{
-		CMutexLocker lock(m_Settings);
+		std::vector<CLinkConfig> missingLinksVector = getLinkConfigs();
 		missingLinks.assign(
-			m_Settings.m_Value.m_links.begin(), m_Settings.m_Value.m_links.end());
+			missingLinksVector.begin(), missingLinksVector.end());
 	}
 
 	{
@@ -216,12 +222,12 @@ void CAmiko::makeMissingComLinks()
 			i != m_OperationalComLinks.m_Value.end(); i++)
 		{
 			CBinBuffer localPubKey = (*i)->getLocalKey().getPublicKey();
-			for(std::list<CAmikoSettings::CLink>::iterator j = missingLinks.begin();
+			for(std::list<CLinkConfig>::iterator j = missingLinks.begin();
 				j != missingLinks.end(); j++)
 			{
 				if(j->m_localKey.getPublicKey() == localPubKey)
 				{
-					std::list<CAmikoSettings::CLink>::iterator k = j;
+					std::list<CLinkConfig>::iterator k = j;
 					j++;
 					missingLinks.erase(k);
 					if(j == missingLinks.end()) break;
@@ -232,11 +238,11 @@ void CAmiko::makeMissingComLinks()
 
 	log(CString::format("There are %d missing com links\n", 256, missingLinks.size()));
 
-	for(std::list<CAmikoSettings::CLink>::iterator i = missingLinks.begin();
+	for(std::list<CLinkConfig>::iterator i = missingLinks.begin();
 		i != missingLinks.end(); i++)
 			if(i->m_remoteURI.getURI() != "")
 			{
-				CComLink *link = new CComLink(i->m_remoteURI, getSettings());
+				CComLink *link = new CComLink(i->m_remoteURI, getSettings(), getLinkConfigs());
 				//TODO: if in the below code an exception occurs, delete the above object
 				link->start();
 				addPendingComLink(link);

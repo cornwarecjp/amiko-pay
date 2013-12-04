@@ -27,19 +27,20 @@
 //With 32-bit protocol version numbers, we'll never exceed this:
 #define MAX_NEGOTIATION_STRING_LENGTH 32
 
-CComLink::CComLink(const CURI &uri, const CAmikoSettings &settings) :
+CComLink::CComLink(const CURI &uri, const CAmikoSettings &settings, const std::vector<CLinkConfig> &linkConfig) :
 	m_Connection(uri.getHost(), uri.getPort(AMIKO_DEFAULT_PORT)),
 	m_URI(uri),
 	m_Settings(settings),
+	m_LinkConfig(linkConfig),
 	m_isServerSide(false),
 	m_State(ePending)
 {
 	CString address = m_URI.getPath();
 
-	const CAmikoSettings::CLink *match = NULL;
-	for(size_t i=0; i < m_Settings.m_links.size(); i++)
+	const CLinkConfig *match = NULL;
+	for(size_t i=0; i < m_LinkConfig.size(); i++)
 	{
-		const CAmikoSettings::CLink &link = m_Settings.m_links[i];
+		const CLinkConfig &link = m_LinkConfig[i];
 		if(link.m_remoteURI.getPath() == address)
 		{
 			if(match != NULL)
@@ -56,10 +57,11 @@ CComLink::CComLink(const CURI &uri, const CAmikoSettings &settings) :
 }
 
 
-CComLink::CComLink(const CTCPListener &listener, const CAmikoSettings &settings) :
+CComLink::CComLink(const CTCPListener &listener, const CAmikoSettings &settings, const std::vector<CLinkConfig> &linkConfig) :
 	m_Connection(listener),
 	m_URI("dummy://localhost"),
 	m_Settings(settings),
+	m_LinkConfig(linkConfig),
 	m_isServerSide(true),
 	m_State(ePending)
 {
@@ -334,10 +336,10 @@ void CComLink::exchangeHello()
 		{
 			CString address = hello.m_yourAddress;
 
-			const CAmikoSettings::CLink *match = NULL;
-			for(size_t i=0; i < m_Settings.m_links.size(); i++)
+			const CLinkConfig *match = NULL;
+			for(size_t i=0; i < m_LinkConfig.size(); i++)
 			{
-				const CAmikoSettings::CLink &link = m_Settings.m_links[i];
+				const CLinkConfig &link = m_LinkConfig[i];
 				if(getBitcoinAddress(link.m_localKey) == address)
 				{
 					if(match != NULL)

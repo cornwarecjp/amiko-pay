@@ -86,6 +86,12 @@ public:
 	}
 
 	/*
+	Exceptions:
+	none
+	*/
+	std::vector<CLinkConfig> getLinkConfigs() const;
+
+	/*
 	link:
 	Pointer to properly formed CComLink object (NOT CHECKED)
 	Pointer ownership: passed to this object

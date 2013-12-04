@@ -77,10 +77,14 @@ public:
 	Reference to properly formed CURI object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 	Contains a host and a path (NOT CHECKED)
-	Path equals m_remoteURI.getPath() of one link in settings (CHECKED)
+	Path equals m_remoteURI.getPath() of one link in linkConfig (CHECKED)
 
 	settings:
 	Reference to properly formed CAmikoSettings object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	linkConfig:
+	Reference to properly formed std::vector<CLinkConfig> object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
 	Constructed object:
@@ -91,7 +95,7 @@ public:
 	CTCPConnection::CConnectException
 	CLinkDoesNotExist
 	*/
-	CComLink(const CURI &uri, const CAmikoSettings &settings);
+	CComLink(const CURI &uri, const CAmikoSettings &settings, const std::vector<CLinkConfig> &linkConfig);
 
 	/*
 	listener:
@@ -103,6 +107,10 @@ public:
 	Reference to properly formed CAmikoSettings object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
+	linkConfig:
+	Reference to properly formed std::vector<CLinkConfig> object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
 	Constructed object:
 	Connected link object in pending state
 
@@ -110,7 +118,7 @@ public:
 	CTCPConnection::CConnectException
 	CTCPConnection::CTimeoutException
 	*/
-	CComLink(const CTCPListener &listener, const CAmikoSettings &settings);
+	CComLink(const CTCPListener &listener, const CAmikoSettings &settings, const std::vector<CLinkConfig> &linkConfig);
 
 	virtual ~CComLink();
 
@@ -247,6 +255,7 @@ private:
 	CTCPConnection m_Connection;
 	CURI m_URI;
 	CAmikoSettings m_Settings;
+	std::vector<CLinkConfig> m_LinkConfig;
 	bool m_isServerSide;
 	uint32_t m_ProtocolVersion;
 
