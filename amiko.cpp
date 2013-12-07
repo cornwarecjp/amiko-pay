@@ -19,9 +19,12 @@
 */
 
 #include "log.h"
+#include "file.h"
 
 #include "amiko.h"
 
+//TODO: make this a setting:
+#define LINKSDIR "./links/"
 
 CAmiko::CAmiko(const CAmikoSettings &settings) :
 	m_Settings(settings),
@@ -31,12 +34,17 @@ CAmiko::CAmiko(const CAmikoSettings &settings) :
 {
 	CMutexLocker lock(m_Settings);
 
-	//TODO: put some lock on the data folder to prevent data mess-up when
+	//TODO: put some lock on the links folder to prevent data mess-up when
 	//accidentally multiple amikopay processes are started
 
-	//TODO: construct finlinks based on directory contents
-	//for(size_t i=0; i < m_Settings.m_Value.m_links.size(); i++)
-	//	m_FinLinks.push_back(new CFinLink(m_Settings.m_Value.m_links[i]));
+	//Construct finlinks based on directory contents
+	std::vector<CString> linkFiles = CFile::getDirectoryContents(LINKSDIR);
+	for(size_t i=0; i < linkFiles.size(); i++)
+	{
+		const CString &file = linkFiles[i];
+		if(file.length() > 0 && file[0] != '.')
+			m_FinLinks.push_back(new CFinLink(CString(LINKSDIR) + file));
+	}
 }
 
 

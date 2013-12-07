@@ -45,7 +45,7 @@ public:
 	SIMPLEEXCEPTIONCLASS(CSaveError)
 
 	/*
-	linkInfo:
+	filename:
 	TODO
 
 	Constructed object:
@@ -55,7 +55,7 @@ public:
 	CLoadError
 	CSaveError
 	*/
-	CFinLink(const CLinkConfig &linkInfo);
+	CFinLink(const CString &filename);
 
 	~CFinLink();
 

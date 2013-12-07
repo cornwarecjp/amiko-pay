@@ -32,24 +32,14 @@
 
 #include "finlink.h"
 
-//TODO: make this a setting:
-#define LINKSDIR "./links/"
-
 #define LINKFILE_FORMAT_VERSION 1
 
 
-CFinLink::CFinLink(const CLinkConfig &linkInfo) :
-	m_LocalKey(linkInfo.m_localKey),
-	m_RemoteKey(linkInfo.m_remoteKey),
-	m_Filename(CString(LINKSDIR) + getBitcoinAddress(m_LocalKey))
+CFinLink::CFinLink(const CString &filename) :
+	//m_LocalKey(linkInfo.m_localKey),
+	//m_RemoteKey(linkInfo.m_remoteKey),
+	m_Filename(filename)
 {
-	try
-		{CFile::makeDirectory(LINKSDIR);}
-	catch(CFile::CError &e)
-	{
-		log(CString(e.what()) + "\n");
-	}
-
 	load();
 
 	//To make sure we can save, we try it once here:
