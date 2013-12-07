@@ -23,6 +23,8 @@
 
 #include <cstdio>
 
+#include <vector>
+
 #include "cstring.h"
 #include "exception.h"
 
@@ -72,6 +74,21 @@ public:
 	CError
 	*/
 	static void makeDirectory(const CString &dir);
+
+	/*
+	dir:
+	Reference to properly formed std::string object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Return value:
+	directory contents of dir
+	Not necessarily sorted!
+	Contains the full contents (files, directories and other objects)
+
+	Exceptions:
+	CError
+	*/
+	static std::vector<CString> getDirectoryContents(const CString &dir);
 
 	/*
 	from:

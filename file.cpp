@@ -20,6 +20,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <dirent.h>
 #include <cstdio>
 #include <errno.h>
 
@@ -44,6 +45,35 @@ void CFile::makeDirectory(const CString &dir)
 		throw CError(CString::format(
 			"Error when creating directory %s", 256, dir.c_str()
 			));
+}
+
+
+std::vector<CString> CFile::getDirectoryContents(const CString &dir)
+{
+	std::vector<CString> ret;
+
+	DIR *dir1 = opendir(dir.c_str());
+	if(dir1 == NULL)
+		throw CError(CString::format(
+			"ERROR while opening directory %s: error code: %d",
+			1024, dir.c_str(), errno));
+
+	while(true)
+	{
+		//TODO: how to detect failure in this function call?:
+		struct dirent *entry = readdir(dir1);
+		if(entry == NULL) break;
+		ret.push_back(CString(entry->d_name));
+	}
+
+	if(closedir(dir1) != 0)
+		throw CError(CString::format(
+			"ERROR while closing directory %s: error code: %d",
+			1024, dir.c_str(), errno));
+
+	//TODO: maybe sort ret, to make results filesystem-independent?
+
+	return ret;
 }
 
 
