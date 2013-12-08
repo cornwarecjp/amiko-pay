@@ -73,6 +73,11 @@ public:
 	void stop();
 
 	/*
+	TODO
+	*/
+	CString makeNewLink(const CString &remoteURI="");
+
+	/*
 	Return value:
 	CAmikoSettings object
 

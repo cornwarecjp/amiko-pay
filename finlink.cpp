@@ -25,7 +25,6 @@
 #include <cstdio>
 
 #include "log.h"
-#include "bitcoinaddress.h"
 #include "messages.h"
 #include "file.h"
 #include "pointerowner.h"
@@ -36,13 +35,24 @@
 
 
 CFinLink::CFinLink(const CString &filename) :
-	//m_LocalKey(linkInfo.m_localKey),
-	//m_RemoteKey(linkInfo.m_remoteKey),
 	m_Filename(filename)
 {
 	load();
 
 	//To make sure we can save, we try it once here:
+	save();
+}
+
+
+CFinLink::CFinLink(const CString &filename, const CKey &localKey, const CString &remoteURI) :
+	m_LocalKey(localKey),
+	m_RemoteURI(remoteURI),
+	m_Filename(filename)
+{
+	//TODO: do we need any other initialization?
+
+	//If the file already exists, IT WILL BE OVERWRITTEN!
+	//TODO: protect against overwriting?
 	save();
 }
 

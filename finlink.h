@@ -57,6 +57,25 @@ public:
 	*/
 	CFinLink(const CString &filename);
 
+	/*
+	filename:
+	TODO
+
+	localKey:
+	TODO
+
+	remoteURI:
+	TODO
+
+	Constructed object:
+	TODO
+
+	Exceptions:
+	CLoadError
+	CSaveError
+	*/
+	CFinLink(const CString &filename, const CKey &localKey, const CString &remoteURI);
+
 	~CFinLink();
 
 	void sendMessage(const CBinBuffer &message);
@@ -115,6 +134,7 @@ protected:
 	void setOutboundMessageFields(CMessage &msg);
 
 	CKey m_LocalKey, m_RemoteKey;
+	CString m_RemoteURI;
 
 	//Mutex is there to protect file loading and saving
 	CCriticalSection<CString> m_Filename;

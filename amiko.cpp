@@ -20,6 +20,8 @@
 
 #include "log.h"
 #include "file.h"
+#include "bitcoinaddress.h"
+#include "key.h"
 
 #include "amiko.h"
 
@@ -95,6 +97,20 @@ void CAmiko::stop()
 	m_ListenerThread.stop();
 	m_MakerThread.stop();
 	m_FinRoutingThread.stop();
+}
+
+
+CString CAmiko::makeNewLink(const CString &remoteURI)
+{
+	CMutexLocker lock(m_Settings);
+
+	CKey localKey;
+	localKey.makeNewKey();
+	CString localURI = m_Settings.m_Value.getLocalURL(localKey).c_str();
+	CString filename = CString(LINKSDIR) + getBitcoinAddress(localKey);
+	m_FinLinks.push_back(new CFinLink(filename, localKey, remoteURI));
+
+	return localURI;
 }
 
 
