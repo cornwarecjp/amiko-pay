@@ -82,8 +82,24 @@ void app(const std::vector<CString> &arguments)
 	while(true)
 	{
 		CString input = getInput("> ");
-		if(input == "quit" || input == "exit") break;
-		if(input == "newkey")
+
+		std::vector<CString> splitInput = input.split(' ', true);
+		if(splitInput.size() == 0) continue;
+
+		if(splitInput[0] == "quit" || splitInput[0] == "exit")
+		{
+			break;
+		}
+		else if(splitInput[0] == "newlink")
+		{
+			CString remoteURI;
+			if(splitInput.size() >= 2)
+				remoteURI = splitInput[1];
+
+			CString localURI = amiko.makeNewLink(remoteURI);
+			printf("%s\n", localURI.c_str());
+		}
+		else if(splitInput[0] == "newkey")
 		{
 			CKey key;
 			key.makeNewKey();
@@ -92,7 +108,7 @@ void app(const std::vector<CString> &arguments)
 			printf("remoteURI = %s\n", amiko.getSettings().getLocalURL(key).c_str());
 			printf("remotePublicKey = %s\n", key.getPublicKey().hexDump().c_str());
 		}
-		if(input == "help")
+		else if(splitInput[0] == "help")
 		{
 			printf(
 				"exit:\n"
@@ -100,9 +116,17 @@ void app(const std::vector<CString> &arguments)
 				"  Terminate application.\n"
 				"help:\n"
 				"  Display this message.\n"
+				"newlink [remoteURI]:\n"
+				"  Create a new link, and optionally provide it with the link\n"
+				"  URI of the remote party.\n"
+				"  Returns the local URI, which can be given to the remote user.\n"
 				"newkey:\n"
 				"  Make a new key pair and display its properties.\n"
 				);
+		}
+		else
+		{
+			printf("Unrecognized command \"%s\"\n", splitInput[0].c_str());
 		}
 	}
 

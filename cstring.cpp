@@ -106,6 +106,36 @@ void CString::strip()
 }
 
 
+std::vector<CString> CString::split(char c, bool skipEmpty) const
+{
+	std::vector<CString> ret;
+	if(length() == 0) return ret;
+
+	size_t pos = 0;
+
+	while(true)
+	{
+		size_t cpos = find(c, pos);
+		if(cpos == npos) //not found
+		{
+			//Add last element
+			CString element = substr(pos);
+			if(!skipEmpty || element.length() != 0)
+				ret.push_back(element);
+			break;
+		}
+
+		CString element = substr(pos, cpos-pos);
+		if(!skipEmpty || element.length() != 0)
+			ret.push_back(element);
+
+		pos = cpos+1;
+	}
+
+	return ret;
+}
+
+
 CString CString::format(const char *format, size_t maxsize, ...)
 {
 	char buffer[maxsize];

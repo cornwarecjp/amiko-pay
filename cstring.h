@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 #include "exception.h"
 //#include "binbuffer.h"
@@ -175,6 +176,18 @@ public:
 	none
 	*/
 	void strip();
+
+	/*
+	c:
+	not '\0' (NOT CHECKED)
+
+	Return value:
+	vector of valid CString objects
+
+	Exceptions:
+	none
+	*/
+	std::vector<CString> split(char c, bool skipEmpty=false) const;
 
 	/*
 	format:
