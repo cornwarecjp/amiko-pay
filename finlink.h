@@ -133,11 +133,20 @@ protected:
 	//TODO: spec
 	void setOutboundMessageFields(CMessage &msg);
 
-	CKey m_LocalKey, m_RemoteKey;
-	CString m_RemoteURI;
-
 	//Mutex is there to protect file loading and saving
 	CCriticalSection<CString> m_Filename;
+
+	//Local key (public and private key)
+	CKey m_LocalKey;
+
+	//Remote URI (empty when unknown)
+	CString m_RemoteURI;
+
+	//true: link is completed (remote public key is known)
+	bool m_Completed;
+
+	//Remote key (public key)
+	CKey m_RemoteKey;
 
 	//To-be-checked-and-processed:
 	CCriticalSection< std::queue<CBinBuffer> > m_Inbox;

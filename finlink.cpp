@@ -36,6 +36,7 @@
 
 CFinLink::CFinLink(const CString &filename) :
 	m_Filename(filename)
+	//Other members are initialized during load()
 {
 	load();
 
@@ -45,12 +46,12 @@ CFinLink::CFinLink(const CString &filename) :
 
 
 CFinLink::CFinLink(const CString &filename, const CKey &localKey, const CString &remoteURI) :
+	m_Filename(filename),
 	m_LocalKey(localKey),
 	m_RemoteURI(remoteURI),
-	m_Filename(filename)
+	m_Completed(false)
+	//m_RemoteKey remains uninitialized
 {
-	//TODO: do we need any other initialization?
-
 	//If the file already exists, IT WILL BE OVERWRITTEN!
 	//TODO: protect against overwriting?
 	save();
@@ -157,6 +158,13 @@ CBinBuffer CFinLink::serialize()
 	//Format version
 	ret.appendUint<uint32_t>(LINKFILE_FORMAT_VERSION);
 
+	//Link info
+	ret.appendBinBuffer(m_LocalKey.getPrivateKey());
+	ret.appendBinBuffer(CBinBuffer(m_RemoteURI));
+	ret.appendUint<uint8_t>(uint8_t(m_Completed));
+	if(m_Completed)
+		ret.appendBinBuffer(m_RemoteKey.getPublicKey());
+
 	//My messages
 	ret.appendUint<uint32_t>(m_myMessages.size());
 	for(std::list<CBinBuffer>::const_iterator i=m_myMessages.begin();
@@ -205,6 +213,13 @@ void CFinLink::deserialize(const CBinBuffer &data)
 		uint32_t formatVersion = data.readUint<uint32_t>(pos);
 		if(formatVersion != LINKFILE_FORMAT_VERSION)
 			throw CLoadError("File format version mismatch");
+
+		//Link info
+		m_LocalKey.setPrivateKey(data.readBinBuffer(pos));
+		m_RemoteURI = data.readBinBuffer(pos).toString();
+		m_Completed = bool(data.readUint<uint8_t>(pos));
+		if(m_Completed)
+			m_RemoteKey.setPublicKey(data.readBinBuffer(pos));
 
 		uint32_t numMessages = data.readUint<uint32_t>(pos);
 		//TODO: check whether numMessages makes sense
