@@ -186,9 +186,8 @@ void CFinRoutingThread::sendRoutingChanges()
 
 	//Send the update to all peers:
 	for(size_t i=0; i < m_Amiko->m_FinLinks.size(); i++)
-	{
-		m_Amiko->m_FinLinks[i]->sendOutboundMessage(msg);
-	}
+		if(m_Amiko->m_FinLinks[i]->isCompleted())
+			m_Amiko->m_FinLinks[i]->sendOutboundMessage(msg);
 
 	//Clear the list of changed destinations,
 	//since we've sent the update to all peers

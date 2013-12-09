@@ -424,6 +424,10 @@ void CFinLink::sendNackMessage(
 
 void CFinLink::setOutboundMessageFields(CMessage &msg)
 {
+	if(!m_Completed)
+		throw CNotCompletedError(
+			"Attempt to send message to non-completed link");
+
 	msg.m_source = CRIPEMD160(
 		CSHA256(getLocalKey().getPublicKey()).toBinBuffer()
 		);

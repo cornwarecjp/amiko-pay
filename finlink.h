@@ -43,6 +43,7 @@ class CFinLink : public CComInterface
 public:
 	SIMPLEEXCEPTIONCLASS(CLoadError)
 	SIMPLEEXCEPTIONCLASS(CSaveError)
+	SIMPLEEXCEPTIONCLASS(CNotCompletedError)
 
 	/*
 	filename:
@@ -91,10 +92,15 @@ public:
 		{return m_LocalKey;}
 
 	//TODO: spec
+	inline bool isCompleted() const
+		{return m_Completed;}
+
+	//TODO: spec
 	void processInbox();
 
 	//TODO: spec
 	//note: changes msg
+	//CNotCompletedError
 	void sendOutboundMessage(CMessage &msg);
 
 	CCriticalSection<CRouteTable> m_RouteTable;
@@ -131,6 +137,7 @@ protected:
 		const CString &reasonInLog="");
 
 	//TODO: spec
+	//CNotCompletedError
 	void setOutboundMessageFields(CMessage &msg);
 
 	//Mutex is there to protect file loading and saving
