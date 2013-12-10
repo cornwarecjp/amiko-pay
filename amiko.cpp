@@ -25,8 +25,6 @@
 
 #include "amiko.h"
 
-//TODO: make this a setting:
-#define LINKSDIR "./links/"
 
 CAmiko::CAmiko(const CAmikoSettings &settings) :
 	m_Settings(settings),
@@ -40,12 +38,15 @@ CAmiko::CAmiko(const CAmikoSettings &settings) :
 	//accidentally multiple amikopay processes are started
 
 	//Construct finlinks based on directory contents
-	std::vector<CString> linkFiles = CFile::getDirectoryContents(LINKSDIR);
+	std::vector<CString> linkFiles = CFile::getDirectoryContents(
+		m_Settings.m_Value.m_linksDir);
+
 	for(size_t i=0; i < linkFiles.size(); i++)
 	{
 		const CString &file = linkFiles[i];
 		if(file.length() > 0 && file[0] != '.')
-			m_FinLinks.push_back(new CFinLink(CString(LINKSDIR) + file));
+			m_FinLinks.push_back(
+				new CFinLink(m_Settings.m_Value.m_linksDir + file));
 	}
 }
 
@@ -107,7 +108,8 @@ CString CAmiko::makeNewLink(const CString &remoteURI)
 	CKey localKey;
 	localKey.makeNewKey();
 	CString localURI = m_Settings.m_Value.getLocalURL(localKey).c_str();
-	CString filename = CString(LINKSDIR) + getBitcoinAddress(localKey);
+	CString filename = m_Settings.m_Value.m_linksDir +
+		getBitcoinAddress(localKey);
 	m_FinLinks.push_back(new CFinLink(filename, localKey, remoteURI));
 
 	return localURI;

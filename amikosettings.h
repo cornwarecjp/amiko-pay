@@ -85,6 +85,8 @@ public:
 	//public key, or empty if there is no meeting point
 	CBinBuffer m_MeetingPointPubKey;
 
+	CString m_linksDir;
+
 	//TODO: spec
 	inline CString getLocalURL(const CKey &localKey)
 	{

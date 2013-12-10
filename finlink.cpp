@@ -84,6 +84,8 @@ void CFinLink::sendMessage(const CBinBuffer &message)
 void CFinLink::load()
 {
 	CMutexLocker lock(m_Filename);
+	log(CString::format("Loading link file %s\n", 256,
+		m_Filename.m_Value.c_str()));
 
 	CFile f(m_Filename.m_Value, "rb");
 	if(f.m_FP == NULL)

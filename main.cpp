@@ -49,9 +49,14 @@ CString getInput(CString question="")
 
 void app(const std::vector<CString> &arguments)
 {
+	CCommandlineParams commandline(arguments);
+
+	CString conffilename = commandline.getValue(
+		"files", "conffile", "amikopay.conf");
+
 	CAmikoSettings settings;
-	settings.loadFrom(CConfFile("amikopay.conf")); //TODO: override with commandline
-	//settings.loadFrom(CCommandlineParams(arguments)); //TODO
+	settings.loadFrom(CConfFile(conffilename));
+	settings.loadFrom(commandline); //overrides settings from conffile
 	CAmiko amiko(settings);
 	amiko.start();
 

@@ -27,7 +27,8 @@ CAmikoSettings::CAmikoSettings() :
 	//defaults
 	m_localHostname(""),
 	m_portNumber(AMIKO_DEFAULT_PORT),
-	m_MeetingPointPubKey()
+	m_MeetingPointPubKey(),
+	m_linksDir(".")
 {
 }
 
@@ -55,6 +56,13 @@ void CAmikoSettings::loadFrom(const CSettingsSource &src)
 			getBitcoinAddress(m_MeetingPointPubKey).c_str()
 			));
 	}
+
+	m_linksDir = src.getValue("files", "linksdir", m_linksDir);
+
+	//Make sure the links dir ends with a path separator.
+	//TODO: check whether this works on windows too
+	if(m_linksDir[m_linksDir.length()-1] != '/')
+		m_linksDir += '/';
 }
 
 
