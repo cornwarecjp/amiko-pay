@@ -56,6 +56,9 @@ CKey &CKey::operator=(const CKey& b)
 {
 	if(!EC_KEY_copy(m_KeyData, b.m_KeyData))
 		throw CKeyError("CKey::operator=(const CKey&) : EC_KEY_copy failed");	
+
+	m_hasPublicKey = b.m_hasPublicKey;
+	m_hasPrivateKey = b.m_hasPrivateKey;
 	return *this;
 }
 
