@@ -105,14 +105,18 @@ CString CAmiko::makeNewLink(const CString &remoteURI)
 {
 	CMutexLocker lock(m_Settings);
 
-	CKey localKey;
-	localKey.makeNewKey();
-	CString localURI = m_Settings.m_Value.getLocalURL(localKey).c_str();
-	CString filename = m_Settings.m_Value.m_linksDir +
-		getBitcoinAddress(localKey);
-	m_FinLinks.push_back(new CFinLink(filename, localKey, remoteURI));
+	CLinkConfig config;
+	//TODO: put this in a CLinkConfig constructor?
+	config.m_localKey.makeNewKey();
+	config.m_remoteURI = remoteURI;
+	config.m_completed = false;
+	//config.m_remoteKey remains uninitialized
 
-	return localURI;
+	CString filename = m_Settings.m_Value.m_linksDir +
+		getBitcoinAddress(config.m_localKey);
+	m_FinLinks.push_back(new CFinLink(filename, config));
+
+	return m_Settings.m_Value.getLocalURL(config.m_localKey);
 }
 
 

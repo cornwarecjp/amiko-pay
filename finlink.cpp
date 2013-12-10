@@ -45,15 +45,10 @@ CFinLink::CFinLink(const CString &filename) :
 }
 
 
-CFinLink::CFinLink(const CString &filename, const CKey &localKey, const CString &remoteURI) :
-	m_Filename(filename)
+CFinLink::CFinLink(const CString &filename, const CLinkConfig &config) :
+	m_Filename(filename),
+	m_linkConfig(config)
 {
-	//TODO: put this in a CLinkConfig constructor?
-	m_linkConfig.m_localKey = localKey;
-	m_linkConfig.m_remoteURI = remoteURI;
-	m_linkConfig.m_completed = false;
-	//m_linkConfig.m_remoteKey remains uninitialized
-
 	//If the file already exists, IT WILL BE OVERWRITTEN!
 	//TODO: protect against overwriting?
 	save();

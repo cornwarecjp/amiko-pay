@@ -62,10 +62,7 @@ public:
 	filename:
 	TODO
 
-	localKey:
-	TODO
-
-	remoteURI:
+	config:
 	TODO
 
 	Constructed object:
@@ -74,7 +71,7 @@ public:
 	Exceptions:
 	CSaveError
 	*/
-	CFinLink(const CString &filename, const CKey &localKey, const CString &remoteURI);
+	CFinLink(const CString &filename, const CLinkConfig &config);
 
 	~CFinLink();
 
