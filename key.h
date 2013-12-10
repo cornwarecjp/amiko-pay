@@ -165,6 +165,8 @@ public:
 
 private:
 
+	bool m_hasPublicKey, m_hasPrivateKey;
+
 	//TODO: secure memory allocation
     EC_KEY *m_KeyData;
 };

@@ -25,7 +25,9 @@
 #include "key.h"
 
 
-CKey::CKey()
+CKey::CKey() :
+	m_hasPublicKey(false),
+	m_hasPrivateKey(false)
 {
 	m_KeyData = EC_KEY_new_by_curve_name(NID_secp256k1);
 	if(m_KeyData == NULL)
@@ -38,6 +40,9 @@ CKey::CKey(const CKey &b)
 	m_KeyData = EC_KEY_dup(b.m_KeyData);
 	if(m_KeyData == NULL)
 		throw CConstructError("CKey::CKey(const CKey&) : EC_KEY_dup failed");
+
+	m_hasPublicKey = b.m_hasPublicKey;
+	m_hasPrivateKey = b.m_hasPrivateKey;
 }
 
 
@@ -59,6 +64,9 @@ void CKey::makeNewKey()
 {
 	if(!EC_KEY_generate_key(m_KeyData))
 		throw CKeyError("CKey::makeNewKey() : EC_KEY_generate_key failed");
+
+	m_hasPublicKey = true;
+	m_hasPrivateKey = true;
 }
 
 
@@ -70,11 +78,17 @@ void CKey::setPublicKey(const CBinBuffer &key)
 		//TODO: reset key state
 		throw CKeyError("CKey::setPublicKey(const CBinBuffer &): o2i_ECPublicKey failed");
 	}
+
+	m_hasPublicKey = true;
+	m_hasPrivateKey = false;
 }
 
 
 CBinBuffer CKey::getPublicKey() const
 {
+	if(!m_hasPublicKey)
+		throw CKeyError("CKey::getPublicKey() : public key unknown");
+
 	int size = i2o_ECPublicKey(m_KeyData, NULL);
 	if(!size)
 		throw CKeyError("CKey::getPublicKey() : i2o_ECPublicKey failed");
@@ -112,11 +126,17 @@ void CKey::setPrivateKey(const CBinBuffer &key)
 		// TODO: find a way to prevent this
 		throw CKeyError("CKey::setPrivateKey(const BinBuffer &): EC_KEY_check_key failed");
     }
+
+	m_hasPublicKey = true;
+	m_hasPrivateKey = true;
 }
 
 
 CBinBuffer CKey::getPrivateKey() const
 {
+	if(!m_hasPrivateKey)
+		throw CKeyError("CKey::getPrivateKey() : private key unknown");
+
 	int size = i2d_ECPrivateKey(m_KeyData, NULL);
 	if(!size)
 		throw CKeyError("CKey::getPrivateKey() : i2d_ECPrivateKey failed");
@@ -133,6 +153,9 @@ CBinBuffer CKey::getPrivateKey() const
 
 CBinBuffer CKey::sign(const CSHA256 &hash) const
 {
+	if(!m_hasPrivateKey)
+		throw CKeyError("CKey::sign() : private key unknown");
+
 	unsigned int size = ECDSA_size(m_KeyData);
 	CBinBuffer ret;
 	ret.resize(size); // Make sure it is big enough
@@ -146,6 +169,9 @@ CBinBuffer CKey::sign(const CSHA256 &hash) const
 
 bool CKey::verify(const CSHA256 &hash, const CBinBuffer &signature) const
 {
+	if(!m_hasPublicKey)
+		throw CKeyError("CKey::verify() : public key unknown");
+
 	// -1 = error, 0 = bad sig, 1 = good
 	int result = ECDSA_verify(0, hash.getData(), hash.getSize(), &signature[0], signature.size(), m_KeyData);
 	if(result == 1) return true;
