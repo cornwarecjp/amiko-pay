@@ -46,12 +46,14 @@ CFinLink::CFinLink(const CString &filename) :
 
 
 CFinLink::CFinLink(const CString &filename, const CKey &localKey, const CString &remoteURI) :
-	m_Filename(filename),
-	m_LocalKey(localKey),
-	m_RemoteURI(remoteURI),
-	m_Completed(false)
-	//m_RemoteKey remains uninitialized
+	m_Filename(filename)
 {
+	//TODO: put this in a CLinkConfig constructor?
+	m_linkConfig.m_localKey = localKey;
+	m_linkConfig.m_remoteURI = remoteURI;
+	m_linkConfig.m_completed = false;
+	//m_linkConfig.m_remoteKey remains uninitialized
+
 	//If the file already exists, IT WILL BE OVERWRITTEN!
 	//TODO: protect against overwriting?
 	save();
@@ -89,11 +91,8 @@ void CFinLink::load()
 
 	CFile f(m_Filename.m_Value, "rb");
 	if(f.m_FP == NULL)
-	{
-		log(CString::format("Could not load %s; assuming this is a new link\n",
+		throw CLoadError(CString::format("Could not load link file %s",
 			256, m_Filename.m_Value.c_str()));
-		return;
-	}
 
 	CBinBuffer data, chunk;
 	chunk.resize(1024);
@@ -161,11 +160,11 @@ CBinBuffer CFinLink::serialize()
 	ret.appendUint<uint32_t>(LINKFILE_FORMAT_VERSION);
 
 	//Link info
-	ret.appendBinBuffer(m_LocalKey.getPrivateKey());
-	ret.appendBinBuffer(CBinBuffer(m_RemoteURI));
-	ret.appendUint<uint8_t>(uint8_t(m_Completed));
-	if(m_Completed)
-		ret.appendBinBuffer(m_RemoteKey.getPublicKey());
+	ret.appendBinBuffer(m_linkConfig.m_localKey.getPrivateKey());
+	ret.appendBinBuffer(CBinBuffer(m_linkConfig.m_remoteURI));
+	ret.appendUint<uint8_t>(uint8_t(m_linkConfig.m_completed));
+	if(m_linkConfig.m_completed)
+		ret.appendBinBuffer(m_linkConfig.m_remoteKey.getPublicKey());
 
 	//My messages
 	ret.appendUint<uint32_t>(m_myMessages.size());
@@ -217,11 +216,11 @@ void CFinLink::deserialize(const CBinBuffer &data)
 			throw CLoadError("File format version mismatch");
 
 		//Link info
-		m_LocalKey.setPrivateKey(data.readBinBuffer(pos));
-		m_RemoteURI = data.readBinBuffer(pos).toString();
-		m_Completed = bool(data.readUint<uint8_t>(pos));
-		if(m_Completed)
-			m_RemoteKey.setPublicKey(data.readBinBuffer(pos));
+		m_linkConfig.m_localKey.setPrivateKey(data.readBinBuffer(pos));
+		m_linkConfig.m_remoteURI = data.readBinBuffer(pos).toString();
+		m_linkConfig.m_completed = bool(data.readUint<uint8_t>(pos));
+		if(m_linkConfig.m_completed)
+			m_linkConfig.m_remoteKey.setPublicKey(data.readBinBuffer(pos));
 
 		uint32_t numMessages = data.readUint<uint32_t>(pos);
 		//TODO: check whether numMessages makes sense
@@ -426,7 +425,7 @@ void CFinLink::sendNackMessage(
 
 void CFinLink::setOutboundMessageFields(CMessage &msg)
 {
-	if(!m_Completed)
+	if(!m_linkConfig.m_completed)
 		throw CNotCompletedError(
 			"Attempt to send message to non-completed link");
 

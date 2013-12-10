@@ -72,7 +72,6 @@ public:
 	TODO
 
 	Exceptions:
-	CLoadError
 	CSaveError
 	*/
 	CFinLink(const CString &filename, const CKey &localKey, const CString &remoteURI);
@@ -87,13 +86,13 @@ public:
 	Reference lifetime: equal to lifetime of this object
 	*/
 	inline const CKey &getRemoteKey() const
-		{return m_RemoteKey;}
+		{return m_linkConfig.m_remoteKey;}
 	inline const CKey &getLocalKey() const
-		{return m_LocalKey;}
+		{return m_linkConfig.m_localKey;}
 
 	//TODO: spec
 	inline bool isCompleted() const
-		{return m_Completed;}
+		{return m_linkConfig.m_completed;}
 
 	//TODO: spec
 	void processInbox();
@@ -143,17 +142,7 @@ protected:
 	//Mutex is there to protect file loading and saving
 	CCriticalSection<CString> m_Filename;
 
-	//Local key (public and private key)
-	CKey m_LocalKey;
-
-	//Remote URI (empty when unknown)
-	CString m_RemoteURI;
-
-	//true: link is completed (remote public key is known)
-	bool m_Completed;
-
-	//Remote key (public key)
-	CKey m_RemoteKey;
+	CLinkConfig m_linkConfig;
 
 	//To-be-checked-and-processed:
 	CCriticalSection< std::queue<CBinBuffer> > m_Inbox;

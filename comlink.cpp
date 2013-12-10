@@ -21,6 +21,7 @@
 #include "log.h"
 #include "bitcoinaddress.h"
 #include "pointerowner.h"
+#include "uriparser.h"
 
 #include "comlink.h"
 
@@ -41,7 +42,9 @@ CComLink::CComLink(const CURI &uri, const CAmikoSettings &settings, const std::v
 	for(size_t i=0; i < m_LinkConfig.size(); i++)
 	{
 		const CLinkConfig &link = m_LinkConfig[i];
-		if(link.m_remoteURI.getPath() == address)
+		CURI linkURI(link.m_remoteURI);
+
+		if(linkURI.getPath() == address)
 		{
 			if(match != NULL)
 				throw CLinkDoesNotExist(

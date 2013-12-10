@@ -21,6 +21,8 @@
 #include <cstdio>
 #include <vector>
 
+#include "amikosettings.h"
+
 #include "finlink.h"
 
 #include "test.h"
@@ -32,7 +34,11 @@ TODO: document and expand
 class CPublicFinLink : public CFinLink
 {
 public:
-	CPublicFinLink(const CString &filename) : CFinLink(filename) {}
+	CPublicFinLink(const CString &filename) :
+		CFinLink(filename) {}
+
+	CPublicFinLink(const CString &filename, const CKey &localKey, const CString &remoteURI) :
+		CFinLink(filename, localKey, remoteURI) {}
 
 	CBinBuffer serialize()
 		{return CFinLink::serialize();}
@@ -48,17 +54,16 @@ class CFinLinkTest : public CTest
 
 	virtual void run()
 	{
-		/*
-		CLinkConfig linkConfig;
-		linkConfig.m_remoteURI = CURI("amikolink://localhost/16JN1AMdX7h7fb7ZFwXkV8JrtmcntZoJH5");
-		linkConfig.m_localKey.setPrivateKey(CBinBuffer::fromHex("3082011302010104209e3dafcee8fe2ae4f28117c03d338c3013d4e776a20f79a7b8b84a5ac7e1fc3fa081a53081a2020101302c06072a8648ce3d0101022100fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f300604010004010704410479be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8022100fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141020101a14403420004b9056eb938f5d3436f2a08fa505dd3d0b5f70972ff2d44ed0d06ca5b38579d46fce8adcc2e653e6f7a8c94bce3c4b3d3082c724bb642963cfaa9f3bd608c8136"));
-		linkConfig.m_remoteKey.setPublicKey(CBinBuffer::fromHex("04249e92aed4a8469afad35611eb954056439c5be71595e2838049089da69fb71796de9fc88a76af78ec57fb0f77db1383930edfc75aa9836f76577d419b6412c4"));
-		*/
 		CString filename = "./links/16JN1AMdX7h7fb7ZFwXkV8JrtmcntZoJH5";
 
 		CBinBuffer serialized1;
 		{
-			CPublicFinLink f(filename);
+			CLinkConfig linkConfig;
+			linkConfig.m_remoteURI = "amikolink://localhost/16JN1AMdX7h7fb7ZFwXkV8JrtmcntZoJH5";
+			linkConfig.m_localKey.setPrivateKey(CBinBuffer::fromHex("3082011302010104209e3dafcee8fe2ae4f28117c03d338c3013d4e776a20f79a7b8b84a5ac7e1fc3fa081a53081a2020101302c06072a8648ce3d0101022100fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f300604010004010704410479be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8022100fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141020101a14403420004b9056eb938f5d3436f2a08fa505dd3d0b5f70972ff2d44ed0d06ca5b38579d46fce8adcc2e653e6f7a8c94bce3c4b3d3082c724bb642963cfaa9f3bd608c8136"));
+			linkConfig.m_remoteKey.setPublicKey(CBinBuffer::fromHex("04249e92aed4a8469afad35611eb954056439c5be71595e2838049089da69fb71796de9fc88a76af78ec57fb0f77db1383930edfc75aa9836f76577d419b6412c4"));
+
+			CPublicFinLink f(filename, linkConfig.m_localKey, linkConfig.m_remoteURI);
 			serialized1 = f.serialize();
 		}
 

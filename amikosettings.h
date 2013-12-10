@@ -24,7 +24,6 @@
 #include <vector>
 
 #include "binbuffer.h"
-#include "uriparser.h"
 #include "key.h"
 #include "bitcoinaddress.h"
 #include "settingssource.h"
@@ -38,10 +37,10 @@
 class CLinkConfig
 {
 public:
-	CLinkConfig() : m_remoteURI("dummy://localhost") {}
-	CURI m_remoteURI;
-	CKey m_localKey;
-	CKey m_remoteKey; //must either be empty or correspond with m_remoteURI
+	CKey m_localKey;  //Local key (public and private key)
+	CString m_remoteURI; //Remote URI (empty when unknown)
+	bool m_completed; //true: link is completed (remote public key is known)
+	CKey m_remoteKey; //Remote key (public key, must be empty or correspond with m_remoteURI)
 };
 
 

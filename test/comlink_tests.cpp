@@ -28,6 +28,7 @@
 #include "messages.h"
 #include "timer.h"
 #include "bitcoinaddress.h"
+#include "uriparser.h"
 
 #include "test.h"
 
@@ -89,7 +90,7 @@ class CComLinkTest : public CTest
 		CTCPListener listener(settings2.m_portNumber);
 
 		//Connect to TCP port
-		CComLink *c1 = new CComLink(link1.m_remoteURI, settings1, linkConfig1);
+		CComLink *c1 = new CComLink(CURI(link1.m_remoteURI), settings1, linkConfig1);
 		c1->setReceiver(&testReceiver);
 		c1->start();
 
