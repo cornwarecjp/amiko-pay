@@ -79,6 +79,14 @@ public:
 
 	/*
 	Return value:
+	Reference to properly formed CLinkConfig object
+	Reference lifetime: equal to lifetime of this object
+	*/
+	inline const CLinkConfig &getLinkConfig() const
+		{return m_linkConfig;}
+
+	/*
+	Return value:
 	Reference to properly formed CKey object
 	Reference lifetime: equal to lifetime of this object
 	*/
