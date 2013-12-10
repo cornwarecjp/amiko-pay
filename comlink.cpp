@@ -160,16 +160,35 @@ void CComLink::threadFunc()
 			256, e.what()));
 	}
 
+	try
 	{
-		CMutexLocker lock(m_State);
-		m_State.m_Value = eClosed;
-	}
+		{
+			CMutexLocker lock(m_State);
+			m_State.m_Value = eClosed;
+		}
 
-	log(CString::format(
-		"Disconnected (local: %s)\n",
-		1024,
-		getBitcoinAddress(m_LocalKey).c_str()
-		));
+		log(CString::format(
+			"Disconnected (local: %s)\n",
+			1024,
+			getBitcoinAddress(m_LocalKey).c_str()
+			));
+	}
+	catch(CKey::CKeyError &e)
+	{
+		log("Disconnected (local: unknown)\n");
+	}
+	catch(CException &e)
+	{
+		log(CString::format(
+			"CComLink::threadFunc(): Caught application exception after disconnect: %s\n",
+			256, e.what()));
+	}
+	catch(std::exception &e)
+	{
+		log(CString::format(
+			"CComLink::threadFunc(): Caught standard library exception after disconnect: %s\n",
+			256, e.what()));
+	}
 }
 
 
