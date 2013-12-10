@@ -122,7 +122,10 @@ CString CAmiko::makeNewLink(const CString &remoteURI)
 
 std::vector<CLinkConfig> CAmiko::getLinkConfigs() const
 {
-	return std::vector<CLinkConfig>(); //TODO
+	std::vector<CLinkConfig> ret;
+	for(size_t i=0; i < m_FinLinks.size(); i++)
+		ret.push_back(m_FinLinks[i]->getLinkConfig());
+	return ret;
 }
 
 
