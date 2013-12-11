@@ -75,22 +75,24 @@ class CComLinkTest : public CTest
 		settings1.m_portNumber = AMIKO_DEFAULT_PORT;
 		settings2.m_portNumber = AMIKO_DEFAULT_PORT;
 
-		std::vector<CLinkConfig> linkConfig1, linkConfig2;
-		linkConfig1.resize(1);
+		CLinkConfig link1;
+		std::vector<CLinkConfig> linkConfig2;
 		linkConfig2.resize(1);
-		CLinkConfig &link1 = linkConfig1[0];
 		CLinkConfig &link2 = linkConfig2[0];
+
 		link1.m_localKey.makeNewKey();
 		link2.m_localKey.makeNewKey();
 		link1.m_remoteKey.setPublicKey(link2.m_localKey.getPublicKey());
 		link2.m_remoteKey.setPublicKey(link1.m_localKey.getPublicKey());
 		link1.m_remoteURI = settings2.getLocalURL(link2.m_localKey);
+		link1.m_completed = true;
+		link2.m_completed = true;
 
 		//Start listening at TCP port
 		CTCPListener listener(settings2.m_portNumber);
 
 		//Connect to TCP port
-		CComLink *c1 = new CComLink(CURI(link1.m_remoteURI), settings1, linkConfig1);
+		CComLink *c1 = new CComLink(link1, settings1);
 		c1->setReceiver(&testReceiver);
 		c1->start();
 

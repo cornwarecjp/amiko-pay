@@ -28,44 +28,23 @@
 //With 32-bit protocol version numbers, we'll never exceed this:
 #define MAX_NEGOTIATION_STRING_LENGTH 32
 
-CComLink::CComLink(const CURI &uri, const CAmikoSettings &settings, const std::vector<CLinkConfig> &linkConfig) :
-	m_Connection(uri.getHost(), uri.getPort(AMIKO_DEFAULT_PORT)),
-	m_URI(uri),
+CComLink::CComLink(const CLinkConfig &config, const CAmikoSettings &settings) :
+	m_URI(config.m_remoteURI),
+	m_Connection(m_URI.getHost(), m_URI.getPort(AMIKO_DEFAULT_PORT)),
 	m_Settings(settings),
-	m_LinkConfig(linkConfig),
 	m_isServerSide(false),
+	m_linkConfig(config),
 	m_State(ePending)
 {
-	CString address = m_URI.getPath();
-
-	const CLinkConfig *match = NULL;
-	for(size_t i=0; i < m_LinkConfig.size(); i++)
-	{
-		const CLinkConfig &link = m_LinkConfig[i];
-		CURI linkURI(link.m_remoteURI);
-
-		if(linkURI.getPath() == address)
-		{
-			if(match != NULL)
-				throw CLinkDoesNotExist(
-					"Multiple links match address; can't choose");
-
-			match = &link;
-		}
-	}
-	if(match == NULL)
-		throw CLinkDoesNotExist("No matching link found for address");
-
-	m_LocalKey = match->m_localKey;
 }
 
 
-CComLink::CComLink(const CTCPListener &listener, const CAmikoSettings &settings, const std::vector<CLinkConfig> &linkConfig) :
-	m_Connection(listener),
+CComLink::CComLink(const CTCPListener &listener, const CAmikoSettings &settings, const std::vector<CLinkConfig> &linkConfigs) :
 	m_URI("dummy://localhost"),
+	m_Connection(listener),
 	m_Settings(settings),
-	m_LinkConfig(linkConfig),
 	m_isServerSide(true),
+	m_linkConfigs(linkConfigs),
 	m_State(ePending)
 {
 }
@@ -144,7 +123,7 @@ void CComLink::threadFunc()
 		log(CString::format(
 			"Connection closed by peer (local: %s)\n",
 			1024,
-			getBitcoinAddress(m_LocalKey).c_str()
+			getBitcoinAddress(getLocalKey()).c_str()
 			));
 	}
 	catch(CException &e)
@@ -170,7 +149,7 @@ void CComLink::threadFunc()
 		log(CString::format(
 			"Disconnected (local: %s)\n",
 			1024,
-			getBitcoinAddress(m_LocalKey).c_str()
+			getBitcoinAddress(getLocalKey()).c_str()
 			));
 	}
 	catch(CKey::CKeyError &e)
@@ -202,8 +181,8 @@ void CComLink::initialize()
 		log(CString::format(
 			"Connected as server (local: %s remote: %s) with protocol version %d\n",
 			1024,
-			getBitcoinAddress(m_LocalKey).c_str(),
-			getBitcoinAddress(m_RemoteKey).c_str(),
+			getBitcoinAddress(getLocalKey()).c_str(),
+			getBitcoinAddress(getRemoteKey()).c_str(),
 			m_ProtocolVersion));
 	}
 	else
@@ -211,8 +190,8 @@ void CComLink::initialize()
 		log(CString::format(
 			"Connected as client (local: %s remote: %s) with protocol version %d\n",
 			1024,
-			getBitcoinAddress(m_LocalKey).c_str(),
-			getBitcoinAddress(m_RemoteKey).c_str(),
+			getBitcoinAddress(getLocalKey()).c_str(),
+			getBitcoinAddress(getRemoteKey()).c_str(),
 			m_ProtocolVersion));
 	}
 }
@@ -350,8 +329,12 @@ void CComLink::exchangeHello()
 			throw CProtocolError(
 				"Source address and public key mismatch in received hello");
 
-		m_RemoteKey.setPublicKey(hello.m_myPublicKey);
-		if(!hello.verifySignature(m_RemoteKey))
+		//Initial setting of the remote key.
+		//This is only to allow us to verify the signature of the hello message.
+		//Final setting will happen further down this function.
+		m_linkConfig.m_remoteKey.setPublicKey(hello.m_myPublicKey);
+
+		if(!hello.verifySignature(m_linkConfig.m_remoteKey))
 			throw CProtocolError(
 				"Signature and public key mismatch in received hello");
 
@@ -359,14 +342,18 @@ void CComLink::exchangeHello()
 			CString address = hello.m_yourAddress;
 
 			const CLinkConfig *match = NULL;
-			for(size_t i=0; i < m_LinkConfig.size(); i++)
+			for(size_t i=0; i < m_linkConfigs.size(); i++)
 			{
-				const CLinkConfig &link = m_LinkConfig[i];
+				const CLinkConfig &link = m_linkConfigs[i];
 				if(getBitcoinAddress(link.m_localKey) == address)
 				{
 					if(match != NULL)
 						throw CLinkDoesNotExist(
 							"Multiple links match address; can't choose");
+
+					if(link.m_completed && hello.m_myPublicKey != link.m_remoteKey.getPublicKey())
+						throw CProtocolError(
+							"Public key in received hello does not match known public key of this link");
 
 					match = &link;
 				}
@@ -374,17 +361,25 @@ void CComLink::exchangeHello()
 			if(match == NULL)
 				throw CLinkDoesNotExist("No matching link found for address");
 
-			m_LocalKey = match->m_localKey;
+			m_linkConfig = *match;
 		}
+
+		//Set remote key again after receiving a correct hello.
+		//This is necessary, because the complete m_linkConfig was overwritten
+		// by the matching algorithm.
+		m_linkConfig.m_remoteKey.setPublicKey(hello.m_myPublicKey);
+		//Also, the link is now completed:
+		m_linkConfig.m_completed = true;
 
 		CHelloMessage helloReply;
 		//TODO: remaining fields
-		helloReply.m_source = CRIPEMD160(CSHA256(m_LocalKey.getPublicKey()).toBinBuffer());
-		helloReply.m_destination = CRIPEMD160(CSHA256(m_RemoteKey.getPublicKey()).toBinBuffer());
-		helloReply.m_myPublicKey = m_LocalKey.getPublicKey();
-		helloReply.m_myPreferredURL = m_Settings.getLocalURL(m_LocalKey);
+		helloReply.m_source = CRIPEMD160(CSHA256(getLocalKey().getPublicKey()).toBinBuffer());
+		helloReply.m_destination = CRIPEMD160(CSHA256(getRemoteKey().getPublicKey()).toBinBuffer());
+		helloReply.m_myPublicKey = getLocalKey().getPublicKey();
+		helloReply.m_myPreferredURL = m_Settings.getLocalURL(getLocalKey());
 		helloReply.m_yourAddress = getBitcoinAddress(helloReply.m_destination);
-		helloReply.sign(m_LocalKey);
+
+		helloReply.sign(getLocalKey());
 		sendMessageDirect(helloReply.serialize());
 
 		//TODO: wait for ack/nack?
@@ -393,11 +388,11 @@ void CComLink::exchangeHello()
 	{
 		CHelloMessage hello;
 		//TODO: remaining fields
-		hello.m_source = CRIPEMD160(CSHA256(m_LocalKey.getPublicKey()).toBinBuffer());
-		hello.m_myPublicKey = m_LocalKey.getPublicKey();
-		hello.m_myPreferredURL = m_Settings.getLocalURL(m_LocalKey);
+		hello.m_source = CRIPEMD160(CSHA256(getLocalKey().getPublicKey()).toBinBuffer());
+		hello.m_myPublicKey = getLocalKey().getPublicKey();
+		hello.m_myPreferredURL = m_Settings.getLocalURL(getLocalKey());
 		hello.m_yourAddress = m_URI.getPath();
-		hello.sign(m_LocalKey);
+		hello.sign(getLocalKey());
 		sendMessageDirect(hello.serialize());
 
 		//1 s timeout:
@@ -413,7 +408,7 @@ void CComLink::exchangeHello()
 			throw CProtocolError(
 				"Mismatch between own hello source and received hello");
 
-		if(helloReply.m_destination != CRIPEMD160(CSHA256(m_LocalKey.getPublicKey()).toBinBuffer()))
+		if(helloReply.m_destination != CRIPEMD160(CSHA256(getLocalKey().getPublicKey()).toBinBuffer()))
 			throw CProtocolError(
 				"Destination address and public key mismatch in received hello");
 
@@ -421,8 +416,14 @@ void CComLink::exchangeHello()
 			throw CProtocolError(
 				"Source address and public key mismatch in received hello");
 
-		m_RemoteKey.setPublicKey(helloReply.m_myPublicKey);
-		if(!helloReply.verifySignature(m_RemoteKey))
+		if(m_linkConfig.m_completed && helloReply.m_myPublicKey != m_linkConfig.m_remoteKey.getPublicKey())
+			throw CProtocolError(
+				"Public key in received hello does not match known public key of this link");
+
+		m_linkConfig.m_remoteKey.setPublicKey(helloReply.m_myPublicKey);
+		m_linkConfig.m_completed = true;
+
+		if(!helloReply.verifySignature(getRemoteKey()))
 			throw CProtocolError(
 				"Signature and public key mismatch in received hello");
 

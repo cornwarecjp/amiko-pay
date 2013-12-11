@@ -73,18 +73,14 @@ public:
 
 
 	/*
-	uri:
-	Reference to properly formed CURI object (NOT CHECKED)
+	linkConfig:
+	Reference to properly formed CLinkConfig object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
-	Contains a host and a path (NOT CHECKED)
-	Path equals m_remoteURI.getPath() of one link in linkConfig (CHECKED)
+	linkConfig.m_remoteURI is a valid URI (NOT CHECKED)
+	Is completed??? (TODO)
 
 	settings:
 	Reference to properly formed CAmikoSettings object (NOT CHECKED)
-	Reference lifetime: at least until the end of this function
-
-	linkConfig:
-	Reference to properly formed std::vector<CLinkConfig> object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
 	Constructed object:
@@ -93,9 +89,8 @@ public:
 	Exceptions:
 	CURI::CNotFound
 	CTCPConnection::CConnectException
-	CLinkDoesNotExist
 	*/
-	CComLink(const CURI &uri, const CAmikoSettings &settings, const std::vector<CLinkConfig> &linkConfig);
+	CComLink(const CLinkConfig &config, const CAmikoSettings &settings);
 
 	/*
 	listener:
@@ -118,7 +113,7 @@ public:
 	CTCPConnection::CConnectException
 	CTCPConnection::CTimeoutException
 	*/
-	CComLink(const CTCPListener &listener, const CAmikoSettings &settings, const std::vector<CLinkConfig> &linkConfig);
+	CComLink(const CTCPListener &listener, const CAmikoSettings &settings, const std::vector<CLinkConfig> &linkConfigs);
 
 	virtual ~CComLink();
 
@@ -151,9 +146,9 @@ public:
 	Reference lifetime: equal to lifetime of this object
 	*/
 	inline const CKey &getRemoteKey() const
-		{return m_RemoteKey;}
+		{return m_linkConfig.m_remoteKey;}
 	inline const CKey &getLocalKey() const
-		{return m_LocalKey;}
+		{return m_linkConfig.m_localKey;}
 
 
 private:
@@ -251,12 +246,17 @@ private:
 	*/
 	CHelloMessage receiveHello(int timeoutValue);
 
-	CKey m_RemoteKey, m_LocalKey;
-	CTCPConnection m_Connection;
 	CURI m_URI;
+
+	CTCPConnection m_Connection;
 	CAmikoSettings m_Settings;
-	std::vector<CLinkConfig> m_LinkConfig;
 	bool m_isServerSide;
+
+	//Link configs to choose from (server side only) when a client connects
+	std::vector<CLinkConfig> m_linkConfigs;
+	//The active link config (once known)
+	CLinkConfig m_linkConfig;
+
 	uint32_t m_ProtocolVersion;
 
 	CCriticalSection< std::queue<CBinBuffer> > m_SendQueue;

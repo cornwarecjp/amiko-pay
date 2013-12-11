@@ -276,9 +276,7 @@ void CAmiko::makeMissingComLinks()
 		i != missingLinks.end(); i++)
 			if(i->m_remoteURI != "")
 			{
-				CURI uri(i->m_remoteURI);
-
-				CComLink *link = new CComLink(uri, getSettings(), getLinkConfigs());
+				CComLink *link = new CComLink(*i, getSettings());
 				//TODO: if in the below code an exception occurs, delete the above object
 				link->start();
 				addPendingComLink(link);
