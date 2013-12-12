@@ -73,9 +73,21 @@ public:
 	void stop();
 
 	/*
-	TODO
+	TODO: spec
 	*/
 	CString makeNewLink(const CString &remoteURI="");
+
+	class CLinkStatus : public CLinkConfig
+	{
+	public:
+		CLinkStatus(const CLinkConfig &c) : CLinkConfig(c) {}
+
+		bool m_connected;
+	};
+	/*
+	TODO: spec
+	*/
+	std::vector<CLinkStatus> listLinks() const;
 
 	/*
 	Return value:

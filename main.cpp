@@ -104,6 +104,24 @@ void app(const std::vector<CString> &arguments)
 			CString localURI = amiko.makeNewLink(remoteURI);
 			printf("%s\n", localURI.c_str());
 		}
+		else if(splitInput[0] == "listlinks")
+		{
+			std::vector<CAmiko::CLinkStatus> list = amiko.listLinks();
+			for(size_t i=0; i < list.size(); i++)
+			{
+				CAmiko::CLinkStatus &status = list[i];
+
+				printf("link %ld:\n", long(i+1));
+				printf("  local address: %s\n",
+					getBitcoinAddress(status.m_localKey).c_str());
+				printf("  remote URI: \"%s\"\n",
+					status.m_remoteURI.c_str());
+				printf("  completed: %s\n",
+					status.m_completed ? "true" : "false");
+				printf("  connected: %s\n",
+					status.m_connected ? "true" : "false");
+			}
+		}
 		else if(splitInput[0] == "newkey")
 		{
 			CKey key;
@@ -125,6 +143,8 @@ void app(const std::vector<CString> &arguments)
 				"  Create a new link, and optionally provide it with the link\n"
 				"  URI of the remote party.\n"
 				"  Returns the local URI, which can be given to the remote user.\n"
+				"listlinks\n"
+				"  List all links and their status\n"
 				"newkey:\n"
 				"  Make a new key pair and display its properties.\n"
 				);
