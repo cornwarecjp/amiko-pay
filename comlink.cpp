@@ -427,7 +427,7 @@ void CComLink::exchangeHello()
 		m_linkConfig.m_completed = true;
 
 		//Set the remote URI to the one received from the peer
-		m_linkConfig.m_remoteURI = hello.m_myPreferredURL;
+		m_linkConfig.m_remoteURI = helloReply.m_myPreferredURL;
 
 		if(!helloReply.verifySignature(getRemoteKey()))
 			throw CProtocolError(
