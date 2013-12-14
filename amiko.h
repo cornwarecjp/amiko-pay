@@ -87,12 +87,13 @@ public:
 	public:
 		CLinkStatus(const CLinkConfig &c) : CLinkConfig(c) {}
 
+		CString m_localURI;
 		bool m_connected;
 	};
 	/*
 	TODO: spec
 	*/
-	std::vector<CLinkStatus> listLinks() const;
+	std::vector<CLinkStatus> listLinks();
 
 	/*
 	Return value:

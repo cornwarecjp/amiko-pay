@@ -125,6 +125,8 @@ void app(const std::vector<CString> &arguments)
 				printf("link %ld:\n", long(i+1));
 				printf("  local address: %s\n",
 					getBitcoinAddress(status.m_localKey).c_str());
+				printf("  local URI: \"%s\"\n",
+					status.m_localURI.c_str());
 				printf("  remote URI: \"%s\"\n",
 					status.m_remoteURI.c_str());
 				printf("  completed: %s\n",

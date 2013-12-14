@@ -134,13 +134,16 @@ void CAmiko::setRemoteURI(const CString &localAddress, const CString &remoteURI)
 }
 
 
-std::vector<CAmiko::CLinkStatus> CAmiko::listLinks() const
+std::vector<CAmiko::CLinkStatus> CAmiko::listLinks()
 {
+	CMutexLocker lock(m_Settings);
+
 	std::vector<CLinkStatus> ret;
 
 	for(size_t i=0; i < m_FinLinks.size(); i++)
 	{
 		ret.push_back(m_FinLinks[i]->getLinkConfig());
+		ret.back().m_localURI = m_Settings.m_Value.getLocalURL(ret.back().m_localKey);
 		ret.back().m_connected =
 			m_FinLinks[i]->getReceiver() != NULL;
 	}
