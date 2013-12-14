@@ -32,6 +32,7 @@
 #include "amiko.h"
 #include "timer.h"
 #include "key.h"
+#include "version.h"
 
 CString getInput(CString question="")
 {
@@ -66,7 +67,7 @@ void app(const std::vector<CString> &arguments)
 	printf(
 		"\n"
 		"\n"
-		"Amiko Pay Copyright (C) 2013\n"
+		"Amiko Pay " AMIKO_VERSION " Copyright (C) 2013 - " AMIKO_LASTCOPYRIGHTYEAR "\n"
 		"\n"
 		"Amiko Pay is free software: you can redistribute it and/or modify\n"
 		"it under the terms of the GNU General Public License as published by\n"
