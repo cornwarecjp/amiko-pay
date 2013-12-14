@@ -71,6 +71,23 @@ CFinLink::~CFinLink()
 }
 
 
+void CFinLink::updateLinkConfig(const CLinkConfig &config)
+{
+	//TODO: maybe store multiple URIs?
+	//For now, always overwrite the URI with the last received one
+	if(config.m_remoteURI != "")
+		m_linkConfig.m_remoteURI = config.m_remoteURI;
+
+	if(config.m_completed)
+	{
+		m_linkConfig.m_remoteKey = config.m_remoteKey;
+		m_linkConfig.m_completed = true;
+	}
+
+	save();
+}
+
+
 void CFinLink::sendMessage(const CBinBuffer &message)
 {
 	CMutexLocker lock(m_Inbox);

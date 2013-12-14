@@ -48,7 +48,7 @@ public:
 	void setSerializedBody(const CBinBuffer &data);
 
 	CBinBuffer m_myPublicKey;
-	CString m_myPreferredURL; //currently filled in but not used
+	CString m_myPreferredURL;
 	CString m_yourAddress;
 };
 

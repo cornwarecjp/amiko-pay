@@ -199,7 +199,7 @@ void CAmiko::addOperationalComLink(CComLink *link)
 	{
 		//No corresponding finlink found
 		//This is an application bug: link should never have become operational
-		//Anyway, just delete the link and throw an exception:
+		//Anyway, just delete the link:
 		log("Bug: no finlink found for new comlink; deleted the comlink\n");
 		delete link;
 		return;
@@ -216,6 +216,9 @@ void CAmiko::addOperationalComLink(CComLink *link)
 	//Set receiver in both directions
 	link->setReceiver(finlink);
 	finlink->setReceiver(link);
+
+	//Update linkconfig in finlink
+	finlink->updateLinkConfig(link->getLinkConfig());
 
 	//Move to operational list
 	m_OperationalComLinks.m_Value.push_back(link);

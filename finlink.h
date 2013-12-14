@@ -78,6 +78,12 @@ public:
 	void sendMessage(const CBinBuffer &message);
 
 	/*
+	config:
+	TODO
+	*/
+	void updateLinkConfig(const CLinkConfig &config);
+
+	/*
 	Return value:
 	Reference to properly formed CLinkConfig object
 	Reference lifetime: equal to lifetime of this object

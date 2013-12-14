@@ -371,6 +371,9 @@ void CComLink::exchangeHello()
 		//Also, the link is now completed:
 		m_linkConfig.m_completed = true;
 
+		//Set the remote URI to the one received from the peer
+		m_linkConfig.m_remoteURI = hello.m_myPreferredURL;
+
 		CHelloMessage helloReply;
 		//TODO: remaining fields
 		helloReply.m_source = CRIPEMD160(CSHA256(getLocalKey().getPublicKey()).toBinBuffer());
@@ -422,6 +425,9 @@ void CComLink::exchangeHello()
 
 		m_linkConfig.m_remoteKey.setPublicKey(helloReply.m_myPublicKey);
 		m_linkConfig.m_completed = true;
+
+		//Set the remote URI to the one received from the peer
+		m_linkConfig.m_remoteURI = hello.m_myPreferredURL;
 
 		if(!helloReply.verifySignature(getRemoteKey()))
 			throw CProtocolError(
