@@ -104,6 +104,17 @@ void app(const std::vector<CString> &arguments)
 			CString localURI = amiko.makeNewLink(remoteURI);
 			printf("%s\n", localURI.c_str());
 		}
+		else if(splitInput[0] == "setRemoteURI")
+		{
+			if(splitInput.size() < 3)
+			{
+				printf("Error: setRemoteURI requires 2 arguments; %ld given\n",
+					long(splitInput.size())-1);
+				continue;
+			}
+
+			amiko.setRemoteURI(splitInput[1], splitInput[2]);
+		}
 		else if(splitInput[0] == "listlinks")
 		{
 			std::vector<CAmiko::CLinkStatus> list = amiko.listLinks();
@@ -143,6 +154,8 @@ void app(const std::vector<CString> &arguments)
 				"  Create a new link, and optionally provide it with the link\n"
 				"  URI of the remote party.\n"
 				"  Returns the local URI, which can be given to the remote user.\n"
+				"setRemoteURI localAddress remoteURI:\n"
+				"  Sets the remote URI of the link with the given local address.\n"
 				"listlinks\n"
 				"  List all links and their status\n"
 				"newkey:\n"

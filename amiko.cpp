@@ -120,6 +120,20 @@ CString CAmiko::makeNewLink(const CString &remoteURI)
 }
 
 
+void CAmiko::setRemoteURI(const CString &localAddress, const CString &remoteURI)
+{
+	for(size_t i=0; i < m_FinLinks.size(); i++)
+	{
+		CLinkConfig c = m_FinLinks[i]->getLinkConfig();
+		if(getBitcoinAddress(c.m_localKey) == localAddress)
+		{
+			c.m_remoteURI = remoteURI;
+			m_FinLinks[i]->updateLinkConfig(c);
+		}
+	}
+}
+
+
 std::vector<CAmiko::CLinkStatus> CAmiko::listLinks() const
 {
 	std::vector<CLinkStatus> ret;

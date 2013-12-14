@@ -77,6 +77,11 @@ public:
 	*/
 	CString makeNewLink(const CString &remoteURI="");
 
+	/*
+	TODO: spec
+	*/
+	void setRemoteURI(const CString &localAddress, const CString &remoteURI);
+
 	class CLinkStatus : public CLinkConfig
 	{
 	public:
