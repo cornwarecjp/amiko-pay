@@ -54,7 +54,7 @@ class CFinLinkTest : public CTest
 
 	virtual void run()
 	{
-		CString filename = "./links/16JN1AMdX7h7fb7ZFwXkV8JrtmcntZoJH5";
+		CString filename = "./testlinks/16JN1AMdX7h7fb7ZFwXkV8JrtmcntZoJH5";
 
 		CBinBuffer serialized1;
 		{
