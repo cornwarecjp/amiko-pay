@@ -30,7 +30,7 @@
 #include "messages.h"
 #include "cstring.h"
 #include "exception.h"
-#include "routetable.h"
+//#include "routetable.h"
 
 #include "cominterface.h"
 
@@ -113,7 +113,7 @@ public:
 	//CNotCompletedError
 	void sendOutboundMessage(CMessage &msg);
 
-	CCriticalSection<CRouteTable> m_RouteTable;
+	//CCriticalSection<CRouteTable> m_RouteTable;
 
 protected:
 	/*
@@ -137,7 +137,7 @@ protected:
 	*/
 	void deserialize(const CBinBuffer &data);
 
-	void processRouteInfoMessage(const CRouteInfoMessage *msg);
+	//void processRouteInfoMessage(const CRouteInfoMessage *msg);
 
 	//TODO: spec
 	void sendNackMessage(

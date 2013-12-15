@@ -99,6 +99,7 @@ void CNackMessage::setSerializedBody(const CBinBuffer &data)
 
 
 //=====================================
+/*
 CRouteInfoMessage::~CRouteInfoMessage()
 {}
 
@@ -140,7 +141,7 @@ void CRouteInfoMessage::setSerializedBody(const CBinBuffer &data)
 		m_entries[i].second.m_maxReceive = data.readUint<uint64_t>(pos);
 	}
 }
-
+*/
 //=====================================
 CFinStateMessage::~CFinStateMessage()
 {}

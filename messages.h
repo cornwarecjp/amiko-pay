@@ -27,7 +27,7 @@
 #include <stdint.h>
 
 #include "message.h"
-#include "routetable.h"
+//#include "routetable.h"
 
 /*
 Greeting message sent during initialization.
@@ -98,6 +98,7 @@ public:
 };
 
 
+/*
 class CRouteInfoMessage : public CMessage
 {
 public:
@@ -111,6 +112,7 @@ public:
 
 	std::vector< std::pair<CRIPEMD160, CRouteTableEntry> > m_entries;
 };
+*/
 
 
 class CFinStateMessage : public CMessage

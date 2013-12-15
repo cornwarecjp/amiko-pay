@@ -193,6 +193,7 @@ CBinBuffer CFinLink::serialize()
 	//TODO: transactions
 
 	//Route table
+	/*
 	{
 		CMutexLocker lock(m_RouteTable);
 		CRouteTable &t = m_RouteTable.m_Value;
@@ -213,6 +214,7 @@ CBinBuffer CFinLink::serialize()
 				"It might be possible that neighbors will not be informed "
 				"about the most recent route changes.\n");
 	}
+	*/
 
 	return ret;
 }
@@ -249,6 +251,7 @@ void CFinLink::deserialize(const CBinBuffer &data)
 		//TODO: transactions
 
 		//Route table
+		/*
 		{
 			CMutexLocker lock(m_RouteTable);
 			CRouteTable &t = m_RouteTable.m_Value;
@@ -268,6 +271,7 @@ void CFinLink::deserialize(const CBinBuffer &data)
 
 			t.m_ChangedDestinations.clear();
 		}
+		*/
 	}
 	catch(CBinBuffer::CReadError &e)
 	{
@@ -362,9 +366,11 @@ void CFinLink::processInbox()
 		//Process message contents
 		switch(msg->getTypeID())
 		{
+		/*
 		case CMessage::eRouteInfo:
 			processRouteInfoMessage((const CRouteInfoMessage *)msg);
 			break;
+		*/
 		default:
 			sendNackMessage(
 				CNackMessage::eNonstandardReason,
@@ -399,6 +405,7 @@ void CFinLink::sendOutboundMessage(CMessage &msg)
 }
 
 
+/*
 void CFinLink::processRouteInfoMessage(const CRouteInfoMessage *msg)
 {
 	//TODO: can we completely trust route info of the peer?
@@ -408,6 +415,7 @@ void CFinLink::processRouteInfoMessage(const CRouteInfoMessage *msg)
 		m_RouteTable.m_Value.updateRoute(
 			msg->m_entries[i].first, msg->m_entries[i].second);
 }
+*/
 
 
 void CFinLink::sendNackMessage(

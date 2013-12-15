@@ -46,7 +46,7 @@ class CMessagesTest : public CTest
 		testHelloMessage();
 		testAckMessage();
 		testNackMessage();
-		testRouteInfoMessage();
+		//testRouteInfoMessage();
 		testFinStateMessage();
 	}
 
@@ -137,7 +137,7 @@ class CMessagesTest : public CTest
 		delete endMessage;
 	}
 
-
+	/*
 	void testRouteInfoMessage()
 	{
 		//Construct the message
@@ -198,7 +198,7 @@ class CMessagesTest : public CTest
 		//Delete constructed message
 		delete endMessage;
 	}
-
+	*/
 
 	void testFinStateMessage()
 	{

@@ -40,7 +40,7 @@ CFinRoutingThread::~CFinRoutingThread()
 
 void CFinRoutingThread::threadFunc()
 {
-	initializeRoutingTable();
+	//initializeRoutingTable();
 
 	while(!m_terminate)
 	{
@@ -50,7 +50,7 @@ void CFinRoutingThread::threadFunc()
 			CTimer::sleep(1);
 
 			processIncomingMessages();
-			processRoutingChanges();
+			//processRoutingChanges();
 		}
 		catch(CException &e)
 		{
@@ -68,6 +68,7 @@ void CFinRoutingThread::threadFunc()
 }
 
 
+/*
 void CFinRoutingThread::initializeRoutingTable()
 {
 	//TODO: more efficient memory usage
@@ -112,6 +113,7 @@ void CFinRoutingThread::initializeRoutingTable()
 
 	sendRoutingChanges();
 }
+*/
 
 
 void CFinRoutingThread::processIncomingMessages()
@@ -121,6 +123,7 @@ void CFinRoutingThread::processIncomingMessages()
 }
 
 
+/*
 void CFinRoutingThread::processRoutingChanges()
 {
 	//All destinations changed by all peers
@@ -193,4 +196,5 @@ void CFinRoutingThread::sendRoutingChanges()
 	//since we've sent the update to all peers
 	m_RouteTable.m_ChangedDestinations.clear();
 }
+*/
 
