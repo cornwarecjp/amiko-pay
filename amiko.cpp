@@ -55,6 +55,26 @@ CAmiko::~CAmiko()
 {
 	stop();
 
+	for(size_t i=0; i < m_FinLinks.size(); i++)
+		delete m_FinLinks[i];
+	m_FinLinks.clear();
+}
+
+
+void CAmiko::start()
+{
+	m_ListenerThread.start();
+	m_MakerThread.start();
+	m_FinRoutingThread.start();
+}
+
+
+void CAmiko::stop()
+{
+	m_ListenerThread.stop();
+	m_MakerThread.stop();
+	m_FinRoutingThread.stop();
+
 	{
 		CMutexLocker lock(m_PendingComLinks);
 		for(std::list<CComLink *>::iterator i=m_PendingComLinks.m_Value.begin();
@@ -78,26 +98,6 @@ CAmiko::~CAmiko()
 		}
 		m_OperationalComLinks.m_Value.clear();
 	}
-
-	for(size_t i=0; i < m_FinLinks.size(); i++)
-		delete m_FinLinks[i];
-	m_FinLinks.clear();
-}
-
-
-void CAmiko::start()
-{
-	m_ListenerThread.start();
-	m_MakerThread.start();
-	m_FinRoutingThread.start();
-}
-
-
-void CAmiko::stop()
-{
-	m_ListenerThread.stop();
-	m_MakerThread.stop();
-	m_FinRoutingThread.stop();
 }
 
 
