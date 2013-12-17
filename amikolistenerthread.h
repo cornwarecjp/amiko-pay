@@ -1,5 +1,5 @@
 /*
-    comlistenerthread.h
+    amikolistenerthread.h
     Copyright (C) 2013 by CJP
 
     This file is part of Amiko Pay.
@@ -18,8 +18,8 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef COMLISTENERTHREAD_H
-#define COMLISTENERTHREAD_H
+#ifndef AMIKOLISTENERTHREAD_H
+#define AMIKOLISTENERTHREAD_H
 
 #include "tcplistener.h"
 
@@ -27,7 +27,7 @@
 
 class CAmiko;
 
-class CComListenerThread : public CThread
+class CAmikoListenerThread : public CThread
 {
 public:
 	/*
@@ -49,9 +49,9 @@ public:
 	Exceptions:
 	CTCPListener::CConnectException
 	*/
-	CComListenerThread(CAmiko *amiko, const CString &service);
+	CAmikoListenerThread(CAmiko *amiko, const CString &service);
 
-	~CComListenerThread();
+	~CAmikoListenerThread();
 
 
 	void threadFunc();

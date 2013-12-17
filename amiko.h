@@ -29,7 +29,7 @@
 #include "amikosettings.h"
 #include "comlink.h"
 #include "finlink.h"
-#include "comlistenerthread.h"
+#include "amikolistenerthread.h"
 #include "commakerthread.h"
 #include "finroutingthread.h"
 
@@ -169,7 +169,7 @@ private:
 
 	CCriticalSection<CAmikoSettings> m_Settings;
 
-	CComListenerThread m_ListenerThread;
+	CAmikoListenerThread m_ListenerThread;
 	CComMakerThread m_MakerThread;
 	CFinRoutingThread m_FinRoutingThread;
 

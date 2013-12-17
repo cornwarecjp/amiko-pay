@@ -1,5 +1,5 @@
 /*
-    comlistenerthread.cpp
+    amikolistenerthread.cpp
     Copyright (C) 2013 by CJP
 
     This file is part of Amiko Pay.
@@ -24,22 +24,22 @@
 #include "log.h"
 #include "comlink.h"
 
-#include "comlistenerthread.h"
+#include "amikolistenerthread.h"
 
 
-CComListenerThread::CComListenerThread(CAmiko *amiko, const CString &service) :
+CAmikoListenerThread::CAmikoListenerThread(CAmiko *amiko, const CString &service) :
 	m_Amiko(amiko),
 	m_Listener(service)
 {
 }
 
 
-CComListenerThread::~CComListenerThread()
+CAmikoListenerThread::~CAmikoListenerThread()
 {
 }
 
 
-void CComListenerThread::threadFunc()
+void CAmikoListenerThread::threadFunc()
 {
 	while(!m_terminate)
 	{
@@ -52,7 +52,7 @@ void CComListenerThread::threadFunc()
 		catch(CException &e)
 		{
 			log(CString::format(
-				"CComListenerThread::threadFunc(): Caught application exception: %s\n",
+				"CAmikoListenerThread::threadFunc(): Caught application exception: %s\n",
 				256, e.what()));
 			//TODO: maybe app cleanup?
 			//e.g. with atexit, on_exit
@@ -61,7 +61,7 @@ void CComListenerThread::threadFunc()
 		catch(std::exception &e)
 		{
 			log(CString::format(
-				"CComListenerThread::threadFunc(): Caught standard library exception: %s\n",
+				"CAmikoListenerThread::threadFunc(): Caught standard library exception: %s\n",
 				256, e.what()));
 			//TODO: maybe app cleanup?
 			//e.g. with atexit, on_exit
@@ -74,7 +74,7 @@ void CComListenerThread::threadFunc()
 }
 
 
-void CComListenerThread::acceptNewConnections()
+void CAmikoListenerThread::acceptNewConnections()
 {
 	try
 	{
