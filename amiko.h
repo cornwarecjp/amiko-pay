@@ -29,6 +29,7 @@
 #include "amikosettings.h"
 #include "comlink.h"
 #include "finlink.h"
+#include "paylink.h"
 #include "amikolistenerthread.h"
 #include "commakerthread.h"
 #include "finroutingthread.h"
@@ -156,7 +157,28 @@ public:
 		return m_PendingComLinks.m_Value.size();
 	}
 
+	/*
+	link:
+	Pointer to properly formed CPayLink object (NOT CHECKED)
+	Pointer ownership: passed to this object
+	PayLink thread is already started
 
+	Exceptions:
+	CMutex::CError
+	*/
+	void addPayLink(CPayLink *link);
+
+	/*
+	Exceptions:
+	CMutex::CError
+	*/
+	inline size_t getNumPayLinks()
+	{
+		CMutexLocker lock(m_PayLinks);
+		return m_PayLinks.m_Value.size();
+	}
+
+	//TODO: protect with mutex!!
 	std::vector<CFinLink *> m_FinLinks;
 
 private:
@@ -175,6 +197,7 @@ private:
 
 	CCriticalSection< std::list<CComLink *> > m_PendingComLinks;
 	CCriticalSection< std::list<CComLink *> > m_OperationalComLinks;
+	CCriticalSection< std::list<CPayLink *> > m_PayLinks;
 };
 
 #endif

@@ -101,6 +101,17 @@ void CAmiko::stop()
 		}
 		m_OperationalComLinks.m_Value.clear();
 	}
+
+	{
+		CMutexLocker lock(m_PayLinks);
+		for(std::list<CPayLink *>::iterator i=m_PayLinks.m_Value.begin();
+			i != m_PayLinks.m_Value.end(); i++)
+		{
+			(*i)->stop();
+			delete (*i);
+		}
+		m_PayLinks.m_Value.clear();
+	}
 }
 
 
@@ -321,6 +332,13 @@ void CAmiko::makeMissingComLinks()
 			}
 
 	log("End making missing com links\n");
+}
+
+
+void CAmiko::addPayLink(CPayLink *link)
+{
+	CMutexLocker lock(m_PayLinks);
+	m_PayLinks.m_Value.push_back(link);
 }
 
 

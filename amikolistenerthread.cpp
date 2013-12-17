@@ -23,6 +23,7 @@
 #include "timer.h"
 #include "log.h"
 #include "comlink.h"
+#include "paylink.h"
 
 #include "amikolistenerthread.h"
 
@@ -88,6 +89,22 @@ void CAmikoListenerThread::acceptNewConnections()
 			//TODO: if in the below code an exception occurs, delete the above object
 			link->start(); //start comlink thread
 			m_Amiko->addPendingComLink(link);
+		}
+	}
+	catch(CTCPConnection::CTimeoutException &e)
+	{}
+
+	try
+	{
+		//TODO:
+		// Limit number of pending payments
+		//TODO: make configurable (for very large shops)
+		while(m_Amiko->getNumPayLinks() < 100)
+		{
+			CPayLink *link = new CPayLink(m_paymentListener);
+			//TODO: if in the below code an exception occurs, delete the above object
+			link->start(); //start payment link thread
+			m_Amiko->addPayLink(link);
 		}
 	}
 	catch(CTCPConnection::CTimeoutException &e)
