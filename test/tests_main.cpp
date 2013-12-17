@@ -35,6 +35,14 @@ std::vector<CTest *> &getTestList()
 	return testList;
 }
 
+
+std::vector<CFailure> &getFailureList()
+{
+	static std::vector<CFailure> failList;
+	return failList;
+}
+
+
 int main(int argc, char *argv[])
 {
 	//Commandline options
@@ -75,6 +83,14 @@ int main(int argc, char *argv[])
 		count++;
 		if(n > 0 && count >= n) break;
 	}
+
+	std::vector<CFailure> &failures = getFailureList();
+	printf("\n\n%ld failures\n\n", long(failures.size()));
+
+	for(std::size_t i=0; i < failures.size(); i++)
+		printf("  Failed in test \"%s\": %s\n",
+			failures[i].m_testName.c_str(),
+			failures[i].m_description.c_str());
 
 	return 0;
 }

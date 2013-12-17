@@ -46,7 +46,7 @@ void clearDirectory(const CString &dir)
 
 class CAmikoTest : public CTest
 {
-	virtual const char *getName()
+	virtual const char *getName() const
 		{return "amiko";}
 
 	virtual void run()

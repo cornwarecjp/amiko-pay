@@ -34,7 +34,7 @@ class CMessagesTest : public CTest
 	CKey m_source, m_destination;
 
 
-	virtual const char *getName()
+	virtual const char *getName() const
 		{return "messages";	}
 
 

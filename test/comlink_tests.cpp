@@ -64,7 +64,7 @@ public:
 
 class CComLinkTest : public CTest
 {
-	virtual const char *getName()
+	virtual const char *getName() const
 		{return "comlink";}
 
 	virtual void run()

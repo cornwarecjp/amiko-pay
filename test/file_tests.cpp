@@ -30,7 +30,7 @@ TODO: document and expand
 */
 class CFileTest : public CTest
 {
-	virtual const char *getName()
+	virtual const char *getName() const
 		{return "file";}
 
 	virtual void run()

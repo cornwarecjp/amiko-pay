@@ -24,11 +24,22 @@
 
 class CTest;
 
+class CFailure
+{
+public:
+	CFailure(const CString &testName, const CString &description) :
+		m_testName(testName), m_description(description)
+		{}
+
+	CString m_testName, m_description;
+};
+
 /*
 TODO: document
 */
 //implemented in tests_main.cpp
 std::vector<CTest *> &getTestList();
+std::vector<CFailure> &getFailureList();
 
 /*
 TODO: document
@@ -42,7 +53,7 @@ public:
 		getTestList().push_back(this);
 	}
 
-	virtual const char *getName()=0;
+	virtual const char *getName() const=0;
 	virtual void run()=0;
 
 
@@ -51,9 +62,14 @@ protected:
 	inline void test(const char *description, bool result) const
 	{
 		if(result)
-			{printf("%s: OK\n", description);}
+		{
+			printf("%s: OK\n", description);
+		}
 		else
-			{printf("%s: FAIL\n", description);}
+		{
+			printf("%s: FAIL\n", description);
+			getFailureList().push_back(CFailure(getName(), description));
+		}
 	}
 
 	template<class T>

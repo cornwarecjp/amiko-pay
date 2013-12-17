@@ -36,7 +36,7 @@ TODO: document and expand
 */
 class CTCPConnectionTest : public CTest
 {
-	virtual const char *getName()
+	virtual const char *getName() const
 		{return "tcpconnection";}
 
 	virtual void run()

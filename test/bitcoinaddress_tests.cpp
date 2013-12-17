@@ -28,7 +28,7 @@ TODO: document and expand
 */
 class CBitcoinAddressTest : public CTest
 {
-	virtual const char *getName()
+	virtual const char *getName() const
 		{return "bitcoinaddress";}
 
 	virtual void run()

@@ -38,7 +38,7 @@ TODO: document and expand
 */
 class CUriParserTest : public CTest
 {
-	virtual const char *getName()
+	virtual const char *getName() const
 		{return "uri";}
 
 	virtual void run()
