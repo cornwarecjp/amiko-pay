@@ -27,9 +27,12 @@
 #include "amikolistenerthread.h"
 
 
-CAmikoListenerThread::CAmikoListenerThread(CAmiko *amiko, const CString &service) :
+CAmikoListenerThread::CAmikoListenerThread(CAmiko *amiko,
+	const CString &paymentService, const CString &linkService) :
+
 	m_Amiko(amiko),
-	m_Listener(service)
+	m_paymentListener(paymentService),
+	m_linkListener(linkService)
 {
 }
 
@@ -81,7 +84,7 @@ void CAmikoListenerThread::acceptNewConnections()
 		// Limit number of pending links
 		while(m_Amiko->getNumPendingComLinks() < 100)
 		{
-			CComLink *link = new CComLink(m_Listener, m_Amiko->getSettings(), m_Amiko->getLinkConfigs());
+			CComLink *link = new CComLink(m_linkListener, m_Amiko->getSettings(), m_Amiko->getLinkConfigs());
 			//TODO: if in the below code an exception occurs, delete the above object
 			link->start(); //start comlink thread
 			m_Amiko->addPendingComLink(link);

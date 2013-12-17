@@ -38,7 +38,11 @@ public:
 	Note: pointed object does not have to be fully initialized
 	(constructor may not be finished)
 
-	service:
+	paymentService:
+	Reference to properly formed CString object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	linkService:
 	Reference to properly formed CString object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 
@@ -49,7 +53,8 @@ public:
 	Exceptions:
 	CTCPListener::CConnectException
 	*/
-	CAmikoListenerThread(CAmiko *amiko, const CString &service);
+	CAmikoListenerThread(CAmiko *amiko,
+		const CString &paymentService, const CString &linkService);
 
 	~CAmikoListenerThread();
 
@@ -69,7 +74,7 @@ private:
 
 
 	CAmiko *m_Amiko;
-	CTCPListener m_Listener;
+	CTCPListener m_paymentListener, m_linkListener;
 };
 
 #include "amiko.h"

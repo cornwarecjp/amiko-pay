@@ -28,7 +28,10 @@
 
 CAmiko::CAmiko(const CAmikoSettings &settings) :
 	m_Settings(settings),
-	m_ListenerThread(this, m_Settings.m_Value.m_linkPortNumber),
+	m_ListenerThread(
+		this,
+		m_Settings.m_Value.m_paymentPortNumber,
+		m_Settings.m_Value.m_linkPortNumber),
 	m_MakerThread(this),
 	m_FinRoutingThread(this)
 {
