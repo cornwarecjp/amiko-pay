@@ -29,9 +29,9 @@
 #include "settingssource.h"
 #include "exception.h"
 
-//TODO: choose a friendly default port
-#define AMIKO_DEFAULT_PORT "12345"
-
+//TODO: choose friendly default ports
+#define AMIKO_DEFAULT_LINK_PORT "12345"
+#define AMIKO_DEFAULT_PAYMENT_PORT "12346"
 
 //TODO: find a better place for this class
 class CLinkConfig
@@ -78,19 +78,33 @@ public:
 	*/
 	void loadFrom(const CSettingsSource &src);
 
-	CString m_localHostname;
-	CString m_portNumber;
+	CString m_paymentHostname;
+	CString m_paymentPortNumber;
+
+	CString m_linkHostname;
+	CString m_linkPortNumber;
 
 	//public key, or empty if there is no meeting point
 	CBinBuffer m_MeetingPointPubKey;
 
 	CString m_linksDir;
 
-	//TODO: spec
-	inline CString getLocalURL(const CKey &localKey)
+	/*
+	localKey:
+	Reference to properly formed CKey object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+	Contains a public key (CHECKED)
+
+	Return value:
+	CString object
+
+	Exceptions:
+	CKey::CKeyError
+	*/
+	inline CString getLocalLinkURL(const CKey &localKey)
 	{
 		return CString("amikolink://") +
-			m_localHostname + ":" + m_portNumber + "/" +
+			m_linkHostname + ":" + m_linkPortNumber + "/" +
 			getBitcoinAddress(localKey);
 	}
 };

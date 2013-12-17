@@ -142,7 +142,7 @@ void app(const std::vector<CString> &arguments)
 			key.makeNewKey();
 
 			printf("localPrivateKey = %s\n", key.getPrivateKey().hexDump().c_str());
-			printf("remoteURI = %s\n", amiko.getSettings().getLocalURL(key).c_str());
+			printf("remoteURI = %s\n", amiko.getSettings().getLocalLinkURL(key).c_str());
 			printf("remotePublicKey = %s\n", key.getPublicKey().hexDump().c_str());
 		}
 		else if(splitInput[0] == "help")

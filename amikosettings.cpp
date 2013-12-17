@@ -25,8 +25,10 @@
 
 CAmikoSettings::CAmikoSettings() :
 	//defaults
-	m_localHostname(""),
-	m_portNumber(AMIKO_DEFAULT_PORT),
+	m_paymentHostname(AMIKO_DEFAULT_PAYMENT_PORT),
+	m_paymentPortNumber(""),
+	m_linkHostname(""),
+	m_linkPortNumber(AMIKO_DEFAULT_LINK_PORT),
 	m_MeetingPointPubKey(),
 	m_linksDir(".")
 {
@@ -35,10 +37,15 @@ CAmikoSettings::CAmikoSettings() :
 
 void CAmikoSettings::loadFrom(const CSettingsSource &src)
 {
-	m_localHostname = src.getValue("receiveConnections", "hostname",
-		m_localHostname);
-	m_portNumber = src.getValue("receiveConnections", "portNumber",
-		m_portNumber);
+	m_paymentHostname = src.getValue("receivePayments", "hostname",
+		m_paymentHostname);
+	m_paymentPortNumber = src.getValue("receivePayments", "portNumber",
+		m_paymentPortNumber);
+
+	m_linkHostname = src.getValue("receiveLinks", "hostname",
+		m_linkHostname);
+	m_linkPortNumber = src.getValue("receiveLinks", "portNumber",
+		m_linkPortNumber);
 
 	CString meetingPointPubKeyStr = src.getValue("meetingPoint", "publicKey",
 		m_MeetingPointPubKey.hexDump());

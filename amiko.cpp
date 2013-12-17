@@ -28,7 +28,7 @@
 
 CAmiko::CAmiko(const CAmikoSettings &settings) :
 	m_Settings(settings),
-	m_ListenerThread(this, m_Settings.m_Value.m_portNumber),
+	m_ListenerThread(this, m_Settings.m_Value.m_linkPortNumber),
 	m_MakerThread(this),
 	m_FinRoutingThread(this)
 {
@@ -116,7 +116,7 @@ CString CAmiko::makeNewLink(const CString &remoteURI)
 		getBitcoinAddress(config.m_localKey);
 	m_FinLinks.push_back(new CFinLink(filename, config));
 
-	return m_Settings.m_Value.getLocalURL(config.m_localKey);
+	return m_Settings.m_Value.getLocalLinkURL(config.m_localKey);
 }
 
 
@@ -143,7 +143,7 @@ std::vector<CAmiko::CLinkStatus> CAmiko::listLinks()
 	for(size_t i=0; i < m_FinLinks.size(); i++)
 	{
 		ret.push_back(m_FinLinks[i]->getLinkConfig());
-		ret.back().m_localURI = m_Settings.m_Value.getLocalURL(ret.back().m_localKey);
+		ret.back().m_localURI = m_Settings.m_Value.getLocalLinkURL(ret.back().m_localKey);
 		ret.back().m_connected =
 			m_FinLinks[i]->getReceiver() != NULL;
 	}

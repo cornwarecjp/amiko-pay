@@ -30,7 +30,7 @@
 
 CComLink::CComLink(const CLinkConfig &config, const CAmikoSettings &settings) :
 	m_URI(config.m_remoteURI),
-	m_Connection(m_URI.getHost(), m_URI.getPort(AMIKO_DEFAULT_PORT)),
+	m_Connection(m_URI.getHost(), m_URI.getPort(AMIKO_DEFAULT_LINK_PORT)),
 	m_Settings(settings),
 	m_isServerSide(false),
 	m_linkConfig(config),
@@ -379,7 +379,7 @@ void CComLink::exchangeHello()
 		helloReply.m_source = CRIPEMD160(CSHA256(getLocalKey().getPublicKey()).toBinBuffer());
 		helloReply.m_destination = CRIPEMD160(CSHA256(getRemoteKey().getPublicKey()).toBinBuffer());
 		helloReply.m_myPublicKey = getLocalKey().getPublicKey();
-		helloReply.m_myPreferredURL = m_Settings.getLocalURL(getLocalKey());
+		helloReply.m_myPreferredURL = m_Settings.getLocalLinkURL(getLocalKey());
 		helloReply.m_yourAddress = getBitcoinAddress(helloReply.m_destination);
 
 		helloReply.sign(getLocalKey());
@@ -393,7 +393,7 @@ void CComLink::exchangeHello()
 		//TODO: remaining fields
 		hello.m_source = CRIPEMD160(CSHA256(getLocalKey().getPublicKey()).toBinBuffer());
 		hello.m_myPublicKey = getLocalKey().getPublicKey();
-		hello.m_myPreferredURL = m_Settings.getLocalURL(getLocalKey());
+		hello.m_myPreferredURL = m_Settings.getLocalLinkURL(getLocalKey());
 		hello.m_yourAddress = m_URI.getPath();
 		hello.sign(getLocalKey());
 		sendMessageDirect(hello.serialize());

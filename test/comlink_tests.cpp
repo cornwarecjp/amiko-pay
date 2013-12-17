@@ -70,10 +70,10 @@ class CComLinkTest : public CTest
 	virtual void run()
 	{
 		CAmikoSettings settings1, settings2;
-		settings1.m_localHostname = "localhost";
-		settings2.m_localHostname = "localhost";
-		settings1.m_portNumber = AMIKO_DEFAULT_PORT;
-		settings2.m_portNumber = AMIKO_DEFAULT_PORT;
+		settings1.m_linkHostname = "localhost";
+		settings2.m_linkHostname = "localhost";
+		settings1.m_linkPortNumber = AMIKO_DEFAULT_LINK_PORT;
+		settings2.m_linkPortNumber = AMIKO_DEFAULT_LINK_PORT;
 
 		CLinkConfig link1;
 		std::vector<CLinkConfig> linkConfig2;
@@ -84,12 +84,12 @@ class CComLinkTest : public CTest
 		link2.m_localKey.makeNewKey();
 		link1.m_remoteKey.setPublicKey(link2.m_localKey.getPublicKey());
 		link2.m_remoteKey.setPublicKey(link1.m_localKey.getPublicKey());
-		link1.m_remoteURI = settings2.getLocalURL(link2.m_localKey);
+		link1.m_remoteURI = settings2.getLocalLinkURL(link2.m_localKey);
 		link1.m_completed = true;
 		link2.m_completed = true;
 
 		//Start listening at TCP port
-		CTCPListener listener(settings2.m_portNumber);
+		CTCPListener listener(settings2.m_linkPortNumber);
 
 		//Connect to TCP port
 		CComLink *c1 = new CComLink(link1, settings1);
