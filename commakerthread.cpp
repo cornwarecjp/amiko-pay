@@ -45,9 +45,9 @@ void CComMakerThread::threadFunc()
 		//every iteration takes 1 s
 		CTimer::sleep(1000);
 
-		//once every 60 iterations, we try again
+		//once every 10 iterations, we try again
 		//TODO: randomize, to reduce collision risk
-		count = (count+1) % 60;
+		count = (count+1) % 10;
 	}
 }
 
