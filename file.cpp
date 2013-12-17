@@ -87,3 +87,13 @@ void CFile::rename(const CString &from, const CString &to)
 }
 
 
+void CFile::remove(const CString &path)
+{
+	if(::remove(path.c_str()) != 0)
+		throw CError(CString::format(
+			"ERROR while removing %s",
+			1024, path.c_str()
+			));	
+}
+
+

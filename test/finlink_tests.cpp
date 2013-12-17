@@ -21,8 +21,6 @@
 #include <cstdio>
 #include <vector>
 
-#include "amikosettings.h"
-
 #include "finlink.h"
 
 #include "test.h"

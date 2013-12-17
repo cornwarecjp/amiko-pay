@@ -108,6 +108,18 @@ public:
 
 
 	/*
+	path:
+	Reference to properly formed std::string object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Removes a file
+
+	Exceptions:
+	CError
+	*/
+	static void remove(const CString &path);
+
+	/*
 	File pointer to an open file,
 	or NULL if the file is not open.
 	*/
