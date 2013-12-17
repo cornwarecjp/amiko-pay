@@ -91,7 +91,7 @@ public:
 
 	/*
 	This object:
-	Contains a public key (NOT CHECKED/TODO)
+	Contains a public key (CHECKED/TODO)
 
 	Return value:
 	CBinBuffer object

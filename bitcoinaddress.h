@@ -25,18 +25,63 @@
 #include "sha256.h"
 #include "ripemd160.h"
 
+/*
+publicKey:
+Reference to properly formed CRIPEMD160 object (NOT CHECKED)
+Reference lifetime: at least until the end of this function
+
+Return value:
+CString object
+
+Exceptions:
+none
+*/
 CString getBitcoinAddress(const CRIPEMD160 &address);
 
+/*
+publicKey:
+Reference to properly formed CSHA256 object (NOT CHECKED)
+Reference lifetime: at least until the end of this function
+
+Return value:
+CString object
+
+Exceptions:
+none
+*/
 inline CString getBitcoinAddress(const CSHA256 &hashedPublicKey)
 {
 	return getBitcoinAddress(CRIPEMD160(hashedPublicKey.toBinBuffer()));
 }
 
+/*
+publicKey:
+Reference to properly formed CBinBuffer object (NOT CHECKED)
+Reference lifetime: at least until the end of this function
+
+Return value:
+CString object
+
+Exceptions:
+none
+*/
 inline CString getBitcoinAddress(const CBinBuffer &publicKey)
 {
 	return getBitcoinAddress(CSHA256(publicKey));
 }
 
+/*
+key:
+Reference to properly formed CKey object (NOT CHECKED)
+Reference lifetime: at least until the end of this function
+Contains a public key (CHECKED)
+
+Return value:
+CString object
+
+Exceptions:
+CKey::CKeyError
+*/
 inline CString getBitcoinAddress(const CKey &key)
 {
 	return getBitcoinAddress(key.getPublicKey());
