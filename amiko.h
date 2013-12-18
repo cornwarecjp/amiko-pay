@@ -181,6 +181,8 @@ public:
 	//TODO: protect with mutex!!
 	std::vector<CFinLink *> m_FinLinks;
 
+	CCriticalSection< std::list<CPayLink *> > m_PayLinks;
+
 private:
 
 	//TODO: spec
@@ -197,7 +199,6 @@ private:
 
 	CCriticalSection< std::list<CComLink *> > m_PendingComLinks;
 	CCriticalSection< std::list<CComLink *> > m_OperationalComLinks;
-	CCriticalSection< std::list<CPayLink *> > m_PayLinks;
 };
 
 #endif
