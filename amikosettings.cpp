@@ -25,8 +25,7 @@
 
 CAmikoSettings::CAmikoSettings() :
 	//defaults
-	m_paymentHostname(AMIKO_DEFAULT_PAYMENT_PORT),
-	m_paymentPortNumber(""),
+	m_paymentPortNumber(AMIKO_DEFAULT_PAYMENT_PORT),
 	m_linkHostname(""),
 	m_linkPortNumber(AMIKO_DEFAULT_LINK_PORT),
 	m_MeetingPointPubKey(),
@@ -37,8 +36,6 @@ CAmikoSettings::CAmikoSettings() :
 
 void CAmikoSettings::loadFrom(const CSettingsSource &src)
 {
-	m_paymentHostname = src.getValue("receivePayments", "hostname",
-		m_paymentHostname);
 	m_paymentPortNumber = src.getValue("receivePayments", "portNumber",
 		m_paymentPortNumber);
 

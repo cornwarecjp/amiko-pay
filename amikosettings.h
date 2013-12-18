@@ -78,7 +78,6 @@ public:
 	*/
 	void loadFrom(const CSettingsSource &src);
 
-	CString m_paymentHostname;
 	CString m_paymentPortNumber;
 
 	CString m_linkHostname;
