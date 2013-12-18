@@ -110,7 +110,9 @@ void app(const std::vector<CString> &arguments)
 		{
 			CHECKNUMARGS(1)
 			CString paymentURL = splitInput[1];
-			CPayLink link(CURI(paymentURL));
+			printf("start\n");
+			CPayLink link = CURI(paymentURL);
+			printf("end\n");
 			//TODO: implement payment
 		}
 		else if(splitInput[0] == "newlink")
