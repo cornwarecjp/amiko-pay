@@ -33,6 +33,7 @@
 #include "timer.h"
 #include "key.h"
 #include "version.h"
+#include "paylink.h"
 
 CString getInput(CString question="")
 {
@@ -109,6 +110,7 @@ void app(const std::vector<CString> &arguments)
 		{
 			CHECKNUMARGS(1)
 			CString paymentURL = splitInput[1];
+			CPayLink link(CURI(paymentURL));
 			//TODO: implement payment
 		}
 		else if(splitInput[0] == "newlink")

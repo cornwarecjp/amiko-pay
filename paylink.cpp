@@ -18,17 +18,29 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "amikosettings.h"
+
 #include "paylink.h"
 
 
 CPayLink::CPayLink(const CTCPListener &listener) :
-	m_Connection(listener)
+	m_connection(listener),
+	m_transactionID(0)
 {
 }
+
+
+CPayLink::CPayLink(const CURI &paymentURL) :
+	m_connection(paymentURL.getHost(), paymentURL.getPort(AMIKO_DEFAULT_PAYMENT_PORT)),
+	m_transactionID(paymentURL.getPath().parseAsDecimalInteger())
+{
+}
+
 
 CPayLink::~CPayLink()
 {
 }
+
 
 void CPayLink::threadFunc()
 {

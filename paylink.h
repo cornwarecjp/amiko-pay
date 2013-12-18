@@ -21,9 +21,15 @@
 #ifndef PAYLINK_H
 #define PAYLINK_H
 
+#include <stdint.h>
+
 #include "tcpconnection.h"
 #include "cthread.h"
 
+#include "uriparser.h"
+
+
+typedef uint32_t transactionID_t;
 
 /*
 A PayLink object received payments from a remote payer.
@@ -47,12 +53,28 @@ public:
 	*/
 	CPayLink(const CTCPListener &listener);
 
+	/*
+	paymentURL:
+	Reference to properly formed CURI object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Constructed object:
+	TODO
+
+	Exceptions:
+	CTCPConnection::CConnectException
+	CURI::CNotFound
+	CString::CFormatException
+	*/
+	CPayLink(const CURI &paymentURL);
+
 	~CPayLink();
 
 	void threadFunc();
 
 private:
-	CTCPConnection m_Connection;
+	CTCPConnection m_connection;
+	transactionID_t m_transactionID;
 };
 
 #endif

@@ -22,6 +22,7 @@
 #include "bitcoinaddress.h"
 #include "pointerowner.h"
 #include "uriparser.h"
+#include "amikosettings.h"
 
 #include "comlink.h"
 
