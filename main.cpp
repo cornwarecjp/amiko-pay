@@ -85,6 +85,15 @@ void app(const std::vector<CString> &arguments)
 		"Enter \"help\" for a list of commands.\n"
 		);
 
+#define CHECKNUMARGS(n) \
+	if(splitInput.size() < ((n)+1)) \
+	{ \
+		printf("Error: setRemoteURI requires %ld arguments; %ld given\n", \
+			long(n), long(splitInput.size())-1); \
+		continue; \
+	}
+
+
 	while(true)
 	{
 		CString input = getInput("> ");
@@ -95,6 +104,12 @@ void app(const std::vector<CString> &arguments)
 		if(splitInput[0] == "quit" || splitInput[0] == "exit")
 		{
 			break;
+		}
+		else if(splitInput[0] == "pay")
+		{
+			CHECKNUMARGS(1)
+			CString paymentURL = splitInput[1];
+			//TODO: implement payment
 		}
 		else if(splitInput[0] == "newlink")
 		{
@@ -107,13 +122,7 @@ void app(const std::vector<CString> &arguments)
 		}
 		else if(splitInput[0] == "setremoteuri")
 		{
-			if(splitInput.size() < 3)
-			{
-				printf("Error: setRemoteURI requires 2 arguments; %ld given\n",
-					long(splitInput.size())-1);
-				continue;
-			}
-
+			CHECKNUMARGS(2)
 			amiko.setRemoteURI(splitInput[1], splitInput[2]);
 		}
 		else if(splitInput[0] == "listlinks")
@@ -153,6 +162,8 @@ void app(const std::vector<CString> &arguments)
 				"  Terminate application.\n"
 				"help:\n"
 				"  Display this message.\n"
+				"pay [paymentURL]:\n"
+				"  Perform the payment indicated by paymentURL.\n"
 				"newlink [remoteURI]:\n"
 				"  Create a new link, and optionally provide it with the link\n"
 				"  URI of the remote party.\n"
