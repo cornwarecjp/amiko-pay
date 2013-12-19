@@ -49,6 +49,95 @@ CString getInput(CString question="")
 }
 
 
+void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
+{
+#define CHECKNUMARGS(n) \
+	if(splitInput.size() < ((n)+1)) \
+	{ \
+		printf("Error: setRemoteURI requires %ld arguments; %ld given\n", \
+			long(n), long(splitInput.size())-1); \
+		return; \
+	}
+
+	if(splitInput[0] == "pay")
+	{
+		CHECKNUMARGS(1)
+		CString paymentURL = splitInput[1];
+		CPayLink link = CURI(paymentURL);
+		//TODO: implement payment
+	}
+	else if(splitInput[0] == "newlink")
+	{
+		CString remoteURI;
+		if(splitInput.size() >= 2)
+			remoteURI = splitInput[1];
+
+		CString localURI = amiko.makeNewLink(remoteURI);
+		printf("%s\n", localURI.c_str());
+	}
+	else if(splitInput[0] == "setremoteuri")
+	{
+		CHECKNUMARGS(2)
+		amiko.setRemoteURI(splitInput[1], splitInput[2]);
+	}
+	else if(splitInput[0] == "listlinks")
+	{
+		std::vector<CAmiko::CLinkStatus> list = amiko.listLinks();
+		for(size_t i=0; i < list.size(); i++)
+		{
+			CAmiko::CLinkStatus &status = list[i];
+
+			printf("link %ld:\n", long(i+1));
+			printf("  local address: %s\n",
+				getBitcoinAddress(status.m_localKey).c_str());
+			printf("  local URI: \"%s\"\n",
+				status.m_localURI.c_str());
+			printf("  remote URI: \"%s\"\n",
+				status.m_remoteURI.c_str());
+			printf("  completed: %s\n",
+				status.m_completed ? "true" : "false");
+			printf("  connected: %s\n",
+				status.m_connected ? "true" : "false");
+		}
+	}
+	else if(splitInput[0] == "newkey")
+	{
+		CKey key;
+		key.makeNewKey();
+
+		printf("localPrivateKey = %s\n", key.getPrivateKey().hexDump().c_str());
+		printf("remoteURI = %s\n", amiko.getSettings().getLocalLinkURL(key).c_str());
+		printf("remotePublicKey = %s\n", key.getPublicKey().hexDump().c_str());
+	}
+	else if(splitInput[0] == "help")
+	{
+		printf(
+			"exit:\n"
+			"quit:\n"
+			"  Terminate application.\n"
+			"help:\n"
+			"  Display this message.\n"
+			"pay [paymentURL]:\n"
+			"  Perform the payment indicated by paymentURL.\n"
+			"newlink [remoteURI]:\n"
+			"  Create a new link, and optionally provide it with the link\n"
+			"  URI of the remote party.\n"
+			"  Returns the local URI, which can be given to the remote user.\n"
+			"setremoteuri localAddress remoteURI:\n"
+			"  Sets the remote URI of the link with the given local address.\n"
+			"listlinks\n"
+			"  List all links and their status\n"
+			"newkey:\n"
+			"  Make a new key pair and display its properties.\n"
+			);
+	}
+	else
+	{
+		printf("Unrecognized command \"%s\"\n", splitInput[0].c_str());
+	}
+}
+
+
 void app(const std::vector<CString> &arguments)
 {
 	CCommandlineParams commandline(arguments);
@@ -86,14 +175,6 @@ void app(const std::vector<CString> &arguments)
 		"Enter \"help\" for a list of commands.\n"
 		);
 
-#define CHECKNUMARGS(n) \
-	if(splitInput.size() < ((n)+1)) \
-	{ \
-		printf("Error: setRemoteURI requires %ld arguments; %ld given\n", \
-			long(n), long(splitInput.size())-1); \
-		continue; \
-	}
-
 
 	while(true)
 	{
@@ -106,83 +187,24 @@ void app(const std::vector<CString> &arguments)
 		{
 			break;
 		}
-		else if(splitInput[0] == "pay")
-		{
-			CHECKNUMARGS(1)
-			CString paymentURL = splitInput[1];
-			printf("start\n");
-			CPayLink link = CURI(paymentURL);
-			printf("end\n");
-			//TODO: implement payment
-		}
-		else if(splitInput[0] == "newlink")
-		{
-			CString remoteURI;
-			if(splitInput.size() >= 2)
-				remoteURI = splitInput[1];
-
-			CString localURI = amiko.makeNewLink(remoteURI);
-			printf("%s\n", localURI.c_str());
-		}
-		else if(splitInput[0] == "setremoteuri")
-		{
-			CHECKNUMARGS(2)
-			amiko.setRemoteURI(splitInput[1], splitInput[2]);
-		}
-		else if(splitInput[0] == "listlinks")
-		{
-			std::vector<CAmiko::CLinkStatus> list = amiko.listLinks();
-			for(size_t i=0; i < list.size(); i++)
-			{
-				CAmiko::CLinkStatus &status = list[i];
-
-				printf("link %ld:\n", long(i+1));
-				printf("  local address: %s\n",
-					getBitcoinAddress(status.m_localKey).c_str());
-				printf("  local URI: \"%s\"\n",
-					status.m_localURI.c_str());
-				printf("  remote URI: \"%s\"\n",
-					status.m_remoteURI.c_str());
-				printf("  completed: %s\n",
-					status.m_completed ? "true" : "false");
-				printf("  connected: %s\n",
-					status.m_connected ? "true" : "false");
-			}
-		}
-		else if(splitInput[0] == "newkey")
-		{
-			CKey key;
-			key.makeNewKey();
-
-			printf("localPrivateKey = %s\n", key.getPrivateKey().hexDump().c_str());
-			printf("remoteURI = %s\n", amiko.getSettings().getLocalLinkURL(key).c_str());
-			printf("remotePublicKey = %s\n", key.getPublicKey().hexDump().c_str());
-		}
-		else if(splitInput[0] == "help")
-		{
-			printf(
-				"exit:\n"
-				"quit:\n"
-				"  Terminate application.\n"
-				"help:\n"
-				"  Display this message.\n"
-				"pay [paymentURL]:\n"
-				"  Perform the payment indicated by paymentURL.\n"
-				"newlink [remoteURI]:\n"
-				"  Create a new link, and optionally provide it with the link\n"
-				"  URI of the remote party.\n"
-				"  Returns the local URI, which can be given to the remote user.\n"
-				"setremoteuri localAddress remoteURI:\n"
-				"  Sets the remote URI of the link with the given local address.\n"
-				"listlinks\n"
-				"  List all links and their status\n"
-				"newkey:\n"
-				"  Make a new key pair and display its properties.\n"
-				);
-		}
 		else
 		{
-			printf("Unrecognized command \"%s\"\n", splitInput[0].c_str());
+			try
+			{
+				doCommand(amiko, splitInput);
+			}
+			catch(CException &e)
+			{
+				log(CString::format(
+					"Exception in command %s:\n"
+					"%s\n", 256, splitInput[0].c_str(), e.what()));
+
+				/*
+				We assume here that the exception does not mean that the
+				application is left behind in an unsafe situation.
+				So, we just continue with the commandline loop.
+				*/
+			}
 		}
 	}
 
