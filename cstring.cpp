@@ -82,9 +82,9 @@ bool CString::operator!=(const CString &val) const
 }
 
 
-uint32_t CString::parseAsDecimalInteger() const
+uint64_t CString::parseAsDecimalInteger() const
 {
-	uint32_t ret = 0;
+	uint64_t ret = 0;
 	for(size_t i=0; i<length(); i++)
 	{
 		unsigned char c = (*this)[i];

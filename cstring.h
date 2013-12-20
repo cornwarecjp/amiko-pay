@@ -161,7 +161,7 @@ public:
 	This object:
 	Only contains characters '0'..'9' (CHECKED)
 	"big endian" (as you'd expect)
-	Represented value fits in 32-bit unsigned integer (NOT CHECKED)
+	Represented value fits in 64-bit unsigned integer (NOT CHECKED)
 
 	Return value:
 	The value as represented by this object
@@ -169,7 +169,7 @@ public:
 	Exceptions:
 	CFormatException
 	*/
-	uint32_t parseAsDecimalInteger() const;
+	uint64_t parseAsDecimalInteger() const;
 
 	/*
 	Exceptions:
