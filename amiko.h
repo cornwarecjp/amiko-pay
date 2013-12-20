@@ -30,6 +30,7 @@
 #include "comlink.h"
 #include "finlink.h"
 #include "paylink.h"
+#include "transaction.h"
 #include "amikolistenerthread.h"
 #include "commakerthread.h"
 #include "finroutingthread.h"
@@ -178,6 +179,10 @@ public:
 		return m_PayLinks.m_Value.size();
 	}
 
+	//TODO: spec
+	transactionID_t addPaymentRequest(const CString &receipt, int64_t amount);
+
+
 	//TODO: protect with mutex!!
 	std::vector<CFinLink *> m_FinLinks;
 
@@ -199,6 +204,8 @@ private:
 
 	CCriticalSection< std::list<CComLink *> > m_PendingComLinks;
 	CCriticalSection< std::list<CComLink *> > m_OperationalComLinks;
+
+	CCriticalSection< std::list<CTransaction> > m_IncomingPayments;
 };
 
 #endif
