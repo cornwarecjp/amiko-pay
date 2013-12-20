@@ -25,13 +25,35 @@
 
 #include "sha256.h"
 #include "ripemd160.h"
+#include "cstring.h"
+
+
+typedef uint32_t transactionID_t;
+typedef  int32_t signed_transactionID_t;
+
 
 class CTransaction
 {
 public:
-	CSHA256 m_CommitHash;
-	int64_t m_Amount;
-	CRIPEMD160 m_MeetingPoint;
+	CTransaction(
+		transactionID_t ID = 0,
+		const CString &receipt = "",
+		int64_t amount = 0,
+		const CSHA256 &commitHash = CSHA256(),
+		const CRIPEMD160 &meetingPoint = CRIPEMD160()) :
+			m_ID(ID),
+			m_receipt(receipt),
+			m_amount(amount),
+			m_commitHash(commitHash),
+			m_meetingPoint(meetingPoint)
+		{}
+
+	transactionID_t m_ID;
+	CString m_receipt;
+	int64_t m_amount;
+
+	CSHA256 m_commitHash;
+	CRIPEMD160 m_meetingPoint;
 };
 
 #endif

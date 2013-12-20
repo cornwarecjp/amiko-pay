@@ -25,11 +25,10 @@
 
 #include "tcpconnection.h"
 #include "cthread.h"
+#include "transaction.h"
 
 #include "uriparser.h"
 
-
-typedef uint32_t transactionID_t;
 
 /*
 A PayLink object received payments from a remote payer.
