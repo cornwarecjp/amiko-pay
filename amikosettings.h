@@ -78,10 +78,9 @@ public:
 	*/
 	void loadFrom(const CSettingsSource &src);
 
-	CString m_paymentPortNumber;
-
-	CString m_linkHostname;
+	CString m_hostname;
 	CString m_linkPortNumber;
+	CString m_paymentPortNumber;
 
 	//public key, or empty if there is no meeting point
 	CBinBuffer m_MeetingPointPubKey;
@@ -103,8 +102,26 @@ public:
 	inline CString getLocalLinkURL(const CKey &localKey)
 	{
 		return CString("amikolink://") +
-			m_linkHostname + ":" + m_linkPortNumber + "/" +
+			m_hostname + ":" + m_linkPortNumber + "/" +
 			getBitcoinAddress(localKey);
+	}
+
+	/*
+	paymentID:
+	Reference to properly formed CString object (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Return value:
+	CString object
+
+	Exceptions:
+	none
+	*/
+	inline CString getPaymentURL(const CString &paymentID)
+	{
+		return CString("amikopay://") +
+			m_hostname + ":" + m_paymentPortNumber + "/" +
+			paymentID;
 	}
 };
 

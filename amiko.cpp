@@ -348,17 +348,20 @@ void CAmiko::addPayLink(CPayLink *link)
 
 CString CAmiko::addPaymentRequest(const CString &receipt, int64_t amount)
 {
-	CMutexLocker lock(m_IncomingPayments);
-
 	//TODO: check number of existing incoming payments.
 	//If it's too large, raise an exception.
 
 	CString ID = getSecureRandom(32).hexDump();
 
 	CTransaction t = CTransaction(receipt, amount);
-	m_IncomingPayments.m_Value[ID] = t;
 
-	return ID;
+	{
+		CMutexLocker lock(m_IncomingPayments);
+		m_IncomingPayments.m_Value[ID] = t;
+	}
+
+	CMutexLocker lock(m_Settings);
+	return m_Settings.m_Value.getPaymentURL(ID);
 }
 
 

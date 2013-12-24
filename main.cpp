@@ -127,7 +127,7 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 			"  Display this message.\n"
 			"addpaymentrequest amount:\n"
 			"  Request payment of amount Satoshi.\n"
-			"  Returns the payment ID.\n"
+			"  Returns the payment URL.\n"
 			"pay paymentURL:\n"
 			"  Perform the payment indicated by paymentURL.\n"
 			"newlink [remoteURI]:\n"
