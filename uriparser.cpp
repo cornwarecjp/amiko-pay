@@ -18,7 +18,7 @@
     along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cstdio>
+#include "log.h"
 
 #include "uriparser.h"
 
@@ -80,6 +80,11 @@ CString CURI::getText(const UriTextRangeA &range) const
 
 	size_t length = range.afterLast - range.first;
 	size_t position = range.first - m_URIText.c_str();
+
+	//This special case is necessary because sometimes, when an URI section
+	//is present but empty, liburiparser returns strange ranges
+	if(length == 0)
+		return "";
 
 	CString ret;
 	ret.assign(m_URIText, position, length);
