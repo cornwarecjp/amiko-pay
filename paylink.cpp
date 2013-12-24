@@ -25,14 +25,14 @@
 
 CPayLink::CPayLink(const CTCPListener &listener) :
 	m_connection(listener),
-	m_transactionID(0)
+	m_transactionID("")
 {
 }
 
 
 CPayLink::CPayLink(const CURI &paymentURL) :
 	m_connection(paymentURL.getHost(), paymentURL.getPort(AMIKO_DEFAULT_PAYMENT_PORT)),
-	m_transactionID(paymentURL.getPath().parseAsDecimalInteger())
+	m_transactionID(paymentURL.getPath())
 {
 }
 

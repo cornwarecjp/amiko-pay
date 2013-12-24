@@ -345,53 +345,22 @@ void CAmiko::addPayLink(CPayLink *link)
 }
 
 
-transactionID_t CAmiko::addPaymentRequest(const CString &receipt, int64_t amount)
+CString CAmiko::addPaymentRequest(const CString &receipt, int64_t amount)
 {
 	CMutexLocker lock(m_IncomingPayments);
 
 	//TODO: check number of existing incoming payments.
 	//If it's too large, raise an exception.
 
-	//Make a unique transaction ID that's 'in front of' the existing ID's.
-	//Note that transaction ID's can have an integer overflow, so
-	//'in front of' is subtly different from 'greater than'.
-	transactionID_t ID = 0;
-	if(!m_IncomingPayments.m_Value.empty())
-	{
-		//Get something in front of current ID's
-		ID = m_IncomingPayments.m_Value.begin()->m_ID + 1;
-		for(std::list<CTransaction>::iterator
-			i = m_IncomingPayments.m_Value.begin();
-			i != m_IncomingPayments.m_Value.end();
-			i++)
-		{
-			if(signed_transactionID_t(i->m_ID) - ID >= 0)
-				ID = i->m_ID + 1;
-		}
-		//Keep incrementing until it's unique
-		bool unique = false;
-		while(!unique)
-		{
-			unique = true;
-			for(std::list<CTransaction>::iterator
-				i = m_IncomingPayments.m_Value.begin();
-				i != m_IncomingPayments.m_Value.end();
-				i++)
-			{
-				if(i->m_ID == ID)
-				{
-					unique = false;
-					break;
-				}
-			}
-			if(!unique) ID++;
-		}
-	}
+	//TODO: actual random number!!!!!
+	CBinBuffer random;
+	random.resize(32);
+	CString ID = random.hexDump();
 
-	CTransaction t = CTransaction(ID, receipt, amount);
-	m_IncomingPayments.m_Value.push_back(t);
+	CTransaction t = CTransaction(receipt, amount);
+	m_IncomingPayments.m_Value[ID] = t;
 
-	return t.m_ID;
+	return ID;
 }
 
 

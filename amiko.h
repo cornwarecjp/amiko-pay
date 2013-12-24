@@ -23,9 +23,9 @@
 
 #include <list>
 #include <vector>
+#include <map>
 
 #include "cthread.h"
-
 #include "amikosettings.h"
 #include "comlink.h"
 #include "finlink.h"
@@ -180,7 +180,7 @@ public:
 	}
 
 	//TODO: spec
-	transactionID_t addPaymentRequest(const CString &receipt, int64_t amount);
+	CString addPaymentRequest(const CString &receipt, int64_t amount);
 
 
 	//TODO: protect with mutex!!
@@ -205,7 +205,7 @@ private:
 	CCriticalSection< std::list<CComLink *> > m_PendingComLinks;
 	CCriticalSection< std::list<CComLink *> > m_OperationalComLinks;
 
-	CCriticalSection< std::list<CTransaction> > m_IncomingPayments;
+	CCriticalSection< std::map<CString, CTransaction> > m_IncomingPayments;
 };
 
 #endif

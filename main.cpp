@@ -64,8 +64,8 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 		CHECKNUMARGS(1)
 		uint64_t amount = splitInput[1].parseAsDecimalInteger();
 		//TODO: add support for defining a receipt
-		transactionID_t ID = amiko.addPaymentRequest("", amount);
-		printf("%ld\n", long(ID));
+		CString ID = amiko.addPaymentRequest("", amount);
+		printf("%s\n", ID.c_str());
 	}
 	else if(splitInput[0] == "pay")
 	{

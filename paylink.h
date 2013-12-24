@@ -73,7 +73,7 @@ public:
 
 private:
 	CTCPConnection m_connection;
-	transactionID_t m_transactionID;
+	CString m_transactionID;
 };
 
 #endif
