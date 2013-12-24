@@ -22,7 +22,7 @@
 
 CTransaction::CTransaction(
 	const CString &receipt,
-	int64_t amount,
+	uint64_t amount,
 	const CSHA256 &commitHash,
 	const CSHA256 &commitToken,
 	const CBinBuffer &nonce):
@@ -32,5 +32,17 @@ CTransaction::CTransaction(
 		m_commitToken(commitToken),
 		m_commitHash(commitHash)
 {}
+
+
+void CTransaction::calculateTokenAndHash()
+{
+	CBinBuffer data;
+	data.appendBinBuffer(m_receipt);
+	data.appendUint<uint64_t>(m_amount);
+	data.appendRawBinBuffer(m_nonce);
+
+	m_commitToken = CSHA256(data);
+	m_commitHash = CSHA256(m_commitToken);
+}
 
 

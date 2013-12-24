@@ -180,7 +180,7 @@ public:
 	}
 
 	//TODO: spec
-	CString addPaymentRequest(const CString &receipt, int64_t amount);
+	CString addPaymentRequest(const CString &receipt, uint64_t amount);
 
 
 	//TODO: protect with mutex!!

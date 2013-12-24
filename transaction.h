@@ -38,14 +38,17 @@ public:
 	//TODO: spec
 	CTransaction(
 		const CString &receipt = "",
-		int64_t amount = 0,
+		uint64_t amount = 0,
 		const CSHA256 &commitHash = CSHA256(),
 		const CSHA256 &commitToken = CSHA256(),
 		const CBinBuffer &nonce = CBinBuffer());
 
+	//TODO: spec
+	void calculateTokenAndHash();
+
 	CString m_receipt;
-	int64_t m_amount;
-	CBinBuffer m_nonce; //must have TRANSACTION_NONCE_LENGTH bytes
+	uint64_t m_amount;
+	CBinBuffer m_nonce; //should have TRANSACTION_NONCE_LENGTH bytes
 
 	//The commit token is a hash of the above.
 	CSHA256 m_commitToken;

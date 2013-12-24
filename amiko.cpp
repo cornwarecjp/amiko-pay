@@ -346,7 +346,7 @@ void CAmiko::addPayLink(CPayLink *link)
 }
 
 
-CString CAmiko::addPaymentRequest(const CString &receipt, int64_t amount)
+CString CAmiko::addPaymentRequest(const CString &receipt, uint64_t amount)
 {
 	//TODO: check number of existing incoming payments.
 	//If it's too large, raise an exception.
@@ -354,6 +354,8 @@ CString CAmiko::addPaymentRequest(const CString &receipt, int64_t amount)
 	CString ID = getSecureRandom(32).hexDump();
 
 	CTransaction t = CTransaction(receipt, amount);
+	t.m_nonce = getSecureRandom(TRANSACTION_NONCE_LENGTH);
+	t.calculateTokenAndHash();
 
 	{
 		CMutexLocker lock(m_IncomingPayments);
