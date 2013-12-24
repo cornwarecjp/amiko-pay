@@ -206,9 +206,10 @@ void app(const std::vector<CString> &arguments)
 			}
 			catch(CException &e)
 			{
-				log(CString::format(
+				printf(
 					"Exception in command %s:\n"
-					"%s\n", 256, splitInput[0].c_str(), e.what()));
+					"%s\n", splitInput[0].c_str(), e.what()
+					);
 
 				/*
 				We assume here that the exception does not mean that the
@@ -225,6 +226,7 @@ void app(const std::vector<CString> &arguments)
 
 int main(int argc, char **argv)
 {
+	log("\n\nStart version " AMIKO_VERSION "\n");
 	try
 	{
 		SSL_load_error_strings();
@@ -245,12 +247,16 @@ int main(int argc, char **argv)
 	}
 	catch(CException &e)
 	{
-		log(CString::format("Caught application exception: %s\n", 256, e.what()));
+		CString msg = CString::format("Caught application exception: %s\n", 256, e.what());
+		log(msg);
+		printf("%s", msg.c_str());
 		return 1;
 	}
 	catch(std::exception &e)
 	{
-		log(CString::format("Caught standard library exception: %s\n", 256, e.what()));
+		CString msg = CString::format("Caught standard library exception: %s\n", 256, e.what());
+		log(msg);
+		printf("%s", msg.c_str());
 		return 2;
 	}
 }

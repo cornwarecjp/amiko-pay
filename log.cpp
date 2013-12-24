@@ -20,12 +20,19 @@
 
 #include <cstdio>
 
+#include "file.h"
+
 #include "log.h"
+
+CFile logFile("debug.log", "ab");
+
 
 void log(const CString &message)
 {
 	//TODO: check on error (but what to do in that case?)
-	fputs(message.c_str(), stderr);
+	//fputs(message.c_str(), stderr);
+	fputs(message.c_str(), logFile.m_FP);
+	fflush(logFile.m_FP);
 }
 
 
