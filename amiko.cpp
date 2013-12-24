@@ -22,6 +22,7 @@
 #include "file.h"
 #include "bitcoinaddress.h"
 #include "key.h"
+#include "random.h"
 
 #include "amiko.h"
 
@@ -352,10 +353,7 @@ CString CAmiko::addPaymentRequest(const CString &receipt, int64_t amount)
 	//TODO: check number of existing incoming payments.
 	//If it's too large, raise an exception.
 
-	//TODO: actual random number!!!!!
-	CBinBuffer random;
-	random.resize(32);
-	CString ID = random.hexDump();
+	CString ID = getSecureRandom(32).hexDump();
 
 	CTransaction t = CTransaction(receipt, amount);
 	m_IncomingPayments.m_Value[ID] = t;
