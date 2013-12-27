@@ -52,11 +52,11 @@ class CAmikoTest : public CTest
 	virtual void run()
 	{
 		CAmikoSettings settings1, settings2;
-		settings1.m_linkHostname = "localhost";
+		settings1.m_hostname = "localhost";
 		settings1.m_linkPortNumber = "12345";
 		settings1.m_paymentPortNumber = "12346";
 		settings1.m_linksDir = "./testlinks/amiko1/"; //final slash is necessary
-		settings2.m_linkHostname = "localhost";
+		settings2.m_hostname = "localhost";
 		settings2.m_linkPortNumber = "12347";
 		settings2.m_paymentPortNumber = "12348";
 		settings2.m_linksDir = "./testlinks/amiko2/"; //final slash is necessary

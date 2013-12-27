@@ -70,8 +70,8 @@ class CComLinkTest : public CTest
 	virtual void run()
 	{
 		CAmikoSettings settings1, settings2;
-		settings1.m_linkHostname = "localhost";
-		settings2.m_linkHostname = "localhost";
+		settings1.m_hostname = "localhost";
+		settings2.m_hostname = "localhost";
 		settings1.m_linkPortNumber = AMIKO_DEFAULT_LINK_PORT;
 		settings2.m_linkPortNumber = AMIKO_DEFAULT_LINK_PORT;
 
