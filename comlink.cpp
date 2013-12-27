@@ -253,7 +253,7 @@ void CComLink::sendNegotiationString(uint32_t minVersion, uint32_t maxVersion)
 {
 	m_Connection.send(CBinBuffer(
 		CString::format(
-			"AMIKOPAY/%d/%d\n", MAX_NEGOTIATION_STRING_LENGTH,
+			"AMIKOLINK/%d/%d\n", MAX_NEGOTIATION_STRING_LENGTH,
 			minVersion, maxVersion
 			)
 		));
@@ -304,7 +304,7 @@ void CComLink::receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersi
 	CString minVerStr = receivedString.substr(slash1+1, slash2-slash1-1);
 	CString maxVerStr = receivedString.substr(slash2+1);
 
-	if(protocolName != "AMIKOPAY")
+	if(protocolName != "AMIKOLINK")
 		throw CProtocolError(
 			"Protocol name mismatch");
 
