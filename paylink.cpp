@@ -19,6 +19,7 @@
 */
 
 #include "amikosettings.h"
+#include "log.h"
 
 #include "paylink.h"
 
@@ -53,10 +54,30 @@ CPayLink::~CPayLink()
 
 void CPayLink::threadFunc()
 {
-	negotiateVersion();
+	//Catch all exceptions and handle them
+	try
+	{
+		negotiateVersion();
 
-	//TODO
-	//Fall-through: for now, the thread stops immediately
+		//TODO
+		//Fall-through: for now, the thread stops immediately
+	}
+	catch(CTCPConnection::CClosedException &e)
+	{
+		log("CPayLink::threadFunc(): Payment connection closed by peer\n");
+	}
+	catch(CException &e)
+	{
+		log(CString::format(
+			"CPayLink::threadFunc(): Caught application exception: %s\n",
+			256, e.what()));
+	}
+	catch(std::exception &e)
+	{
+		log(CString::format(
+			"CPayLink::threadFunc(): Caught standard library exception: %s\n",
+			256, e.what()));
+	}
 }
 
 
