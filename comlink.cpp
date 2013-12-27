@@ -26,6 +26,10 @@
 
 #include "comlink.h"
 
+
+#define AMIKOLINK_MIN_PROTOCOL_VERSION 1
+#define AMIKOLINK_MAX_PROTOCOL_VERSION 1
+
 //With 32-bit protocol version numbers, we'll never exceed this:
 #define MAX_NEGOTIATION_STRING_LENGTH 32
 
@@ -209,8 +213,8 @@ void CComLink::negotiateVersion()
 			throw CProtocolError("Protocol negotiation gave weird result");
 
 		//Version matching
-		minVersion = std::max<uint32_t>(minVersion, AMIKO_MIN_PROTOCOL_VERSION);
-		maxVersion = std::min<uint32_t>(maxVersion, AMIKO_MAX_PROTOCOL_VERSION);
+		minVersion = std::max<uint32_t>(minVersion, AMIKOLINK_MIN_PROTOCOL_VERSION);
+		maxVersion = std::min<uint32_t>(maxVersion, AMIKOLINK_MAX_PROTOCOL_VERSION);
 
 		if(minVersion > maxVersion)
 		{
@@ -226,12 +230,12 @@ void CComLink::negotiateVersion()
 	}
 	else
 	{
-		sendNegotiationString(AMIKO_MIN_PROTOCOL_VERSION, AMIKO_MAX_PROTOCOL_VERSION);
+		sendNegotiationString(AMIKOLINK_MIN_PROTOCOL_VERSION, AMIKOLINK_MAX_PROTOCOL_VERSION);
 
 		uint32_t minVersion, maxVersion;
 		receiveNegotiationString(minVersion, maxVersion);
 
-		if(minVersion < AMIKO_MIN_PROTOCOL_VERSION || maxVersion > AMIKO_MAX_PROTOCOL_VERSION)
+		if(minVersion < AMIKOLINK_MIN_PROTOCOL_VERSION || maxVersion > AMIKOLINK_MAX_PROTOCOL_VERSION)
 			throw CProtocolError("Peer returned illegal protocol negotiation result");
 
 		if(minVersion < maxVersion)

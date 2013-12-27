@@ -36,8 +36,6 @@
 #include "cthread.h"
 #include "cominterface.h"
 
-#define AMIKO_MIN_PROTOCOL_VERSION 1
-#define AMIKO_MAX_PROTOCOL_VERSION 1
 
 /*
 A ComLink object is a ComInterface that sends messages to and from a (remote)
