@@ -72,6 +72,7 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 		CHECKNUMARGS(1)
 		CString paymentURL = splitInput[1];
 		CPayLink link = CURI(paymentURL);
+		link.initialHandshake();
 		//TODO: implement payment
 	}
 	else if(splitInput[0] == "newlink")

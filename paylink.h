@@ -23,10 +23,11 @@
 
 #include <stdint.h>
 
-#include "tcpconnection.h"
 #include "cthread.h"
-#include "transaction.h"
 
+#include "tcpconnection.h"
+#include "transaction.h"
+#include "exception.h"
 #include "uriparser.h"
 
 
@@ -37,6 +38,10 @@ It contains its own thread which manages sending and receiving of messages.
 class CPayLink : public CThread
 {
 public:
+	SIMPLEEXCEPTIONCLASS(CProtocolError)
+	SIMPLEEXCEPTIONCLASS(CVersionNegotiationFailure)
+	SIMPLEEXCEPTIONCLASS(CNoDataAvailable)
+
 	/*
 	listener:
 	Reference to properly formed CTCPListener object (NOT CHECKED)
@@ -69,11 +74,61 @@ public:
 
 	~CPayLink();
 
+
+	//Receiver-side:
+
+	//TODO: spec
 	void threadFunc();
 
+
+	//Payer-side:
+
+	//TODO: spec
+	void initialHandshake();
+
+
+	CTransaction m_transaction;
+
 private:
+
+	/*
+	Exceptions:
+	CProtocolError
+	CVersionNegotiationFailure
+	CTCPConnection::CSendException
+	CTCPConnection::CReceiveException
+	TODO: timeout exception
+	*/
+	void negotiateVersion();
+
+	/*
+	Exceptions:
+	CTCPConnection::CSendException
+	*/
+	void sendNegotiationString(uint32_t minVersion, uint32_t maxVersion);
+
+	/*
+	minVersion:
+	Reference to valid uint32_t (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	maxVersion:
+	Reference to valid uint32_t (NOT CHECKED)
+	Reference lifetime: at least until the end of this function
+
+	Note: method writes values into minVersion and maxVersion.
+
+	Exceptions:
+	CTCPConnection::CReceiveException
+	CProtocolError
+	*/
+	void receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion);
+
 	CTCPConnection m_connection;
 	CString m_transactionID;
+	bool m_isReceiverSide;
+
+	uint32_t m_protocolVersion;
 };
 
 #endif
