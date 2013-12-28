@@ -57,7 +57,7 @@ void CPayLink::threadFunc()
 	//Catch all exceptions and handle them
 	try
 	{
-		negotiateVersion();
+		initialHandshake();
 
 		//TODO
 		//Fall-through: for now, the thread stops immediately
@@ -84,6 +84,7 @@ void CPayLink::threadFunc()
 void CPayLink::initialHandshake()
 {
 	negotiateVersion();
+	exchangeTransactionID();
 }
 
 
@@ -130,6 +131,33 @@ void CPayLink::negotiateVersion()
 			throw CVersionNegotiationFailure("No matching protocol version");
 
 		m_protocolVersion = minVersion;
+	}
+}
+
+
+void CPayLink::exchangeTransactionID()
+{
+	if(m_isReceiverSide)
+	{
+		int timeoutValue = 1000; //1 s per element
+
+		CBinBuffer sizebuffer(4);
+		m_connection.receive(sizebuffer, timeoutValue);
+		size_t pos = 0;
+		uint32_t size = sizebuffer.readUint<uint32_t>(pos);
+
+		//TODO: check whether size is unreasonably large
+		CBinBuffer buffer; buffer.resize(size);
+		m_connection.receive(buffer, timeoutValue);
+		m_transactionID = buffer.toString();
+	}
+	else
+	{
+		CBinBuffer buffer(m_transactionID);
+		CBinBuffer sizebuffer;
+		sizebuffer.appendUint<uint32_t>(buffer.size());
+		m_connection.send(sizebuffer);
+		m_connection.send(buffer);
 	}
 }
 

@@ -103,6 +103,16 @@ private:
 
 	/*
 	Exceptions:
+	CProtocolError
+	CTCPConnection::CSendException
+	CTCPConnection::CReceiveException
+	CTCPConnection::CTimeoutException
+	CBinBuffer::CReadError
+	*/
+	void exchangeTransactionID();
+
+	/*
+	Exceptions:
 	CTCPConnection::CSendException
 	*/
 	void sendNegotiationString(uint32_t minVersion, uint32_t maxVersion);
