@@ -109,13 +109,23 @@ private:
 
 	/*
 	Exceptions:
-	CProtocolError
 	CTCPConnection::CSendException
 	CTCPConnection::CReceiveException
 	CTCPConnection::CTimeoutException
 	CBinBuffer::CReadError
+	CTransactionDoesNotExist
 	*/
 	void exchangeTransactionID();
+
+	/*
+	Exceptions:
+	CTCPConnection::CSendException
+	CTCPConnection::CReceiveException
+	CTCPConnection::CTimeoutException
+	CBinBuffer::CReadError
+	CProtocolError
+	*/
+	void exchangeTransactionData();
 
 	/*
 	Exceptions:
@@ -139,6 +149,10 @@ private:
 	CProtocolError
 	*/
 	void receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion);
+
+	//TODO: spec
+	CBinBuffer receiveMessage();
+	void sendMessage(const CBinBuffer &message);
 
 	CTCPConnection m_connection;
 	CString m_transactionID;

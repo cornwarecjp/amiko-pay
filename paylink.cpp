@@ -88,6 +88,7 @@ void CPayLink::initialHandshake()
 {
 	negotiateVersion();
 	exchangeTransactionID();
+	exchangeTransactionData();
 }
 
 
@@ -142,17 +143,7 @@ void CPayLink::exchangeTransactionID()
 {
 	if(m_isReceiverSide)
 	{
-		int timeoutValue = 1000; //1 s per element
-
-		CBinBuffer sizebuffer(4);
-		m_connection.receive(sizebuffer, timeoutValue);
-		size_t pos = 0;
-		uint32_t size = sizebuffer.readUint<uint32_t>(pos);
-
-		//TODO: check whether size is unreasonably large
-		CBinBuffer buffer; buffer.resize(size);
-		m_connection.receive(buffer, timeoutValue);
-		m_transactionID = buffer.toString();
+		m_transactionID = receiveMessage().toString();
 
 		std::map<CString, CTransaction>::const_iterator iter =
 			m_transactions.find(m_transactionID);
@@ -166,11 +157,60 @@ void CPayLink::exchangeTransactionID()
 	}
 	else
 	{
-		CBinBuffer buffer(m_transactionID);
-		CBinBuffer sizebuffer;
-		sizebuffer.appendUint<uint32_t>(buffer.size());
-		m_connection.send(sizebuffer);
-		m_connection.send(buffer);
+		sendMessage(m_transactionID);
+	}
+}
+
+
+void CPayLink::exchangeTransactionData()
+{
+	if(m_isReceiverSide)
+	{
+		CBinBuffer buffer;
+		buffer.appendRawBinBuffer(m_transaction.m_commitHash.toBinBuffer());
+		buffer.appendUint<uint64_t>(m_transaction.m_amount);
+		buffer.appendBinBuffer(m_transaction.m_receipt);
+
+		//For now, only suggest one meeting point:
+		buffer.appendUint<uint32_t>(1); //Number of meeting points
+		buffer.appendRawBinBuffer(m_transaction.m_meetingPoint.toBinBuffer());
+
+		sendMessage(buffer);
+	}
+	else
+	{
+		CBinBuffer buffer = receiveMessage();
+		size_t pos = 0;
+		m_transaction.m_commitHash = CSHA256::fromBinBuffer(
+			buffer.readRawBinBuffer(pos, CSHA256::getSize())
+			);
+		m_transaction.m_amount = buffer.readUint<uint64_t>(pos);
+		m_transaction.m_receipt = buffer.readBinBuffer(pos).toString();
+
+		//Check whether the characters in receipt are acceptable.
+		//This check may be relaxed in the future, but it's important to
+		//remain safe.
+		CString acceptedSpecialChars = " \n\r\t,.:;()*/+-_=";
+		for(size_t i=0; i < m_transaction.m_receipt.length(); i++)
+		{
+			char c = m_transaction.m_receipt[i];
+			if(c>='A' && c<='Z') continue;
+			if(c>='a' && c<='a') continue;
+			if(c>='0' && c<='9') continue;
+			if(acceptedSpecialChars.find(c) != acceptedSpecialChars.npos) continue;
+			throw CProtocolError(
+				"CPayLink::exchangeTransactionData: found a suspicious character in the transaction receipt");
+		}
+
+		uint32_t numMeetingPoints = buffer.readUint<uint32_t>(pos);
+		if(numMeetingPoints < 1)
+			throw CProtocolError(
+				"CPayLink::exchangeTransactionData: payee must suggest at least one meeting point");
+
+		//For now, always choose the first meeting point suggested by payee:
+		m_transaction.m_meetingPoint = CRIPEMD160::fromBinBuffer(
+			buffer.readRawBinBuffer(pos, CRIPEMD160::getSize())
+			);
 	}
 }
 
@@ -246,4 +286,29 @@ void CPayLink::receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersi
 	maxVersion = maxVerStr.parseAsDecimalInteger();
 }
 
+
+CBinBuffer CPayLink::receiveMessage()
+{
+	int timeoutValue = 1000; //1 s per element
+
+	CBinBuffer sizebuffer(4);
+	m_connection.receive(sizebuffer, timeoutValue);
+	size_t pos = 0;
+	uint32_t size = sizebuffer.readUint<uint32_t>(pos);
+
+	//TODO: check whether size is unreasonably large
+	CBinBuffer ret; ret.resize(size);
+	m_connection.receive(ret, timeoutValue);
+
+	return ret;
+}
+
+
+void CPayLink::sendMessage(const CBinBuffer &message)
+{
+	CBinBuffer sizebuffer;
+	sizebuffer.appendUint<uint32_t>(message.size());
+	m_connection.send(sizebuffer);
+	m_connection.send(message);
+}
 

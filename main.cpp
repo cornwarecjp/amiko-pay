@@ -73,6 +73,20 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 		CString paymentURL = splitInput[1];
 		CPayLink link = CURI(paymentURL);
 		link.initialHandshake();
+
+		printf("<RECEIPT>\n%s\n<RECEIPT>\n", link.m_transaction.m_receipt.c_str());
+		printf("Amount: %ld\n", long(link.m_transaction.m_amount));
+
+		CString answer = getInput(
+			CString::format("Do you want to pay %ld (y/n)? ", 1024,
+			long(link.m_transaction.m_amount))
+				);
+		if(answer != "y" && answer != "Y")
+		{
+			printf("Payment cancelled.\n");
+			return;
+		}
+
 		//TODO: implement payment
 	}
 	else if(splitInput[0] == "newlink")
