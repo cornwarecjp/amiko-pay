@@ -21,7 +21,12 @@
 #ifndef RANDOM_H
 #define RANDOM_H
 
+#include "exception.h"
+
 #include "binbuffer.h"
+
+
+SIMPLEEXCEPTIONCLASS(CRandomError)
 
 //TODO: spec
 CBinBuffer getSecureRandom(size_t length);

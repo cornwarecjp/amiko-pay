@@ -19,6 +19,7 @@
 */
 
 #include <cstdlib>
+#include <openssl/rand.h>
 
 #include "random.h"
 
@@ -27,8 +28,14 @@ CBinBuffer getSecureRandom(size_t length)
 	CBinBuffer buffer;
 	buffer.resize(length);
 
-	//TODO: actual secure random number generator!!!!!!!!
-	//This one even repeats on program re-start!
+	int ret = RAND_bytes(&(buffer[0]), length);
+	if(ret != 1)
+	{
+		//TODO: retrieve error code
+		throw CRandomError("getSecureRandom: failed to generate secure random data");
+	}
+
+	/*
 	size_t pos = 0;
 	while(pos < length)
 	{
@@ -42,6 +49,7 @@ CBinBuffer getSecureRandom(size_t length)
 			pos++;
 		}
 	}
+	*/
 
 	return buffer;
 }
