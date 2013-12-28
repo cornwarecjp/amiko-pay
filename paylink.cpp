@@ -31,10 +31,13 @@
 #define MAX_NEGOTIATION_STRING_LENGTH 32
 
 
-CPayLink::CPayLink(const CTCPListener &listener) :
+CPayLink::CPayLink(const CTCPListener &listener,
+	const std::map<CString, CTransaction> &transactions) :
+
 	m_connection(listener),
 	m_transactionID(""),
-	m_isReceiverSide(true)
+	m_isReceiverSide(true),
+	m_transactions(transactions)
 {
 }
 
@@ -150,6 +153,16 @@ void CPayLink::exchangeTransactionID()
 		CBinBuffer buffer; buffer.resize(size);
 		m_connection.receive(buffer, timeoutValue);
 		m_transactionID = buffer.toString();
+
+		std::map<CString, CTransaction>::const_iterator iter =
+			m_transactions.find(m_transactionID);
+		if(iter == m_transactions.end())
+			throw CTransactionDoesNotExist(
+				"CPayLink::exchangeTransactionID: transaction not found");
+
+		m_transaction = iter->second;
+
+		log(CString("Got incoming connection for payment ") + iter->first + "\n");
 	}
 	else
 	{

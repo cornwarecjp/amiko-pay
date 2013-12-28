@@ -23,6 +23,8 @@
 
 #include <stdint.h>
 
+#include <map>
+
 #include "cthread.h"
 
 #include "tcpconnection.h"
@@ -40,13 +42,16 @@ class CPayLink : public CThread
 public:
 	SIMPLEEXCEPTIONCLASS(CProtocolError)
 	SIMPLEEXCEPTIONCLASS(CVersionNegotiationFailure)
-	SIMPLEEXCEPTIONCLASS(CNoDataAvailable)
+	SIMPLEEXCEPTIONCLASS(CTransactionDoesNotExist)
 
 	/*
 	listener:
 	Reference to properly formed CTCPListener object (NOT CHECKED)
 	Reference lifetime: at least until the end of this function
 	TODO: lifetime at least as long as lifetime of this object??
+
+	transactions:
+	TODO
 
 	Constructed object:
 	TODO
@@ -55,7 +60,8 @@ public:
 	CTCPConnection::CConnectException
 	CTCPConnection::CTimeoutException
 	*/
-	CPayLink(const CTCPListener &listener);
+	CPayLink(const CTCPListener &listener,
+		const std::map<CString, CTransaction> &transactions);
 
 	/*
 	paymentURL:
@@ -137,6 +143,9 @@ private:
 	CTCPConnection m_connection;
 	CString m_transactionID;
 	bool m_isReceiverSide;
+
+	//Transactions to choose from (receiver side only) when a sender connects
+	std::map<CString, CTransaction> m_transactions;
 
 	uint32_t m_protocolVersion;
 };

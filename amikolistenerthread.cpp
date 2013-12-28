@@ -101,7 +101,7 @@ void CAmikoListenerThread::acceptNewConnections()
 		//TODO: make configurable (for very large shops)
 		while(m_Amiko->getNumPayLinks() < 100)
 		{
-			CPayLink *link = new CPayLink(m_paymentListener);
+			CPayLink *link = new CPayLink(m_paymentListener, m_Amiko->getIncomingPayments());
 			//TODO: if in the below code an exception occurs, delete the above object
 			link->start(); //start payment link thread
 			m_Amiko->addPayLink(link);

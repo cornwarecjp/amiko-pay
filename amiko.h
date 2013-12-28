@@ -182,6 +182,15 @@ public:
 	//TODO: spec
 	CString addPaymentRequest(const CString &receipt, uint64_t amount);
 
+	/*
+	Exceptions:
+	none
+	*/
+	std::map<CString, CTransaction> getIncomingPayments()
+	{
+		CMutexLocker lock(m_IncomingPayments);
+		return m_IncomingPayments.m_Value;
+	}
 
 	//TODO: protect with mutex!!
 	std::vector<CFinLink *> m_FinLinks;
