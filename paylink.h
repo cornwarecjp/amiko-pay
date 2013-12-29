@@ -32,6 +32,9 @@
 #include "exception.h"
 #include "uriparser.h"
 
+//1 second:
+#define PAYLINK_DEFAULT_TIMEOUT 1000
+
 
 /*
 A PayLink object received payments from a remote payer.
@@ -79,20 +82,17 @@ public:
 
 	~CPayLink();
 
-
-	//Receiver-side:
-
-	//TODO: spec
-	void threadFunc();
-
-
-	//Payer-side:
-
 	//TODO: spec
 	void initialHandshake();
 
 	void sendOK() const;
 	void sendAndThrowError(const CString &message) const;
+
+
+	//Receiver-side specific:
+	//TODO: spec
+	void threadFunc();
+
 
 	CTransaction m_transaction;
 
@@ -152,10 +152,10 @@ private:
 	void receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion);
 
 	//TODO: spec
-	void receiveOK();
+	void receiveOK(int timeoutValue=PAYLINK_DEFAULT_TIMEOUT);
 
 	//TODO: spec
-	CBinBuffer receiveMessage();
+	CBinBuffer receiveMessage(int timeoutValue=PAYLINK_DEFAULT_TIMEOUT);
 	void sendMessage(const CBinBuffer &message) const;
 
 	CTCPConnection m_connection;

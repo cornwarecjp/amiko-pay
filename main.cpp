@@ -107,10 +107,9 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 			long(link.m_transaction.m_amount))
 				);
 		if(answer != "y" && answer != "Y")
-		{
-			printf("Payment cancelled.\n");
-			return;
-		}
+			link.sendAndThrowError("Payment cancelled by payer");
+
+		link.sendOK();
 
 		//TODO: implement payment
 	}

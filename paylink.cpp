@@ -61,6 +61,7 @@ void CPayLink::threadFunc()
 	try
 	{
 		initialHandshake();
+		receiveOK(300000); //300 s = 5 minutes
 
 		//TODO
 		//Fall-through: for now, the thread stops immediately
@@ -105,9 +106,9 @@ void CPayLink::sendAndThrowError(const CString &message) const
 }
 
 
-void CPayLink::receiveOK()
+void CPayLink::receiveOK(int timeoutValue)
 {
-	CString message = receiveMessage().toString();
+	CString message = receiveMessage(timeoutValue).toString();
 
 	//TODO: input validation on message
 
@@ -320,10 +321,8 @@ void CPayLink::receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersi
 }
 
 
-CBinBuffer CPayLink::receiveMessage()
+CBinBuffer CPayLink::receiveMessage(int timeoutValue)
 {
-	int timeoutValue = 1000; //1 s per element
-
 	CBinBuffer sizebuffer(4);
 	m_connection.receive(sizebuffer, timeoutValue);
 	size_t pos = 0;
