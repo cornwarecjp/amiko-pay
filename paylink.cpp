@@ -195,11 +195,15 @@ void CPayLink::exchangeTransactionData()
 		{
 			char c = m_transaction.m_receipt[i];
 			if(c>='A' && c<='Z') continue;
-			if(c>='a' && c<='a') continue;
+			if(c>='a' && c<='z') continue;
 			if(c>='0' && c<='9') continue;
 			if(acceptedSpecialChars.find(c) != acceptedSpecialChars.npos) continue;
 			throw CProtocolError(
-				"CPayLink::exchangeTransactionData: found a suspicious character in the transaction receipt");
+				CString::format(
+				"CPayLink::exchangeTransactionData: "
+				"found a suspicious character in the transaction receipt "
+				"(ASCII code %d)", 256, c
+				));
 		}
 
 		uint32_t numMeetingPoints = buffer.readUint<uint32_t>(pos);
