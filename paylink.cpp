@@ -92,6 +92,33 @@ void CPayLink::initialHandshake()
 }
 
 
+void CPayLink::sendOK() const
+{
+	sendMessage(CString("OK"));
+}
+
+
+void CPayLink::sendAndThrowError(const CString &message) const
+{
+	sendMessage(message);
+	throw CProtocolError(message);
+}
+
+
+void CPayLink::receiveOK()
+{
+	CString message = receiveMessage().toString();
+
+	//TODO: input validation on message
+
+	CString peer = m_isReceiverSide ? "payer" : "payee";
+
+	if(message != "OK")
+		throw CProtocolError(
+			CString("Received error from ") + peer + ": " + message);
+}
+
+
 void CPayLink::negotiateVersion()
 {
 	if(m_isReceiverSide)
@@ -148,16 +175,17 @@ void CPayLink::exchangeTransactionID()
 		std::map<CString, CTransaction>::const_iterator iter =
 			m_transactions.find(m_transactionID);
 		if(iter == m_transactions.end())
-			throw CTransactionDoesNotExist(
-				"CPayLink::exchangeTransactionID: transaction not found");
+			sendAndThrowError("Transaction not found");
 
 		m_transaction = iter->second;
 
 		log(CString("Got incoming connection for payment ") + iter->first + "\n");
+		sendOK();
 	}
 	else
 	{
 		sendMessage(m_transactionID);
+		receiveOK();
 	}
 }
 
@@ -176,6 +204,7 @@ void CPayLink::exchangeTransactionData()
 		buffer.appendRawBinBuffer(m_transaction.m_meetingPoint.toBinBuffer());
 
 		sendMessage(buffer);
+		receiveOK();
 	}
 	else
 	{
@@ -198,23 +227,23 @@ void CPayLink::exchangeTransactionData()
 			if(c>='a' && c<='z') continue;
 			if(c>='0' && c<='9') continue;
 			if(acceptedSpecialChars.find(c) != acceptedSpecialChars.npos) continue;
-			throw CProtocolError(
-				CString::format(
-				"CPayLink::exchangeTransactionData: "
-				"found a suspicious character in the transaction receipt "
+
+			sendAndThrowError(CString::format(
+				"Found a suspicious character in the transaction receipt "
 				"(ASCII code %d)", 256, c
 				));
 		}
 
 		uint32_t numMeetingPoints = buffer.readUint<uint32_t>(pos);
 		if(numMeetingPoints < 1)
-			throw CProtocolError(
-				"CPayLink::exchangeTransactionData: payee must suggest at least one meeting point");
+			sendAndThrowError("Payee must suggest at least one meeting point");
 
 		//For now, always choose the first meeting point suggested by payee:
 		m_transaction.m_meetingPoint = CRIPEMD160::fromBinBuffer(
 			buffer.readRawBinBuffer(pos, CRIPEMD160::getSize())
 			);
+
+		sendOK();
 	}
 }
 
@@ -308,7 +337,7 @@ CBinBuffer CPayLink::receiveMessage()
 }
 
 
-void CPayLink::sendMessage(const CBinBuffer &message)
+void CPayLink::sendMessage(const CBinBuffer &message) const
 {
 	CBinBuffer sizebuffer;
 	sizebuffer.appendUint<uint32_t>(message.size());

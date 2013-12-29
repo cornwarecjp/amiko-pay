@@ -42,7 +42,6 @@ class CPayLink : public CThread
 public:
 	SIMPLEEXCEPTIONCLASS(CProtocolError)
 	SIMPLEEXCEPTIONCLASS(CVersionNegotiationFailure)
-	SIMPLEEXCEPTIONCLASS(CTransactionDoesNotExist)
 
 	/*
 	listener:
@@ -92,6 +91,8 @@ public:
 	//TODO: spec
 	void initialHandshake();
 
+	void sendOK() const;
+	void sendAndThrowError(const CString &message) const;
 
 	CTransaction m_transaction;
 
@@ -113,7 +114,7 @@ private:
 	CTCPConnection::CReceiveException
 	CTCPConnection::CTimeoutException
 	CBinBuffer::CReadError
-	CTransactionDoesNotExist
+	CProtocolError
 	*/
 	void exchangeTransactionID();
 
@@ -151,8 +152,11 @@ private:
 	void receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion);
 
 	//TODO: spec
+	void receiveOK();
+
+	//TODO: spec
 	CBinBuffer receiveMessage();
-	void sendMessage(const CBinBuffer &message);
+	void sendMessage(const CBinBuffer &message) const;
 
 	CTCPConnection m_connection;
 	CString m_transactionID;
