@@ -84,8 +84,12 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 	{
 		CHECKNUMARGS(1)
 		uint64_t amount = splitInput[1].parseAsDecimalInteger();
-		//TODO: add support for defining a receipt
-		CString ID = amiko.addPaymentRequest("", amount);
+
+		CString receipt = "";
+		if(splitInput.size() >= 3)
+			receipt = splitInput[2];
+
+		CString ID = amiko.addPaymentRequest(receipt, amount);
 		printf("%s\n", ID.c_str());
 	}
 	else if(splitInput[0] == "pay")
@@ -161,8 +165,8 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 			"  Terminate application.\n"
 			"help:\n"
 			"  Display this message.\n"
-			"addpaymentrequest amount:\n"
-			"  Request payment of amount Satoshi.\n"
+			"addpaymentrequest amount [receipt]:\n"
+			"  Request payment of amount Satoshi, with optional receipt.\n"
 			"  Returns the payment URL.\n"
 			"pay paymentURL:\n"
 			"  Perform the payment indicated by paymentURL.\n"
