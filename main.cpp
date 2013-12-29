@@ -49,6 +49,27 @@ CString getInput(CString question="")
 }
 
 
+CString getMultilineInput(CString question="")
+{
+	CString ret;
+	bool isOdd = false;
+	while(true)
+	{
+		CString line = getInput(question);
+		ret += line;
+
+		for(size_t i=0; i < line.length(); i++)
+			if(line[i] == '\"')
+				isOdd = !isOdd;
+		if(!isOdd) break;
+
+		ret += "\n";
+		question = "... ";
+	}
+	return ret;
+}
+
+
 void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 {
 #define CHECKNUMARGS(n) \
@@ -204,9 +225,9 @@ void app(const std::vector<CString> &arguments)
 
 	while(true)
 	{
-		CString input = getInput("> ");
+		CString input = getMultilineInput("> ");
 
-		std::vector<CString> splitInput = input.split(' ', true);
+		std::vector<CString> splitInput = input.split(' ', true, '\"');
 		if(splitInput.size() == 0) continue;
 
 		if(splitInput[0] == "quit" || splitInput[0] == "exit")

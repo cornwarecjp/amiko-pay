@@ -106,7 +106,7 @@ void CString::strip()
 }
 
 
-std::vector<CString> CString::split(char c, bool skipEmpty) const
+std::vector<CString> CString::split(char c, bool skipEmpty, char quote) const
 {
 	std::vector<CString> ret;
 	if(length() == 0) return ret;
@@ -115,6 +115,20 @@ std::vector<CString> CString::split(char c, bool skipEmpty) const
 
 	while(true)
 	{
+		if((*this)[pos] == quote)
+		{
+			pos++;
+			size_t qpos = find(quote, pos);
+			if(qpos == npos) //not found
+				qpos = length()-1;
+
+			CString element = substr(pos, qpos-pos);
+			if(!skipEmpty || element.length() != 0)
+				ret.push_back(element);
+
+			pos = qpos+1;
+		}
+
 		size_t cpos = find(c, pos);
 		if(cpos == npos) //not found
 		{

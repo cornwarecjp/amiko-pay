@@ -187,7 +187,8 @@ public:
 	Exceptions:
 	none
 	*/
-	std::vector<CString> split(char c, bool skipEmpty=false) const;
+	std::vector<CString> split(
+		char c, bool skipEmpty=false, char quote='\0') const;
 
 	/*
 	format:
