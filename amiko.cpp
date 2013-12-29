@@ -355,6 +355,14 @@ CString CAmiko::addPaymentRequest(const CString &receipt, uint64_t amount)
 
 	CTransaction t = CTransaction(receipt, amount);
 	t.m_nonce = getSecureRandom(TRANSACTION_NONCE_LENGTH);
+
+	{
+		CMutexLocker lock(m_Settings);
+		t.m_meetingPoint = CRIPEMD160(
+			CSHA256(m_Settings.m_Value.m_MeetingPointPubKey).toBinBuffer()
+			);
+	}
+
 	t.calculateTokenAndHash();
 
 	{
