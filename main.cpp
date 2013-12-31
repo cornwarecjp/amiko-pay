@@ -106,10 +106,7 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 			CString::format("Do you want to pay %ld (y/n)? ", 1024,
 			long(link.m_transaction.m_amount))
 				);
-		if(answer != "y" && answer != "Y")
-			link.sendAndThrowError("Payment cancelled by payer");
-
-		link.sendOK();
+		link.sendPayerAgrees(answer == "y" || answer == "Y");
 
 		//TODO: implement payment
 	}

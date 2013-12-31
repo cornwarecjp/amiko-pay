@@ -39,12 +39,32 @@
 /*
 A PayLink object received payments from a remote payer.
 It contains its own thread which manages sending and receiving of messages.
+
+A PayLink object can have the following states:
+  initial
+  operational
+  finished
+  cancelled
+The initial state is 'initial'. An object can perform the
+following state transitions:
+  initial->canceled
+  initial->operational
+  operational->canceled
+  operational->finished
 */
 class CPayLink : public CThread
 {
 public:
 	SIMPLEEXCEPTIONCLASS(CProtocolError)
 	SIMPLEEXCEPTIONCLASS(CVersionNegotiationFailure)
+
+	enum eState
+	{
+	eInitial,
+	eOperational,
+	eFinished,
+	eCanceled
+	};
 
 	/*
 	listener:
@@ -85,14 +105,18 @@ public:
 	//TODO: spec
 	void initialHandshake();
 
-	void sendOK() const;
-	void sendAndThrowError(const CString &message) const;
-
-
 	//Receiver-side specific:
 	//TODO: spec
 	void threadFunc();
 
+	//Sender-side specific:
+	void sendPayerAgrees(bool agree);
+
+	inline eState getState()
+	{
+		CMutexLocker lock(m_state);
+		return m_state.m_Value;
+	}
 
 	CTransaction m_transaction;
 
@@ -152,11 +176,19 @@ private:
 	void receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion);
 
 	//TODO: spec
+	void sendOK() const;
+	void sendAndThrowError(const CString &message);
 	void receiveOK(int timeoutValue=PAYLINK_DEFAULT_TIMEOUT);
 
 	//TODO: spec
 	CBinBuffer receiveMessage(int timeoutValue=PAYLINK_DEFAULT_TIMEOUT);
 	void sendMessage(const CBinBuffer &message) const;
+
+	inline void setState(eState state)
+	{
+		CMutexLocker lock(m_state);
+		m_state.m_Value = state;
+	}
 
 	CTCPConnection m_connection;
 	CString m_transactionID;
@@ -166,6 +198,8 @@ private:
 	std::map<CString, CTransaction> m_transactions;
 
 	uint32_t m_protocolVersion;
+
+	CCriticalSection<eState> m_state;
 };
 
 #endif

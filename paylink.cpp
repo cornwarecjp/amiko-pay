@@ -37,7 +37,8 @@ CPayLink::CPayLink(const CTCPListener &listener,
 	m_connection(listener),
 	m_transactionID(""),
 	m_isReceiverSide(true),
-	m_transactions(transactions)
+	m_transactions(transactions),
+	m_state(eInitial)
 {
 }
 
@@ -45,7 +46,8 @@ CPayLink::CPayLink(const CTCPListener &listener,
 CPayLink::CPayLink(const CURI &paymentURL) :
 	m_connection(paymentURL.getHost(), paymentURL.getPort(AMIKO_DEFAULT_PAYMENT_PORT)),
 	m_transactionID(paymentURL.getPath()),
-	m_isReceiverSide(false)
+	m_isReceiverSide(false),
+	m_state(eInitial)
 {
 }
 
@@ -62,6 +64,7 @@ void CPayLink::threadFunc()
 	{
 		initialHandshake();
 		receiveOK(300000); //300 s = 5 minutes
+		setState(eOperational);
 
 		//TODO
 		//Fall-through: for now, the thread stops immediately
@@ -69,18 +72,21 @@ void CPayLink::threadFunc()
 	catch(CTCPConnection::CClosedException &e)
 	{
 		log("CPayLink::threadFunc(): Payment connection closed by peer\n");
+		setState(eCanceled);
 	}
 	catch(CException &e)
 	{
 		log(CString::format(
 			"CPayLink::threadFunc(): Caught application exception: %s\n",
 			256, e.what()));
+		setState(eCanceled);
 	}
 	catch(std::exception &e)
 	{
 		log(CString::format(
 			"CPayLink::threadFunc(): Caught standard library exception: %s\n",
 			256, e.what()));
+		setState(eCanceled);
 	}
 }
 
@@ -93,14 +99,27 @@ void CPayLink::initialHandshake()
 }
 
 
+void CPayLink::sendPayerAgrees(bool agree)
+{
+	if(agree)
+	{
+		sendOK();
+		setState(eOperational);
+	}
+	else
+		{sendAndThrowError("Payment canceled by payer");}
+}
+
+
 void CPayLink::sendOK() const
 {
 	sendMessage(CString("OK"));
 }
 
 
-void CPayLink::sendAndThrowError(const CString &message) const
+void CPayLink::sendAndThrowError(const CString &message)
 {
+	setState(eCanceled);
 	sendMessage(message);
 	throw CProtocolError(message);
 }
