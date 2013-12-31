@@ -127,6 +127,7 @@ std::vector<CString> CString::split(char c, bool skipEmpty, char quote) const
 				ret.push_back(element);
 
 			pos = qpos+1;
+			continue;
 		}
 
 		size_t cpos = find(c, pos);
