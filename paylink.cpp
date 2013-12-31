@@ -205,7 +205,14 @@ void CPayLink::exchangeTransactionData()
 		buffer.appendRawBinBuffer(m_transaction.m_meetingPoint.toBinBuffer());
 
 		sendMessage(buffer);
+
+
 		receiveOK();
+		//TODO: Maybe check whether the received meeting point is one of the
+		//sent meeting points. This is probably not necessary though.
+		m_transaction.m_meetingPoint = CRIPEMD160::fromBinBuffer(
+			receiveMessage()
+			);
 	}
 	else
 	{
@@ -244,7 +251,9 @@ void CPayLink::exchangeTransactionData()
 			buffer.readRawBinBuffer(pos, CRIPEMD160::getSize())
 			);
 
+
 		sendOK();
+		sendMessage(m_transaction.m_meetingPoint.toBinBuffer());
 	}
 }
 
