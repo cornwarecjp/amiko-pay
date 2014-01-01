@@ -1,6 +1,6 @@
 /*
     amiko.h
-    Copyright (C) 2013 by CJP
+    Copyright (C) 2013-2014 by CJP
 
     This file is part of Amiko Pay.
 
@@ -181,6 +181,9 @@ public:
 
 	//TODO: spec
 	CString addPaymentRequest(const CString &receipt, uint64_t amount);
+
+	//TODO: spec
+	void doPayment(CPayLink &link);
 
 	/*
 	Exceptions:

@@ -1,6 +1,6 @@
 /*
     main.cpp
-    Copyright (C) 2013 by CJP
+    Copyright (C) 2013-2014 by CJP
 
     This file is part of Amiko Pay.
 
@@ -107,8 +107,7 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 			long(link.m_transaction.m_amount))
 				);
 		link.sendPayerAgrees(answer == "y" || answer == "Y");
-
-		//TODO: implement payment
+		amiko.doPayment(link);
 	}
 	else if(splitInput[0] == "newlink")
 	{

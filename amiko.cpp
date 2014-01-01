@@ -1,6 +1,6 @@
 /*
     amiko.cpp
-    Copyright (C) 2013 by CJP
+    Copyright (C) 2013-2014 by CJP
 
     This file is part of Amiko Pay.
 
@@ -372,6 +372,12 @@ CString CAmiko::addPaymentRequest(const CString &receipt, uint64_t amount)
 
 	CMutexLocker lock(m_Settings);
 	return m_Settings.m_Value.getPaymentURL(ID);
+}
+
+
+void CAmiko::doPayment(CPayLink &link)
+{
+	//TODO
 }
 
 
