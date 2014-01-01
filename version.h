@@ -1,6 +1,6 @@
 /*
     version.h
-    Copyright (C) 2013 by CJP
+    Copyright (C) 2013-2014 by CJP
 
     This file is part of Amiko Pay.
 
@@ -21,8 +21,8 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define AMIKO_VERSION "0.0.1 (unfinished)"
-#define AMIKO_LASTCOPYRIGHTYEAR "2013"
+#define AMIKO_VERSION "0.1.0 (unstable,development)"
+#define AMIKO_LASTCOPYRIGHTYEAR "2014"
 
 #endif
 
