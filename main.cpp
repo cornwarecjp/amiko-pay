@@ -69,6 +69,36 @@ CString getMultilineInput(CString question="")
 	return ret;
 }
 
+#define uBTC 100
+#define mBTC 100000
+#define  BTC 100000000
+uint64_t readBitcoinAmount(const CString &str, uint64_t unit)
+{
+	uint64_t beforeDecimal=0, afterDecimal=0, afterDecimalDivisor=1;
+
+	size_t dotpos = str.find('.');
+	if(dotpos == str.npos) //not found
+	{
+		beforeDecimal = str.parseAsDecimalInteger();
+	}
+	else //found
+	{
+		beforeDecimal = CString(str.substr(0, dotpos)).parseAsDecimalInteger();
+		CString after = str.substr(dotpos+1);
+		afterDecimal  = after.parseAsDecimalInteger();
+		size_t pos = 0;
+		while(pos < after.length() && after[pos] >= '0' && after[pos] <= '9')
+		{
+			afterDecimalDivisor *= 10;
+			pos++;
+		}
+	}
+
+	//TODO: check whether this will give an integer overflow
+	//Note: insignificant digits will always be ROUNDED DOWN!!!
+	return unit*beforeDecimal + (unit*afterDecimal)/afterDecimalDivisor;
+}
+
 
 void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 {
@@ -83,7 +113,7 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 	if(splitInput[0] == "addpaymentrequest")
 	{
 		CHECKNUMARGS(1)
-		uint64_t amount = splitInput[1].parseAsDecimalInteger();
+		uint64_t amount = readBitcoinAmount(splitInput[1], BTC); //TODO: configurable unit
 
 		CString receipt = "";
 		if(splitInput.size() >= 3)
