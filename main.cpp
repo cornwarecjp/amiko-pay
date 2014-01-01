@@ -100,6 +100,15 @@ uint64_t readBitcoinAmount(const CString &str, uint64_t unit)
 }
 
 
+CString writeBitcoinAmount(uint64_t amount, uint64_t unit)
+{
+	uint64_t beforeDecimal = amount / unit;
+	uint64_t afterDecimal  = amount % unit;
+	return CString::format("%ld.%08ld", 64,
+		long(beforeDecimal), long(afterDecimal));
+}
+
+
 void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 {
 #define CHECKNUMARGS(n) \
@@ -130,11 +139,15 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 		link.initialHandshake();
 
 		printf("<RECEIPT>\n%s\n<RECEIPT>\n", link.m_transaction.m_receipt.c_str());
-		printf("Amount: %ld\n", long(link.m_transaction.m_amount));
+
+		//TODO: make unit configurable
+		CString writtenAmount = writeBitcoinAmount(link.m_transaction.m_amount, BTC);
+		printf("Amount: %s BTC\n",
+			writtenAmount.c_str());
 
 		CString answer = getInput(
-			CString::format("Do you want to pay %ld (y/n)? ", 1024,
-			long(link.m_transaction.m_amount))
+			CString::format("Do you want to pay %s BTC (y/n)? ", 1024,
+			writtenAmount.c_str())
 				);
 		link.sendPayerAgrees(answer == "y" || answer == "Y");
 		amiko.doPayment(link);
@@ -191,7 +204,7 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 			"help:\n"
 			"  Display this message.\n"
 			"addpaymentrequest amount [receipt]:\n"
-			"  Request payment of amount Satoshi, with optional receipt.\n"
+			"  Request payment of amount BTC, with optional receipt.\n"
 			"  Returns the payment URL.\n"
 			"pay paymentURL:\n"
 			"  Perform the payment indicated by paymentURL.\n"
