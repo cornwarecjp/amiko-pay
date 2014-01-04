@@ -27,6 +27,7 @@
 #include "sha256.h"
 #include "ripemd160.h"
 #include "binbuffer.h"
+#include "paylink.h"
 
 #include "cthread.h"
 
@@ -53,6 +54,12 @@ private:
 	void processIncomingMessages();
 
 	//TODO: spec
+	void searchForNewPayLinks();
+
+	//TODO: spec
+	void addAndProcessPayLink(const CPayLink &link);
+
+	//TODO: spec
 	//void processRoutingChanges();
 
 	//TODO: spec
@@ -66,6 +73,7 @@ private:
 	public:
 		//Interface IDs are the local public keys of finlinks
 		//Exception for payer/payee: inbound interface is commit hash
+		//TODO: how to deal with being both payer and payee???
 		//Exception for meeting point: outbound interface is empty
 		CBinBuffer m_inboundInterface;
 		CBinBuffer m_currentOutboundInterface;
@@ -74,6 +82,8 @@ private:
 		//See CTransaction for the meaning of these
 		CSHA256 m_commitToken, m_commitHash;
 		CRIPEMD160 m_meetingPoint;
+
+		//TODO: something about the transaction state
 	};
 	std::list<CActiveTransaction> m_activeTransactions;
 };

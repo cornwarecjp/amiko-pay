@@ -1,6 +1,6 @@
 /*
     finroutingthread.cpp
-    Copyright (C) 2013 by CJP
+    Copyright (C) 2013-2014 by CJP
 
     This file is part of Amiko Pay.
 
@@ -51,6 +51,7 @@ void CFinRoutingThread::threadFunc()
 
 			processIncomingMessages();
 			//processRoutingChanges();
+			searchForNewPayLinks();
 		}
 		catch(CException &e)
 		{
@@ -120,6 +121,44 @@ void CFinRoutingThread::processIncomingMessages()
 {
 	for(size_t i=0; i < m_Amiko->m_FinLinks.size(); i++)
 		m_Amiko->m_FinLinks[i]->processInbox();
+}
+
+
+void CFinRoutingThread::searchForNewPayLinks()
+{
+	CMutexLocker lock(m_Amiko->m_PayLinks);
+	for(std::list<CPayLink *>::iterator i=m_Amiko->m_PayLinks.m_Value.begin();
+			i != m_Amiko->m_PayLinks.m_Value.end(); i++)
+		if((*i)->getState() == CPayLink::eOperational)
+		{
+			bool found = false;
+			for(std::list<CActiveTransaction>::iterator j=m_activeTransactions.begin();
+					j != m_activeTransactions.end(); j++)
+				if(j->m_inboundInterface ==
+					(*i)->m_transaction.m_commitHash.toBinBuffer())
+				{
+					found = true;
+					break;
+				}
+
+			if(!found)
+				addAndProcessPayLink(*(*i));
+		}
+}
+
+
+void CFinRoutingThread::addAndProcessPayLink(const CPayLink &link)
+{
+	log(CString::format("Adding operational link with hash %s\n", 256,
+		link.m_transaction.m_commitHash.toBinBuffer().hexDump().c_str()));
+
+	CActiveTransaction t;
+	t.m_inboundInterface = link.m_transaction.m_commitHash.toBinBuffer();
+	//TODO: set up outbound interfaces
+	t.m_commitHash = link.m_transaction.m_commitHash;
+	t.m_meetingPoint = link.m_transaction.m_meetingPoint;
+
+	m_activeTransactions.push_back(t);
 }
 
 
