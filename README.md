@@ -26,7 +26,7 @@ https://bitcointalk.org/index.php?topic=157437.0
 How to use
 ==========
 
-Before using Amiko-pay, please check whether any local laws prohibit the use of
+Before using Amiko-pay, please check whether any local laws restrict the use of
 this software. Ideally, there should be no such laws, but if they do exist,
 you may still be able to use Amiko-pay legally by constraining the behavior of
 the software, for instance through its settings. The makers of Amiko-pay do not
