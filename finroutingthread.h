@@ -47,24 +47,6 @@ public:
 
 private:
 
-	//TODO: spec
-	//void initializeRoutingTable();
-
-	//TODO: spec
-	void processIncomingMessages();
-
-	//TODO: spec
-	void searchForNewPayLinks();
-
-	//TODO: spec
-	void addAndProcessPayLink(const CPayLink &link);
-
-	//TODO: spec
-	//void processRoutingChanges();
-
-	//TODO: spec
-	//void sendRoutingChanges();
-
 	CAmiko *m_Amiko;
 	//CRouteTable m_RouteTable;
 
@@ -93,6 +75,28 @@ private:
 		//TODO: something about the transaction state
 	};
 	std::list<CActiveTransaction> m_activeTransactions;
+
+
+	//TODO: spec
+	//void initializeRoutingTable();
+
+	//TODO: spec
+	void processIncomingMessages();
+
+	//TODO: spec
+	void searchForNewPayLinks();
+
+	//TODO: spec
+	void addAndProcessPayLink(const CPayLink &link);
+
+	//TODO: spec
+	void matchWithOwnMeetingPoint(CActiveTransaction &t);
+
+	//TODO: spec
+	//void processRoutingChanges();
+
+	//TODO: spec
+	//void sendRoutingChanges();
 };
 
 #include "amiko.h"

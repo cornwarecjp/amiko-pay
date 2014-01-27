@@ -24,6 +24,8 @@
 #include "log.h"
 #include "exception.h"
 #include "messages.h"
+#include "ripemd160.h"
+#include "sha256.h"
 
 #include "finroutingthread.h"
 
@@ -152,15 +154,38 @@ void CFinRoutingThread::addAndProcessPayLink(const CPayLink &link)
 	log(CString::format("Adding operational link with hash %s\n", 256,
 		link.m_transaction.m_commitHash.toBinBuffer().hexDump().c_str()));
 
-	CActiveTransaction t;
-	t.m_inboundInterface = link.m_transaction.m_commitHash.toBinBuffer();
-	//TODO: set up outbound interfaces
-	t.m_amount = link.m_transaction.m_amount;
-	t.m_receiverSide = link.isReceiverSide();
-	t.m_commitHash = link.m_transaction.m_commitHash;
-	t.m_meetingPoint = link.m_transaction.m_meetingPoint;
+	{
+		CActiveTransaction t;
+		t.m_inboundInterface = link.m_transaction.m_commitHash.toBinBuffer();
+		//TODO: set up outbound interfaces
+		t.m_amount = link.m_transaction.m_amount;
+		t.m_receiverSide = link.isReceiverSide();
+		t.m_commitHash = link.m_transaction.m_commitHash;
+		t.m_meetingPoint = link.m_transaction.m_meetingPoint;
 
-	m_activeTransactions.push_back(t);
+		m_activeTransactions.push_back(t);
+	}
+
+	CActiveTransaction &t = m_activeTransactions.back();
+	matchWithOwnMeetingPoint(t);
+}
+
+
+void CFinRoutingThread::matchWithOwnMeetingPoint(CActiveTransaction &t)
+{
+	CRIPEMD160 meetingpoint(
+			CSHA256(m_Amiko->getSettings().m_MeetingPointPubKey).toBinBuffer()
+			);
+
+	if(t.m_meetingPoint == meetingpoint)
+	{
+		log("Transaction arrives at local meeting point\n");
+
+		t.m_remainingOutboundInterfaces.clear();
+		t.m_currentOutboundInterface.clear();
+
+		//TODO: match with other-side active transaction, if it exists
+	}
 }
 
 
