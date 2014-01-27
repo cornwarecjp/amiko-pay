@@ -118,6 +118,11 @@ public:
 		return m_state.m_Value;
 	}
 
+	inline bool isReceiverSide() const
+	{
+		return m_isReceiverSide;
+	}
+
 	CTransaction m_transaction;
 
 private:

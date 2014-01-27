@@ -155,6 +155,8 @@ void CFinRoutingThread::addAndProcessPayLink(const CPayLink &link)
 	CActiveTransaction t;
 	t.m_inboundInterface = link.m_transaction.m_commitHash.toBinBuffer();
 	//TODO: set up outbound interfaces
+	t.m_amount = link.m_transaction.m_amount;
+	t.m_receiverSide = link.isReceiverSide();
 	t.m_commitHash = link.m_transaction.m_commitHash;
 	t.m_meetingPoint = link.m_transaction.m_meetingPoint;
 

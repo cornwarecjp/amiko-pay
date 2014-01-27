@@ -73,11 +73,18 @@ private:
 	public:
 		//Interface IDs are the local public keys of finlinks
 		//Exception for payer/payee: inbound interface is commit hash
-		//TODO: how to deal with being both payer and payee???
+		//If we are both payer and payee,
+		//  there are two active transactions with opposite m_payerSide
 		//Exception for meeting point: outbound interface is empty
 		CBinBuffer m_inboundInterface;
 		CBinBuffer m_currentOutboundInterface;
 		std::list<CBinBuffer> m_remainingOutboundInterfaces;
+
+		//Amount in satoshi
+		uint64_t m_amount;
+		//true: inbound interface is towards receiver
+		//false: inbound interface is towards payer
+		bool m_receiverSide;
 
 		//See CTransaction for the meaning of these
 		CSHA256 m_commitToken, m_commitHash;
