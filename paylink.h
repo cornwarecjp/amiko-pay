@@ -1,6 +1,6 @@
 /*
     paylink.h
-    Copyright (C) 2013 by CJP
+    Copyright (C) 2013-2014 by CJP
 
     This file is part of Amiko Pay.
 
