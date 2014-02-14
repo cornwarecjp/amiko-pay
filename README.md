@@ -22,6 +22,7 @@ https://bitcointalk.org/index.php?topic=94674.0
 
 https://bitcointalk.org/index.php?topic=157437.0
 
+https://github.com/cornwarecjp/amiko-pay
 
 How to use
 ==========
