@@ -38,3 +38,5 @@ Please read the file "COPYING" for licensing information.
 
 Compilation and installation instructions can be found in the file "INSTALL".
 
+See doc/manual.txt for further usage information.
+
