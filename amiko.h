@@ -178,8 +178,8 @@ public:
 	*/
 	inline size_t getNumPayLinks()
 	{
-		CMutexLocker lock(m_PayLinks);
-		return m_PayLinks.m_Value.size();
+		CMutexLocker lock(m_FinRoutingThread.m_PayLinks);
+		return m_FinRoutingThread.m_PayLinks.m_Value.size();
 	}
 
 	//TODO: spec
@@ -200,9 +200,6 @@ public:
 
 	//TODO: protect with mutex!!
 	std::vector<CFinLink *> m_FinLinks;
-
-	CCriticalSection< std::list<CPayLink *> > m_PayLinks;
-	CCriticalSection< CPayLink * > m_OutgoingPayLink;
 
 private:
 

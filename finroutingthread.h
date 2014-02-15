@@ -45,6 +45,9 @@ public:
 	void threadFunc();
 
 
+	CCriticalSection< std::list<CPayLink *> > m_PayLinks;
+	CCriticalSection< CPayLink * > m_OutgoingPayLink;
+
 private:
 
 	CAmiko *m_Amiko;

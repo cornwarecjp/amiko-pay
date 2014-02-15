@@ -28,7 +28,6 @@
 
 
 CAmiko::CAmiko(const CAmikoSettings &settings) :
-	m_OutgoingPayLink(NULL),
 	m_Settings(settings),
 	m_ListenerThread(
 		this,
@@ -105,17 +104,6 @@ void CAmiko::stop()
 			delete (*i);
 		}
 		m_OperationalComLinks.m_Value.clear();
-	}
-
-	{
-		CMutexLocker lock(m_PayLinks);
-		for(std::list<CPayLink *>::iterator i=m_PayLinks.m_Value.begin();
-			i != m_PayLinks.m_Value.end(); i++)
-		{
-			(*i)->stop();
-			delete (*i);
-		}
-		m_PayLinks.m_Value.clear();
 	}
 }
 
@@ -342,8 +330,8 @@ void CAmiko::makeMissingComLinks()
 
 void CAmiko::addPayLink(CPayLink *link)
 {
-	CMutexLocker lock(m_PayLinks);
-	m_PayLinks.m_Value.push_back(link);
+	CMutexLocker lock(m_FinRoutingThread.m_PayLinks);
+	m_FinRoutingThread.m_PayLinks.m_Value.push_back(link);
 }
 
 
@@ -379,20 +367,20 @@ CString CAmiko::addPaymentRequest(const CString &receipt, uint64_t amount)
 void CAmiko::doPayment(CPayLink &link)
 {
 	{
-		CMutexLocker lock(m_OutgoingPayLink);
+		CMutexLocker lock(m_FinRoutingThread.m_OutgoingPayLink);
 
-		if(m_OutgoingPayLink.m_Value != NULL)
+		if(m_FinRoutingThread.m_OutgoingPayLink.m_Value != NULL)
 			throw CPaymentFailed(
 				"Payment failed: another payment is already being performed");
 
-		m_OutgoingPayLink.m_Value = &link;
+		m_FinRoutingThread.m_OutgoingPayLink.m_Value = &link;
 	}
 
 	//TODO: wait until the link is finished or failed
 
 	{
-		CMutexLocker lock(m_OutgoingPayLink);
-		m_OutgoingPayLink.m_Value = NULL;
+		CMutexLocker lock(m_FinRoutingThread.m_OutgoingPayLink);
+		m_FinRoutingThread.m_OutgoingPayLink.m_Value = NULL;
 	}
 }
 

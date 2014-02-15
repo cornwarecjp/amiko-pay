@@ -31,6 +31,7 @@
 
 
 CFinRoutingThread::CFinRoutingThread(CAmiko *amiko) :
+	m_OutgoingPayLink(NULL),
 	m_Amiko(amiko)
 {
 }
@@ -67,6 +68,17 @@ void CFinRoutingThread::threadFunc()
 				"CFinRoutingThread: Caught standard library exception: %s\n",
 				256, e.what()));
 		}
+	}
+
+	{
+		CMutexLocker lock(m_PayLinks);
+		for(std::list<CPayLink *>::iterator i=m_PayLinks.m_Value.begin();
+			i != m_PayLinks.m_Value.end(); i++)
+		{
+			(*i)->stop();
+			delete (*i);
+		}
+		m_PayLinks.m_Value.clear();
 	}
 }
 
@@ -130,10 +142,10 @@ void CFinRoutingThread::searchForNewPayLinks()
 {
 	//Receiver-side payments
 	{
-		CMutexLocker lock(m_Amiko->m_PayLinks);
+		CMutexLocker lock(m_PayLinks);
 		for(std::list<CPayLink *>::iterator
-				i = m_Amiko->m_PayLinks.m_Value.begin();
-				i != m_Amiko->m_PayLinks.m_Value.end(); i++)
+				i = m_PayLinks.m_Value.begin();
+				i != m_PayLinks.m_Value.end(); i++)
 			if((*i)->getState() == CPayLink::eOperational)
 			{
 				bool found = false;
@@ -156,8 +168,8 @@ void CFinRoutingThread::searchForNewPayLinks()
 
 	//Sender-side payment
 	{
-		CMutexLocker lock(m_Amiko->m_OutgoingPayLink);
-		CPayLink *paylink = m_Amiko->m_OutgoingPayLink.m_Value;
+		CMutexLocker lock(m_OutgoingPayLink);
+		CPayLink *paylink = m_OutgoingPayLink.m_Value;
 
 		if(paylink != NULL)
 		{
