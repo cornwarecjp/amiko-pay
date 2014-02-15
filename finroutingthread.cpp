@@ -85,18 +85,26 @@ void CFinRoutingThread::threadFunc()
 
 void CFinRoutingThread::doPayment(CPayLink &link)
 {
+	//Register the paylink
 	{
 		CMutexLocker lock(m_OutgoingPayLink);
 
-		if(m_OutgoingPayLink.m_Value != NULL)
+		if(m_OutgoingPayLink.m_Value != NULL ||
+			m_OutgoingPaymentInProgress.getValue() != 0)
+		{
 			throw CPaymentFailed(
 				"Payment failed: another payment is already being performed");
+		}
 
 		m_OutgoingPayLink.m_Value = &link;
 	}
 
-	//TODO: wait until the link is finished or failed
+	//Wait until the link is finished or failed:
+	m_OutgoingPaymentInProgress.wait();
 
+	//TODO: check for failure
+
+	//Un-register the paylink
 	{
 		CMutexLocker lock(m_OutgoingPayLink);
 		m_OutgoingPayLink.m_Value = NULL;

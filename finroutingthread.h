@@ -58,6 +58,7 @@ private:
 	//CRouteTable m_RouteTable;
 
 	CCriticalSection< CPayLink * > m_OutgoingPayLink;
+	CSemaphore m_OutgoingPaymentInProgress;
 
 
 	class CActiveTransaction
