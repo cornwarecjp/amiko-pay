@@ -366,22 +366,7 @@ CString CAmiko::addPaymentRequest(const CString &receipt, uint64_t amount)
 
 void CAmiko::doPayment(CPayLink &link)
 {
-	{
-		CMutexLocker lock(m_FinRoutingThread.m_OutgoingPayLink);
-
-		if(m_FinRoutingThread.m_OutgoingPayLink.m_Value != NULL)
-			throw CPaymentFailed(
-				"Payment failed: another payment is already being performed");
-
-		m_FinRoutingThread.m_OutgoingPayLink.m_Value = &link;
-	}
-
-	//TODO: wait until the link is finished or failed
-
-	{
-		CMutexLocker lock(m_FinRoutingThread.m_OutgoingPayLink);
-		m_FinRoutingThread.m_OutgoingPayLink.m_Value = NULL;
-	}
+	m_FinRoutingThread.doPayment(link);
 }
 
 

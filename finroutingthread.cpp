@@ -31,8 +31,8 @@
 
 
 CFinRoutingThread::CFinRoutingThread(CAmiko *amiko) :
-	m_OutgoingPayLink(NULL),
-	m_Amiko(amiko)
+	m_Amiko(amiko),
+	m_OutgoingPayLink(NULL)
 {
 }
 
@@ -79,6 +79,27 @@ void CFinRoutingThread::threadFunc()
 			delete (*i);
 		}
 		m_PayLinks.m_Value.clear();
+	}
+}
+
+
+void CFinRoutingThread::doPayment(CPayLink &link)
+{
+	{
+		CMutexLocker lock(m_OutgoingPayLink);
+
+		if(m_OutgoingPayLink.m_Value != NULL)
+			throw CPaymentFailed(
+				"Payment failed: another payment is already being performed");
+
+		m_OutgoingPayLink.m_Value = &link;
+	}
+
+	//TODO: wait until the link is finished or failed
+
+	{
+		CMutexLocker lock(m_OutgoingPayLink);
+		m_OutgoingPayLink.m_Value = NULL;
 	}
 }
 

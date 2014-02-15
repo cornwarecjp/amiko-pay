@@ -23,6 +23,7 @@
 
 #include <list>
 
+#include "exception.h"
 //#include "routetable.h"
 #include "sha256.h"
 #include "ripemd160.h"
@@ -36,6 +37,8 @@ class CAmiko;
 class CFinRoutingThread : public CThread
 {
 public:
+	SIMPLEEXCEPTIONCLASS(CPaymentFailed)
+
 	//TODO: spec
 	CFinRoutingThread(CAmiko *amiko);
 
@@ -44,14 +47,18 @@ public:
 
 	void threadFunc();
 
+	//TODO: spec
+	void doPayment(CPayLink &link);
 
 	CCriticalSection< std::list<CPayLink *> > m_PayLinks;
-	CCriticalSection< CPayLink * > m_OutgoingPayLink;
 
 private:
 
 	CAmiko *m_Amiko;
 	//CRouteTable m_RouteTable;
+
+	CCriticalSection< CPayLink * > m_OutgoingPayLink;
+
 
 	class CActiveTransaction
 	{

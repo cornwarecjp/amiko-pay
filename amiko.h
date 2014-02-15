@@ -25,7 +25,6 @@
 #include <vector>
 #include <map>
 
-#include "exception.h"
 #include "cthread.h"
 #include "amikosettings.h"
 #include "comlink.h"
@@ -42,7 +41,6 @@ Container of application-level data
 class CAmiko
 {
 public:
-	SIMPLEEXCEPTIONCLASS(CPaymentFailed)
 
 	/*
 	settings:
