@@ -25,6 +25,7 @@
 #include <vector>
 #include <map>
 
+#include "exception.h"
 #include "cthread.h"
 #include "amikosettings.h"
 #include "comlink.h"
@@ -41,6 +42,8 @@ Container of application-level data
 class CAmiko
 {
 public:
+	SIMPLEEXCEPTIONCLASS(CPaymentFailed)
+
 	/*
 	settings:
 	Reference to properly formed CAmikoSettings object (NOT CHECKED)
@@ -199,6 +202,7 @@ public:
 	std::vector<CFinLink *> m_FinLinks;
 
 	CCriticalSection< std::list<CPayLink *> > m_PayLinks;
+	CCriticalSection< CPayLink * > m_OutgoingPayLink;
 
 private:
 

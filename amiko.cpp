@@ -28,6 +28,7 @@
 
 
 CAmiko::CAmiko(const CAmikoSettings &settings) :
+	m_OutgoingPayLink(NULL),
 	m_Settings(settings),
 	m_ListenerThread(
 		this,
@@ -63,7 +64,7 @@ CAmiko::~CAmiko()
 		delete m_FinLinks[i];
 	m_FinLinks.clear();
 
-	//TODO: save m_IncomingPayments somewhere?
+	//TODO: save m_IncomingPayments and m_OutgoingPayLink somewhere?
 	//Maybe it's a good idea anyway to save it on every modification.
 }
 
@@ -377,7 +378,22 @@ CString CAmiko::addPaymentRequest(const CString &receipt, uint64_t amount)
 
 void CAmiko::doPayment(CPayLink &link)
 {
-	//TODO
+	{
+		CMutexLocker lock(m_OutgoingPayLink);
+
+		if(m_OutgoingPayLink.m_Value != NULL)
+			throw CPaymentFailed(
+				"Payment failed: another payment is already being performed");
+
+		m_OutgoingPayLink.m_Value = &link;
+	}
+
+	//TODO: wait until the link is finished or failed
+
+	{
+		CMutexLocker lock(m_OutgoingPayLink);
+		m_OutgoingPayLink.m_Value = NULL;
+	}
 }
 
 
