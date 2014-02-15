@@ -114,7 +114,7 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 #define CHECKNUMARGS(n) \
 	if(splitInput.size() < ((n)+1)) \
 	{ \
-		printf("Error: setRemoteURI requires %ld arguments; %ld given\n", \
+		printf("Error: command requires %ld arguments; %ld given\n", \
 			long(n), long(splitInput.size())-1); \
 		return; \
 	}
@@ -122,7 +122,9 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 	if(splitInput[0] == "addpaymentrequest")
 	{
 		CHECKNUMARGS(1)
-		uint64_t amount = readBitcoinAmount(splitInput[1], BTC); //TODO: configurable unit
+
+		//TODO: make unit configurable
+		uint64_t amount = readBitcoinAmount(splitInput[1], BTC);
 
 		CString receipt = "";
 		if(splitInput.size() >= 3)
@@ -138,7 +140,7 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 		CPayLink link = CURI(paymentURL);
 		link.initialHandshake();
 
-		printf("<RECEIPT>\n%s\n<RECEIPT>\n", link.m_transaction.m_receipt.c_str());
+		printf("<RECEIPT>\n%s\n</RECEIPT>\n", link.m_transaction.m_receipt.c_str());
 
 		//TODO: make unit configurable
 		CString writtenAmount = writeBitcoinAmount(link.m_transaction.m_amount, BTC);
