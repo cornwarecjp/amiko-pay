@@ -128,24 +128,56 @@ void CFinRoutingThread::processIncomingMessages()
 
 void CFinRoutingThread::searchForNewPayLinks()
 {
-	CMutexLocker lock(m_Amiko->m_PayLinks);
-	for(std::list<CPayLink *>::iterator i=m_Amiko->m_PayLinks.m_Value.begin();
-			i != m_Amiko->m_PayLinks.m_Value.end(); i++)
-		if((*i)->getState() == CPayLink::eOperational)
+	//Receiver-side payments
+	{
+		CMutexLocker lock(m_Amiko->m_PayLinks);
+		for(std::list<CPayLink *>::iterator
+				i = m_Amiko->m_PayLinks.m_Value.begin();
+				i != m_Amiko->m_PayLinks.m_Value.end(); i++)
+			if((*i)->getState() == CPayLink::eOperational)
+			{
+				bool found = false;
+				for(std::list<CActiveTransaction>::iterator
+						j = m_activeTransactions.begin();
+						j != m_activeTransactions.end(); j++)
+					if(j->m_inboundInterface ==
+						(*i)->m_transaction.m_commitHash.toBinBuffer()
+						&&
+						j->m_receiverSide == (*i)->isReceiverSide())
+					{
+						found = true;
+						break;
+					}
+
+				if(!found)
+					addAndProcessPayLink(*(*i));
+			}
+	}
+
+	//Sender-side payment
+	{
+		CMutexLocker lock(m_Amiko->m_OutgoingPayLink);
+		CPayLink *paylink = m_Amiko->m_OutgoingPayLink.m_Value;
+
+		if(paylink != NULL)
 		{
 			bool found = false;
-			for(std::list<CActiveTransaction>::iterator j=m_activeTransactions.begin();
+			for(std::list<CActiveTransaction>::iterator
+					j = m_activeTransactions.begin();
 					j != m_activeTransactions.end(); j++)
 				if(j->m_inboundInterface ==
-					(*i)->m_transaction.m_commitHash.toBinBuffer())
+					paylink->m_transaction.m_commitHash.toBinBuffer()
+					&&
+					j->m_receiverSide == paylink->isReceiverSide())
 				{
 					found = true;
 					break;
 				}
 
 			if(!found)
-				addAndProcessPayLink(*(*i));
+				addAndProcessPayLink(*paylink);
 		}
+	}
 }
 
 

@@ -56,7 +56,7 @@ private:
 		//Interface IDs are the local public keys of finlinks
 		//Exception for payer/payee: inbound interface is commit hash
 		//If we are both payer and payee,
-		//  there are two active transactions with opposite m_payerSide
+		//  there are two active transactions with opposite m_receiverSide
 		//Exception for meeting point: outbound interface is empty
 		CBinBuffer m_inboundInterface;
 		CBinBuffer m_currentOutboundInterface;
