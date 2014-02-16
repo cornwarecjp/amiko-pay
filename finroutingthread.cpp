@@ -241,6 +241,9 @@ void CFinRoutingThread::addAndProcessPayLink(const CPayLink &link)
 
 	CActiveTransaction &t = m_activeTransactions.back();
 	matchWithOwnMeetingPoint(t);
+
+	//TODO: for transactions which don't match the local meeting point,
+	// start payment routing over finlinks
 }
 
 
@@ -257,8 +260,26 @@ void CFinRoutingThread::matchWithOwnMeetingPoint(CActiveTransaction &t)
 		t.m_remainingOutboundInterfaces.clear();
 		t.m_currentOutboundInterface.clear();
 
-		//TODO: match with other-side active transaction, if it exists
+		//Match with other-side active transaction, if it exists
+		for(std::list<CActiveTransaction>::iterator
+				j = m_activeTransactions.begin();
+				j != m_activeTransactions.end(); j++)
+			if(j->m_currentOutboundInterface.size() == 0 &&
+				j->m_receiverSide == !t.m_receiverSide && //Opposite side!
+				j->m_commitHash == t.m_commitHash)
+			{
+				//TODO: check whether amount matches (this is quite important)
+				reportHaveRoute(t);
+				reportHaveRoute(*j);
+			}
 	}
+}
+
+
+void CFinRoutingThread::reportHaveRoute(CActiveTransaction &t)
+{
+	log("Report back that transaction route is finished\n");
+	//TODO
 }
 
 

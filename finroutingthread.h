@@ -104,6 +104,9 @@ private:
 	void matchWithOwnMeetingPoint(CActiveTransaction &t);
 
 	//TODO: spec
+	void reportHaveRoute(CActiveTransaction &t);
+
+	//TODO: spec
 	//void processRoutingChanges();
 
 	//TODO: spec
