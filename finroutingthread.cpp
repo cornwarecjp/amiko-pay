@@ -181,10 +181,11 @@ void CFinRoutingThread::searchForNewPayLinks()
 				for(std::list<CActiveTransaction>::iterator
 						j = m_activeTransactions.begin();
 						j != m_activeTransactions.end(); j++)
-					if(j->m_inboundInterface ==
-						(*i)->m_transaction.m_commitHash.toBinBuffer()
-						&&
-						j->m_receiverSide == (*i)->isReceiverSide())
+					if(j->m_isEndpoint &&
+						j->m_receiverSide == (*i)->isReceiverSide() &&
+						j->m_inboundInterface ==
+							(*i)->m_transaction.m_commitHash.toBinBuffer()
+						)
 					{
 						found = true;
 						break;
@@ -206,10 +207,11 @@ void CFinRoutingThread::searchForNewPayLinks()
 			for(std::list<CActiveTransaction>::iterator
 					j = m_activeTransactions.begin();
 					j != m_activeTransactions.end(); j++)
-				if(j->m_inboundInterface ==
-					paylink->m_transaction.m_commitHash.toBinBuffer()
-					&&
-					j->m_receiverSide == paylink->isReceiverSide())
+				if(j->m_isEndpoint &&
+					j->m_receiverSide == paylink->isReceiverSide() &&
+					j->m_inboundInterface ==
+						paylink->m_transaction.m_commitHash.toBinBuffer()
+					)
 				{
 					found = true;
 					break;
@@ -233,6 +235,7 @@ void CFinRoutingThread::addAndProcessPayLink(const CPayLink &link)
 		//TODO: set up outbound interfaces
 		t.m_amount = link.m_transaction.m_amount;
 		t.m_receiverSide = link.isReceiverSide();
+		t.m_isEndpoint = true;
 		t.m_commitHash = link.m_transaction.m_commitHash;
 		t.m_meetingPoint = link.m_transaction.m_meetingPoint;
 

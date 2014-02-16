@@ -78,6 +78,8 @@ private:
 		//true: inbound interface is towards receiver
 		//false: inbound interface is towards payer
 		bool m_receiverSide;
+		//Determines whether we are the endpoint (payer or payee)
+		bool m_isEndpoint;
 
 		//See CTransaction for the meaning of these
 		CSHA256 m_commitToken, m_commitHash;
