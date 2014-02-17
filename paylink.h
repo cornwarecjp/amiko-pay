@@ -190,9 +190,15 @@ private:
 	void receiveNegotiationString(uint32_t &minVersion, uint32_t &maxVersion);
 
 	//TODO: spec
-	void sendOK() const;
 	void sendAndThrowError(const CString &message);
-	void receiveOK(int timeoutValue=PAYLINK_DEFAULT_TIMEOUT);
+	void expectMessage(
+		const CString &expectedText,
+		int timeoutValue=PAYLINK_DEFAULT_TIMEOUT);
+
+	inline void sendOK() const
+		{sendMessage(CString("OK"));}
+	inline void receiveOK(int timeoutValue=PAYLINK_DEFAULT_TIMEOUT)
+		{expectMessage("OK", timeoutValue);}
 
 	//TODO: spec
 	CBinBuffer receiveMessage(int timeoutValue=PAYLINK_DEFAULT_TIMEOUT);

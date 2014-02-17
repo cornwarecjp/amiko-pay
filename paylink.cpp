@@ -88,6 +88,7 @@ void CPayLink::threadFunc()
 	}
 }
 
+
 void CPayLink::threadFuncReceiverSide()
 {
 	initialHandshake();
@@ -98,9 +99,14 @@ void CPayLink::threadFuncReceiverSide()
 	m_receivedHaveRoute.wait();
 	log("Receiver-side paylink has route to meeting point\n");
 
+	sendMessage(CString("haveRoute"));
+	expectMessage("haveRoute", 10000); //10 s
+
 	//TODO
 	//Fall-through: for now, the thread stops immediately
+	log("Receiver-side paylink thread ends\n");
 }
+
 
 void CPayLink::threadFuncSenderSide()
 {
@@ -111,9 +117,14 @@ void CPayLink::threadFuncSenderSide()
 	m_receivedHaveRoute.wait();
 	log("Sender-side paylink has route to meeting point\n");
 
+	sendMessage(CString("haveRoute"));
+	expectMessage("haveRoute", 10000); //10 s
+
 	//TODO
 	//Fall-through: for now, the thread stops immediately
+	log("Sender-side paylink thread ends\n");
 }
+
 
 void CPayLink::initialHandshake()
 {
@@ -135,12 +146,6 @@ void CPayLink::sendPayerAgrees(bool agree)
 }
 
 
-void CPayLink::sendOK() const
-{
-	sendMessage(CString("OK"));
-}
-
-
 void CPayLink::sendAndThrowError(const CString &message)
 {
 	setState(eCanceled);
@@ -149,7 +154,8 @@ void CPayLink::sendAndThrowError(const CString &message)
 }
 
 
-void CPayLink::receiveOK(int timeoutValue)
+void CPayLink::expectMessage(
+	const CString &expectedText, int timeoutValue)
 {
 	CString message = receiveMessage(timeoutValue).toString();
 
@@ -157,7 +163,7 @@ void CPayLink::receiveOK(int timeoutValue)
 
 	CString peer = m_isReceiverSide ? "payer" : "payee";
 
-	if(message != "OK")
+	if(message != expectedText)
 		throw CProtocolError(
 			CString("Received error from ") + peer + ": " + message);
 }
