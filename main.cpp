@@ -152,6 +152,8 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 			writtenAmount.c_str())
 				);
 		link.sendPayerAgrees(answer == "y" || answer == "Y");
+
+		link.start();
 		amiko.doPayment(link);
 	}
 	else if(splitInput[0] == "newlink")

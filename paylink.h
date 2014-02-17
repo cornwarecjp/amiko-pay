@@ -105,7 +105,6 @@ public:
 	//TODO: spec
 	void initialHandshake();
 
-	//Receiver-side specific:
 	//TODO: spec
 	void threadFunc();
 
@@ -131,6 +130,11 @@ public:
 	CTransaction m_transaction;
 
 private:
+
+	//TODO: spec
+	void threadFuncSenderSide();
+	void threadFuncReceiverSide();
+
 
 	/*
 	Exceptions:

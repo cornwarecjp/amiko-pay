@@ -62,15 +62,10 @@ void CPayLink::threadFunc()
 	//Catch all exceptions and handle them
 	try
 	{
-		initialHandshake();
-		receiveOK(300000); //300 s = 5 minutes
-		setState(eOperational);
-
-		//TODO: how do we know it when routing fails?
-		m_receivedHaveRoute.wait();
-
-		//TODO
-		//Fall-through: for now, the thread stops immediately
+		if(m_isReceiverSide)
+			{threadFuncReceiverSide();}
+		else
+			{threadFuncSenderSide();}
 	}
 	catch(CTCPConnection::CClosedException &e)
 	{
@@ -93,6 +88,32 @@ void CPayLink::threadFunc()
 	}
 }
 
+void CPayLink::threadFuncReceiverSide()
+{
+	initialHandshake();
+	receiveOK(300000); //300 s = 5 minutes
+	setState(eOperational);
+
+	//TODO: how do we know it when routing fails?
+	m_receivedHaveRoute.wait();
+	log("Receiver-side paylink has route to meeting point\n");
+
+	//TODO
+	//Fall-through: for now, the thread stops immediately
+}
+
+void CPayLink::threadFuncSenderSide()
+{
+	//Note: the sender side starts its own thread later in the process
+	//than the receiver side.
+
+	//TODO: how do we know it when routing fails?
+	m_receivedHaveRoute.wait();
+	log("Sender-side paylink has route to meeting point\n");
+
+	//TODO
+	//Fall-through: for now, the thread stops immediately
+}
 
 void CPayLink::initialHandshake()
 {
