@@ -123,6 +123,11 @@ public:
 		return m_isReceiverSide;
 	}
 
+	inline void reportHaveRoute()
+	{
+		m_receivedHaveRoute.post();
+	}
+
 	CTransaction m_transaction;
 
 private:
@@ -205,6 +210,8 @@ private:
 	uint32_t m_protocolVersion;
 
 	CCriticalSection<eState> m_state;
+
+	CSemaphore m_receivedHaveRoute;
 };
 
 #endif

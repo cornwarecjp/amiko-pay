@@ -171,10 +171,15 @@ void CFinRoutingThread::searchForNewPayLinks()
 {
 	//Receiver-side payments
 	{
-		CMutexLocker lock(m_PayLinks);
+		std::list<CPayLink *> listCopy;
+		{
+			CMutexLocker lock(m_PayLinks);
+			listCopy = m_PayLinks.m_Value;
+		}
+
 		for(std::list<CPayLink *>::iterator
-				i = m_PayLinks.m_Value.begin();
-				i != m_PayLinks.m_Value.end(); i++)
+				i = listCopy.begin();
+				i != listCopy.end(); i++)
 			if((*i)->getState() == CPayLink::eOperational)
 			{
 				bool found = false;
@@ -198,8 +203,11 @@ void CFinRoutingThread::searchForNewPayLinks()
 
 	//Sender-side payment
 	{
-		CMutexLocker lock(m_OutgoingPayLink);
-		CPayLink *paylink = m_OutgoingPayLink.m_Value;
+		CPayLink *paylink = NULL;
+		{
+			CMutexLocker lock(m_OutgoingPayLink);
+			paylink = m_OutgoingPayLink.m_Value;
+		}
 
 		if(paylink != NULL)
 		{
@@ -282,7 +290,44 @@ void CFinRoutingThread::matchWithOwnMeetingPoint(CActiveTransaction &t)
 void CFinRoutingThread::reportHaveRoute(CActiveTransaction &t)
 {
 	log("Report back that transaction route is finished\n");
-	//TODO
+
+	if(t.m_isEndpoint)
+	{
+		if(t.m_receiverSide)
+		{
+			bool found = false;
+			CMutexLocker lock(m_PayLinks);
+			for(std::list<CPayLink *>::iterator
+					i = m_PayLinks.m_Value.begin();
+					i != m_PayLinks.m_Value.end(); i++)
+				if((*i)->isReceiverSide() &&
+					t.m_inboundInterface ==
+						(*i)->m_transaction.m_commitHash.toBinBuffer()
+					)
+				{
+					log("Report back to receiver-side paylink\n");
+					(*i)->reportHaveRoute();
+
+					found = true;
+					break;
+				}
+
+			//TODO: check that found == true
+		}
+		else
+		{
+			CMutexLocker lock(m_OutgoingPayLink);
+			CPayLink *paylink = m_OutgoingPayLink.m_Value;
+
+			//TODO: check that paylink != NULL
+			//TODO: check that t.m_inboundInterface ==
+			//       paylink->m_transaction.m_commitHash.toBinBuffer()
+
+			log("Report back to sender-side paylink\n");
+			paylink->reportHaveRoute();
+		}
+	}
+	//else: TODO
 }
 
 

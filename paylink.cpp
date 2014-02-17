@@ -1,6 +1,6 @@
 /*
     paylink.cpp
-    Copyright (C) 2013 by CJP
+    Copyright (C) 2013-2014 by CJP
 
     This file is part of Amiko Pay.
 
@@ -65,6 +65,9 @@ void CPayLink::threadFunc()
 		initialHandshake();
 		receiveOK(300000); //300 s = 5 minutes
 		setState(eOperational);
+
+		//TODO: how do we know it when routing fails?
+		m_receivedHaveRoute.wait();
 
 		//TODO
 		//Fall-through: for now, the thread stops immediately
