@@ -102,6 +102,8 @@ void CPayLink::threadFuncReceiverSide()
 	sendMessage(CString("haveRoute"));
 	expectMessage("haveRoute", 10000); //10 s
 
+	setState(eHasRoute);
+
 	//TODO
 	//Fall-through: for now, the thread stops immediately
 	log("Receiver-side paylink thread ends\n");
@@ -119,6 +121,8 @@ void CPayLink::threadFuncSenderSide()
 
 	sendMessage(CString("haveRoute"));
 	expectMessage("haveRoute", 10000); //10 s
+
+	setState(eHasRoute);
 
 	//TODO
 	//Fall-through: for now, the thread stops immediately

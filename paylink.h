@@ -50,7 +50,9 @@ following state transitions:
   initial->canceled
   initial->operational
   operational->canceled
-  operational->finished
+  operational->hasRoute
+  hasRoute->canceled
+  hasRoute->finished
 */
 class CPayLink : public CThread
 {
@@ -62,6 +64,7 @@ public:
 	{
 	eInitial,
 	eOperational,
+	eHasRoute,
 	eFinished,
 	eCanceled
 	};
