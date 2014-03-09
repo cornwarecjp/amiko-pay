@@ -27,6 +27,10 @@
 class CTimer
 {
 public:
+	typedef uint64_t millitime_t;
+
+	static const millitime_t m_maxTime = millitime_t(-1);
+
 	/*
 	Return value:
 	milliseconds since UNIX epoch
@@ -34,7 +38,7 @@ public:
 	Exceptions:
 	none (TODO)
 	*/
-	static uint64_t getTime();
+	static millitime_t getTime();
 
 	/*
 	microseconds:

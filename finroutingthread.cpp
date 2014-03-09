@@ -30,6 +30,9 @@
 #include "finroutingthread.h"
 
 
+#define HAVEROUTE_TIMEOUT 10000 //10 seconds
+
+
 CFinRoutingThread::CFinRoutingThread(CAmiko *amiko) :
 	m_Amiko(amiko),
 	m_OutgoingPayLink(NULL)
@@ -55,6 +58,7 @@ void CFinRoutingThread::threadFunc()
 			processIncomingMessages();
 			//processRoutingChanges();
 			searchForNewPayLinks();
+			processTimeouts();
 		}
 		catch(CException &e)
 		{
@@ -232,6 +236,31 @@ void CFinRoutingThread::searchForNewPayLinks()
 }
 
 
+void CFinRoutingThread::processTimeouts()
+{
+	CTimer::millitime_t time = CTimer::getTime();
+
+	for(std::list<CActiveTransaction>::iterator
+			i = m_activeTransactions.begin();
+			i != m_activeTransactions.end(); i++)
+	{
+		if(time > i->m_haveRouteTimeout)
+		{
+			//For now, only log, so we can see that this works:
+			log("Time-out: did not receive haveRoute\n");
+
+			//Make sure we don't time-out again:
+			i->m_haveRouteTimeout = CTimer::m_maxTime;
+
+			//TODO: perform related actions
+			//TODO: remove active transaction from list once that's possible
+		}
+
+		//TODO: other time-out types
+	}
+}
+
+
 void CFinRoutingThread::addAndProcessPayLink(const CPayLink &link)
 {
 	log(CString::format("Adding operational link with hash %s\n", 256,
@@ -251,8 +280,9 @@ void CFinRoutingThread::addAndProcessPayLink(const CPayLink &link)
 	}
 
 	CActiveTransaction &t = m_activeTransactions.back();
-	matchWithOwnMeetingPoint(t);
 
+	t.m_haveRouteTimeout = CTimer::getTime() + HAVEROUTE_TIMEOUT;
+	matchWithOwnMeetingPoint(t);
 	//TODO: for transactions which don't match the local meeting point,
 	// start payment routing over finlinks
 }

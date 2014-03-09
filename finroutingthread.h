@@ -29,6 +29,7 @@
 #include "ripemd160.h"
 #include "binbuffer.h"
 #include "paylink.h"
+#include "timer.h"
 
 #include "cthread.h"
 
@@ -86,6 +87,7 @@ private:
 		CRIPEMD160 m_meetingPoint;
 
 		//TODO: something about the transaction state
+		CTimer::millitime_t m_haveRouteTimeout;
 	};
 	std::list<CActiveTransaction> m_activeTransactions;
 
@@ -98,6 +100,9 @@ private:
 
 	//TODO: spec
 	void searchForNewPayLinks();
+
+	//TODO: spec
+	void processTimeouts();
 
 	//TODO: spec
 	void addAndProcessPayLink(const CPayLink &link);

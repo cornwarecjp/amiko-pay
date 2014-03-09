@@ -24,13 +24,13 @@
 #include "timer.h"
 
 
-uint64_t CTimer::getTime()
+CTimer::millitime_t CTimer::getTime()
 {
 	//TODO: check for failure
 	//TODO: maybe select monotomic clock?
 	timespec t;
 	clock_gettime(CLOCK_REALTIME, &t);
-	return uint64_t(t.tv_sec)*1000 + t.tv_nsec/1000000;
+	return millitime_t(t.tv_sec)*1000 + t.tv_nsec/1000000;
 }
 
 
