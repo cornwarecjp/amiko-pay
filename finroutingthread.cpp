@@ -230,21 +230,10 @@ void CFinRoutingThread::searchForNewPayLinks()
 
 		if(paylink != NULL)
 		{
-			bool found = false;
-			for(std::list<CActiveTransaction>::iterator
-					j = m_activeTransactions.begin();
-					j != m_activeTransactions.end(); j++)
-				if(j->m_isEndpoint &&
-					j->m_receiverSide == paylink->isReceiverSide() &&
-					j->m_inboundInterface ==
-						paylink->m_transaction.m_commitHash.toBinBuffer()
-					)
-				{
-					found = true;
-					break;
-				}
+			std::list<CActiveTransaction>::iterator j =
+				findActiveTransaction(paylink);
 
-			if(!found)
+			if(j == m_activeTransactions.end()) //not found
 				addAndProcessPayLink(*paylink);
 		}
 	}
