@@ -176,8 +176,7 @@ public:
 	*/
 	inline size_t getNumPayLinks()
 	{
-		CMutexLocker lock(m_FinRoutingThread.m_PayLinks);
-		return m_FinRoutingThread.m_PayLinks.m_Value.size();
+		return m_FinRoutingThread.getNumPayLinks();
 	}
 
 	//TODO: spec

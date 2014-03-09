@@ -75,15 +75,22 @@ void CFinRoutingThread::threadFunc()
 	}
 
 	{
-		CMutexLocker lock(m_PayLinks);
-		for(std::list<CPayLink *>::iterator i=m_PayLinks.m_Value.begin();
-			i != m_PayLinks.m_Value.end(); i++)
+		CMutexLocker lock(m_IncomingPayLinks);
+		for(std::list<CPayLink *>::iterator i=m_IncomingPayLinks.m_Value.begin();
+			i != m_IncomingPayLinks.m_Value.end(); i++)
 		{
 			(*i)->stop();
 			delete (*i);
 		}
-		m_PayLinks.m_Value.clear();
+		m_IncomingPayLinks.m_Value.clear();
 	}
+}
+
+
+void CFinRoutingThread::addPayLink(CPayLink *link)
+{
+	CMutexLocker lock(m_IncomingPayLinks);
+	m_IncomingPayLinks.m_Value.push_back(link);
 }
 
 
@@ -177,8 +184,8 @@ void CFinRoutingThread::searchForNewPayLinks()
 	{
 		std::list<CPayLink *> listCopy;
 		{
-			CMutexLocker lock(m_PayLinks);
-			listCopy = m_PayLinks.m_Value;
+			CMutexLocker lock(m_IncomingPayLinks);
+			listCopy = m_IncomingPayLinks.m_Value;
 		}
 
 		for(std::list<CPayLink *>::iterator
@@ -326,10 +333,10 @@ void CFinRoutingThread::reportHaveRoute(CActiveTransaction &t)
 		if(t.m_receiverSide)
 		{
 			bool found = false;
-			CMutexLocker lock(m_PayLinks);
+			CMutexLocker lock(m_IncomingPayLinks);
 			for(std::list<CPayLink *>::iterator
-					i = m_PayLinks.m_Value.begin();
-					i != m_PayLinks.m_Value.end(); i++)
+					i = m_IncomingPayLinks.m_Value.begin();
+					i != m_IncomingPayLinks.m_Value.end(); i++)
 				if((*i)->isReceiverSide() &&
 					t.m_inboundInterface ==
 						(*i)->m_transaction.m_commitHash.toBinBuffer()

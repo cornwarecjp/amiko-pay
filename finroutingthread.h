@@ -49,14 +49,27 @@ public:
 	void threadFunc();
 
 	//TODO: spec
-	void doPayment(CPayLink &link);
+	void addPayLink(CPayLink *link);
 
-	CCriticalSection< std::list<CPayLink *> > m_PayLinks;
+	/*
+	Exceptions:
+	CMutex::CError
+	*/
+	inline size_t getNumPayLinks()
+	{
+		CMutexLocker lock(m_IncomingPayLinks);
+		return m_IncomingPayLinks.m_Value.size();
+	}
+
+	//TODO: spec
+	void doPayment(CPayLink &link);
 
 private:
 
 	CAmiko *m_Amiko;
 	//CRouteTable m_RouteTable;
+
+	CCriticalSection< std::list<CPayLink *> > m_IncomingPayLinks;
 
 	CCriticalSection< CPayLink * > m_OutgoingPayLink;
 	CSemaphore m_OutgoingPaymentInProgress;

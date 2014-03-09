@@ -330,8 +330,7 @@ void CAmiko::makeMissingComLinks()
 
 void CAmiko::addPayLink(CPayLink *link)
 {
-	CMutexLocker lock(m_FinRoutingThread.m_PayLinks);
-	m_FinRoutingThread.m_PayLinks.m_Value.push_back(link);
+	m_FinRoutingThread.addPayLink(link);
 }
 
 
