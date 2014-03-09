@@ -119,7 +119,7 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 		return; \
 	}
 
-	if(splitInput[0] == "addpaymentrequest")
+	if(splitInput[0] == "request")
 	{
 		CHECKNUMARGS(1)
 
@@ -207,7 +207,7 @@ void doCommand(CAmiko &amiko, const std::vector<CString> &splitInput)
 			"  Terminate application.\n"
 			"help:\n"
 			"  Display this message.\n"
-			"addpaymentrequest amount [receipt]:\n"
+			"request amount [receipt]:\n"
 			"  Request payment of amount BTC, with optional receipt.\n"
 			"  Returns the payment URL.\n"
 			"pay paymentURL:\n"

@@ -31,9 +31,9 @@ be used to terminate Amiko Pay.
 
 Command arguments are separated by whitespace. To enter a command argument that
 includes whitespace (spaces, newline etc.), surround it with double quotes.
-For instance, for a multiline receipt argument in addpaymentrequest:
+For instance, for a multiline receipt argument in request:
 
-> addpaymentrequest 1.0 "
+> request 1.0 "
 ... You owe me one Bitcoin.
 ... You borrowed it from me last week, and I want it back.
 ... "
@@ -80,7 +80,7 @@ Performing a payment
 Scenario: A wishes to receive a payment from B.
 
 Step 1:
-A calls the "addpaymentrequest" command, with as arguments
+A calls the "request" command, with as arguments
 * the amount to be received
 * (optionally) a receipt
 The result is an amikopay URL.
