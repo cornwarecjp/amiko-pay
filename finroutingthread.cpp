@@ -123,6 +123,25 @@ void CFinRoutingThread::doPayment(CPayLink &link)
 }
 
 
+std::list<CFinRoutingThread::CActiveTransaction>::iterator
+	CFinRoutingThread::findActiveTransaction(const CPayLink *paylink)
+{
+	for(std::list<CActiveTransaction>::iterator
+			i = m_activeTransactions.begin();
+			i != m_activeTransactions.end(); i++)
+		if(i->m_isEndpoint &&
+			i->m_receiverSide == paylink->isReceiverSide() &&
+			i->m_inboundInterface ==
+				paylink->m_transaction.m_commitHash.toBinBuffer()
+			)
+		{
+			return i;
+		}
+
+	return m_activeTransactions.end();
+}
+
+
 /*
 void CFinRoutingThread::initializeRoutingTable()
 {
@@ -193,21 +212,10 @@ void CFinRoutingThread::searchForNewPayLinks()
 				i != listCopy.end(); i++)
 			if((*i)->getState() == CPayLink::eOperational)
 			{
-				bool found = false;
-				for(std::list<CActiveTransaction>::iterator
-						j = m_activeTransactions.begin();
-						j != m_activeTransactions.end(); j++)
-					if(j->m_isEndpoint &&
-						j->m_receiverSide == (*i)->isReceiverSide() &&
-						j->m_inboundInterface ==
-							(*i)->m_transaction.m_commitHash.toBinBuffer()
-						)
-					{
-						found = true;
-						break;
-					}
+				std::list<CActiveTransaction>::iterator j =
+					findActiveTransaction(*i);
 
-				if(!found)
+				if(j == m_activeTransactions.end()) //not found
 					addAndProcessPayLink(*(*i));
 			}
 	}

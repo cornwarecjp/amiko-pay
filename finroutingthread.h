@@ -104,6 +104,9 @@ private:
 	};
 	std::list<CActiveTransaction> m_activeTransactions;
 
+	//TODO: spec
+	std::list<CActiveTransaction>::iterator findActiveTransaction(
+		const CPayLink *paylink);
 
 	//TODO: spec
 	//void initializeRoutingTable();
