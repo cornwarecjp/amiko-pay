@@ -29,7 +29,8 @@ a.start()
 time.sleep(0.1)
 connection = Connection(a.context, ('localhost', 4321))
 connection.send("hello")
-time.sleep(0.1)
+
+time.sleep(10.0)
 
 a.sendSignal(amiko.signals.quit)
 a.stop()

@@ -16,9 +16,24 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
+import time
+
+
+
 class FinLink:
 	def __init__(self, amikoContext, localID, remoteID):
 		self.context = amikoContext
-		localURL = "amikolink://localhost:4321/" + localID
-		remoteURL = "amikolink://localhost:4321/" + remoteID #TODO
+
+		self.localURL = "amikolink://localhost:4321/" + localID
+		self.remoteURL = "amikolink://localhost:4321/" + remoteID #TODO
+
+		self.context.setTimer(time.time() + 1.0, self.handleTimeout)
+
+
+	def handleTimeout(self):
+		print "Timeout event; local URL is " + self.localURL
+
+		# Register again:
+		self.context.setTimer(time.time() + 1.0, self.handleTimeout)
+
 

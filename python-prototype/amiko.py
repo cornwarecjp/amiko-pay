@@ -18,6 +18,7 @@
 
 import select
 import threading
+import time
 
 import network
 import finlink
@@ -49,15 +50,25 @@ class Context:
 			self.signal = signal
 			self.handler = handler
 
+	class Timer:
+		def __init__(self, timestamp, handler):
+			self.timestamp = timestamp
+			self.handler = handler
+
 
 	def __init__(self):
 		# Each element is an EventConnection
 		self.__eventConnections = []
+		self.__timers = []
 
 
 	def connect(self, sender, signal, handler):
 		self.__eventConnections.append(
 			Context.EventConnection(sender, signal, handler))
+
+
+	def setTimer(self, timestamp, handler):
+		self.__timers.append(Context.Timer(timestamp, handler))
 
 
 	def removeEventConnectionsBySender(self, sender):
@@ -77,6 +88,14 @@ class Context:
 				if c.sender == r and c.signal == signals.readyForRead]
 			for h in handlers:
 				h()
+
+
+	def dispatchTimerEvents(self):
+		now = time.time()
+		for t in self.__timers:
+			if not (t.timestamp > now):
+				t.handler()
+		self.__timers = filter(lambda t: t.timestamp > now, self.__timers)
 
 
 	def sendSignal(self, signal, *args, **kwargs):
@@ -120,6 +139,7 @@ class Amiko(threading.Thread):
 		self.__stop = False
 		while not self.__stop:
 			self.context.dispatchNetworkEvents()
+			self.context.dispatchTimerEvents()
 			with self.__signalLock:
 				s = self.__signal
 				if s != None:
