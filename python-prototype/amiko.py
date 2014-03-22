@@ -19,7 +19,8 @@
 import select
 import threading
 
-from network import Listener, Connection
+import network
+import finlink
 
 
 
@@ -89,14 +90,19 @@ class Context:
 class Amiko(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
+
 		self.context = Context()
-		self.listener = Listener(self.context, 4321)
+
+		self.listener = network.Listener(self.context, 4321)
+		self.finLinks = []
+		self.finLinks.append(finlink.FinLink(self.context, "A", "B"))
+		self.finLinks.append(finlink.FinLink(self.context, "B", "A"))
+
 		self.__stop = False
 
 		self.__signalLock = threading.Lock()
 		self.__signal = None
 		self.__signalProcessed = threading.Event()
-
 
 	def stop(self):
 		self.__stop = True
@@ -120,4 +126,6 @@ class Amiko(threading.Thread):
 					self.context.sendSignal(s[0], *s[1], **s[2])
 				self.__signalProcessed.set()
 				self.__signal = None
+
+
 
