@@ -17,6 +17,9 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 import select
+import threading
+
+from network import Listener, Connection
 
 
 
@@ -83,7 +86,38 @@ class Context:
 
 
 
-class Amiko:
-	pass
+class Amiko(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self)
+		self.context = Context()
+		self.listener = Listener(self.context, 4321)
+		self.__stop = False
 
+		self.__signalLock = threading.Lock()
+		self.__signal = None
+		self.__signalProcessed = threading.Event()
+
+
+	def stop(self):
+		self.__stop = True
+		self.join()
+
+
+	def sendSignal(self, signal, *args, **kwargs):
+		with self.__signalLock:
+			self.__signal = (signal, args, kwargs)
+			self.__signalProcessed.clear()
+		self.__signalProcessed.wait()
+
+
+	def run(self):
+		self.__stop = False
+		while not self.__stop:
+			self.context.dispatchNetworkEvents()
+			with self.__signalLock:
+				s = self.__signal
+				if s != None:
+					self.context.sendSignal(s[0], *s[1], **s[2])
+				self.__signalProcessed.set()
+				self.__signal = None
 

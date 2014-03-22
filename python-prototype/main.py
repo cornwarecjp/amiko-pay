@@ -17,19 +17,20 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
+import time
+
 import amiko
-from network import Listener, Connection
+from network import Connection
 
-context = amiko.Context()
+a = amiko.Amiko()
+a.start()
 
-listener = Listener(context, 4321)
-
-connection = Connection(context, ('localhost', 4321))
-
+time.sleep(0.1)
+connection = Connection(a.context, ('localhost', 4321))
 connection.send("hello")
+time.sleep(0.1)
 
-context.dispatchNetworkEvents()
-context.dispatchNetworkEvents()
+a.sendSignal(amiko.signals.quit)
+a.stop()
 
-context.sendSignal(amiko.signals.quit)
 
