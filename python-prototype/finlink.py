@@ -18,6 +18,8 @@
 
 import time
 
+import network
+
 
 
 class FinLink:
@@ -27,13 +29,26 @@ class FinLink:
 		self.localURL = "amikolink://localhost:4321/" + localID
 		self.remoteURL = "amikolink://localhost:4321/" + remoteID #TODO
 
-		self.context.setTimer(time.time() + 1.0, self.handleTimeout)
+		self.context.setTimer(time.time() + 1.0, self.handleReconnectTimeout)
 
 
-	def handleTimeout(self):
-		print "Timeout event; local URL is " + self.localURL
+	def isConnected(self):
+		return False #TODO
 
-		# Register again:
-		self.context.setTimer(time.time() + 1.0, self.handleTimeout)
+
+	def handleReconnectTimeout(self):
+		# Timeout was pointless if we've been connected:
+		if self.isConnected():
+			return
+
+		print "Finlink reconnect timeout: connecting to " + self.remoteURL
+
+		# Note: the new connection will register itself at the context, so
+		# it will not be deleted when it goes out of scope here.
+		# Once (if) it's established, it will connect back to this FinLink.
+		newConnection = network.Connection(self.context, self.remoteURL)
+
+		# Register again, in case the above connection fails:
+		self.context.setTimer(time.time() + 1.0, self.handleReconnectTimeout)
 
 

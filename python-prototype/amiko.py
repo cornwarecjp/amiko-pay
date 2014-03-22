@@ -24,6 +24,9 @@ import network
 import finlink
 
 
+minProtocolVersion = 1
+maxProtocolVersion = 1
+
 
 class Enum(set):
 	def __getattr__(self, name):

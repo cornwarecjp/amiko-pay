@@ -17,6 +17,7 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 import socket
+import urlparse
 
 import amiko
 
@@ -54,9 +55,12 @@ class Connection:
 		self.context = amikoContext
 		if isinstance(arg, Listener):
 			self.socket, address = arg.socket.accept()
+			self.remoteURL = None
 		else:
 			self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			self.socket.connect(arg)
+			self.remoteURL = arg
+			parsed = urlparse.urlparse(self.remoteURL)
+			self.socket.connect((parsed.hostname, parsed.port))
 
 		self.context.connect(self.socket, amiko.signals.readyForRead,
 			self.handleReadAvailable)

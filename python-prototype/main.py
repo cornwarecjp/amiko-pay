@@ -27,10 +27,10 @@ a = amiko.Amiko()
 a.start()
 
 time.sleep(0.1)
-connection = Connection(a.context, ('localhost', 4321))
+connection = Connection(a.context, "amikolink://localhost:4321/X")
 connection.send("hello")
 
-time.sleep(10.0)
+time.sleep(2.0)
 
 a.sendSignal(amiko.signals.quit)
 a.stop()
