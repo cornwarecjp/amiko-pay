@@ -123,8 +123,7 @@ class Connection:
 		msg = self.__readBuffer[4:msgLen+4]
 		self.__readBuffer = self.__readBuffer[msgLen+4:]
 
-		print repr(msg)
-		#TODO: message handling
+		self.__handleMessage(msg)
 
 
 	def __handleWriteAvailable(self):
@@ -180,4 +179,10 @@ class Connection:
 		self.protocolVersion = min(maxv, amiko.maxProtocolVersion)
 
 		print "Using protocol version", self.protocolVersion
+
+
+	def __handleMessage(self, message):
+		print repr(message)
+		#TODO: message handling
+
 
