@@ -37,7 +37,7 @@ class Listener:
 		self.socket.listen(10) # Maximum 10 unaccepted connections
 
 		self.context.connect(self.socket, amiko.signals.readyForRead,
-			self.handleReadAvailable)
+			self.__handleReadAvailable)
 		self.context.connect(None, amiko.signals.quit, self.close)
 
 
@@ -47,7 +47,7 @@ class Listener:
 		self.socket.close()
 
 
-	def handleReadAvailable(self):
+	def __handleReadAvailable(self):
 		print "Read available on listener: accepting new connection"
 
 		# Note: the new connection will register itself at the context, so
@@ -72,7 +72,7 @@ class Connection:
 		self.__writeBuffer = ""
 
 		self.context.connect(self.socket, amiko.signals.readyForRead,
-			self.handleReadAvailable)
+			self.__handleReadAvailable)
 		self.context.connect(None, amiko.signals.quit, self.close)
 
 
@@ -83,12 +83,12 @@ class Connection:
 		self.socket.close()
 
 
-	def handleReadAvailable(self):
+	def __handleReadAvailable(self):
 		print "Read available on connection"
 		print "Received bytes: ", len(self.socket.recv(1000000))
 
 
-	def handleWriteAvailable(self):
+	def __handleWriteAvailable(self):
 		if self.__writeBuffer != "":
 			print "Write available on connection"
 
@@ -102,12 +102,12 @@ class Connection:
 			# If necessary, connect again:
 			if self.__writeBuffer != "":
 				self.context.connect(self.socket, amiko.signals.readyForWrite,
-					self.handleWriteAvailable)
+					self.__handleWriteAvailable)
 
 
 	def send(self, data):
 		self.__writeBuffer += data
 		self.context.connect(self.socket, amiko.signals.readyForWrite,
-			self.handleWriteAvailable)
+			self.__handleWriteAvailable)
 
 
