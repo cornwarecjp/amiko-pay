@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-#    main.py
+#    messages.py
 #    Copyright (C) 2014 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -17,24 +16,52 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
-import time
-
-import amiko
-import event
-import network
-import messages
+import struct
 
 
-a = amiko.Amiko()
-a.start()
 
-time.sleep(0.1)
-connection = network.Connection(a.context, "amikolink://localhost:4321/X")
-connection.sendMessage(messages.String("hello"))
+ID_STRING = 1
 
-time.sleep(2.0)
 
-a.sendSignal(event.signals.quit)
-a.stop()
+
+class Message:
+	def __init__(self, typeID):
+		self.__typeID = typeID
+
+	def serialize(self):
+		# 4-byte unsigned int in network byte order:
+		ID = struct.pack("!I", self.__typeID)
+		return ID + self.serializeAttributes()
+
+
+
+class String(Message):
+	def __init__(self, val=""):
+		Message.__init__(self, ID_STRING)
+		self.value = val
+
+	def serializeAttributes(self):
+		return self.value
+
+
+	def deserializeAttributes(self, s):
+		self.value = s
+
+
+
+def deserialize(s):
+	# 4-byte unsigned int in network byte order:
+	ID = struct.unpack("!I", s[:4])[0]
+
+	clss = \
+	{
+	ID_STRING: String
+	}[ID]
+	obj = clss()
+
+	# Remaining bytes contain attribute data
+	obj.deserializeAttributes(s[4:])
+
+	return obj
 
 

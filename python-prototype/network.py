@@ -23,6 +23,7 @@ import struct
 
 import event
 import amiko
+import messages
 
 
 
@@ -92,6 +93,10 @@ class Connection:
 
 
 	def sendMessage(self, msg):
+
+		#serialize:
+		msg = msg.serialize()
+
 		# 4-byte unsigned int in network byte order:
 		lenStr = struct.pack("!I", len(msg))
 		self.__send(lenStr + msg)
@@ -123,6 +128,9 @@ class Connection:
 
 			msg = self.__readBuffer[4:msgLen+4]
 			self.__readBuffer = self.__readBuffer[msgLen+4:]
+
+			#de-serialize
+			msg = messages.deserialize(msg)
 
 			self.__handleMessage(msg)
 		except Exception as e:
@@ -184,7 +192,7 @@ class Connection:
 
 
 	def __handleMessage(self, message):
-		print repr(message)
+		print repr(message.value)
 		#TODO: message handling
 
 
