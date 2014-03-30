@@ -75,6 +75,11 @@ class Amiko(threading.Thread):
 
 
 	def __handleLinkSignal(self, connection, message):
-		print "__handleLinkSignal: ", message.yourAddress
+		for f in self.finLinks:
+			if f.localID == message.yourID:
+				f.connect(connection)
+				return
 
+		print "Received link message with unknown ID"
+		connection.close()
 

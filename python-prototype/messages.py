@@ -73,21 +73,19 @@ class String(Message):
 
 
 class Link(Message):
-	def __init__(self, yourAddress="", myURL=""):
+	def __init__(self, yourID=""):
 		Message.__init__(self, ID_LINK)
-		self.yourAddress = yourAddress
-		self.myURL = myURL
-		#TODO: add public key
+		self.yourID = yourID
 
 
 	def serializeAttributes(self):
-		return self.yourAddress
+		return self.yourID
 
 
 	def deserializeAttributes(self, s):
-		self.yourAddress = s
+		self.yourID = s
 
 
 	def __str__(self):
-		return "yourAddress: " + self.yourAddress
+		return "yourID: " + self.yourID
 

@@ -27,13 +27,18 @@ class FinLink:
 	def __init__(self, context, localID, remoteID):
 		self.context = context
 
-		self.localURL = "amikolink://localhost:4321/" + localID
+		self.localID = localID
 
 		self.remoteHost = "localhost" #TODO
 		self.remotePort = 4321 #TODO
 		self.remoteID = remoteID
 
 		self.context.setTimer(time.time() + 1.0, self.handleReconnectTimeout)
+
+
+	def connect(self, connection):
+		print "Connection established"
+		#TODO
 
 
 	def isConnected(self):
@@ -54,7 +59,7 @@ class FinLink:
 			(self.remoteHost, self.remotePort))
 
 		# Already send a link establishment message:
-		newConnection.sendMessage(messages.Link(self.remoteID, self.localURL))
+		newConnection.sendMessage(messages.Link(self.remoteID))
 
 		# Register again, in case the above connection fails:
 		self.context.setTimer(time.time() + 1.0, self.handleReconnectTimeout)
