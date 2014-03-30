@@ -21,6 +21,7 @@ import errno
 import urlparse
 
 import event
+import amiko
 
 
 
@@ -70,10 +71,16 @@ class Connection:
 		#self.socket.setblocking(False)
 
 		self.__writeBuffer = ""
+		self.__readBuffer = ""
 
 		self.context.connect(self.socket, event.signals.readyForRead,
 			self.__handleReadAvailable)
 		self.context.connect(None, event.signals.quit, self.close)
+
+		self.protocolVersion = None # initially unknown
+
+		#Initiate protocol + version exchange:
+		self.__sendProtocolVersion()
 
 
 	def close(self):
@@ -84,8 +91,15 @@ class Connection:
 
 
 	def __handleReadAvailable(self):
-		print "Read available on connection"
-		print "Received bytes: ", len(self.socket.recv(1000000))
+		bytes = self.socket.recv(1000000)
+		self.__readBuffer += bytes
+		if self.protocolVersion == None:
+			self.__tryReadProtocolVersion()
+		if self.protocolVersion == None:
+			return
+
+		print self.__readBuffer
+		#TODO: message handling
 
 
 	def __handleWriteAvailable(self):
@@ -110,4 +124,41 @@ class Connection:
 		self.context.connect(self.socket, event.signals.readyForWrite,
 			self.__handleWriteAvailable)
 
+
+	def __sendProtocolVersion(self):
+		self.send("AMIKOPAY/%d/%d\n" % \
+			(amiko.minProtocolVersion, amiko.maxProtocolVersion))
+
+
+	def __tryReadProtocolVersion(self):
+		#TODO: exception-based code
+
+		magic = "AMIKOPAY/"
+		if len(self.__readBuffer) < len(magic):
+			return
+		if self.__readBuffer[:len(magic)] != magic:
+			print "Received invalid magic bytes"
+			self.close()
+		if len(self.__readBuffer) > 128 and '\n' not in self.__readBuffer:
+			print "Did not receive version negotiation terminator"
+			self.close()
+		pos = self.__readBuffer.index('\n')
+		versions = self.__readBuffer[len(magic):pos]
+		self.__readBuffer = self.__readBuffer[pos+1:]
+
+		if '/' not in versions:
+			print "No min/max separator in version string"
+			self.close()
+		pos = versions.index('/')
+		minv = int(versions[:pos])
+		maxv = int(versions[pos+1:])
+
+		if minv > amiko.maxProtocolVersion or maxv < amiko.minProtocolVersion:
+			print "No matching protocol version"
+			self.close()
+
+		# Use highest version supported by both sides:
+		self.protocolVersion = min(maxv, amiko.maxProtocolVersion)
+
+		print "Using protocol version", self.protocolVersion
 

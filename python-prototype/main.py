@@ -29,7 +29,7 @@ a.start()
 
 time.sleep(0.1)
 connection = network.Connection(a.context, "amikolink://localhost:4321/X")
-connection.send("hello"*10000)
+connection.send("hello")
 
 time.sleep(2.0)
 
