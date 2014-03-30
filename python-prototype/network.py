@@ -104,38 +104,41 @@ class Connection:
 
 
 	def __handleReadAvailable(self):
-		bytes = self.socket.recv(1000000)
-		self.__readBuffer += bytes
-		if self.protocolVersion == None:
-			self.__tryReadProtocolVersion()
-		if self.protocolVersion == None:
-			return
+		try:
+			bytes = self.socket.recv(1000000)
+			self.__readBuffer += bytes
+			if self.protocolVersion == None:
+				self.__tryReadProtocolVersion()
+			if self.protocolVersion == None:
+				return
 
-		# Message detection:
-		if len(self.__readBuffer) < 4:
-			return
+			# Message detection:
+			if len(self.__readBuffer) < 4:
+				return
 
-		# 4-byte unsigned int in network byte order:
-		msgLen = struct.unpack("!I", self.__readBuffer[:4])[0]
-		if len(self.__readBuffer) < msgLen+4:
-			return
+			# 4-byte unsigned int in network byte order:
+			msgLen = struct.unpack("!I", self.__readBuffer[:4])[0]
+			if len(self.__readBuffer) < msgLen+4:
+				return
 
-		msg = self.__readBuffer[4:msgLen+4]
-		self.__readBuffer = self.__readBuffer[msgLen+4:]
+			msg = self.__readBuffer[4:msgLen+4]
+			self.__readBuffer = self.__readBuffer[msgLen+4:]
 
-		self.__handleMessage(msg)
+			self.__handleMessage(msg)
+		except Exception as e:
+			print "Received exception while handling received data from socket: "
+			print str(e)
+			self.close()
 
 
 	def __handleWriteAvailable(self):
 		if self.__writeBuffer != "":
-			print "Write available on connection"
-
 			# Never try to send more than this amount each time:
 			maxChunkSize = 4096
 
 			bytesSent = self.socket.send(self.__writeBuffer[:maxChunkSize])
 			self.__writeBuffer = self.__writeBuffer[bytesSent:]
-			print "Sent bytes: ", bytesSent
+			#print "Sent bytes: ", bytesSent
 
 			# If necessary, connect again:
 			if self.__writeBuffer != "":
@@ -149,31 +152,30 @@ class Connection:
 
 
 	def __tryReadProtocolVersion(self):
-		#TODO: exception-based code
 
 		magic = "AMIKOPAY/"
 		if len(self.__readBuffer) < len(magic):
 			return
 		if self.__readBuffer[:len(magic)] != magic:
-			print "Received invalid magic bytes"
-			self.close()
+			raise Exception("Received invalid magic bytes")
+
 		if len(self.__readBuffer) > 128 and '\n' not in self.__readBuffer:
-			print "Did not receive version negotiation terminator"
-			self.close()
+			raise Exception("Did not receive version negotiation terminator")
 		pos = self.__readBuffer.index('\n')
+
 		versions = self.__readBuffer[len(magic):pos]
 		self.__readBuffer = self.__readBuffer[pos+1:]
 
 		if '/' not in versions:
-			print "No min/max separator in version string"
+			raise Exception("No min/max separator in version string")
 			self.close()
 		pos = versions.index('/')
+
 		minv = int(versions[:pos])
 		maxv = int(versions[pos+1:])
 
 		if minv > amiko.maxProtocolVersion or maxv < amiko.minProtocolVersion:
-			print "No matching protocol version"
-			self.close()
+			raise Exception("No matching protocol version")
 
 		# Use highest version supported by both sides:
 		self.protocolVersion = min(maxv, amiko.maxProtocolVersion)
