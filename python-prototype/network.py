@@ -19,6 +19,7 @@
 import socket
 import errno
 import urlparse
+import struct
 
 import event
 import amiko
@@ -90,6 +91,18 @@ class Connection:
 		self.socket.close()
 
 
+	def sendMessage(self, msg):
+		# 4-byte unsigned int in network byte order:
+		lenStr = struct.pack("!I", len(msg))
+		self.__send(lenStr + msg)
+
+
+	def __send(self, data):
+		self.__writeBuffer += data
+		self.context.connect(self.socket, event.signals.readyForWrite,
+			self.__handleWriteAvailable)
+
+
 	def __handleReadAvailable(self):
 		bytes = self.socket.recv(1000000)
 		self.__readBuffer += bytes
@@ -98,7 +111,19 @@ class Connection:
 		if self.protocolVersion == None:
 			return
 
-		print self.__readBuffer
+		# Message detection:
+		if len(self.__readBuffer) < 4:
+			return
+
+		# 4-byte unsigned int in network byte order:
+		msgLen = struct.unpack("!I", self.__readBuffer[:4])[0]
+		if len(self.__readBuffer) < msgLen+4:
+			return
+
+		msg = self.__readBuffer[4:msgLen+4]
+		self.__readBuffer = self.__readBuffer[msgLen+4:]
+
+		print repr(msg)
 		#TODO: message handling
 
 
@@ -119,14 +144,8 @@ class Connection:
 					self.__handleWriteAvailable)
 
 
-	def send(self, data):
-		self.__writeBuffer += data
-		self.context.connect(self.socket, event.signals.readyForWrite,
-			self.__handleWriteAvailable)
-
-
 	def __sendProtocolVersion(self):
-		self.send("AMIKOPAY/%d/%d\n" % \
+		self.__send("AMIKOPAY/%d/%d\n" % \
 			(amiko.minProtocolVersion, amiko.maxProtocolVersion))
 
 
