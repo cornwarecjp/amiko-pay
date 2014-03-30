@@ -46,6 +46,9 @@ class Amiko(threading.Thread):
 		self.__signal = None
 		self.__signalProcessed = threading.Event()
 
+		self.context.connect(None, event.signals.link, self.__handleLinkSignal)
+
+
 	def stop(self):
 		self.__stop = True
 		self.join()
@@ -70,5 +73,8 @@ class Amiko(threading.Thread):
 				self.__signalProcessed.set()
 				self.__signal = None
 
+
+	def __handleLinkSignal(self, connection, message):
+		print "__handleLinkSignal: ", message.yourAddress
 
 

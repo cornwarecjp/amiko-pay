@@ -187,7 +187,10 @@ class Connection:
 
 
 	def __handleMessage(self, message):
-		print str(message)
-		#TODO: message handling
+		if isinstance(message, messages.Link):
+			self.context.sendSignal(event.signals.link, self, message)
+
+		print "Received unknown message type: ", str(message)
+		#TODO: other message handling
 
 

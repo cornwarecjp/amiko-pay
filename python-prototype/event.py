@@ -34,6 +34,7 @@ class Enum(set):
 signals = Enum([
 	"readyForRead",
 	"readyForWrite",
+	"link",
 	"quit"
 	])
 
