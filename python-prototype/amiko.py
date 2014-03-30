@@ -38,6 +38,7 @@ class Enum(set):
 
 signals = Enum([
 	"readyForRead",
+	"readyForWrite",
 	"quit"
 	])
 
@@ -52,6 +53,7 @@ class Context:
 			self.sender = sender
 			self.signal = signal
 			self.handler = handler
+			self.hasHappened = False
 
 	class Timer:
 		def __init__(self, timestamp, handler):
@@ -82,15 +84,36 @@ class Context:
 	def dispatchNetworkEvents(self):
 		rlist = set([c.sender for c in self.__eventConnections
 			if c.signal == signals.readyForRead])
+		wlist = set([c.sender for c in self.__eventConnections
+			if c.signal == signals.readyForWrite])
 
 		# wait for network events, with 0.01 s timeout:
-		rlist, wlist, xlist = select.select(rlist, [], [], 0.01)
+		#print "select.select(%s, %s, [], 0.01)" % (str(rlist), str(wlist))
+		rlist, wlist, xlist = select.select(rlist, wlist, [], 0.01)
+		#print " = %s, %s, %s" % (rlist, wlist, xlist)
 
+		#Call read handlers without removing the connections:
 		for r in rlist:
 			handlers = [c.handler for c in self.__eventConnections
 				if c.sender == r and c.signal == signals.readyForRead]
 			for h in handlers:
 				h()
+
+		#Mark relevant write connections as happened
+		for w in wlist:
+			for c in self.__eventConnections:
+				if c.sender == w and c.signal == signals.readyForWrite:
+					c.hasHappened = True
+
+		#Call handlers for all connections marked as happened
+		for w in wlist:
+			for c in self.__eventConnections:
+				if c.hasHappened:
+					c.handler()
+
+		#Remove connections which have just been called
+		self.__eventConnections = filter(
+			lambda c: not c.hasHappened, self.__eventConnections)
 
 
 	def dispatchTimerEvents(self):

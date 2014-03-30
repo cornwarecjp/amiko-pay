@@ -20,15 +20,15 @@
 import time
 
 import amiko
-from network import Connection
+import network
 
 
 a = amiko.Amiko()
 a.start()
 
 time.sleep(0.1)
-connection = Connection(a.context, "amikolink://localhost:4321/X")
-connection.send("hello")
+connection = network.Connection(a.context, "amikolink://localhost:4321/X")
+connection.send("hello"*10000)
 
 time.sleep(2.0)
 
