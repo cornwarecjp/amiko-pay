@@ -20,6 +20,7 @@
 import time
 
 import amiko
+import event
 import network
 
 
@@ -32,7 +33,7 @@ connection.send("hello"*10000)
 
 time.sleep(2.0)
 
-a.sendSignal(amiko.signals.quit)
+a.sendSignal(event.signals.quit)
 a.stop()
 
 

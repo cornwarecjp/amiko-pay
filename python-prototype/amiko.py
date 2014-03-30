@@ -16,119 +16,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
-import select
 import threading
-import time
 
 import network
 import finlink
-
+import event
 
 minProtocolVersion = 1
 maxProtocolVersion = 1
-
-
-class Enum(set):
-	def __getattr__(self, name):
-		if name in self:
-			return name
-		raise AttributeError
-
-
-
-signals = Enum([
-	"readyForRead",
-	"readyForWrite",
-	"quit"
-	])
-
-
-
-class Context:
-
-	class EventConnection:
-		# For network signals, sender must be the socket object
-		# sender == None: common place-holder
-		def __init__(self, sender, signal, handler):
-			self.sender = sender
-			self.signal = signal
-			self.handler = handler
-			self.hasHappened = False
-
-	class Timer:
-		def __init__(self, timestamp, handler):
-			self.timestamp = timestamp
-			self.handler = handler
-
-
-	def __init__(self):
-		# Each element is an EventConnection
-		self.__eventConnections = []
-		self.__timers = []
-
-
-	def connect(self, sender, signal, handler):
-		self.__eventConnections.append(
-			Context.EventConnection(sender, signal, handler))
-
-
-	def setTimer(self, timestamp, handler):
-		self.__timers.append(Context.Timer(timestamp, handler))
-
-
-	def removeEventConnectionsBySender(self, sender):
-		self.__eventConnections = filter(lambda c: c.sender != sender,
-			self.__eventConnections)
-
-
-	def dispatchNetworkEvents(self):
-		rlist = set([c.sender for c in self.__eventConnections
-			if c.signal == signals.readyForRead])
-		wlist = set([c.sender for c in self.__eventConnections
-			if c.signal == signals.readyForWrite])
-
-		# wait for network events, with 0.01 s timeout:
-		#print "select.select(%s, %s, [], 0.01)" % (str(rlist), str(wlist))
-		rlist, wlist, xlist = select.select(rlist, wlist, [], 0.01)
-		#print " = %s, %s, %s" % (rlist, wlist, xlist)
-
-		#Call read handlers without removing the connections:
-		for r in rlist:
-			handlers = [c.handler for c in self.__eventConnections
-				if c.sender == r and c.signal == signals.readyForRead]
-			for h in handlers:
-				h()
-
-		#Mark relevant write connections as happened
-		for w in wlist:
-			for c in self.__eventConnections:
-				if c.sender == w and c.signal == signals.readyForWrite:
-					c.hasHappened = True
-
-		#Call handlers for all connections marked as happened
-		for w in wlist:
-			for c in self.__eventConnections:
-				if c.hasHappened:
-					c.handler()
-
-		#Remove connections which have just been called
-		self.__eventConnections = filter(
-			lambda c: not c.hasHappened, self.__eventConnections)
-
-
-	def dispatchTimerEvents(self):
-		now = time.time()
-		for t in self.__timers:
-			if not (t.timestamp > now):
-				t.handler()
-		self.__timers = filter(lambda t: t.timestamp > now, self.__timers)
-
-
-	def sendSignal(self, signal, *args, **kwargs):
-		handlers = [c.handler for c in self.__eventConnections
-			if c.sender == None and c.signal == signal]
-		for h in handlers:
-			h(*args, **kwargs)
 
 
 
@@ -136,7 +31,7 @@ class Amiko(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
 
-		self.context = Context()
+		self.context = event.Context()
 
 		self.listener = network.Listener(self.context, 4321)
 		self.finLinks = []

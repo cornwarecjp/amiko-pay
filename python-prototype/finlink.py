@@ -23,8 +23,8 @@ import network
 
 
 class FinLink:
-	def __init__(self, amikoContext, localID, remoteID):
-		self.context = amikoContext
+	def __init__(self, context, localID, remoteID):
+		self.context = context
 
 		self.localURL = "amikolink://localhost:4321/" + localID
 		self.remoteURL = "amikolink://localhost:4321/" + remoteID #TODO

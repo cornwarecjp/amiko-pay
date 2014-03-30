@@ -20,13 +20,13 @@ import socket
 import errno
 import urlparse
 
-import amiko
+import event
 
 
 
 class Listener:
-	def __init__(self, amikoContext, port):
-		self.context = amikoContext
+	def __init__(self, context, port):
+		self.context = context
 
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -36,9 +36,9 @@ class Listener:
 		self.socket.bind(('localhost', port))
 		self.socket.listen(10) # Maximum 10 unaccepted connections
 
-		self.context.connect(self.socket, amiko.signals.readyForRead,
+		self.context.connect(self.socket, event.signals.readyForRead,
 			self.__handleReadAvailable)
-		self.context.connect(None, amiko.signals.quit, self.close)
+		self.context.connect(None, event.signals.quit, self.close)
 
 
 	def close(self):
@@ -71,9 +71,9 @@ class Connection:
 
 		self.__writeBuffer = ""
 
-		self.context.connect(self.socket, amiko.signals.readyForRead,
+		self.context.connect(self.socket, event.signals.readyForRead,
 			self.__handleReadAvailable)
-		self.context.connect(None, amiko.signals.quit, self.close)
+		self.context.connect(None, event.signals.quit, self.close)
 
 
 	def close(self):
@@ -101,13 +101,13 @@ class Connection:
 
 			# If necessary, connect again:
 			if self.__writeBuffer != "":
-				self.context.connect(self.socket, amiko.signals.readyForWrite,
+				self.context.connect(self.socket, event.signals.readyForWrite,
 					self.__handleWriteAvailable)
 
 
 	def send(self, data):
 		self.__writeBuffer += data
-		self.context.connect(self.socket, amiko.signals.readyForWrite,
+		self.context.connect(self.socket, event.signals.readyForWrite,
 			self.__handleWriteAvailable)
 
 
