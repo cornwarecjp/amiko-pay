@@ -21,6 +21,7 @@ import struct
 
 
 ID_STRING = 1
+ID_LINK   = 2
 
 
 
@@ -32,6 +33,25 @@ class Message:
 		# 4-byte unsigned int in network byte order:
 		ID = struct.pack("!I", self.__typeID)
 		return ID + self.serializeAttributes()
+
+
+
+def deserialize(s):
+	# 4-byte unsigned int in network byte order:
+	ID = struct.unpack("!I", s[:4])[0]
+
+	clss = \
+	{
+	ID_STRING: String,
+	ID_LINK: Link
+	}[ID]
+	obj = clss()
+
+	# Remaining bytes contain attribute data
+	obj.deserializeAttributes(s[4:])
+
+	return obj
+
 
 
 
@@ -48,20 +68,26 @@ class String(Message):
 		self.value = s
 
 
+	def __str__(self):
+		return self.value
 
-def deserialize(s):
-	# 4-byte unsigned int in network byte order:
-	ID = struct.unpack("!I", s[:4])[0]
 
-	clss = \
-	{
-	ID_STRING: String
-	}[ID]
-	obj = clss()
+class Link(Message):
+	def __init__(self, yourAddress="", myURL=""):
+		Message.__init__(self, ID_LINK)
+		self.yourAddress = yourAddress
+		self.myURL = myURL
+		#TODO: add public key
 
-	# Remaining bytes contain attribute data
-	obj.deserializeAttributes(s[4:])
 
-	return obj
+	def serializeAttributes(self):
+		return self.yourAddress
 
+
+	def deserializeAttributes(self, s):
+		self.yourAddress = s
+
+
+	def __str__(self):
+		return "yourAddress: " + self.yourAddress
 

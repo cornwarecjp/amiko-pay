@@ -19,6 +19,7 @@
 import time
 
 import network
+import messages
 
 
 
@@ -27,7 +28,10 @@ class FinLink:
 		self.context = context
 
 		self.localURL = "amikolink://localhost:4321/" + localID
-		self.remoteURL = "amikolink://localhost:4321/" + remoteID #TODO
+
+		self.remoteHost = "localhost" #TODO
+		self.remotePort = 4321 #TODO
+		self.remoteID = remoteID
 
 		self.context.setTimer(time.time() + 1.0, self.handleReconnectTimeout)
 
@@ -41,12 +45,16 @@ class FinLink:
 		if self.isConnected():
 			return
 
-		print "Finlink reconnect timeout: connecting to " + self.remoteURL
+		print "Finlink reconnect timeout: connecting"
 
 		# Note: the new connection will register itself at the context, so
 		# it will not be deleted when it goes out of scope here.
 		# Once (if) it's established, it will connect back to this FinLink.
-		newConnection = network.Connection(self.context, self.remoteURL)
+		newConnection = network.Connection(self.context,
+			(self.remoteHost, self.remotePort))
+
+		# Already send a link establishment message:
+		newConnection.sendMessage(messages.Link(self.remoteID, self.localURL))
 
 		# Register again, in case the above connection fails:
 		self.context.setTimer(time.time() + 1.0, self.handleReconnectTimeout)

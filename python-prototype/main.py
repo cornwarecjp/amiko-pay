@@ -29,7 +29,7 @@ a = amiko.Amiko()
 a.start()
 
 time.sleep(0.1)
-connection = network.Connection(a.context, "amikolink://localhost:4321/X")
+connection = network.Connection(a.context, ("localhost", 4321))
 connection.sendMessage(messages.String("hello"))
 
 time.sleep(2.0)

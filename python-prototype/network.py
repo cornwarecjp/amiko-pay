@@ -17,8 +17,6 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 import socket
-import errno
-import urlparse
 import struct
 
 import event
@@ -63,12 +61,9 @@ class Connection:
 		self.context = amikoContext
 		if isinstance(arg, Listener):
 			self.socket, address = arg.socket.accept()
-			self.remoteURL = None
 		else:
 			self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			self.remoteURL = arg
-			parsed = urlparse.urlparse(self.remoteURL)
-			self.socket.connect((parsed.hostname, parsed.port))
+			self.socket.connect(arg)
 
 		#self.socket.setblocking(False)
 
@@ -192,7 +187,7 @@ class Connection:
 
 
 	def __handleMessage(self, message):
-		print repr(message.value)
+		print str(message)
 		#TODO: message handling
 
 
