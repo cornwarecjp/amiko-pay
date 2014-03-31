@@ -34,7 +34,7 @@ connection.sendMessage(messages.String("hello"))
 
 time.sleep(2.0)
 
-a.sendSignal(event.signals.quit)
+a.sendSignal(None, event.signals.quit)
 a.stop()
 
 

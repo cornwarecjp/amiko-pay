@@ -90,10 +90,7 @@ class Context:
 
 		#Call read handlers without removing the connections:
 		for r in rlist:
-			handlers = [c.handler for c in self.__eventConnections
-				if c.sender == r and c.signal == signals.readyForRead]
-			for h in handlers:
-				h()
+			self.sendSignal(r, signals.readyForRead)
 
 		#Mark relevant write connections as happened
 		for w in wlist:
@@ -120,9 +117,9 @@ class Context:
 		self.__timers = filter(lambda t: t.timestamp > now, self.__timers)
 
 
-	def sendSignal(self, signal, *args, **kwargs):
+	def sendSignal(self, sender, signal, *args, **kwargs):
 		handlers = [c.handler for c in self.__eventConnections
-			if c.sender == None and c.signal == signal]
+			if c.sender == sender and c.signal == signal]
 		for h in handlers:
 			h(*args, **kwargs)
 

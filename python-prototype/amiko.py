@@ -54,9 +54,9 @@ class Amiko(threading.Thread):
 		self.join()
 
 
-	def sendSignal(self, signal, *args, **kwargs):
+	def sendSignal(self, sender, signal, *args, **kwargs):
 		with self.__signalLock:
-			self.__signal = (signal, args, kwargs)
+			self.__signal = (sender, signal, args, kwargs)
 			self.__signalProcessed.clear()
 		self.__signalProcessed.wait()
 
@@ -69,7 +69,7 @@ class Amiko(threading.Thread):
 			with self.__signalLock:
 				s = self.__signal
 				if s != None:
-					self.context.sendSignal(s[0], *s[1], **s[2])
+					self.context.sendSignal(s[0], s[1], *s[2], **s[3])
 				self.__signalProcessed.set()
 				self.__signal = None
 

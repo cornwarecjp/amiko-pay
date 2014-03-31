@@ -189,7 +189,8 @@ class Connection:
 	def __handleMessage(self, message):
 
 		if isinstance(message, messages.Link):
-			self.context.sendSignal(event.signals.link, self, message)
+			self.context.sendSignal(None, event.signals.link,
+				self, message)
 			return
 
 		#TODO: other message handling
