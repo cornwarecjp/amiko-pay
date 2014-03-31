@@ -35,31 +35,35 @@ class FinLink:
 
 		self.context.setTimer(time.time() + 1.0, self.handleReconnectTimeout)
 
+		self.connection = None
+
 
 	def connect(self, connection):
+		if self.isConnected():
+			print "Received a duplicate connection; closing it"
+			connection.close()
+
 		print "Connection established"
-		#TODO
+		self.connection = connection
+		#TODO: connect signals
 
 
 	def isConnected(self):
-		return False #TODO
+		return self.connection != None
 
 
 	def handleReconnectTimeout(self):
-		# Timeout was pointless if we've been connected:
+		# Timeout was pointless if we're already connected:
 		if self.isConnected():
 			return
 
 		print "Finlink reconnect timeout: connecting"
 
-		# Note: the new connection will register itself at the context, so
-		# it will not be deleted when it goes out of scope here.
-		# Once (if) it's established, it will connect back to this FinLink.
-		newConnection = network.Connection(self.context,
+		self.connection = network.Connection(self.context,
 			(self.remoteHost, self.remotePort))
 
-		# Already send a link establishment message:
-		newConnection.sendMessage(messages.Link(self.remoteID))
+		# Send a link establishment message:
+		self.connection.sendMessage(messages.Link(self.remoteID))
 
 		# Register again, in case the above connection fails:
 		self.context.setTimer(time.time() + 1.0, self.handleReconnectTimeout)

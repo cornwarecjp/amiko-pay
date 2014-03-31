@@ -82,8 +82,14 @@ class Connection:
 
 	def close(self):
 		print "Connection close"
+
 		self.context.removeEventConnectionsBySender(self.socket)
-		self.socket.shutdown(socket.SHUT_RDWR)
+
+		try:
+			self.socket.shutdown(socket.SHUT_RDWR)
+		except:
+			pass #the shutdown was optional anyway, so ignore errors
+
 		self.socket.close()
 
 
