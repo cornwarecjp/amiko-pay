@@ -61,6 +61,8 @@ class Context:
 	def __init__(self):
 		# Each element is an EventConnection
 		self.__eventConnections = []
+
+		# Each element is a Timer
 		self.__timers = []
 
 
@@ -73,8 +75,13 @@ class Context:
 		self.__timers.append(Context.Timer(timestamp, handler))
 
 
-	def removeEventConnectionsBySender(self, sender):
+	def removeConnectionsBySender(self, sender):
 		self.__eventConnections = filter(lambda c: c.sender != sender,
+			self.__eventConnections)
+
+
+	def removeConnectionsByHandler(self, handler):
+		self.__eventConnections = filter(lambda c: c.handler != handler,
 			self.__eventConnections)
 
 

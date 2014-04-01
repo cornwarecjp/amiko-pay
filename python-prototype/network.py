@@ -44,7 +44,9 @@ class Listener:
 
 	def close(self):
 		print "Listener close"
-		self.context.removeEventConnectionsBySender(self.socket)
+		self.context.removeConnectionsBySender(self.socket)
+		self.context.removeConnectionsByHandler(self.__handleReadAvailable)
+		self.context.removeConnectionsByHandler(self.close)
 		self.socket.close()
 
 
@@ -94,8 +96,11 @@ class Connection:
 
 		self.context.sendSignal(self, event.signals.closed)
 
-		self.context.removeEventConnectionsBySender(self.socket)
-		self.context.removeEventConnectionsBySender(self)
+		self.context.removeConnectionsBySender(self.socket)
+		self.context.removeConnectionsBySender(self)
+		self.context.removeConnectionsByHandler(self.__handleReadAvailable)
+		self.context.removeConnectionsByHandler(self.__handleWriteAvailable)
+		self.context.removeConnectionsByHandler(self.close)
 
 
 	def isClosed(self):
