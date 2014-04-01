@@ -17,6 +17,7 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 import time
+import random
 
 import network
 import messages
@@ -34,7 +35,7 @@ class FinLink:
 		self.remotePort = 4321 #TODO
 		self.remoteID = remoteID
 
-		self.context.setTimer(time.time() + 1.0, self.__handleReconnectTimeout)
+		self.__registerReconnectTimeoutHandler()
 
 		self.connection = None
 
@@ -65,7 +66,7 @@ class FinLink:
 		self.connection = None
 
 		# Try to reconnect in the future:
-		self.context.setTimer(time.time() + 1.0, self.__handleReconnectTimeout)
+		self.__registerReconnectTimeoutHandler()
 
 
 	def __handleReconnectTimeout(self):
@@ -84,7 +85,16 @@ class FinLink:
 		self.connection.sendMessage(messages.Link(self.remoteID))
 
 		# Register again, in case the above connection fails:
-		self.context.setTimer(time.time() + 1.0, self.__handleReconnectTimeout)
+		self.__registerReconnectTimeoutHandler()
 
+
+	def __registerReconnectTimeoutHandler(self):
+		# Use random time-out to prevent repeating connect collisions.
+		# This is especially important for the (not so important)
+		# loop-back connections.
+		timeout = random.uniform(1.0, 2.0)
+
+		self.context.setTimer(time.time() + timeout,
+		self.__handleReconnectTimeout)
 
 
