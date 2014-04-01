@@ -28,14 +28,15 @@ import messages
 
 def handleCommand(cmd):
 	cmd = cmd.strip().lower()
-	print cmd
 
+	if cmd == "":
+		return
 	if cmd in ["quit", "exit"]:
 		a.sendSignal(None, event.signals.quit)
 		a.stop()
 		sys.exit()
 	elif cmd == "help":
-		print """
+		print """\
 exit:
 quit:
   Terminate application.
