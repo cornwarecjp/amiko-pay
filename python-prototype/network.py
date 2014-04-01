@@ -69,6 +69,7 @@ class Connection:
 
 		self.__writeBuffer = ""
 		self.__readBuffer = ""
+		self.__isClosed = False
 
 		self.context.connect(self.socket, event.signals.readyForRead,
 			self.__handleReadAvailable)
@@ -91,6 +92,11 @@ class Connection:
 			pass #the shutdown was optional anyway, so ignore errors
 
 		self.socket.close()
+		self.__isClosed = True
+
+
+	def isClosed(self):
+		return self.__isClosed
 
 
 	def sendMessage(self, msg):
@@ -111,7 +117,12 @@ class Connection:
 
 	def __handleReadAvailable(self):
 		try:
-			bytes = self.socket.recv(1000000)
+			bytes = self.socket.recv(4096)
+
+			if len(bytes) == 0:
+				print "Detected socket close by other side; closing this side too"
+				self.close()
+
 			self.__readBuffer += bytes
 			if self.protocolVersion == None:
 				self.__tryReadProtocolVersion()
