@@ -84,8 +84,6 @@ class Connection:
 	def close(self):
 		print "Connection close"
 
-		self.context.removeEventConnectionsBySender(self.socket)
-
 		try:
 			self.socket.shutdown(socket.SHUT_RDWR)
 		except:
@@ -93,6 +91,11 @@ class Connection:
 
 		self.socket.close()
 		self.__isClosed = True
+
+		self.context.sendSignal(self, event.signals.closed)
+
+		self.context.removeEventConnectionsBySender(self.socket)
+		self.context.removeEventConnectionsBySender(self)
 
 
 	def isClosed(self):

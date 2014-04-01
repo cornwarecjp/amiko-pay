@@ -28,11 +28,11 @@ import messages
 a = amiko.Amiko()
 a.start()
 
-time.sleep(0.1)
-connection = network.Connection(a.context, ("localhost", 4321))
-connection.sendMessage(messages.String("hello"))
+#time.sleep(0.1)
+#connection = network.Connection(a.context, ("localhost", 4321))
+#connection.sendMessage(messages.String("hello"))
 
-time.sleep(2.0)
+time.sleep(10.0)
 
 a.sendSignal(None, event.signals.quit)
 a.stop()

@@ -20,6 +20,7 @@ import time
 
 import network
 import messages
+import event
 
 
 
@@ -33,7 +34,7 @@ class FinLink:
 		self.remotePort = 4321 #TODO
 		self.remoteID = remoteID
 
-		self.context.setTimer(time.time() + 1.0, self.handleReconnectTimeout)
+		self.context.setTimer(time.time() + 1.0, self.__handleReconnectTimeout)
 
 		self.connection = None
 
@@ -43,16 +44,31 @@ class FinLink:
 			print "Received a duplicate connection; closing it"
 			connection.close()
 
-		print "Connection established"
+		print "Finlink: Connection established (received)"
 		self.connection = connection
-		#TODO: connect signals
+		self.__registerConnectionHandlers()
 
 
 	def isConnected(self):
 		return self.connection != None
 
 
-	def handleReconnectTimeout(self):
+	def __registerConnectionHandlers(self):
+		self.context.connect(
+			self.connection, event.signals.closed,
+			self.__handleConnectionClosed)
+		#TODO: other handlers (esp. message available event)
+
+
+	def __handleConnectionClosed(self):
+		print "Finlink: Connection is closed"
+		self.connection = None
+
+		# Try to reconnect in the future:
+		self.context.setTimer(time.time() + 1.0, self.__handleReconnectTimeout)
+
+
+	def __handleReconnectTimeout(self):
 		# Timeout was pointless if we're already connected:
 		if self.isConnected():
 			return
@@ -61,11 +77,14 @@ class FinLink:
 
 		self.connection = network.Connection(self.context,
 			(self.remoteHost, self.remotePort))
+		self.__registerConnectionHandlers()
+		print "Finlink: Connection established (created)"
 
 		# Send a link establishment message:
 		self.connection.sendMessage(messages.Link(self.remoteID))
 
 		# Register again, in case the above connection fails:
-		self.context.setTimer(time.time() + 1.0, self.handleReconnectTimeout)
+		self.context.setTimer(time.time() + 1.0, self.__handleReconnectTimeout)
+
 
 
