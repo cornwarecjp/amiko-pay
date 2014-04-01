@@ -25,6 +25,10 @@ import paylink
 
 
 
+version = "0.1.0 (unstable,development)"
+lastCopyrightYear = "2014"
+
+
 minProtocolVersion = 1
 maxProtocolVersion = 1
 
