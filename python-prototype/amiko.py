@@ -66,6 +66,13 @@ class Amiko(threading.Thread):
 		self.__signalProcessed.wait()
 
 
+	def request(self, amount, receipt):
+		print amount
+		print receipt
+		#TODO
+		return "amikopay://localhost/x"
+
+
 	def run(self):
 		self.__stop = False
 		while not self.__stop:

@@ -27,22 +27,47 @@ import messages
 
 
 def handleCommand(cmd):
-	cmd = cmd.strip().lower()
 
-	if cmd == "":
+	cmd = cmd.split() # split according to whitespace
+
+	if len(cmd) == 0:
 		return
-	if cmd in ["quit", "exit"]:
+
+	cmd[0] = cmd[0].lower()
+
+	def checkNumArgs(mina, maxa):
+		if len(cmd)-1 < mina:
+			raise Exception("Not enough arguments")
+		if len(cmd)-1 > maxa:
+			raise Exception("Too many arguments")
+
+	if cmd[0] in ["quit", "exit"]:
+		checkNumArgs(0, 0)
 		a.sendSignal(None, event.signals.quit)
 		a.stop()
 		sys.exit()
-	elif cmd == "help":
+	elif cmd[0] == "help":
+		checkNumArgs(0, 0)
 		print """\
 exit:
 quit:
   Terminate application.
 help:
   Display this message.
+request amount [receipt]:
+  Request payment of amount, with optional receipt
 """
+	elif cmd[0] == "request":
+		checkNumArgs(1, 2)
+		if len(cmd) < 3:
+			cmd.append("")
+
+		amount = int(cmd[1])
+		receipt = (cmd[2])
+
+		URL = a.request(amount, receipt)
+		print URL
+
 	else:
 		print "Unknown command. Enter \"help\" for a list of commands."
 
@@ -75,6 +100,8 @@ Enter "help" for a list of commands.
 
 while True:
 	cmd = raw_input('> ')
-	handleCommand(cmd)
-
+	try:
+		handleCommand(cmd)
+	except Exception as e:
+		print str(e)
 
