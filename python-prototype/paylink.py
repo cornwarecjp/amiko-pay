@@ -22,9 +22,9 @@ import event
 
 
 
-class Payer:
+class Payer(event.Handler):
 	def __init__(self, context, ID):
-		self.context = context
+		event.Handler.__init__(self, context)
 
 		self.remoteHost = "localhost" #TODO
 		self.remotePort = 4321 #TODO
@@ -37,9 +37,10 @@ class Payer:
 
 
 
-class Payee:
+class Payee(event.Handler):
 	def __init__(self, context, ID):
-		self.context = context
+		event.Handler.__init__(self, context)
+
 		self.ID = ID
 
 		self.connection = None

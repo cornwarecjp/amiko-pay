@@ -25,9 +25,9 @@ import messages
 
 
 
-class Listener:
+class Listener(event.Handler):
 	def __init__(self, context, port):
-		self.context = context
+		event.Handler.__init__(self, context)
 
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -37,16 +37,15 @@ class Listener:
 		self.socket.bind(('localhost', port))
 		self.socket.listen(10) # Maximum 10 unaccepted connections
 
-		self.context.connect(self.socket, event.signals.readyForRead,
+		self.connect(self.socket, event.signals.readyForRead,
 			self.__handleReadAvailable)
-		self.context.connect(None, event.signals.quit, self.close)
+		self.connect(None, event.signals.quit, self.close)
 
 
 	def close(self):
 		print "Listener close"
+		self.disconnectAll()
 		self.context.removeConnectionsBySender(self.socket)
-		self.context.removeConnectionsByHandler(self.__handleReadAvailable)
-		self.context.removeConnectionsByHandler(self.close)
 		self.socket.close()
 
 
@@ -58,9 +57,10 @@ class Listener:
 		newConnection = Connection(self.context, self)
 
 
-class Connection:
-	def __init__(self, amikoContext, arg):
-		self.context = amikoContext
+class Connection(event.Handler):
+	def __init__(self, context, arg):
+		event.Handler.__init__(self, context)
+
 		if isinstance(arg, Listener):
 			self.socket, address = arg.socket.accept()
 		else:
@@ -73,9 +73,9 @@ class Connection:
 		self.__readBuffer = ""
 		self.__isClosed = False
 
-		self.context.connect(self.socket, event.signals.readyForRead,
+		self.connect(self.socket, event.signals.readyForRead,
 			self.__handleReadAvailable)
-		self.context.connect(None, event.signals.quit, self.close)
+		self.connect(None, event.signals.quit, self.close)
 
 		self.protocolVersion = None # initially unknown
 
@@ -96,11 +96,8 @@ class Connection:
 
 		self.context.sendSignal(self, event.signals.closed)
 
+		self.disconnectAll()
 		self.context.removeConnectionsBySender(self.socket)
-		self.context.removeConnectionsBySender(self)
-		self.context.removeConnectionsByHandler(self.__handleReadAvailable)
-		self.context.removeConnectionsByHandler(self.__handleWriteAvailable)
-		self.context.removeConnectionsByHandler(self.close)
 
 
 	def isClosed(self):
@@ -119,7 +116,7 @@ class Connection:
 
 	def __send(self, data):
 		self.__writeBuffer += data
-		self.context.connect(self.socket, event.signals.readyForWrite,
+		self.connect(self.socket, event.signals.readyForWrite,
 			self.__handleWriteAvailable)
 
 
@@ -170,7 +167,7 @@ class Connection:
 
 			# If necessary, connect again:
 			if self.__writeBuffer != "":
-				self.context.connect(self.socket, event.signals.readyForWrite,
+				self.connect(self.socket, event.signals.readyForWrite,
 					self.__handleWriteAvailable)
 
 

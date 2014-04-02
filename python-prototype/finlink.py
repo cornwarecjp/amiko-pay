@@ -25,9 +25,9 @@ import event
 
 
 
-class FinLink:
+class FinLink(event.Handler):
 	def __init__(self, context, localID, remoteID):
-		self.context = context
+		event.Handler.__init__(self, context)
 
 		self.localID = localID
 
@@ -55,7 +55,7 @@ class FinLink:
 
 
 	def __registerConnectionHandlers(self):
-		self.context.connect(
+		event.Handler.connect(self,
 			self.connection, event.signals.closed,
 			self.__handleConnectionClosed)
 		#TODO: other handlers (esp. message available event)
@@ -94,7 +94,6 @@ class FinLink:
 		# loop-back connections.
 		timeout = random.uniform(1.0, 2.0)
 
-		self.context.setTimer(time.time() + timeout,
-		self.__handleReconnectTimeout)
+		self.setTimer(time.time() + timeout, self.__handleReconnectTimeout)
 
 

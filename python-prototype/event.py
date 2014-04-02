@@ -83,6 +83,8 @@ class Context:
 	def removeConnectionsByHandler(self, handler):
 		self.__eventConnections = filter(lambda c: c.handler != handler,
 			self.__eventConnections)
+		self.__timers = filter(lambda c: c.handler != handler,
+			self.__timers)
 
 
 	def dispatchNetworkEvents(self):
@@ -130,5 +132,28 @@ class Context:
 			if c.sender == sender and c.signal == signal]
 		for h in handlers:
 			h(*args, **kwargs)
+
+
+
+class Handler:
+	def __init__(self, context):
+		self.context = context
+		self.__handlers = set([])
+
+
+	def disconnectAll(self):
+		for h in self.__handlers:
+			self.context.removeConnectionsByHandler(h)
+		self.context.removeConnectionsBySender(self)
+
+
+	def connect(self, sender, signal, handler):
+		self.context.connect(sender, signal, handler)
+		self.__handlers.add(handler)
+
+
+	def setTimer(self, timestamp, handler):
+		self.context.setTimer(timestamp, handler)
+		self.__handlers.add(handler)
 
 
