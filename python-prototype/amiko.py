@@ -75,6 +75,7 @@ class Amiko(threading.Thread):
 		self._commandReturnValue = None
 
 		self.context.connect(None, event.signals.link, self.__handleLinkSignal)
+		self.context.connect(None, event.signals.pay, self.__handlePaySignal)
 
 
 	def stop(self):
@@ -130,5 +131,13 @@ class Amiko(threading.Thread):
 				return
 
 		print "Received link message with unknown ID"
+		connection.close()
+
+
+	def __handlePaySignal(self, connection, message):
+		print message
+		#TODO
+
+		print "Received pay message with unknown ID"
 		connection.close()
 

@@ -40,11 +40,16 @@ def deserialize(s):
 	# 4-byte unsigned int in network byte order:
 	ID = struct.unpack("!I", s[:4])[0]
 
-	clss = \
-	{
-	ID_STRING: String,
-	ID_LINK: Link
-	}[ID]
+	try:
+		clss = \
+		{
+		ID_STRING: String,
+		ID_LINK: Link,
+		ID_PAY: Pay
+		}[ID]
+	except KeyError:
+		raise Exception("Deserialize failed: unknown type ID")
+
 	obj = clss()
 
 	# Remaining bytes contain attribute data

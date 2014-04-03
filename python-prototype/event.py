@@ -36,6 +36,7 @@ signals = Enum([
 	"readyForWrite",
 	"closed",
 	"link",
+	"pay",
 	"quit"
 	])
 

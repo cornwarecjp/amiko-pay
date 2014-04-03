@@ -18,6 +18,7 @@
 
 import socket
 import struct
+import traceback
 
 import event
 import amiko
@@ -151,8 +152,8 @@ class Connection(event.Handler):
 
 			self.__handleMessage(msg)
 		except Exception as e:
-			print "Received exception while handling received data from socket: "
-			print str(e)
+			print "Exception while handling received data from socket: "
+			traceback.print_exc()
 			self.close()
 
 
@@ -212,6 +213,11 @@ class Connection(event.Handler):
 
 		if isinstance(message, messages.Link):
 			self.context.sendSignal(None, event.signals.link,
+				self, message)
+			return
+
+		if isinstance(message, messages.Pay):
+			self.context.sendSignal(None, event.signals.pay,
 				self, message)
 			return
 
