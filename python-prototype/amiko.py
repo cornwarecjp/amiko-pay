@@ -40,12 +40,17 @@ def runInAmikoThread(implementationFunc):
 	called by an external thread, but have them run inside the internal thread
 	of the Amiko object.
 	"""
+
 	def remoteCaller(self, *args, **kwargs):
 		with self._commandFunctionLock:
 			self._commandFunction = (implementationFunc, args, kwargs)
 			self._commandProcessed.clear()
 		self._commandProcessed.wait()
+
+		if isinstance(self._commandReturnValue, Exception):
+			raise self._commandReturnValue
 		return self._commandReturnValue
+
 	return remoteCaller
 
 
@@ -110,7 +115,10 @@ class Amiko(threading.Thread):
 			with self._commandFunctionLock:
 				s = self._commandFunction
 				if s != None:
-					self._commandReturnValue = s[0](self, *s[1], **s[2])
+					try:
+						self._commandReturnValue = s[0](self, *s[1], **s[2])
+					except Exception as e:
+						self._commandReturnValue = e
 					self._commandProcessed.set()
 					self._commandFunction = None
 
