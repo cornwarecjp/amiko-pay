@@ -60,6 +60,7 @@ class Amiko(threading.Thread):
 		self.finLinks = []
 		self.finLinks.append(finlink.FinLink(self.context, "A", "B"))
 		self.finLinks.append(finlink.FinLink(self.context, "B", "A"))
+		self.payees = []
 
 		self.__stop = False
 
@@ -86,9 +87,11 @@ class Amiko(threading.Thread):
 		print amount
 		print receipt
 		ID = "42" #TODO: large random ID
-		#newPayee = paylink.Payee(self.context, ID, amount, receipt)
-		#TODO
-		return "amikopay://localhost/x"
+		newPayee = paylink.Payee(self.context, ID, amount, receipt)
+		self.payees.append(newPayee)
+
+		#TODO: get this from newPayee:
+		return "amikopay://localhost/" + ID
 
 
 	def run(self):
