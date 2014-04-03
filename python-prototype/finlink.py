@@ -42,7 +42,7 @@ class FinLink(event.Handler):
 
 	def connect(self, connection):
 		if self.isConnected():
-			print "Received a duplicate connection; closing it"
+			print "Finlink: Received a duplicate connection; closing it"
 			connection.close()
 
 		print "Finlink: Connection established (received)"

@@ -135,8 +135,10 @@ class Amiko(threading.Thread):
 
 
 	def __handlePaySignal(self, connection, message):
-		print message
-		#TODO
+		for p in self.payees:
+			if p.ID == message.ID:
+				p.connect(connection)
+				return
 
 		print "Received pay message with unknown ID"
 		connection.close()

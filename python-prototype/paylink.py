@@ -42,7 +42,7 @@ class Payer(event.Handler):
 
 		self.connection = network.Connection(self.context,
 			(self.remoteHost, self.remotePort))
-		#TODO: maybe listen to closed event?
+		# TODO: register event handlers
 
 		self.connection.sendMessage(messages.Pay(self.ID))
 
@@ -57,5 +57,19 @@ class Payee(event.Handler):
 		self.receipt = "" #default
 
 		self.connection = None
+
+
+	def connect(self, connection):
+		if self.isConnected():
+			print "Payee: Received a duplicate connection; closing it"
+			connection.close()
+
+		print "Payee: Connection established"
+		self.connection = connection
+		# TODO: register event handlers
+
+
+	def isConnected(self):
+		return self.connection != None
 
 
