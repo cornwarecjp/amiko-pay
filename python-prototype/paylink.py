@@ -42,8 +42,9 @@ class Payer(event.Handler):
 
 		self.connection = network.Connection(self.context,
 			(self.remoteHost, self.remotePort))
-		#TODO: register connection handlers
-		#TODO: send pay message to payee
+		#TODO: maybe listen to closed event?
+
+		self.connection.sendMessage(messages.Pay(self.ID))
 
 
 

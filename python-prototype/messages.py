@@ -22,7 +22,7 @@ import struct
 
 ID_STRING = 1
 ID_LINK   = 2
-
+ID_PAY    = 3
 
 
 class Message:
@@ -88,4 +88,23 @@ class Link(Message):
 
 	def __str__(self):
 		return "yourID: " + self.yourID
+
+
+
+class Pay(Message):
+	def __init__(self, ID=""):
+		Message.__init__(self, ID_PAY)
+		self.ID = ID
+
+
+	def serializeAttributes(self):
+		return self.ID
+
+
+	def deserializeAttributes(self, s):
+		self.ID = s
+
+
+	def __str__(self):
+		return "ID: " + self.ID
 
