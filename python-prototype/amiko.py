@@ -94,6 +94,12 @@ class Amiko(threading.Thread):
 		return "amikopay://localhost/" + ID
 
 
+	@runInAmikoThread
+	def pay(self, URL):
+		newPayer = paylink.Payer(self.context, URL)
+		return newPayer
+
+
 	def run(self):
 		self.__stop = False
 		while not self.__stop:

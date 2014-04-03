@@ -16,6 +16,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
+from urlparse import urlparse
+
 import network
 import messages
 import event
@@ -23,12 +25,18 @@ import event
 
 
 class Payer(event.Handler):
-	def __init__(self, context, ID):
+	def __init__(self, context, URL):
 		event.Handler.__init__(self, context)
 
-		self.remoteHost = "localhost" #TODO
-		self.remotePort = 4321 #TODO
-		self.ID = ID
+		URL = urlparse(URL)
+		self.remoteHost = URL.hostname
+		self.remotePort = 4321 if URL.port == None else URL.port
+		self.ID = URL.path[1:] #remove initial slash
+
+		print self.remoteHost
+		print self.remotePort
+		print self.ID
+
 		self.amount = None #unknown
 		self.receipt = None #unknown
 

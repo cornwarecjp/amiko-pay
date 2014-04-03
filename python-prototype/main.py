@@ -56,6 +56,8 @@ help:
   Display this message.
 request amount [receipt]:
   Request payment of amount, with optional receipt
+pay URL
+  Pay the payment corresponding with URL
 """
 	elif cmd[0] == "request":
 		checkNumArgs(1, 2)
@@ -67,6 +69,16 @@ request amount [receipt]:
 
 		URL = a.request(amount, receipt)
 		print URL
+
+	elif cmd[0] == "pay":
+		checkNumArgs(1, 1)
+
+		URL = cmd[1]
+		payer = a.pay(URL)
+
+		print "Receipt: ", payer.receipt
+		print "Amount: ", payer.amount
+		#TODO: ask user for confirmation
 
 	else:
 		print "Unknown command. Enter \"help\" for a list of commands."
