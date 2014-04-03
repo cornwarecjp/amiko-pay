@@ -34,6 +34,22 @@ maxProtocolVersion = 1
 
 
 
+def runInAmikoThread(implementationFunc):
+	"""
+	Function decorator, which can be used by Amiko methods to have them
+	called by an external thread, but have them run inside the internal thread
+	of the Amiko object.
+	"""
+	def remoteCaller(self, *args, **kwargs):
+		with self._commandFunctionLock:
+			self._commandFunction = (implementationFunc, args, kwargs)
+			self._commandProcessed.clear()
+		self._commandProcessed.wait()
+		return self._commandReturnValue
+	return remoteCaller
+
+
+
 class Amiko(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
@@ -47,9 +63,10 @@ class Amiko(threading.Thread):
 
 		self.__stop = False
 
-		self.__signalLock = threading.Lock()
-		self.__signal = None
-		self.__signalProcessed = threading.Event()
+		self._commandFunctionLock = threading.Lock()
+		self._commandFunction = None
+		self._commandProcessed = threading.Event()
+		self._commandReturnValue = None
 
 		self.context.connect(None, event.signals.link, self.__handleLinkSignal)
 
@@ -59,16 +76,17 @@ class Amiko(threading.Thread):
 		self.join()
 
 
+	@runInAmikoThread
 	def sendSignal(self, sender, signal, *args, **kwargs):
-		with self.__signalLock:
-			self.__signal = (sender, signal, args, kwargs)
-			self.__signalProcessed.clear()
-		self.__signalProcessed.wait()
+		self.context.sendSignal(sender, signal, *args, **kwargs)
 
 
+	@runInAmikoThread
 	def request(self, amount, receipt):
 		print amount
 		print receipt
+		ID = "42" #TODO: large random ID
+		#newPayee = paylink.Payee(self.context, ID, amount, receipt)
 		#TODO
 		return "amikopay://localhost/x"
 
@@ -76,14 +94,16 @@ class Amiko(threading.Thread):
 	def run(self):
 		self.__stop = False
 		while not self.__stop:
+
 			self.context.dispatchNetworkEvents()
 			self.context.dispatchTimerEvents()
-			with self.__signalLock:
-				s = self.__signal
+
+			with self._commandFunctionLock:
+				s = self._commandFunction
 				if s != None:
-					self.context.sendSignal(s[0], s[1], *s[2], **s[3])
-				self.__signalProcessed.set()
-				self.__signal = None
+					self._commandReturnValue = s[0](self, *s[1], **s[2])
+					self._commandProcessed.set()
+					self._commandFunction = None
 
 
 	def __handleLinkSignal(self, connection, message):

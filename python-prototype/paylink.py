@@ -29,6 +29,8 @@ class Payer(event.Handler):
 		self.remoteHost = "localhost" #TODO
 		self.remotePort = 4321 #TODO
 		self.ID = ID
+		self.amount = None #unknown
+		self.receipt = None #unknown
 
 		self.connection = network.Connection(self.context,
 			(self.remoteHost, self.remotePort))
@@ -38,10 +40,12 @@ class Payer(event.Handler):
 
 
 class Payee(event.Handler):
-	def __init__(self, context, ID):
+	def __init__(self, context, ID, amount, receipt):
 		event.Handler.__init__(self, context)
 
 		self.ID = ID
+		self.amount = 0 #default
+		self.receipt = "" #default
 
 		self.connection = None
 
