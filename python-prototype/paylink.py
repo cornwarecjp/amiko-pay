@@ -45,6 +45,7 @@ class Payer(event.Handler):
 
 		self.amount = None #unknown
 		self.receipt = None #unknown
+		self.meetingPoint = None #unknown
 
 		# Will be set when receipt message is received from payee
 		self.__receiptReceived = threading.Event()
@@ -75,7 +76,8 @@ class Payer(event.Handler):
 				)
 
 		if payerAgrees:
-			self.connection.sendMessage(messages.String("OK"))
+			self.connection.sendMessage(
+				messages.String("OK:" + self.meetingPoint))
 			#TODO: start payment routing
 			self.state = self.states.confirmed
 		else:
@@ -91,6 +93,11 @@ class Payer(event.Handler):
 
 			self.amount = message.amount
 			self.receipt = message.receipt
+
+			# for now, always select the first suggested meeting point.
+			# Will automatically give an exception if 0 meeting points are given
+			self.meetingPoint = message.meetingPoints[0]
+
 			#TODO: hash
 
 			self.state = self.states.hasReceipt
@@ -108,12 +115,14 @@ class Payee(event.Handler):
 		"initial", "confirmed", "cancelled", "completed"
 		])
 
-	def __init__(self, context, ID, amount, receipt):
+	def __init__(self, context, ID, amount, receipt, meetingPoints):
 		event.Handler.__init__(self, context)
 
 		self.ID = ID
 		self.amount = amount
 		self.receipt = receipt
+		self.meetingPoints = meetingPoints
+		self.meetingPoint = None #unknown
 
 		self.connection = None
 
@@ -134,7 +143,8 @@ class Payee(event.Handler):
 		# TODO: find some way to un-register on close
 
 		# Send amount and receipt to payer:
-		connection.sendMessage(messages.Receipt(self.amount, self.receipt))
+		connection.sendMessage(messages.Receipt(
+			self.amount, self.receipt, self.meetingPoints))
 
 
 	def isConnected(self):
@@ -145,14 +155,19 @@ class Payee(event.Handler):
 		situation = (self.state, message.__class__)
 
 		if situation == (self.states.initial, messages.String):
-			if message.value == "OK":
-				self.state = self.states.confirmed
-				print "Payee received OK"
-				#TODO: start payment routing
-			else:
+			if message.value == "NOK":
 				print "Payee received NOK"
 				self.state = self.states.cancelled
 				#TODO: close everything
+			elif message.value[:3] == "OK:":
+				self.meetingPoint = message.value[3:]
+				#TODO: check that meeting point is in self.meetingPoints
+				self.state = self.states.confirmed
+				print "Payee received OK: ", self.meetingPoint
+				#TODO: start payment routing
+			else:
+				print "Payee received invalid confirmation string"
+				# TODO: handle protocol error situation
 
 		else:
 			print "Payee received unsupported message for state %s: %s" % \
