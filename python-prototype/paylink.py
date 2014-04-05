@@ -103,7 +103,11 @@ class Payee(event.Handler):
 
 		print "Payee: Connection established"
 		self.connection = connection
-		# TODO: register event handlers
+
+		event.Handler.connect(self, self.connection, event.signals.message,
+			self.__messageHandler)
+		# TODO: register other event handlers
+		# TODO: find some way to un-register on close
 
 		# Send amount and receipt to payer:
 		connection.sendMessage(messages.Receipt(self.amount, self.receipt))
@@ -111,5 +115,9 @@ class Payee(event.Handler):
 
 	def isConnected(self):
 		return self.connection != None
+
+
+	def __messageHandler(self, message):
+		print "Payee received unknown message: ", message
 
 
