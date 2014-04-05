@@ -58,12 +58,23 @@ class Payer(event.Handler):
 
 		self.connect(self.connection, event.signals.message,
 			self.__messageHandler)
-		# TODO: register other event handlers
-		# TODO: find some way to un-register on close
+		self.connect(self.connection, event.signals.closed,
+			self.close)
 
 		self.connection.sendMessage(messages.Pay(self.ID))
 
 		self.state = self.states.initial
+
+
+	def close(self):
+		print "Payer side closing"
+		self.state = self.states.cancelled #TODO: it depends, actually
+		#Important: disconnect BEFORE connection.close, since this method is
+		#a signal handler for the connection closed event.
+		#Otherwise, it could give an infinite recursion.
+		self.disconnectAll()
+		self.connection.close()
+		self.context.sendSignal(self, event.signals.closed)
 
 
 	def waitForReceipt(self):
@@ -89,7 +100,7 @@ class Payer(event.Handler):
 			self.state = self.states.confirmed
 		else:
 			self.connection.sendMessage(messages.String("NOK"))
-			#TODO: close everything
+			self.close()
 			self.state = self.states.cancelled
 
 
@@ -113,7 +124,7 @@ class Payer(event.Handler):
 		else:
 			print "Payer received unsupported message for state %s: %s" % \
 				(self.state, message)
-			# TODO: handle protocol error situation
+			self.close()
 
 
 
@@ -138,18 +149,31 @@ class Payee(event.Handler):
 		self.state = self.states.initial
 
 
+	def close(self):
+		print "Payee side closing"
+		self.state = self.states.cancelled #TODO: it depends, actually
+		#Important: disconnect BEFORE connection.close, since this method is
+		#a signal handler for the connection closed event.
+		#Otherwise, it could give an infinite recursion.
+		self.disconnectAll()
+		if self.isConnected():
+			self.connection.close()
+		self.context.sendSignal(self, event.signals.closed)
+
+
 	def connect(self, connection):
 		if self.isConnected():
 			print "Payee: Received a duplicate connection; closing it"
 			connection.close()
+			return
 
 		print "Payee: Connection established"
 		self.connection = connection
 
 		event.Handler.connect(self, self.connection, event.signals.message,
 			self.__messageHandler)
-		# TODO: register other event handlers
-		# TODO: find some way to un-register on close
+		event.Handler.connect(self, self.connection, event.signals.closed,
+			self.close)
 
 		# Send amount and receipt to payer:
 		connection.sendMessage(messages.Receipt(
@@ -166,8 +190,8 @@ class Payee(event.Handler):
 		if situation == (self.states.initial, messages.String):
 			if message.value == "NOK":
 				print "Payee received NOK"
+				self.close()
 				self.state = self.states.cancelled
-				#TODO: close everything
 			elif message.value[:3] == "OK:":
 				self.__meetingPoint = message.value[3:]
 				#TODO: check that meeting point is in self.meetingPoints
@@ -181,11 +205,11 @@ class Payee(event.Handler):
 
 			else:
 				print "Payee received invalid confirmation string"
-				# TODO: handle protocol error situation
+				self.close()
 
 		else:
 			print "Payee received unsupported message for state %s: %s" % \
 				(self.state, message)
-			# TODO: handle protocol error situation
+			self.close()
 
 
