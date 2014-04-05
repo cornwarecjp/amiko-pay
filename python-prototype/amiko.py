@@ -98,8 +98,14 @@ class Amiko(threading.Thread):
 		return "amikopay://localhost/" + ID
 
 
-	@runInAmikoThread
 	def pay(self, URL):
+		newPayer = self.__pay(URL) #implemented in Amiko thread
+		newPayer.waitForReceipt() #Must be done in this thread
+		return newPayer
+
+
+	@runInAmikoThread
+	def __pay(self, URL):
 		newPayer = paylink.Payer(self.context, URL)
 		return newPayer
 

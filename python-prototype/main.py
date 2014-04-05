@@ -75,7 +75,6 @@ pay URL
 
 		URL = cmd[1]
 		payer = a.pay(URL)
-		payer.waitForReceipt()
 
 		print "Receipt: ", payer.receipt
 		print "Amount: ", payer.amount
