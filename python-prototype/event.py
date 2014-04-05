@@ -20,18 +20,11 @@ import select
 import time
 
 import network
+import utils
 
 
 
-class Enum(set):
-	def __getattr__(self, name):
-		if name in self:
-			return name
-		raise AttributeError
-
-
-
-signals = Enum([
+signals = utils.Enum([
 	"readyForRead",
 	"readyForWrite",
 	"closed",
