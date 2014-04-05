@@ -20,6 +20,7 @@ from urlparse import urlparse
 import threading
 
 import network
+import transaction
 import messages
 import event
 import utils
@@ -45,7 +46,9 @@ class Payer(event.Handler):
 
 		self.amount = None #unknown
 		self.receipt = None #unknown
-		self.meetingPoint = None #unknown
+
+		self.__meetingPoint = None #unknown
+		self.__transaction = None
 
 		# Will be set when receipt message is received from payee
 		self.__receiptReceived = threading.Event()
@@ -77,8 +80,12 @@ class Payer(event.Handler):
 
 		if payerAgrees:
 			self.connection.sendMessage(
-				messages.String("OK:" + self.meetingPoint))
-			#TODO: start payment routing
+				messages.String("OK:" + self.__meetingPoint))
+
+			#This will start the transaction routing
+			#TODO: give the transaction some more info
+			self.__transaction = transaction.Transaction(self.context)
+
 			self.state = self.states.confirmed
 		else:
 			self.connection.sendMessage(messages.String("NOK"))
@@ -96,7 +103,7 @@ class Payer(event.Handler):
 
 			# for now, always select the first suggested meeting point.
 			# Will automatically give an exception if 0 meeting points are given
-			self.meetingPoint = message.meetingPoints[0]
+			self.__meetingPoint = message.meetingPoints[0]
 
 			#TODO: hash
 
@@ -121,8 +128,10 @@ class Payee(event.Handler):
 		self.ID = ID
 		self.amount = amount
 		self.receipt = receipt
-		self.meetingPoints = meetingPoints
-		self.meetingPoint = None #unknown
+
+		self.__meetingPoints = meetingPoints
+		self.__meetingPoint = None #unknown
+		self.__transaction = None
 
 		self.connection = None
 
@@ -144,7 +153,7 @@ class Payee(event.Handler):
 
 		# Send amount and receipt to payer:
 		connection.sendMessage(messages.Receipt(
-			self.amount, self.receipt, self.meetingPoints))
+			self.amount, self.receipt, self.__meetingPoints))
 
 
 	def isConnected(self):
@@ -160,11 +169,16 @@ class Payee(event.Handler):
 				self.state = self.states.cancelled
 				#TODO: close everything
 			elif message.value[:3] == "OK:":
-				self.meetingPoint = message.value[3:]
+				self.__meetingPoint = message.value[3:]
 				#TODO: check that meeting point is in self.meetingPoints
+
+				#This will start the transaction routing
+				#TODO: give the transaction some more info
+				self.__transaction = transaction.Transaction(self.context)
+
 				self.state = self.states.confirmed
-				print "Payee received OK: ", self.meetingPoint
-				#TODO: start payment routing
+				print "Payee received OK: ", self.__meetingPoint
+
 			else:
 				print "Payee received invalid confirmation string"
 				# TODO: handle protocol error situation
