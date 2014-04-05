@@ -22,10 +22,15 @@ import threading
 import network
 import messages
 import event
+import utils
 
 
 
 class Payer(event.Handler):
+	states = utils.Enum([
+		"initial", "hasReceipt", "confirmed", "cancelled", "completed"
+		])
+
 	def __init__(self, context, URL):
 		event.Handler.__init__(self, context)
 
@@ -54,6 +59,8 @@ class Payer(event.Handler):
 
 		self.connection.sendMessage(messages.Pay(self.ID))
 
+		self.state = self.states.initial
+
 
 	def waitForReceipt(self):
 		#TODO: timeout mechanism
@@ -61,31 +68,45 @@ class Payer(event.Handler):
 
 
 	def confirmPayment(self, payerAgrees):
+		if self.state != self.states.hasReceipt:
+			raise Exception(
+				"confirmPayment should not be called in state %s" % \
+					self.state
+				)
+
 		if payerAgrees:
 			self.connection.sendMessage(messages.String("OK"))
 			#TODO: start payment routing
+			self.state = self.states.confirmed
 		else:
 			self.connection.sendMessage(messages.String("NOK"))
 			#TODO: close everything
+			self.state = self.states.cancelled
 
 
 	def __messageHandler(self, message):
-		if isinstance(message, messages.Receipt):
-			if self.amount != None or self.receipt != None:
-				raise Exception(
-					"Received receipt, while receipt data was already present")
-				# TODO: handle protocol error situation
+		situation = (self.state, message.__class__)
+
+		if situation == (self.states.initial, messages.Receipt):
 
 			self.amount = message.amount
 			self.receipt = message.receipt
 			#TODO: hash
+
+			self.state = self.states.hasReceipt
 			self.__receiptReceived.set()
 
 		else:
-			print "Payer received unknown message: ", message
+			print "Payer received unsupported message for state %s: %s" % \
+				(self.state, message)
+			# TODO: handle protocol error situation
 
 
 class Payee(event.Handler):
+	states = utils.Enum([
+		"initial", "confirmed", "cancelled", "completed"
+		])
+
 	def __init__(self, context, ID, amount, receipt):
 		event.Handler.__init__(self, context)
 
@@ -94,6 +115,8 @@ class Payee(event.Handler):
 		self.receipt = receipt
 
 		self.connection = None
+
+		self.state = self.states.initial
 
 
 	def connect(self, connection):
