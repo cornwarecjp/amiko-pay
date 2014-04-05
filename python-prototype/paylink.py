@@ -60,6 +60,15 @@ class Payer(event.Handler):
 		self.__receiptReceived.wait()
 
 
+	def confirmPayment(self, payerAgrees):
+		if payerAgrees:
+			self.connection.sendMessage(messages.String("OK"))
+			#TODO: start payment routing
+		else:
+			self.connection.sendMessage(messages.String("NOK"))
+			#TODO: close everything
+
+
 	def __messageHandler(self, message):
 		if isinstance(message, messages.Receipt):
 			if self.amount != None or self.receipt != None:

@@ -76,12 +76,11 @@ pay URL
 		URL = cmd[1]
 		payer = a.pay(URL)
 
-		print "Receipt: ", payer.receipt
+		print "Receipt: ", repr(payer.receipt)
 		print "Amount: ", payer.amount
 		answer = raw_input("Do you want to pay (y/n)? ")
 		OK = answer.lower() == 'y'
-		print OK
-		#TODO: process user answer
+		a.confirmPayment(payer, OK)
 
 	else:
 		print "Unknown command. Enter \"help\" for a list of commands."

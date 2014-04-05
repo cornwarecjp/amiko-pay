@@ -110,6 +110,11 @@ class Amiko(threading.Thread):
 		return newPayer
 
 
+	@runInAmikoThread
+	def confirmPayment(self, payer, payerAgrees):
+		payer.confirmPayment(payerAgrees)
+
+
 	def run(self):
 		self.__stop = False
 		while not self.__stop:
