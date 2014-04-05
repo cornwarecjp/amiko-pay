@@ -102,6 +102,7 @@ class Payer(event.Handler):
 			# TODO: handle protocol error situation
 
 
+
 class Payee(event.Handler):
 	states = utils.Enum([
 		"initial", "confirmed", "cancelled", "completed"
@@ -141,6 +142,21 @@ class Payee(event.Handler):
 
 
 	def __messageHandler(self, message):
-		print "Payee received unknown message: ", message
+		situation = (self.state, message.__class__)
+
+		if situation == (self.states.initial, messages.String):
+			if message.value == "OK":
+				self.state = self.states.confirmed
+				print "Payee received OK"
+				#TODO: start payment routing
+			else:
+				print "Payee received NOK"
+				self.state = self.states.cancelled
+				#TODO: close everything
+
+		else:
+			print "Payee received unsupported message for state %s: %s" % \
+				(self.state, message)
+			# TODO: handle protocol error situation
 
 
