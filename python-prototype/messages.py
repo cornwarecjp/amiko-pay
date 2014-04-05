@@ -20,9 +20,11 @@ import struct
 
 
 
-ID_STRING = 1
-ID_LINK   = 2
-ID_PAY    = 3
+ID_STRING  = 1
+ID_LINK    = 2
+ID_PAY     = 3
+ID_RECEIPT = 4
+
 
 
 class Message:
@@ -45,7 +47,8 @@ def deserialize(s):
 		{
 		ID_STRING: String,
 		ID_LINK: Link,
-		ID_PAY: Pay
+		ID_PAY: Pay,
+		ID_RECEIPT: Receipt
 		}[ID]
 	except KeyError:
 		raise Exception("Deserialize failed: unknown type ID")
@@ -112,4 +115,30 @@ class Pay(Message):
 
 	def __str__(self):
 		return "ID: " + self.ID
+
+
+
+class Receipt(Message):
+	def __init__(self, amount=0, receipt=""):
+		Message.__init__(self, ID_RECEIPT)
+		self.amount = amount
+		self.receipt = receipt
+		#TODO: add transaction hash value
+
+
+	def serializeAttributes(self):
+		# 8-byte unsigned int in network byte order:
+		amount = struct.pack("!Q", self.amount)
+		return amount + self.receipt
+
+
+	def deserializeAttributes(self, s):
+		# 8-byte unsigned int in network byte order:
+		self.amount = struct.unpack("!Q", s[:8])[0]
+		self.receipt = s[8:]
+
+
+	def __str__(self):
+		return "amount: %d; receipt: \"%s\"" % (self.amount, self.receipt)
+
 

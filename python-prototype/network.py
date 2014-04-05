@@ -106,9 +106,12 @@ class Connection(event.Handler):
 
 
 	def sendMessage(self, msg):
+		#print "Sending message: ", msg
 
 		#serialize:
 		msg = msg.serialize()
+
+		#print "Sending serialized message: ", repr(msg)
 
 		# 4-byte unsigned int in network byte order:
 		lenStr = struct.pack("!I", len(msg))
@@ -146,6 +149,8 @@ class Connection(event.Handler):
 
 			msg = self.__readBuffer[4:msgLen+4]
 			self.__readBuffer = self.__readBuffer[msgLen+4:]
+
+			#print "Received serialized message: ", repr(msg)
 
 			#de-serialize
 			msg = messages.deserialize(msg)

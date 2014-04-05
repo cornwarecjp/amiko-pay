@@ -53,8 +53,8 @@ class Payee(event.Handler):
 		event.Handler.__init__(self, context)
 
 		self.ID = ID
-		self.amount = 0 #default
-		self.receipt = "" #default
+		self.amount = amount
+		self.receipt = receipt
 
 		self.connection = None
 
@@ -67,6 +67,9 @@ class Payee(event.Handler):
 		print "Payee: Connection established"
 		self.connection = connection
 		# TODO: register event handlers
+
+		# Send amount and receipt to payer:
+		connection.sendMessage(messages.Receipt(self.amount, self.receipt))
 
 
 	def isConnected(self):
