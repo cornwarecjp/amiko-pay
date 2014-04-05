@@ -17,6 +17,7 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 from urlparse import urlparse
+import threading
 
 import network
 import messages
@@ -40,12 +41,39 @@ class Payer(event.Handler):
 		self.amount = None #unknown
 		self.receipt = None #unknown
 
+		# Will be set when receipt message is received from payee
+		self.__receiptReceived = threading.Event()
+
 		self.connection = network.Connection(self.context,
 			(self.remoteHost, self.remotePort))
-		# TODO: register event handlers
+
+		self.connect(self.connection, event.signals.message,
+			self.__messageHandler)
+		# TODO: register other event handlers
+		# TODO: find some way to un-register on close
 
 		self.connection.sendMessage(messages.Pay(self.ID))
 
+
+	def waitForReceipt(self):
+		#TODO: timeout mechanism
+		self.__receiptReceived.wait()
+
+
+	def __messageHandler(self, message):
+		if isinstance(message, messages.Receipt):
+			if self.amount != None or self.receipt != None:
+				raise Exception(
+					"Received receipt, while receipt data was already present")
+				# TODO: handle protocol error situation
+
+			self.amount = message.amount
+			self.receipt = message.receipt
+			#TODO: hash
+			self.__receiptReceived.set()
+
+		else:
+			print "Payer received unknown message: ", message
 
 
 class Payee(event.Handler):

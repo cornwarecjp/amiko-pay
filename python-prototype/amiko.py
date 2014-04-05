@@ -90,8 +90,6 @@ class Amiko(threading.Thread):
 
 	@runInAmikoThread
 	def request(self, amount, receipt):
-		print amount
-		print receipt
 		ID = "42" #TODO: large random ID
 		newPayee = paylink.Payee(self.context, ID, amount, receipt)
 		self.payees.append(newPayee)

@@ -226,7 +226,8 @@ class Connection(event.Handler):
 				self, message)
 			return
 
-		#TODO: other message handling
-		print "Received unknown message type: ", str(message)
-
+		# All other messages: message event
+		self.context.sendSignal(self, event.signals.message,
+			message)
+		
 
