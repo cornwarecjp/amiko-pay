@@ -178,7 +178,7 @@ class Payee(event.Handler):
 		event.Handler.connect(self, self.connection, event.signals.closed,
 			self.close)
 
-		meetingPoints = self.routingContext.meetingPoints[:]
+		meetingPoints = [mp.ID for mp in self.routingContext.meetingPoints]
 		#TODO: add accepted external meeting points
 
 		# Send amount, receipt and meeting points to payer:

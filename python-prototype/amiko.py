@@ -21,6 +21,7 @@ import threading
 import network
 import event
 import finlink
+import meetingpoint
 import paylink
 
 
@@ -73,7 +74,7 @@ class Amiko(threading.Thread):
 		self.routingContext = RoutingContext()
 		self.routingContext.finLinks.append(finlink.FinLink(self.context, "A", "B"))
 		self.routingContext.finLinks.append(finlink.FinLink(self.context, "B", "A"))
-		self.routingContext.meetingPoints.append("myself")
+		self.routingContext.meetingPoints.append(meetingpoint.MeetingPoint("myself"))
 
 		self.payees = []
 

@@ -1,4 +1,4 @@
-#    transaction.py
+#    meetingpoint.py
 #    Copyright (C) 2014 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -18,26 +18,9 @@
 
 
 
-class Transaction:
-	def __init__(self, context, routingContext,
-		amount, meetingPoint, #TODO: hash value
-		payerLink=None, payeeLink=None):
+class MeetingPoint:
+	def __init__(self, ID):
+		self.ID = ID
 
-		self.context = context
-		self.routingContext = routingContext
-		self.amount = amount
-		self.meetingPoint = meetingPoint
-		self.payerLink = payerLink
-		self.payeeLink = payeeLink
-
-		self.__tryMeetingPoint()
-		#TODO: start routing if we're not the meeting point
-
-
-	def __tryMeetingPoint(self):
-		mpIDs = [mp.ID for mp in self.routingContext.meetingPoints]
-		if self.meetingPoint in mpIDs:
-			print "Transaction arrived at meeting point"
-			#TODO
 
 
