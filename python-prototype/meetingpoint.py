@@ -23,4 +23,8 @@ class MeetingPoint:
 		self.ID = ID
 
 
+	def addTransaction(self, transaction):
+		print "Transaction arrived at meeting point"
+		#TODO
+
 
