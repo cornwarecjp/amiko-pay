@@ -102,11 +102,8 @@ class Amiko(threading.Thread):
 	def request(self, amount, receipt):
 		ID = "42" #TODO: large random ID
 
-		#TODO: also accept external meeting points
-		meetingPoints = self.routingContext.meetingPoints[:]
-
 		newPayee = paylink.Payee(
-			self.context, ID, amount, receipt, meetingPoints)
+			self.context, self.routingContext, ID, amount, receipt)
 		self.payees.append(newPayee)
 
 		#TODO: get this from newPayee:
@@ -121,7 +118,7 @@ class Amiko(threading.Thread):
 
 	@runInAmikoThread
 	def __pay(self, URL):
-		newPayer = paylink.Payer(self.context, URL)
+		newPayer = paylink.Payer(self.context, self.routingContext, URL)
 		return newPayer
 
 

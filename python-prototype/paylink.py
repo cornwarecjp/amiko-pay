@@ -32,8 +32,9 @@ class Payer(event.Handler):
 		"initial", "hasReceipt", "confirmed", "cancelled", "completed"
 		])
 
-	def __init__(self, context, URL):
+	def __init__(self, context, routingContext, URL):
 		event.Handler.__init__(self, context)
+		self.routingContext = routingContext
 
 		URL = urlparse(URL)
 		self.remoteHost = URL.hostname
@@ -94,8 +95,8 @@ class Payer(event.Handler):
 				messages.String("OK:" + self.__meetingPoint))
 
 			#This will start the transaction routing
-			#TODO: give the transaction some more info
-			self.__transaction = transaction.Transaction(self.context)
+			self.__transaction = transaction.Transaction(
+				self.context, self.routingContext)
 
 			self.state = self.states.confirmed
 		else:
@@ -133,14 +134,14 @@ class Payee(event.Handler):
 		"initial", "confirmed", "cancelled", "completed"
 		])
 
-	def __init__(self, context, ID, amount, receipt, meetingPoints):
+	def __init__(self, context, routingContext, ID, amount, receipt):
 		event.Handler.__init__(self, context)
+		self.routingContext = routingContext
 
 		self.ID = ID
 		self.amount = amount
 		self.receipt = receipt
 
-		self.__meetingPoints = meetingPoints
 		self.__meetingPoint = None #unknown
 		self.__transaction = None
 
@@ -175,9 +176,12 @@ class Payee(event.Handler):
 		event.Handler.connect(self, self.connection, event.signals.closed,
 			self.close)
 
-		# Send amount and receipt to payer:
+		meetingPoints = self.routingContext.meetingPoints[:]
+		#TODO: add accepted external meeting points
+
+		# Send amount, receipt and meeting points to payer:
 		connection.sendMessage(messages.Receipt(
-			self.amount, self.receipt, self.__meetingPoints))
+			self.amount, self.receipt, meetingPoints))
 
 
 	def isConnected(self):
@@ -197,8 +201,8 @@ class Payee(event.Handler):
 				#TODO: check that meeting point is in self.meetingPoints
 
 				#This will start the transaction routing
-				#TODO: give the transaction some more info
-				self.__transaction = transaction.Transaction(self.context)
+				self.__transaction = transaction.Transaction(
+					self.context, self.routingContext)
 
 				self.state = self.states.confirmed
 				print "Payee received OK: ", self.__meetingPoint

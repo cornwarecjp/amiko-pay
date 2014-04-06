@@ -19,7 +19,8 @@
 
 
 class Transaction():
-	def __init__(self, context):
+	def __init__(self, context, routingContext):
 		self.context = context
+		self.routingContext = routingContext
 
 
