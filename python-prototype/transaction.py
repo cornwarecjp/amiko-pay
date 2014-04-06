@@ -18,9 +18,25 @@
 
 
 
-class Transaction():
-	def __init__(self, context, routingContext):
+class Transaction:
+	def __init__(self, context, routingContext,
+		amount, meetingPoint, #TODO: hash value
+		payerLink=None, payeeLink=None):
+
 		self.context = context
 		self.routingContext = routingContext
+		self.amount = amount
+		self.meetingPoint = meetingPoint
+		self.payerLink = payerLink
+		self.payeeLink = payeeLink
+
+		self.__tryMeetingPoint()
+		#TODO: start routing if we're not the meeting point
+
+
+	def __tryMeetingPoint(self):
+		if self.meetingPoint in self.routingContext.meetingPoints:
+			print "Transaction arrived at meeting point"
+			#TODO
 
 
