@@ -23,6 +23,7 @@ import event
 import finlink
 import meetingpoint
 import paylink
+import settings
 
 
 
@@ -69,7 +70,7 @@ class Amiko(threading.Thread):
 
 		self.context = event.Context()
 
-		self.listener = network.Listener(self.context, 4321)
+		self.listener = network.Listener(self.context, settings.defaultPort)
 
 		self.routingContext = RoutingContext()
 		self.routingContext.finLinks.append(finlink.FinLink(self.context, "A", "B"))

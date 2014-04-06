@@ -119,12 +119,12 @@ class Pay(Message):
 
 
 class Receipt(Message):
-	def __init__(self, amount=0, receipt="", meetingPoints=[]):
+	def __init__(self, amount=0, receipt="", hash="", meetingPoints=[]):
 		Message.__init__(self, ID_RECEIPT)
 		self.amount = amount
 		self.receipt = receipt
+		self.hash=hash
 		self.meetingPoints = meetingPoints
-		#TODO: add transaction hash value
 
 
 	def serializeAttributes(self):
@@ -134,6 +134,10 @@ class Receipt(Message):
 		# 4-byte unsigned int in network byte order:
 		receiptLen = struct.pack("!I", len(self.receipt))
 		ret += receiptLen + self.receipt
+
+		# 4-byte unsigned int in network byte order:
+		hashLen = struct.pack("!I", len(self.hash))
+		ret += hashLen + self.hash
 
 		# 4-byte unsigned int in network byte order:
 		ret += struct.pack("!I", len(self.meetingPoints))
@@ -157,6 +161,11 @@ class Receipt(Message):
 		s = s[4+receiptLen:]
 
 		# 4-byte unsigned int in network byte order:
+		hashLen = struct.unpack("!I", s[:4])[0]
+		self.hash = s[4:4+hashLen]
+		s = s[4+hashLen:]
+
+		# 4-byte unsigned int in network byte order:
 		numMPs = struct.unpack("!I", s[:4])[0]
 		s = s[4:]
 
@@ -169,7 +178,7 @@ class Receipt(Message):
 
 
 	def __str__(self):
-		return "amount: %d; receipt: \"%s\"; meeting points: %s" % \
-			(self.amount, self.receipt, str(self.meetingPoints))
+		return "amount: %d; receipt: \"%s\"; hash: %s; meeting points: %s" % \
+			(self.amount, self.receipt, repr(self.hash), str(self.meetingPoints))
 
 

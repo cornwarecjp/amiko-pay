@@ -39,15 +39,13 @@ class Payer(event.Handler):
 
 		URL = urlparse(URL)
 		self.remoteHost = URL.hostname
-		self.remotePort = 4321 if URL.port == None else URL.port
+		self.remotePort = settings.defaultPort if URL.port == None else URL.port
 		self.ID = URL.path[1:] #remove initial slash
 
-		print self.remoteHost
-		print self.remotePort
-		print self.ID
-
-		self.amount = None #unknown
+		self.amount  = None #unknown
 		self.receipt = None #unknown
+		self.hash    = None #unknown
+		self.token   = None #unknown
 
 		self.__meetingPoint = None #unknown
 		self.__transaction = None
@@ -115,12 +113,11 @@ class Payer(event.Handler):
 
 			self.amount = message.amount
 			self.receipt = message.receipt
+			self.hash = message.hash
 
 			# for now, always select the first suggested meeting point.
 			# Will automatically give an exception if 0 meeting points are given
 			self.__meetingPoint = message.meetingPoints[0]
-
-			#TODO: hash
 
 			self.state = self.states.hasReceipt
 			self.__receiptReceived.set()
@@ -186,7 +183,7 @@ class Payee(event.Handler):
 
 		# Send amount, receipt and meeting points to payer:
 		connection.sendMessage(messages.Receipt(
-			self.amount, self.receipt, meetingPoints))
+			self.amount, self.receipt, self.hash, meetingPoints))
 
 
 	def isConnected(self):

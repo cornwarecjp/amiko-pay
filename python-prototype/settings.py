@@ -25,4 +25,6 @@ import hashlib
 def hashAlgorithm(data):
 	return hashlib.sha256(data).digest()
 
+defaultPort = 4321
+
 
