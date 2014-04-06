@@ -96,7 +96,7 @@ class Payer(event.Handler):
 			#This will start the transaction routing
 			self.__transaction = transaction.Transaction(
 				self.context, self.routingContext,
-				self.amount, self.__meetingPoint,
+				self.amount, self.hash, self.__meetingPoint,
 				payerLink=self)
 
 			self.state = self.states.confirmed
@@ -205,7 +205,7 @@ class Payee(event.Handler):
 				#This will start the transaction routing
 				self.__transaction = transaction.Transaction(
 					self.context, self.routingContext,
-					self.amount, self.__meetingPoint,
+					self.amount, self.hash, self.__meetingPoint,
 					payeeLink=self)
 
 				self.state = self.states.confirmed

@@ -20,12 +20,13 @@
 
 class Transaction:
 	def __init__(self, context, routingContext,
-		amount, meetingPoint, #TODO: hash value
+		amount, hash, meetingPoint,
 		payerLink=None, payeeLink=None):
 
 		self.context = context
 		self.routingContext = routingContext
 		self.amount = amount
+		self.hash = hash
 		self.meetingPoint = meetingPoint
 		self.payerLink = payerLink
 		self.payeeLink = payeeLink

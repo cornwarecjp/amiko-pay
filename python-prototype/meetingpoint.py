@@ -24,7 +24,8 @@ class MeetingPoint:
 
 
 	def addTransaction(self, transaction):
-		print "Transaction arrived at meeting point"
+		print "Transaction arrived at meeting point: %d, %s" % \
+			(transaction.amount, repr(transaction.hash))
 		#TODO
 
 
