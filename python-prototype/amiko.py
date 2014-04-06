@@ -34,6 +34,13 @@ maxProtocolVersion = 1
 
 
 
+class RoutingContext:
+	def __init__(self):
+		self.finLinks = []
+		self.meetingPoints = []
+
+
+
 def runInAmikoThread(implementationFunc):
 	"""
 	Function decorator, which can be used by Amiko methods to have them
@@ -62,9 +69,12 @@ class Amiko(threading.Thread):
 		self.context = event.Context()
 
 		self.listener = network.Listener(self.context, 4321)
-		self.finLinks = []
-		self.finLinks.append(finlink.FinLink(self.context, "A", "B"))
-		self.finLinks.append(finlink.FinLink(self.context, "B", "A"))
+
+		self.routingContext = RoutingContext()
+		self.routingContext.finLinks.append(finlink.FinLink(self.context, "A", "B"))
+		self.routingContext.finLinks.append(finlink.FinLink(self.context, "B", "A"))
+		self.routingContext.meetingPoints.append("myself")
+
 		self.payees = []
 
 		self.__stop = False
@@ -91,7 +101,9 @@ class Amiko(threading.Thread):
 	@runInAmikoThread
 	def request(self, amount, receipt):
 		ID = "42" #TODO: large random ID
-		meetingPoints = ["myself"] #TODO: actual list of accepted meeting points
+
+		#TODO: also accept external meeting points
+		meetingPoints = self.routingContext.meetingPoints[:]
 
 		newPayee = paylink.Payee(
 			self.context, ID, amount, receipt, meetingPoints)
@@ -137,7 +149,7 @@ class Amiko(threading.Thread):
 
 
 	def __handleLinkSignal(self, connection, message):
-		for f in self.finLinks:
+		for f in self.routingContext.finLinks:
 			if f.localID == message.yourID:
 				f.connect(connection)
 				return
