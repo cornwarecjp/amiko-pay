@@ -22,10 +22,34 @@ class MeetingPoint:
 	def __init__(self, ID):
 		self.ID = ID
 
+		# Each element is a transaction list [payer, payee]
+		self.__transactionPairs = {}
+
 
 	def addTransaction(self, transaction):
-		print "Transaction arrived at meeting point: %d, %s" % \
-			(transaction.amount, repr(transaction.hash))
-		#TODO
+		try:
+			pair = self.__transactionPairs[transaction.hash]
+
+			if transaction.isPayerSide() and pair[0] == None:
+				pair[0] = transaction
+			elif not transaction.isPayerSide() and pair[1] == None:
+				pair[1] = transaction
+			else:
+				raise Exception("Bug in meeting point matching")
+
+			#TODO: check whether amount equals
+
+			self.__transactionPairs[transaction.hash] = pair
+
+			print "Matched transactions: ", pair
+			# TODO: send messages to both transactions
+
+		except KeyError as e:
+
+			pair = [None, transaction]
+			if transaction.isPayerSide():
+				pair = [transaction, None]
+
+			self.__transactionPairs[transaction.hash] = pair
 
 

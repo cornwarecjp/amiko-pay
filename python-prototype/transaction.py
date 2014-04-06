@@ -37,12 +37,29 @@ class Transaction:
 		#TODO: start routing if we're not the meeting point
 
 
+	def isPayerSide(self):
+		if self.payeeLink == None:
+			return True
+		if self.payerLink == None:
+			return False
+		raise Exception(
+			"isPayerSide should only be called when routing is unfinished")
+
+
 	def __tryMeetingPoint(self):
 		for mp in self.routingContext.meetingPoints:
 			if mp.ID == self.meetingPoint:
 				mp.addTransaction(self)
+				self.__setMissingSide(mp)
 				return True #found
 
 		return False #not found
+
+
+	def __setMissingSide(self, link):
+		if self.payeeLink == None:
+			self.payeeLink = link
+		if self.payerLink == None:
+			self.payerLink = link
 
 
