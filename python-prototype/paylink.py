@@ -24,6 +24,7 @@ import transaction
 import messages
 import event
 import utils
+import settings
 
 
 
@@ -136,13 +137,15 @@ class Payee(event.Handler):
 		"initial", "confirmed", "cancelled", "completed"
 		])
 
-	def __init__(self, context, routingContext, ID, amount, receipt):
+	def __init__(self, context, routingContext, ID, amount, receipt, token):
 		event.Handler.__init__(self, context)
 		self.routingContext = routingContext
 
 		self.ID = ID
 		self.amount = amount
 		self.receipt = receipt
+		self.token = token
+		self.hash = settings.hashAlgorithm(self.token)
 
 		self.__meetingPoint = None #unknown
 		self.__transaction = None

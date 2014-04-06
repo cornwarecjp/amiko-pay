@@ -102,9 +102,10 @@ class Amiko(threading.Thread):
 	@runInAmikoThread
 	def request(self, amount, receipt):
 		ID = "42" #TODO: large random ID
+		token = "The quick brown fox jumps over the lazy dog." #TODO: large random
 
 		newPayee = paylink.Payee(
-			self.context, self.routingContext, ID, amount, receipt)
+			self.context, self.routingContext, ID, amount, receipt, token)
 		self.payees.append(newPayee)
 
 		#TODO: get this from newPayee:
