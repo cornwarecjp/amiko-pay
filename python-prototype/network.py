@@ -23,6 +23,7 @@ import traceback
 import event
 import amiko
 import messages
+import log
 
 
 
@@ -44,14 +45,14 @@ class Listener(event.Handler):
 
 
 	def close(self):
-		print "Listener close"
+		log.log("Listener close")
 		self.disconnectAll()
 		self.context.removeConnectionsBySender(self.socket)
 		self.socket.close()
 
 
 	def __handleReadAvailable(self):
-		print "Read available on listener: accepting new connection"
+		log.log("Read available on listener: accepting new connection")
 
 		# Note: the new connection will register itself at the context, so
 		# it will not be deleted when it goes out of scope here.
@@ -85,7 +86,7 @@ class Connection(event.Handler):
 
 
 	def close(self):
-		print "Connection close"
+		log.log("Connection close")
 
 		try:
 			self.socket.shutdown(socket.SHUT_RDWR)
@@ -129,7 +130,7 @@ class Connection(event.Handler):
 			bytes = self.socket.recv(4096)
 
 			if len(bytes) == 0:
-				print "Detected socket close by other side; closing this side too"
+				log.log("Detected socket close by other side; closing this side too")
 				self.close()
 
 			self.__readBuffer += bytes
@@ -157,6 +158,7 @@ class Connection(event.Handler):
 
 			self.__handleMessage(msg)
 		except Exception as e:
+			#TODO: to logger?
 			print "Exception while handling received data from socket: "
 			traceback.print_exc()
 			self.close()
@@ -211,7 +213,7 @@ class Connection(event.Handler):
 		# Use highest version supported by both sides:
 		self.protocolVersion = min(maxv, amiko.maxProtocolVersion)
 
-		print "Using protocol version", self.protocolVersion
+		log.log("Using protocol version " + str(self.protocolVersion))
 
 
 	def __handleMessage(self, message):

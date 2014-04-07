@@ -25,6 +25,7 @@ import messages
 import event
 import utils
 import settings
+import log
 
 
 
@@ -67,7 +68,7 @@ class Payer(event.Handler):
 
 
 	def close(self):
-		print "Payer side closing"
+		log.log("Payer side closing")
 		self.state = self.states.cancelled #TODO: it depends, actually
 		#Important: disconnect BEFORE connection.close, since this method is
 		#a signal handler for the connection closed event.
@@ -123,8 +124,8 @@ class Payer(event.Handler):
 			self.__receiptReceived.set()
 
 		else:
-			print "Payer received unsupported message for state %s: %s" % \
-				(self.state, message)
+			log.log("Payer received unsupported message for state %s: %s" % \
+				(self.state, message))
 			self.close()
 
 
@@ -166,7 +167,7 @@ class Payee(event.Handler):
 
 
 	def close(self):
-		print "Payee side closing"
+		log.log("Payee side closing")
 		self.state = self.states.cancelled #TODO: it depends, actually
 		#Important: disconnect BEFORE connection.close, since this method is
 		#a signal handler for the connection closed event.
@@ -180,11 +181,11 @@ class Payee(event.Handler):
 
 	def connect(self, connection):
 		if self.isConnected():
-			print "Payee: Received a duplicate connection; closing it"
+			log.log("Payee: Received a duplicate connection; closing it")
 			connection.close()
 			return
 
-		print "Payee: Connection established"
+		log.log("Payee: Connection established")
 		self.connection = connection
 
 		event.Handler.connect(self, self.connection, event.signals.message,
@@ -209,7 +210,7 @@ class Payee(event.Handler):
 
 		if situation == (self.states.initial, messages.String):
 			if message.value == "NOK":
-				print "Payee received NOK"
+				log.log("Payee received NOK")
 				self.close()
 				self.state = self.states.cancelled
 			elif message.value[:3] == "OK:":
@@ -223,15 +224,15 @@ class Payee(event.Handler):
 					payeeLink=self)
 
 				self.state = self.states.confirmed
-				print "Payee received OK: ", self.__meetingPoint
+				log.log("Payee received OK: " + self.__meetingPoint)
 
 			else:
-				print "Payee received invalid confirmation string"
+				log.log("Payee received invalid confirmation string")
 				self.close()
 
 		else:
-			print "Payee received unsupported message for state %s: %s" % \
-				(self.state, message)
+			log.log("Payee received unsupported message for state %s: %s" % \
+				(self.state, message))
 			self.close()
 
 

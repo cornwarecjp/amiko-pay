@@ -96,9 +96,6 @@ list
 a = amiko.Amiko()
 a.start()
 
-# Give Amiko some time to initialize:
-time.sleep(2.0)
-
 print """
 
 Amiko Pay %s Copyright (C) 2013 - %s

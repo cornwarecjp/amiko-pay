@@ -16,6 +16,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
+import log
+
 
 
 class MeetingPoint:
@@ -48,7 +50,7 @@ class MeetingPoint:
 
 			self.__transactionPairs[transaction.hash] = pair
 
-			print "Matched transactions: ", pair
+			log.log("Matched transactions: " + str(pair))
 			# TODO: send messages to both transactions
 
 		except KeyError as e:

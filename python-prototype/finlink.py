@@ -23,6 +23,7 @@ import network
 import messages
 import event
 import settings
+import log
 
 
 
@@ -52,10 +53,10 @@ class FinLink(event.Handler):
 
 	def connect(self, connection):
 		if self.isConnected():
-			print "Finlink: Received a duplicate connection; closing it"
+			log.log("Finlink: Received a duplicate connection; closing it")
 			connection.close()
 
-		print "Finlink: Connection established (received)"
+		log.log("Finlink: Connection established (received)")
 		self.connection = connection
 		self.__registerConnectionHandlers()
 
@@ -72,7 +73,7 @@ class FinLink(event.Handler):
 
 
 	def __handleConnectionClosed(self):
-		print "Finlink: Connection is closed"
+		log.log("Finlink: Connection is closed")
 		self.connection = None
 
 		# Try to reconnect in the future:
@@ -84,12 +85,12 @@ class FinLink(event.Handler):
 		if self.isConnected():
 			return
 
-		print "Finlink reconnect timeout: connecting"
+		log.log("Finlink reconnect timeout: connecting")
 
 		self.connection = network.Connection(self.context,
 			(self.remoteHost, self.remotePort))
 		self.__registerConnectionHandlers()
-		print "Finlink: Connection established (created)"
+		log.log("Finlink: Connection established (created)")
 
 		# Send a link establishment message:
 		self.connection.sendMessage(messages.Link(self.remoteID))
