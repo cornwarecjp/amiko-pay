@@ -174,6 +174,7 @@ class Payee(event.Handler):
 		self.disconnectAll()
 		if self.isConnected():
 			self.connection.close()
+			self.connection = None
 		self.context.sendSignal(self, event.signals.closed)
 
 
