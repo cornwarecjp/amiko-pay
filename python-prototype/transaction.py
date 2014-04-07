@@ -56,6 +56,11 @@ class Transaction:
 			self.payerLink.msg_haveRoute(self)
 
 
+	def msg_lock(self):
+		log.log("Transaction: lock")
+		self.payeeLink.msg_lock(self)
+
+
 	def __tryMeetingPoint(self):
 		for mp in self.routingContext.meetingPoints:
 			if mp.ID == self.meetingPoint:

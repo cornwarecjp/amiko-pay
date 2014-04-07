@@ -64,3 +64,9 @@ class MeetingPoint:
 			self.__transactionPairs[transaction.hash] = pair
 
 
+	def msg_lock(self, transaction):
+		log.log("Meeting point: lock")
+		pair = self.__transactionPairs[transaction.hash]
+		pair[1].msg_lock()
+
+

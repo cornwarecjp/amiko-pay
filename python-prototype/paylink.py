@@ -131,6 +131,7 @@ class Payer(event.Handler):
 
 		elif situation == (self.states.hasRoute, messages.String):
 			log.log("Payer: both routes exist")
+			self.__transaction.msg_lock()
 
 		else:
 			log.log("Payer received unsupported message for state %s: %s" % \
@@ -220,6 +221,11 @@ class Payee(event.Handler):
 		log.log("Payee: haveRoute")
 		self.__payeeHasRoute = True
 		self.__checkRoutesAndConfirmToPayer()
+
+
+	def msg_lock(self, transaction):
+		log.log("Payee: lock")
+		# TODO
 
 
 	def __messageHandler(self, message):
