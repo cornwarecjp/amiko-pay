@@ -92,7 +92,7 @@ class Payer(event.Handler):
 
 		if payerAgrees:
 			self.connection.sendMessage(
-				messages.String("OK:" + self.__meetingPoint))
+				messages.OK(self.__meetingPoint))
 
 			#This will start the transaction routing
 			self.__transaction = transaction.Transaction(
@@ -102,7 +102,7 @@ class Payer(event.Handler):
 
 			self.state = self.states.confirmed
 		else:
-			self.connection.sendMessage(messages.String("NOK"))
+			self.connection.sendMessage(messages.NOK())
 			self.close()
 			self.state = self.states.cancelled
 
@@ -110,7 +110,7 @@ class Payer(event.Handler):
 	def msg_haveRoute(self, transaction):
 		log.log("Payer: haveRoute")
 		self.state = self.states.hasRoute
-		self.connection.sendMessage(messages.String("haveRoute"))
+		self.connection.sendMessage(messages.HaveRoute())
 
 
 	def __messageHandler(self, message):
@@ -129,7 +129,7 @@ class Payer(event.Handler):
 			self.state = self.states.hasReceipt
 			self.__receiptReceived.set()
 
-		elif situation == (self.states.hasRoute, messages.String):
+		elif situation == (self.states.hasRoute, messages.HaveRoute):
 			log.log("Payer: both routes exist")
 			self.__transaction.msg_lock()
 
@@ -231,38 +231,28 @@ class Payee(event.Handler):
 	def __messageHandler(self, message):
 		situation = (self.state, message.__class__)
 
-		if situation == (self.states.initial, messages.String):
-			if message.value == "NOK":
-				log.log("Payee received NOK")
-				self.close()
-				self.state = self.states.cancelled
-			elif message.value[:3] == "OK:":
-				self.__meetingPoint = message.value[3:]
-				log.log("Payee received OK: " + self.__meetingPoint)
+		if situation == (self.states.initial, messages.OK):
+			self.__meetingPoint = message.value
+			log.log("Payee received OK: " + self.__meetingPoint)
 
-				#TODO: check that meeting point is in self.meetingPoints
+			#TODO: check that meeting point is in self.meetingPoints
 
-				#This will start the transaction routing
-				self.__transaction = transaction.Transaction(
-					self.context, self.routingContext,
-					self.amount, self.hash, self.__meetingPoint,
-					payeeLink=self)
+			#This will start the transaction routing
+			self.__transaction = transaction.Transaction(
+				self.context, self.routingContext,
+				self.amount, self.hash, self.__meetingPoint,
+				payeeLink=self)
 
-				self.state = self.states.confirmed
+			self.state = self.states.confirmed
 
-			else:
-				log.log("Payee received invalid confirmation string")
-				self.close()
+		elif situation == (self.states.initial, messages.NOK):
+			log.log("Payee received NOK")
+			self.close()
+			self.state = self.states.cancelled
 
-
-		elif situation == (self.states.confirmed, messages.String):
-			if message.value == "haveRoute":
-				self.__payerHasRoute = True
-				self.__checkRoutesAndConfirmToPayer()
-			else:
-				#TODO: handle deleteRoute message
-				log.log("Payee received invalid routing string")
-				self.close()
+		elif situation == (self.states.confirmed, messages.HaveRoute):
+			self.__payerHasRoute = True
+			self.__checkRoutesAndConfirmToPayer()
 
 		else:
 			log.log("Payee received unsupported message for state %s: %s" % \
@@ -273,7 +263,7 @@ class Payee(event.Handler):
 	def __checkRoutesAndConfirmToPayer(self):
 		if self.__payeeHasRoute and self.__payerHasRoute:
 			log.log("Payee: both routes exist")
-			self.connection.sendMessage(messages.String("haveRoute"))
+			self.connection.sendMessage(messages.HaveRoute())
 			self.state = self.states.hasRoutes
 
 

@@ -20,11 +20,13 @@ import struct
 
 
 
-ID_STRING  = 1
-ID_LINK    = 2
-ID_PAY     = 3
-ID_RECEIPT = 4
-
+ID_STRING    = 1
+ID_LINK      = 2
+ID_PAY       = 3
+ID_RECEIPT   = 4
+ID_OK        = 5
+ID_NOK       = 6
+ID_HAVEROUTE = 7
 
 
 class Message:
@@ -48,7 +50,10 @@ def deserialize(s):
 		ID_STRING: String,
 		ID_LINK: Link,
 		ID_PAY: Pay,
-		ID_RECEIPT: Receipt
+		ID_RECEIPT: Receipt,
+		ID_OK: OK,
+		ID_NOK: NOK,
+		ID_HAVEROUTE: HaveRoute
 		}[ID]
 	except KeyError:
 		raise Exception("Deserialize failed: unknown type ID")
@@ -90,6 +95,24 @@ class Link(String):
 class Pay(String):
 	def __init__(self, value=""):
 		String.__init__(self, value, ID_PAY)
+
+
+
+class OK(String):
+	def __init__(self, value=""):
+		String.__init__(self, value, ID_OK)
+
+
+
+class NOK(String):
+	def __init__(self, value=""):
+		String.__init__(self, value, ID_NOK)
+
+
+
+class HaveRoute(String):
+	def __init__(self, value=""):
+		String.__init__(self, value, ID_HAVEROUTE)
 
 
 
