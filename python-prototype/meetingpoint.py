@@ -26,6 +26,13 @@ class MeetingPoint:
 		self.__transactionPairs = {}
 
 
+	def list(self):
+		return \
+		{
+		"ID": self.ID
+		}
+
+
 	def addTransaction(self, transaction):
 		try:
 			pair = self.__transactionPairs[transaction.hash]

@@ -152,6 +152,19 @@ class Payee(event.Handler):
 		self.state = self.states.initial
 
 
+	def list(self):
+		return \
+		{
+		"ID": self.ID,
+		"amount": self.amount,
+		"receipt": self.receipt,
+		"hash": self.hash,
+		"meetingPoint": self.__meetingPoint,
+		"isConnected": self.isConnected(),
+		"state": self.state
+		}
+
+
 	def close(self):
 		print "Payee side closing"
 		self.state = self.states.cancelled #TODO: it depends, actually

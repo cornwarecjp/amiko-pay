@@ -40,6 +40,13 @@ class FinLink(event.Handler):
 		self.connection = None
 
 
+	def list(self):
+		return \
+		{
+		"localID": self.localID
+		}
+
+
 	def connect(self, connection):
 		if self.isConnected():
 			print "Finlink: Received a duplicate connection; closing it"

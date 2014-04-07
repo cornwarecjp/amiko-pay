@@ -42,6 +42,15 @@ class RoutingContext:
 		self.finLinks = []
 		self.meetingPoints = []
 
+	def list(self):
+		return \
+		{
+			"finLinks":
+			[fl.list() for fl in self.finLinks],
+
+			"meetingPoints":
+			[mp.list() for mp in self.meetingPoints]
+		}
 
 
 def runInAmikoThread(implementationFunc):
@@ -133,6 +142,13 @@ class Amiko(threading.Thread):
 	@runInAmikoThread
 	def confirmPayment(self, payer, payerAgrees):
 		payer.confirmPayment(payerAgrees)
+
+
+	@runInAmikoThread
+	def list(self):
+		ret = self.routingContext.list()
+		ret["requests"] = [p.list() for p in self.payees]
+		return ret
 
 
 	def run(self):

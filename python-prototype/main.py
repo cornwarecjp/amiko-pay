@@ -58,6 +58,8 @@ request amount [receipt]:
   Request payment of amount, with optional receipt
 pay URL
   Pay the payment corresponding with URL
+list
+  Print a list of objects
 """
 	elif cmd[0] == "request":
 		checkNumArgs(1, 2)
@@ -81,6 +83,10 @@ pay URL
 		answer = raw_input("Do you want to pay (y/n)? ")
 		OK = answer.lower() == 'y'
 		a.confirmPayment(payer, OK)
+
+	elif cmd[0] == "list":
+		data = a.list()
+		print data
 
 	else:
 		print "Unknown command. Enter \"help\" for a list of commands."
