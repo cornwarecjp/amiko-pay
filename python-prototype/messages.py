@@ -64,9 +64,9 @@ def deserialize(s):
 
 
 class String(Message):
-	def __init__(self, val=""):
-		Message.__init__(self, ID_STRING)
-		self.value = val
+	def __init__(self, value="", typeID=ID_STRING):
+		Message.__init__(self, typeID)
+		self.value = value
 
 	def serializeAttributes(self):
 		return self.value
@@ -80,41 +80,16 @@ class String(Message):
 		return self.value
 
 
-class Link(Message):
-	def __init__(self, yourID=""):
-		Message.__init__(self, ID_LINK)
-		self.yourID = yourID
 
-
-	def serializeAttributes(self):
-		return self.yourID
-
-
-	def deserializeAttributes(self, s):
-		self.yourID = s
-
-
-	def __str__(self):
-		return "yourID: " + self.yourID
+class Link(String):
+	def __init__(self, value=""):
+		String.__init__(self, value, ID_LINK)
 
 
 
-class Pay(Message):
-	def __init__(self, ID=""):
-		Message.__init__(self, ID_PAY)
-		self.ID = ID
-
-
-	def serializeAttributes(self):
-		return self.ID
-
-
-	def deserializeAttributes(self, s):
-		self.ID = s
-
-
-	def __str__(self):
-		return "ID: " + self.ID
+class Pay(String):
+	def __init__(self, value=""):
+		String.__init__(self, value, ID_PAY)
 
 
 

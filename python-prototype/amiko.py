@@ -171,7 +171,7 @@ class Amiko(threading.Thread):
 
 	def __handleLinkSignal(self, connection, message):
 		for f in self.routingContext.finLinks:
-			if f.localID == message.yourID:
+			if f.localID == message.value:
 				f.connect(connection)
 				return
 
@@ -181,7 +181,7 @@ class Amiko(threading.Thread):
 
 	def __handlePaySignal(self, connection, message):
 		for p in self.payees:
-			if p.ID == message.ID:
+			if p.ID == message.value:
 				p.connect(connection)
 				return
 
