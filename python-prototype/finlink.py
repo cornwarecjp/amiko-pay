@@ -22,6 +22,7 @@ import random
 import network
 import messages
 import event
+import settings
 
 
 
@@ -32,7 +33,7 @@ class FinLink(event.Handler):
 		self.localID = localID
 
 		self.remoteHost = "localhost" #TODO
-		self.remotePort = 4321 #TODO
+		self.remotePort = settings.defaultPort #TODO
 		self.remoteID = remoteID
 
 		self.__registerReconnectTimeoutHandler()
@@ -43,7 +44,9 @@ class FinLink(event.Handler):
 	def list(self):
 		return \
 		{
-		"localID": self.localID
+		"localID": self.localID,
+		"remoteID": self.remoteID,
+		"isConnected": self.isConnected()
 		}
 
 
