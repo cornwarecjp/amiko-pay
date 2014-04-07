@@ -55,6 +55,9 @@ class Payer(event.Handler):
 		# Will be set when receipt message is received from payee
 		self.__receiptReceived = threading.Event()
 
+		# Will be set when transaction is committed or cancelled
+		self.__finished = threading.Event()
+
 		self.connection = network.Connection(self.context,
 			(self.remoteHost, self.remotePort))
 
@@ -77,11 +80,17 @@ class Payer(event.Handler):
 		self.disconnectAll()
 		self.connection.close()
 		self.context.sendSignal(self, event.signals.closed)
+		self.__finished.set()
 
 
 	def waitForReceipt(self):
 		#TODO: timeout mechanism
 		self.__receiptReceived.wait()
+
+
+	def waitForFinished(self):
+		#TODO: timeout mechanism
+		self.__finished.wait()
 
 
 	def confirmPayment(self, payerAgrees):
@@ -143,6 +152,7 @@ class Payer(event.Handler):
 			self.state = self.states.committed
 			# Hooray, we've committed the transaction!
 			#TODO: close connection
+			self.__finished.set()
 
 		else:
 			log.log("Payer received unsupported message for state %s: %s" % \
@@ -245,6 +255,7 @@ class Payee(event.Handler):
 		self.state = self.states.committed
 		# Hooray, we've committed the transaction!
 		#TODO: close connection
+
 
 	def __messageHandler(self, message):
 		situation = (self.state, message.__class__)

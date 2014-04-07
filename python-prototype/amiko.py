@@ -139,8 +139,13 @@ class Amiko(threading.Thread):
 		return newPayer
 
 
-	@runInAmikoThread
 	def confirmPayment(self, payer, payerAgrees):
+		self.__confirmPayment(payer, payerAgrees) #implemented in Amiko thread
+		payer.waitForFinished() #Must be done in this thread
+
+
+	@runInAmikoThread
+	def __confirmPayment(self, payer, payerAgrees):
 		payer.confirmPayment(payerAgrees)
 
 

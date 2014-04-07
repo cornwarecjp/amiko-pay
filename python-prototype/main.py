@@ -84,6 +84,8 @@ list
 		answer = raw_input("Do you want to pay (y/n)? ")
 		OK = answer.lower() == 'y'
 		a.confirmPayment(payer, OK)
+		print "Payment is ", payer.state
+
 
 	elif cmd[0] == "list":
 		data = a.list()
