@@ -46,7 +46,7 @@ class MeetingPoint:
 			else:
 				raise Exception("Bug in meeting point matching")
 
-			#TODO: check whether amount equals
+			#TODO: check whether amount equals (IMPORTANT)
 
 			self.__transactionPairs[transaction.hash] = pair
 
@@ -68,5 +68,11 @@ class MeetingPoint:
 		log.log("Meeting point: lock")
 		pair = self.__transactionPairs[transaction.hash]
 		pair[1].msg_lock()
+
+
+	def msg_commit(self, transaction):
+		log.log("Meeting point: commit")
+		pair = self.__transactionPairs[transaction.hash]
+		pair[1].msg_commit(transaction.token)
 
 

@@ -20,13 +20,15 @@ import struct
 
 
 
-ID_STRING    = 1
-ID_LINK      = 2
-ID_PAY       = 3
-ID_RECEIPT   = 4
-ID_OK        = 5
-ID_NOK       = 6
-ID_HAVEROUTE = 7
+ID_STRING      = 1
+ID_LINK        = 2
+ID_PAY         = 3
+ID_RECEIPT     = 4
+ID_OK          = 5
+ID_NOK         = 6
+ID_HAVEROUTE   = 7
+ID_DELETEROUTE = 8 #TODO: implement corresponding class and communication
+ID_COMMIT      = 9
 
 
 class Message:
@@ -66,7 +68,8 @@ def deserialize(s):
 		ID_RECEIPT: Receipt,
 		ID_OK: OK,
 		ID_NOK: NOK,
-		ID_HAVEROUTE: HaveRoute
+		ID_HAVEROUTE: HaveRoute,
+		ID_COMMIT: Commit
 		}[ID]
 	except KeyError:
 		raise Exception("Deserialize failed: unknown type ID")
@@ -95,7 +98,7 @@ class String(Message):
 
 
 	def __str__(self):
-		return self.value
+		return repr(self.value)
 
 
 
@@ -126,6 +129,12 @@ class NOK(Message):
 class HaveRoute(Message):
 	def __init__(self):
 		Message.__init__(self, ID_HAVEROUTE)
+
+
+
+class Commit(String):
+	def __init__(self, value=""):
+		String.__init__(self, value, ID_COMMIT)
 
 
 

@@ -29,6 +29,7 @@ class Transaction:
 		self.routingContext = routingContext
 		self.amount = amount
 		self.hash = hash
+		self.token = None #unknown
 		self.meetingPoint = meetingPoint
 		self.payerLink = payerLink
 		self.payeeLink = payeeLink
@@ -59,6 +60,12 @@ class Transaction:
 	def msg_lock(self):
 		log.log("Transaction: lock")
 		self.payeeLink.msg_lock(self)
+
+
+	def msg_commit(self, token):
+		log.log("Transaction: commit")
+		self.token = token
+		self.payeeLink.msg_commit(self)
 
 
 	def __tryMeetingPoint(self):

@@ -31,7 +31,8 @@ import log
 
 class Payer(event.Handler):
 	states = utils.Enum([
-		"initial", "hasReceipt", "confirmed", "hasRoute", "cancelled", "completed"
+		"initial", "hasReceipt", "confirmed", "hasRoute",
+		"locked", "cancelled", "committed"
 		])
 
 	def __init__(self, context, routingContext, URL):
@@ -132,6 +133,16 @@ class Payer(event.Handler):
 		elif situation == (self.states.hasRoute, messages.HaveRoute):
 			log.log("Payer: both routes exist")
 			self.__transaction.msg_lock()
+			self.state = self.states.locked
+
+		elif situation == (self.states.locked, messages.Commit):
+			#TODO: check that token matches hash (IMPORTANT)
+			log.log("Payer: commit")
+			self.token = message.value
+			self.__transaction.msg_commit(self.token)
+			self.state = self.states.committed
+			# Hooray, we've committed the transaction!
+			#TODO: close connection
 
 		else:
 			log.log("Payer received unsupported message for state %s: %s" % \
@@ -142,7 +153,7 @@ class Payer(event.Handler):
 
 class Payee(event.Handler):
 	states = utils.Enum([
-		"initial", "confirmed", "hasRoutes", "cancelled", "completed"
+		"initial", "confirmed", "hasRoutes", "sentCommit", "cancelled", "committed"
 		])
 
 	def __init__(self, context, routingContext, ID, amount, receipt, token):
@@ -224,9 +235,16 @@ class Payee(event.Handler):
 
 
 	def msg_lock(self, transaction):
-		log.log("Payee: lock")
-		# TODO
+		log.log("Payee: locked; committing the transaction")
+		self.connection.sendMessage(messages.Commit(self.token))
+		self.state = self.states.sentCommit
 
+
+	def msg_commit(self, transaction):
+		log.log("Payee: commit")
+		self.state = self.states.committed
+		# Hooray, we've committed the transaction!
+		#TODO: close connection
 
 	def __messageHandler(self, message):
 		situation = (self.state, message.__class__)
