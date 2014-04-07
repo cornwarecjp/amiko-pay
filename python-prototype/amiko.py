@@ -24,6 +24,7 @@ import finlink
 import meetingpoint
 import paylink
 import settings
+import randomsource
 
 
 
@@ -102,8 +103,12 @@ class Amiko(threading.Thread):
 
 	@runInAmikoThread
 	def request(self, amount, receipt):
-		ID = "42" #TODO: large random ID
-		token = "The quick brown fox jumps over the lazy dog." #TODO: large random
+		#ID can be nonsecure random:
+		#It only needs to be semi-unique, not secret.
+		ID = randomsource.getNonSecureRandom(8).encode("hex")
+
+		#Token must be secure random
+		token = randomsource.getSecureRandom(32)
 
 		newPayee = paylink.Payee(
 			self.context, self.routingContext, ID, amount, receipt, token)
