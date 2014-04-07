@@ -16,6 +16,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
+import log
+
 
 
 class Transaction:
@@ -46,10 +48,18 @@ class Transaction:
 			"isPayerSide should only be called when routing is unfinished")
 
 
+	def msg_haveRoute(self, fromPayerSide):
+		log.log("Transaction: haveRoute")
+		if fromPayerSide:
+			self.payeeLink.msg_haveRoute(self)
+		else:
+			self.payerLink.msg_haveRoute(self)
+
+
 	def __tryMeetingPoint(self):
 		for mp in self.routingContext.meetingPoints:
 			if mp.ID == self.meetingPoint:
-				mp.addTransaction(self)
+				mp.msg_makeRoute(self)
 				self.__setMissingSide(mp)
 				return True #found
 

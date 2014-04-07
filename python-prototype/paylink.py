@@ -107,6 +107,10 @@ class Payer(event.Handler):
 			self.state = self.states.cancelled
 
 
+	def msg_haveRoute(self, transaction):
+		log.log("Payer: haveRoute")
+
+
 	def __messageHandler(self, message):
 		situation = (self.state, message.__class__)
 
@@ -205,6 +209,10 @@ class Payee(event.Handler):
 		return self.connection != None
 
 
+	def msg_haveRoute(self, transaction):
+		log.log("Payee: haveRoute")
+
+
 	def __messageHandler(self, message):
 		situation = (self.state, message.__class__)
 
@@ -215,6 +223,8 @@ class Payee(event.Handler):
 				self.state = self.states.cancelled
 			elif message.value[:3] == "OK:":
 				self.__meetingPoint = message.value[3:]
+				log.log("Payee received OK: " + self.__meetingPoint)
+
 				#TODO: check that meeting point is in self.meetingPoints
 
 				#This will start the transaction routing
@@ -224,7 +234,6 @@ class Payee(event.Handler):
 					payeeLink=self)
 
 				self.state = self.states.confirmed
-				log.log("Payee received OK: " + self.__meetingPoint)
 
 			else:
 				log.log("Payee received invalid confirmation string")

@@ -35,7 +35,7 @@ class MeetingPoint:
 		}
 
 
-	def addTransaction(self, transaction):
+	def msg_makeRoute(self, transaction):
 		try:
 			pair = self.__transactionPairs[transaction.hash]
 
@@ -51,7 +51,9 @@ class MeetingPoint:
 			self.__transactionPairs[transaction.hash] = pair
 
 			log.log("Matched transactions: " + str(pair))
-			# TODO: send messages to both transactions
+
+			pair[0].msg_haveRoute(fromPayerSide=False)
+			pair[1].msg_haveRoute(fromPayerSide=True)
 
 		except KeyError as e:
 
