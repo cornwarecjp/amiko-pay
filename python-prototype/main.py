@@ -19,6 +19,7 @@
 
 import time
 import sys
+import pprint
 
 import amiko
 import event
@@ -86,7 +87,7 @@ list
 
 	elif cmd[0] == "list":
 		data = a.list()
-		print data
+		pprint.pprint(data)
 
 	else:
 		print "Unknown command. Enter \"help\" for a list of commands."
