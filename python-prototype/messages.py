@@ -33,10 +33,23 @@ class Message:
 	def __init__(self, typeID):
 		self.__typeID = typeID
 
+
 	def serialize(self):
 		# 4-byte unsigned int in network byte order:
 		ID = struct.pack("!I", self.__typeID)
 		return ID + self.serializeAttributes()
+
+
+	def serializeAttributes(self):
+		return ""
+
+
+	def deserializeAttributes(self, s):
+		pass
+
+
+	def __str__(self):
+		return "Type: ", self.__typeID
 
 
 
@@ -104,15 +117,15 @@ class OK(String):
 
 
 
-class NOK(String):
-	def __init__(self, value=""):
-		String.__init__(self, value, ID_NOK)
+class NOK(Message):
+	def __init__(self):
+		Message.__init__(self, ID_NOK)
 
 
 
-class HaveRoute(String):
-	def __init__(self, value=""):
-		String.__init__(self, value, ID_HAVEROUTE)
+class HaveRoute(Message):
+	def __init__(self):
+		Message.__init__(self, ID_HAVEROUTE)
 
 
 
