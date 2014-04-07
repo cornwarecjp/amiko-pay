@@ -31,7 +31,7 @@ import log
 
 class Payer(event.Handler):
 	states = utils.Enum([
-		"initial", "hasReceipt", "confirmed", "cancelled", "completed"
+		"initial", "hasReceipt", "confirmed", "hasRoute", "cancelled", "completed"
 		])
 
 	def __init__(self, context, routingContext, URL):
@@ -109,6 +109,8 @@ class Payer(event.Handler):
 
 	def msg_haveRoute(self, transaction):
 		log.log("Payer: haveRoute")
+		self.state = self.states.hasRoute
+		self.connection.sendMessage(messages.String("haveRoute"))
 
 
 	def __messageHandler(self, message):
@@ -127,6 +129,9 @@ class Payer(event.Handler):
 			self.state = self.states.hasReceipt
 			self.__receiptReceived.set()
 
+		elif situation == (self.states.hasRoute, messages.String):
+			log.log("Payer: both routes exist")
+
 		else:
 			log.log("Payer received unsupported message for state %s: %s" % \
 				(self.state, message))
@@ -136,7 +141,7 @@ class Payer(event.Handler):
 
 class Payee(event.Handler):
 	states = utils.Enum([
-		"initial", "confirmed", "cancelled", "completed"
+		"initial", "confirmed", "hasRoutes", "cancelled", "completed"
 		])
 
 	def __init__(self, context, routingContext, ID, amount, receipt, token):
@@ -155,6 +160,8 @@ class Payee(event.Handler):
 		self.connection = None
 
 		self.state = self.states.initial
+		self.__payerHasRoute = False
+		self.__payeeHasRoute = False
 
 
 	def list(self):
@@ -211,6 +218,8 @@ class Payee(event.Handler):
 
 	def msg_haveRoute(self, transaction):
 		log.log("Payee: haveRoute")
+		self.__payeeHasRoute = True
+		self.__checkRoutesAndConfirmToPayer()
 
 
 	def __messageHandler(self, message):
@@ -239,9 +248,26 @@ class Payee(event.Handler):
 				log.log("Payee received invalid confirmation string")
 				self.close()
 
+
+		elif situation == (self.states.confirmed, messages.String):
+			if message.value == "haveRoute":
+				self.__payerHasRoute = True
+				self.__checkRoutesAndConfirmToPayer()
+			else:
+				#TODO: handle deleteRoute message
+				log.log("Payee received invalid routing string")
+				self.close()
+
 		else:
 			log.log("Payee received unsupported message for state %s: %s" % \
 				(self.state, message))
 			self.close()
+
+
+	def __checkRoutesAndConfirmToPayer(self):
+		if self.__payeeHasRoute and self.__payerHasRoute:
+			log.log("Payee: both routes exist")
+			self.connection.sendMessage(messages.String("haveRoute"))
+			self.state = self.states.hasRoutes
 
 
