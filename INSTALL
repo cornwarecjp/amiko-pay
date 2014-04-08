@@ -16,11 +16,15 @@ you will need the following packages in Ubuntu 12.04:
 
 
 =======================================
-Build instructions
+Build instructions (C++ code)
 =======================================
 
 Open a terminal, and go to the directory that contains this file.
-Then, enter the command "make" and press Enter.
+Enter the comands:
+
+cd old-cpp
+make
+
 If there were no errors, the executable file "amikopay" has been created.
 That's it!
 

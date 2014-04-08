@@ -1,3 +1,5 @@
+(Note: this manual applies to the C++ version)
+
 Settings
 ========
 
