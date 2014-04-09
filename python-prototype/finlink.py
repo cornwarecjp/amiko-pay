@@ -28,10 +28,13 @@ import log
 
 
 class FinLink(event.Handler):
-	def __init__(self, context, localID, remoteID):
+	def __init__(self, context, settingsArg, localID, remoteID):
 		event.Handler.__init__(self, context)
 
 		self.localID = localID
+
+		self.localURL = "amikolink://%s/%s" % \
+			(settingsArg.getAdvertizedNetworkLocation(), localID)
 
 		self.remoteHost = "localhost" #TODO
 		self.remotePort = settings.defaultPort #TODO
@@ -46,6 +49,7 @@ class FinLink(event.Handler):
 		return \
 		{
 		"localID": self.localID,
+		"localURL": self.localURL,
 		"remoteID": self.remoteID,
 		"isConnected": self.isConnected()
 		}

@@ -78,13 +78,18 @@ class Amiko(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
 
+		self.settings = settings.Settings()
+
 		self.context = event.Context()
 
-		self.listener = network.Listener(self.context, settings.defaultPort)
+		self.listener = network.Listener(self.context,
+			self.settings.listenHost, self.settings.listenPort)
 
 		self.routingContext = RoutingContext()
-		self.routingContext.finLinks.append(finlink.FinLink(self.context, "A", "B"))
-		self.routingContext.finLinks.append(finlink.FinLink(self.context, "B", "A"))
+		self.routingContext.finLinks.append(finlink.FinLink(self.context,
+			self.settings, "A", "B"))
+		self.routingContext.finLinks.append(finlink.FinLink(self.context,
+			self.settings, "B", "A"))
 		self.routingContext.meetingPoints.append(meetingpoint.MeetingPoint("myself"))
 
 		self.payees = []
@@ -123,8 +128,8 @@ class Amiko(threading.Thread):
 			self.context, self.routingContext, ID, amount, receipt, token)
 		self.payees.append(newPayee)
 
-		#TODO: get this from newPayee:
-		return "amikopay://localhost/" + ID
+		return "amikopay://%s/%s" % \
+			(self.settings.getAdvertizedNetworkLocation(), ID)
 
 
 	def pay(self, URL):

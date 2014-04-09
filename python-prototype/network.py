@@ -28,7 +28,7 @@ import log
 
 
 class Listener(event.Handler):
-	def __init__(self, context, port):
+	def __init__(self, context, host, port):
 		event.Handler.__init__(self, context)
 
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -36,7 +36,7 @@ class Listener(event.Handler):
 		#TODO: do we want to keep this in production code?
 		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-		self.socket.bind(('localhost', port))
+		self.socket.bind((host, port))
 		self.socket.listen(10) # Maximum 10 unaccepted connections
 
 		self.connect(self.socket, event.signals.readyForRead,

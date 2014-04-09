@@ -28,3 +28,27 @@ def hashAlgorithm(data):
 defaultPort = 4321
 
 
+
+#User-changeable settings (can be loaded from conf file):
+class Settings:
+	def __init__(self, filename=None):
+		#Default values
+		self.listenHost = 'localhost'
+		self.listenPort = defaultPort
+		self.advertizedHost = self.listenHost
+		self.advertizedPort = self.listenPort
+
+		if filename != None:
+			self.load(filename)
+
+
+	def load(self, filename):
+		pass #TODO
+
+
+	def getAdvertizedNetworkLocation(self):
+		if self.advertizedPort == defaultPort:
+			return self.advertizedHost
+		return "%s:%s" % (self.advertizedHost, self.advertizedPort)
+
+
