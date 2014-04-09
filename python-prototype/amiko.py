@@ -75,10 +75,10 @@ def runInAmikoThread(implementationFunc):
 
 
 class Amiko(threading.Thread):
-	def __init__(self):
+	def __init__(self, conffile="amikopay.conf"):
 		threading.Thread.__init__(self)
 
-		self.settings = settings.Settings()
+		self.settings = settings.Settings(conffile)
 
 		self.context = event.Context()
 

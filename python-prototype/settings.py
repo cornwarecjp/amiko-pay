@@ -17,6 +17,7 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 import hashlib
+import ConfigParser
 
 
 
@@ -32,18 +33,32 @@ defaultPort = 4321
 #User-changeable settings (can be loaded from conf file):
 class Settings:
 	def __init__(self, filename=None):
-		#Default values
-		self.listenHost = 'localhost'
-		self.listenPort = defaultPort
-		self.advertizedHost = self.listenHost
-		self.advertizedPort = self.listenPort
-
-		if filename != None:
-			self.load(filename)
+		self.__config = None
+		self.load(filename)
 
 
 	def load(self, filename):
-		pass #TODO
+		if filename != None:
+			self.__config = ConfigParser.RawConfigParser()
+			self.__config.read(filename)
+
+		self.listenHost = self.__get(
+			"network", "listenHost", '')
+		self.listenPort = int(self.__get(
+			"network", "listenPort", defaultPort))
+		self.advertizedHost = self.__get(
+			"network", "advertizedHost", self.listenHost)
+		self.advertizedPort = int(self.__get(
+			"network", "advertizedPort", self.listenPort))
+
+		self.__config = None
+
+
+	def __get(self, section, option, default):
+		try:
+			return self.__config.get(section, option)
+		except:
+			return default
 
 
 	def getAdvertizedNetworkLocation(self):
