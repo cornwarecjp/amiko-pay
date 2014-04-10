@@ -17,6 +17,7 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 import threading
+import json
 
 import network
 import event
@@ -86,12 +87,6 @@ class Amiko(threading.Thread):
 			self.settings.listenHost, self.settings.listenPort)
 
 		self.routingContext = RoutingContext()
-		self.routingContext.finLinks.append(finlink.FinLink(self.context,
-			self.settings, "A", "B"))
-		self.routingContext.finLinks.append(finlink.FinLink(self.context,
-			self.settings, "B", "A"))
-		self.routingContext.meetingPoints.append(meetingpoint.MeetingPoint("myself"))
-
 		self.payees = []
 
 		self.__stop = False
@@ -103,6 +98,8 @@ class Amiko(threading.Thread):
 
 		self.context.connect(None, event.signals.link, self.__handleLinkSignal)
 		self.context.connect(None, event.signals.pay, self.__handlePaySignal)
+
+		self.__loadState()
 
 
 	def stop(self):
@@ -177,6 +174,20 @@ class Amiko(threading.Thread):
 						self._commandReturnValue = e
 					self._commandProcessed.set()
 					self._commandFunction = None
+
+
+	def __loadState(self):
+		with open(self.settings.stateFile, 'rb') as fp:
+			state = json.load(fp)
+			print state
+
+		for fl in state["finLinks"]:
+			self.routingContext.finLinks.append(finlink.FinLink(self.context,
+				self.settings, str(fl["localID"]), str(fl["remoteID"])))
+
+		for mp in state["meetingPoints"]:
+			self.routingContext.meetingPoints.append(
+				meetingpoint.MeetingPoint(str(mp["ID"])))
 
 
 	def __handleLinkSignal(self, connection, message):

@@ -1,0 +1,26 @@
+{
+"finLinks":
+[
+	{
+	"localID": "A",
+	"remoteID": "B"
+	},
+
+	{
+	"localID": "B",
+	"remoteID": "A"
+	}
+],
+
+
+"meetingPoints":
+[
+	{
+	"ID": "myself"
+	}
+],
+
+
+"payees": []
+}
+

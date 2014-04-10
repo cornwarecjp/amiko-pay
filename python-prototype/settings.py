@@ -42,6 +42,7 @@ class Settings:
 			self.__config = ConfigParser.RawConfigParser()
 			self.__config.read(filename)
 
+		#network
 		self.listenHost = self.__get(
 			"network", "listenHost", '')
 		self.listenPort = int(self.__get(
@@ -50,6 +51,10 @@ class Settings:
 			"network", "advertizedHost", self.listenHost)
 		self.advertizedPort = int(self.__get(
 			"network", "advertizedPort", self.listenPort))
+
+		#files
+		self.stateFile = self.__get(
+			"files", "statefile", "amikopay.dat")
 
 		self.__config = None
 
