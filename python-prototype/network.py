@@ -139,24 +139,29 @@ class Connection(event.Handler):
 			if self.protocolVersion == None:
 				return
 
-			# Message detection:
-			if len(self.__readBuffer) < 4:
-				return
+			#There can be multiple messages in the read buffer,
+			#so repeat until there is no more complete message
+			while True:
 
-			# 4-byte unsigned int in network byte order:
-			msgLen = struct.unpack("!I", self.__readBuffer[:4])[0]
-			if len(self.__readBuffer) < msgLen+4:
-				return
+				# Message detection:
+				if len(self.__readBuffer) < 4:
+					return
 
-			msg = self.__readBuffer[4:msgLen+4]
-			self.__readBuffer = self.__readBuffer[msgLen+4:]
+				# 4-byte unsigned int in network byte order:
+				msgLen = struct.unpack("!I", self.__readBuffer[:4])[0]
+				if len(self.__readBuffer) < msgLen+4:
+					return
 
-			#print "Received serialized message: ", repr(msg)
+				msg = self.__readBuffer[4:msgLen+4]
+				self.__readBuffer = self.__readBuffer[msgLen+4:]
 
-			#de-serialize
-			msg = messages.deserialize(msg)
+				#print "Received serialized message: ", repr(msg)
 
-			self.__handleMessage(msg)
+				#de-serialize
+				msg = messages.deserialize(msg)
+
+				self.__handleMessage(msg)
+
 		except Exception as e:
 			#TODO: to logger?
 			print "Exception while handling received data from socket: "
