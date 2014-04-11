@@ -29,6 +29,7 @@ ID_NOK         = 6
 ID_HAVEROUTE   = 7
 ID_DELETEROUTE = 8 #TODO: implement corresponding class and communication
 ID_COMMIT      = 9
+ID_MYURLS      = 10
 
 
 class Message:
@@ -69,7 +70,8 @@ def deserialize(s):
 		ID_OK: OK,
 		ID_NOK: NOK,
 		ID_HAVEROUTE: HaveRoute,
-		ID_COMMIT: Commit
+		ID_COMMIT: Commit,
+		ID_MYURLS: MyURLs
 		}[ID]
 	except KeyError:
 		raise Exception("Deserialize failed: unknown type ID")
@@ -136,6 +138,13 @@ class Commit(String):
 	def __init__(self, value=""):
 		String.__init__(self, value, ID_COMMIT)
 
+
+class MyURLs(String):
+	def __init__(self, value=[]):
+		String.__init__(self, "\n".join(value), ID_MYURLS)
+
+	def getURLs(self):
+		return self.value.split("\n")
 
 
 class Receipt(Message):

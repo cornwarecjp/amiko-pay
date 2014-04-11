@@ -64,6 +64,9 @@ class FinLink(event.Handler):
 		self.connection = connection
 		self.__registerConnectionHandlers()
 
+		# Send URLs
+		self.connection.sendMessage(messages.MyURLs([self.localURL]))
+
 
 	def isConnected(self):
 		return self.connection != None
@@ -73,7 +76,9 @@ class FinLink(event.Handler):
 		event.Handler.connect(self,
 			self.connection, event.signals.closed,
 			self.__handleConnectionClosed)
-		#TODO: other handlers (esp. message available event)
+		event.Handler.connect(self,
+			self.connection, event.signals.message,
+			self.__handleMessage)
 
 
 	def __handleConnectionClosed(self):
@@ -105,6 +110,9 @@ class FinLink(event.Handler):
 		# Send a link establishment message:
 		self.connection.sendMessage(messages.Link(self.remoteID))
 
+		# Send URLs
+		self.connection.sendMessage(messages.MyURLs([self.localURL]))
+
 		# Register again, in case the above connection fails:
 		self.__registerReconnectTimeoutHandler()
 
@@ -121,5 +129,14 @@ class FinLink(event.Handler):
 		timeout = random.uniform(1.0, 2.0)
 
 		self.setTimer(time.time() + timeout, self.__handleReconnectTimeout)
+
+
+	def __handleMessage(self, message):
+		#log.log("FinLink received message: " + repr(str()))
+
+		if message.__class__ == messages.MyURLs:
+			#TODO: check URLs for validity etc.
+			#TODO: support multiple remote URLs (for now, just pick the first)
+			self.remoteURL = message.getURLs()[0]
 
 
