@@ -62,7 +62,7 @@ class Payer(event.Handler):
 			(self.remoteHost, self.remotePort))
 
 		self.connect(self.connection, event.signals.message,
-			self.__messageHandler)
+			self.__handleMessage)
 		self.connect(self.connection, event.signals.closed,
 			self.close)
 
@@ -123,7 +123,7 @@ class Payer(event.Handler):
 		self.connection.sendMessage(messages.HaveRoute())
 
 
-	def __messageHandler(self, message):
+	def __handleMessage(self, message):
 		situation = (self.state, message.__class__)
 
 		if situation == (self.states.initial, messages.Receipt):
@@ -222,7 +222,7 @@ class Payee(event.Handler):
 		self.connection = connection
 
 		event.Handler.connect(self, self.connection, event.signals.message,
-			self.__messageHandler)
+			self.__handleMessage)
 		event.Handler.connect(self, self.connection, event.signals.closed,
 			self.close)
 
@@ -257,7 +257,7 @@ class Payee(event.Handler):
 		#TODO: close connection
 
 
-	def __messageHandler(self, message):
+	def __handleMessage(self, message):
 		situation = (self.state, message.__class__)
 
 		if situation == (self.states.initial, messages.OK):
