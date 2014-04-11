@@ -18,6 +18,7 @@
 
 import time
 import random
+from urlparse import urlparse
 
 import network
 import messages
@@ -28,17 +29,15 @@ import log
 
 
 class FinLink(event.Handler):
-	def __init__(self, context, settingsArg, localID, remoteID):
+	def __init__(self, context, settingsArg, state):
 		event.Handler.__init__(self, context)
 
-		self.localID = localID
+		self.localID  = str(state["localID"])
+		self.remoteID = str(state["remoteID"])
 
 		self.localURL = "amikolink://%s/%s" % \
-			(settingsArg.getAdvertizedNetworkLocation(), localID)
-
-		self.remoteHost = "localhost" #TODO
-		self.remotePort = settings.defaultPort #TODO
-		self.remoteID = remoteID
+			(settingsArg.getAdvertizedNetworkLocation(), self.localID)
+		self.remoteURL = str(state["remoteURL"])
 
 		self.__registerReconnectTimeoutHandler()
 
@@ -51,6 +50,7 @@ class FinLink(event.Handler):
 		"localID": self.localID,
 		"localURL": self.localURL,
 		"remoteID": self.remoteID,
+		"remoteURL": self.remoteURL,
 		"isConnected": self.isConnected()
 		}
 
@@ -91,8 +91,14 @@ class FinLink(event.Handler):
 
 		log.log("Finlink reconnect timeout: connecting")
 
+		URL = urlparse(self.remoteURL)
+		remoteHost = URL.hostname
+		remotePort = settings.defaultPort if URL.port == None else URL.port
+		#TODO: maybe read and check remoteID in URL?
+		#Or maybe remove redundancy between remoteID and remoteURL.
+
 		self.connection = network.Connection(self.context,
-			(self.remoteHost, self.remotePort))
+			(remoteHost, remotePort))
 		self.__registerConnectionHandlers()
 		log.log("Finlink: Connection established (created)")
 
@@ -104,6 +110,11 @@ class FinLink(event.Handler):
 
 
 	def __registerReconnectTimeoutHandler(self):
+
+		#Reconnect doesn't make sense if we don't know where to connect to
+		if self.remoteURL == "":
+			return
+
 		# Use random time-out to prevent repeating connect collisions.
 		# This is especially important for the (not so important)
 		# loop-back connections.

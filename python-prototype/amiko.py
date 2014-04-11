@@ -183,7 +183,7 @@ class Amiko(threading.Thread):
 
 		for fl in state["finLinks"]:
 			self.routingContext.finLinks.append(finlink.FinLink(self.context,
-				self.settings, str(fl["localID"]), str(fl["remoteID"])))
+				self.settings, fl))
 
 		for mp in state["meetingPoints"]:
 			self.routingContext.meetingPoints.append(

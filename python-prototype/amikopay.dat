@@ -3,12 +3,14 @@
 [
 	{
 	"localID": "A",
-	"remoteID": "B"
+	"remoteID": "B",
+	"remoteURL": "amikolink://localhost/B"
 	},
 
 	{
 	"localID": "B",
-	"remoteID": "A"
+	"remoteID": "A",
+	"remoteURL": ""
 	}
 ],
 
