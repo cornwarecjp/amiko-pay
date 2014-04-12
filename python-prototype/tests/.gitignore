@@ -1,0 +1,6 @@
+# Precompiled Python
+*.pyc
+
+#program output
+debug.log
+
