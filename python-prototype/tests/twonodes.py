@@ -18,13 +18,27 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import time
 
 sys.path.append("..")
 
 import amiko
 
+node1 = amiko.Amiko(conffile="twonodes_1.conf")
+node1.start()
+node2 = amiko.Amiko(conffile="twonodes_2.conf")
+node2.start()
 
+#Allow finlinks to link
+time.sleep(3)
 
-print "Hello world"
+print "Node 1:"
+print node1.list()
+
+print "Node 2:"
+print node2.list()
+
+node1.stop()
+node2.stop()
 
 

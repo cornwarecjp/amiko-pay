@@ -1,0 +1,15 @@
+{
+"finLinks":
+[
+	{
+	"localID": "node1",
+	"remoteID": "node2",
+	"remoteURL": "amikolink://localhost:4323/node2"
+	}
+],
+
+"meetingPoints": [],
+
+"payees": []
+}
+
