@@ -179,7 +179,7 @@ class Amiko(threading.Thread):
 	def __loadState(self):
 		with open(self.settings.stateFile, 'rb') as fp:
 			state = json.load(fp)
-			print state
+			#print state
 
 		for fl in state["finLinks"]:
 			self.routingContext.finLinks.append(finlink.FinLink(self.context,

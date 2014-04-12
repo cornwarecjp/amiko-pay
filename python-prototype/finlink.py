@@ -102,19 +102,27 @@ class FinLink(event.Handler):
 		#TODO: maybe read and check remoteID in URL?
 		#Or maybe remove redundancy between remoteID and remoteURL.
 
-		self.connection = network.Connection(self.context,
-			(remoteHost, remotePort))
-		self.__registerConnectionHandlers()
-		log.log("Finlink: Connection established (created)")
+		try:
+			self.connection = network.Connection(self.context,
+				(remoteHost, remotePort))
+			self.__registerConnectionHandlers()
+			log.log("Finlink: Connection established (created)")
 
-		# Send a link establishment message:
-		self.connection.sendMessage(messages.Link(self.remoteID))
+			# Send a link establishment message:
+			self.connection.sendMessage(messages.Link(self.remoteID))
 
-		# Send URLs
-		self.connection.sendMessage(messages.MyURLs([self.localURL]))
+			# Send URLs
+			self.connection.sendMessage(messages.MyURLs([self.localURL]))
+		except:
+			#TODO: log entire exception
+			log.log("Finlink: Connection creation failed")
 
-		# Register again, in case the above connection fails:
-		self.__registerReconnectTimeoutHandler()
+			if self.connection != None:
+				self.connection.close()
+				self.connection = None
+
+			# Register again, to retry in the future:
+			self.__registerReconnectTimeoutHandler()
 
 
 	def __registerReconnectTimeoutHandler(self):
