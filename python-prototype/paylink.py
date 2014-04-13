@@ -113,7 +113,7 @@ class Payer(event.Handler):
 
 			#2: network traffic
 			self.connection.sendMessage(
-				messages.OK(self.__meetingPoint))
+				messages.Confirm(self.__meetingPoint))
 
 			#3: internal messaging
 			#This will start the transaction routing
@@ -127,7 +127,7 @@ class Payer(event.Handler):
 			self.state = self.states.cancelled
 
 			#2: network traffic
-			self.connection.sendMessage(messages.NOK())
+			self.connection.sendMessage(messages.Cancel())
 			self.close()
 
 
@@ -306,9 +306,9 @@ class Payee(event.Handler):
 	def __handleMessage(self, message):
 		situation = (self.state, message.__class__)
 
-		if situation == (self.states.initial, messages.OK):
+		if situation == (self.states.initial, messages.Confirm):
 			self.__meetingPoint = message.value
-			log.log("Payee received OK: " + self.__meetingPoint)
+			log.log("Payee received confirm: " + self.__meetingPoint)
 
 			#TODO: check that meeting point is in self.meetingPoints
 
@@ -322,8 +322,8 @@ class Payee(event.Handler):
 				self.amount, self.hash, self.__meetingPoint,
 				payeeLink=self)
 
-		elif situation == (self.states.initial, messages.NOK):
-			log.log("Payee received NOK")
+		elif situation == (self.states.initial, messages.Cancel):
+			log.log("Payee received cancel")
 			#1: adjust own state
 			self.state = self.states.cancelled
 			#2: network traffic

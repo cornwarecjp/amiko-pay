@@ -24,12 +24,11 @@ ID_STRING      = 1
 ID_LINK        = 2
 ID_PAY         = 3
 ID_RECEIPT     = 4
-ID_OK          = 5
-ID_NOK         = 6
-ID_HAVEROUTE   = 7
-ID_CANCEL      = 8
-ID_COMMIT      = 9
-ID_MYURLS      = 10
+ID_CONFIRM     = 5
+ID_HAVEROUTE   = 6
+ID_CANCEL      = 7
+ID_COMMIT      = 8
+ID_MYURLS      = 9
 
 
 class Message:
@@ -67,8 +66,7 @@ def deserialize(s):
 		ID_LINK: Link,
 		ID_PAY: Pay,
 		ID_RECEIPT: Receipt,
-		ID_OK: OK,
-		ID_NOK: NOK,
+		ID_CONFIRM: Confirm,
 		ID_HAVEROUTE: HaveRoute,
 		ID_CANCEL: Cancel,
 		ID_COMMIT: Commit,
@@ -117,15 +115,9 @@ class Pay(String):
 
 
 
-class OK(String):
+class Confirm(String):
 	def __init__(self, value=""):
-		String.__init__(self, value, ID_OK)
-
-
-
-class NOK(Message):
-	def __init__(self):
-		Message.__init__(self, ID_NOK)
+		String.__init__(self, value, ID_CONFIRM)
 
 
 
