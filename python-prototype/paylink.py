@@ -58,6 +58,8 @@ class Payer(event.Handler):
 		# Will be set when transaction is committed or cancelled
 		self.__finished = threading.Event()
 
+		self.state = self.states.initial
+
 		self.connection = network.Connection(self.context,
 			(self.remoteHost, self.remotePort))
 
@@ -68,18 +70,23 @@ class Payer(event.Handler):
 
 		self.connection.sendMessage(messages.Pay(self.ID))
 
-		self.state = self.states.initial
-
 
 	def close(self):
 		log.log("Payer side closing")
+
+		#1: adjust own state
 		self.state = self.states.cancelled #TODO: it depends, actually
+
 		#Important: disconnect BEFORE connection.close, since this method is
 		#a signal handler for the connection closed event.
 		#Otherwise, it could give an infinite recursion.
 		self.disconnectAll()
+
+		#2: network traffic
 		self.connection.close()
 		self.context.sendSignal(self, event.signals.closed)
+
+		#Inform waiting thread(s) that the transaction is finished (cancelled)
 		self.__finished.set()
 
 
@@ -101,26 +108,45 @@ class Payer(event.Handler):
 				)
 
 		if payerAgrees:
+			#1: adjust own state
+			self.state = self.states.confirmed
+
+			#2: network traffic
 			self.connection.sendMessage(
 				messages.OK(self.__meetingPoint))
 
+			#3: internal messaging
 			#This will start the transaction routing
 			self.__transaction = transaction.Transaction(
 				self.context, self.routingContext,
 				self.amount, self.hash, self.__meetingPoint,
 				payerLink=self)
 
-			self.state = self.states.confirmed
 		else:
+			#1: adjust own state
+			self.state = self.states.cancelled
+
+			#2: network traffic
 			self.connection.sendMessage(messages.NOK())
 			self.close()
-			self.state = self.states.cancelled
 
 
 	def msg_haveRoute(self, transaction):
 		log.log("Payer: haveRoute")
+		#1: adjust own state
 		self.state = self.states.hasRoute
+		#2: network traffic
 		self.connection.sendMessage(messages.HaveRoute())
+
+
+	def msg_cancel(self, transaction):
+		log.log("Payer: cancel")
+		#1: adjust own state
+		self.state = self.states.cancelled
+		#2: network traffic
+		self.connection.sendMessage(messages.Cancel())
+		#Inform waiting thread(s) that the transaction is finished (cancelled)
+		self.__finished.set()
 
 
 	def __handleMessage(self, message):
@@ -128,6 +154,7 @@ class Payer(event.Handler):
 
 		if situation == (self.states.initial, messages.Receipt):
 
+			#1: adjust own state
 			self.amount = message.amount
 			self.receipt = message.receipt
 			self.hash = message.hash
@@ -137,20 +164,26 @@ class Payer(event.Handler):
 			self.__meetingPoint = message.meetingPoints[0]
 
 			self.state = self.states.hasReceipt
+
+			#Inform waiting thread(s) that the receipt is received
 			self.__receiptReceived.set()
 
 		elif situation == (self.states.hasRoute, messages.HaveRoute):
 			log.log("Payer: both routes exist")
-			self.__transaction.msg_lock()
+			#1: adjust own state
 			self.state = self.states.locked
+			#3: internal messaging
+			self.__transaction.msg_lock()
 
 		elif situation == (self.states.locked, messages.Commit):
 			#TODO: check that token matches hash (IMPORTANT)
 			log.log("Payer: commit")
+			#1: adjust own state
 			self.token = message.value
-			self.__transaction.msg_commit(self.token)
 			self.state = self.states.committed
-			# Hooray, we've committed the transaction!
+			#3: internal messaging
+			self.__transaction.msg_commit(self.token)
+			#Inform waiting thread(s) that the transaction is finished (committed)
 			#TODO: close connection
 			self.__finished.set()
 
@@ -201,14 +234,19 @@ class Payee(event.Handler):
 
 	def close(self):
 		log.log("Payee side closing")
+
+		#1: adjust own state
 		self.state = self.states.cancelled #TODO: it depends, actually
 		#Important: disconnect BEFORE connection.close, since this method is
 		#a signal handler for the connection closed event.
 		#Otherwise, it could give an infinite recursion.
 		self.disconnectAll()
+
+		#2: network traffic
 		if self.isConnected():
 			self.connection.close()
 			self.connection = None
+
 		self.context.sendSignal(self, event.signals.closed)
 
 
@@ -219,6 +257,8 @@ class Payee(event.Handler):
 			return
 
 		log.log("Payee: Connection established")
+
+		#1: adjust own state
 		self.connection = connection
 
 		event.Handler.connect(self, self.connection, event.signals.message,
@@ -226,6 +266,7 @@ class Payee(event.Handler):
 		event.Handler.connect(self, self.connection, event.signals.closed,
 			self.close)
 
+		#2: network traffic
 		meetingPoints = [mp.ID for mp in self.routingContext.meetingPoints]
 		#TODO: add accepted external meeting points
 
@@ -240,18 +281,23 @@ class Payee(event.Handler):
 
 	def msg_haveRoute(self, transaction):
 		log.log("Payee: haveRoute")
+		#1: adjust own state
 		self.__payeeHasRoute = True
+		#2: network traffic
 		self.__checkRoutesAndConfirmToPayer()
 
 
 	def msg_lock(self, transaction):
 		log.log("Payee: locked; committing the transaction")
-		self.connection.sendMessage(messages.Commit(self.token))
+		#1: adjust own state
 		self.state = self.states.sentCommit
+		#2: network traffic
+		self.connection.sendMessage(messages.Commit(self.token))
 
 
 	def msg_commit(self, transaction):
 		log.log("Payee: commit")
+		#1: adjust own state
 		self.state = self.states.committed
 		# Hooray, we've committed the transaction!
 		#TODO: close connection
@@ -266,21 +312,27 @@ class Payee(event.Handler):
 
 			#TODO: check that meeting point is in self.meetingPoints
 
+			#1: adjust own state
+			self.state = self.states.confirmed
+
+			#3: internal messaging
 			#This will start the transaction routing
 			self.__transaction = transaction.Transaction(
 				self.context, self.routingContext,
 				self.amount, self.hash, self.__meetingPoint,
 				payeeLink=self)
 
-			self.state = self.states.confirmed
-
 		elif situation == (self.states.initial, messages.NOK):
 			log.log("Payee received NOK")
-			self.close()
+			#1: adjust own state
 			self.state = self.states.cancelled
+			#2: network traffic
+			self.close()
 
 		elif situation == (self.states.confirmed, messages.HaveRoute):
+			#1: adjust own state
 			self.__payerHasRoute = True
+			#2: network traffic
 			self.__checkRoutesAndConfirmToPayer()
 
 		else:
@@ -292,7 +344,9 @@ class Payee(event.Handler):
 	def __checkRoutesAndConfirmToPayer(self):
 		if self.__payeeHasRoute and self.__payerHasRoute:
 			log.log("Payee: both routes exist")
-			self.connection.sendMessage(messages.HaveRoute())
+			#1: adjust own state
 			self.state = self.states.hasRoutes
+			#2: network traffic
+			self.connection.sendMessage(messages.HaveRoute())
 
 

@@ -37,7 +37,13 @@ class Transaction:
 		if self.__tryMeetingPoint():
 			return #found -> finished
 
-		#TODO: start routing if we're not the meeting point
+		#Initialize routing possibilities:
+		#Note: just list the IDs here, not references to actual finlink objects.
+		#This allows other code to remove finlinks while we're routing.
+		self.__remainingRoutes = \
+			[fl.localID for fl in self.routingContext.finLinks]
+
+		self.__tryNextRoute()
 
 
 	def isPayerSide(self):
@@ -76,6 +82,16 @@ class Transaction:
 				return True #found
 
 		return False #not found
+
+
+	def __tryNextRoute(self):
+
+		#routing not yet implemented:
+		del self.__remainingRoutes
+		if self.isPayerSide():
+			self.payerLink.msg_cancel(self)
+		else:
+			self.payeeLink.msg_cancel(self)
 
 
 	def __setMissingSide(self, link):

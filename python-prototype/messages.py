@@ -27,7 +27,7 @@ ID_RECEIPT     = 4
 ID_OK          = 5
 ID_NOK         = 6
 ID_HAVEROUTE   = 7
-ID_DELETEROUTE = 8 #TODO: implement corresponding class and communication
+ID_CANCEL      = 8
 ID_COMMIT      = 9
 ID_MYURLS      = 10
 
@@ -52,7 +52,7 @@ class Message:
 
 
 	def __str__(self):
-		return "Type: ", self.__typeID
+		return "Type: %d" % self.__typeID
 
 
 
@@ -70,6 +70,7 @@ def deserialize(s):
 		ID_OK: OK,
 		ID_NOK: NOK,
 		ID_HAVEROUTE: HaveRoute,
+		ID_CANCEL: Cancel,
 		ID_COMMIT: Commit,
 		ID_MYURLS: MyURLs
 		}[ID]
@@ -132,6 +133,11 @@ class HaveRoute(Message):
 	def __init__(self):
 		Message.__init__(self, ID_HAVEROUTE)
 
+
+
+class Cancel(Message):
+	def __init__(self):
+		Message.__init__(self, ID_CANCEL)
 
 
 class Commit(String):
