@@ -23,6 +23,9 @@ import time
 sys.path.append("..")
 
 import amiko
+import event
+
+
 
 node1 = amiko.Amiko(conffile="twonodes_1.conf")
 node1.start()
@@ -51,7 +54,10 @@ print node1.list()
 print "Node 2:"
 print node2.list()
 
+node1.sendSignal(None, event.signals.quit)
 node1.stop()
+
+node2.sendSignal(None, event.signals.quit)
 node2.stop()
 
 
