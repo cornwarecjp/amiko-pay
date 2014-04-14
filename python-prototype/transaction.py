@@ -63,6 +63,12 @@ class Transaction:
 			self.payerLink.msg_haveRoute(self)
 
 
+	def msg_cancelRoute(self):
+		log.log("Transaction: cancelRoute")
+		#Immediately try next route, or send cancel back if there is none:
+		self.__tryNextRoute()
+
+
 	def msg_lock(self):
 		log.log("Transaction: lock")
 		self.payeeLink.msg_lock(self)
@@ -85,8 +91,17 @@ class Transaction:
 
 
 	def __tryNextRoute(self):
+		while len(self.__remainingRoutes) > 0:
+			nextRoute = self.__remainingRoutes.pop(0)
 
-		#routing not yet implemented:
+			for fl in self.routingContext.finLinks:
+				if fl.localID == nextRoute:
+					log.log("Transaction: try next route")
+					fl.msg_makeRoute(self)
+					return
+
+		log.log("Transaction: no more route")
+		#No more route: send cancel back to source
 		del self.__remainingRoutes
 		if self.isPayerSide():
 			self.payerLink.msg_cancel(self)

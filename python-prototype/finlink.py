@@ -139,6 +139,12 @@ class FinLink(event.Handler):
 		self.setTimer(time.time() + timeout, self.__handleReconnectTimeout)
 
 
+	def msg_makeRoute(self, transaction):
+		log.log("Finlink: makeRoute")
+		#Not yet implemented: send back a cancel immediately
+		transaction.msg_cancelRoute()
+
+
 	def __handleMessage(self, message):
 		#log.log("FinLink received message: " + repr(str()))
 
