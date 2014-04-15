@@ -176,6 +176,12 @@ class FinLink(event.Handler):
 			transaction.msg_cancelRoute()
 
 
+	def msg_haveRoute(self, transaction):
+		log.log("Finlink: haveRoute")
+		#TODO: check whether we're still connected
+		self.connection.sendMessage(messages.HaveRoute(transaction.hash))
+
+
 	def __handleMessage(self, message):
 		#log.log("FinLink received message: " + repr(str()))
 
@@ -185,7 +191,7 @@ class FinLink(event.Handler):
 			self.remoteURL = message.getURLs()[0]
 
 		elif message.__class__ == messages.MakeRoute:
-			log.log("Finlink received MakeRoute: %s" % str(message))
+			log.log("Finlink received MakeRoute")
 
 			#TODO: do all sorts of checks to see if it makes sense to perform
 			#the transaction over this link.
@@ -203,6 +209,10 @@ class FinLink(event.Handler):
 					self.context, self.routingContext,
 					message.amount, message.hash, message.meetingPoint,
 					payeeLink=self)
+
+		elif message.__class__ == messages.HaveRoute:
+			log.log("Finlink received HaveRoute")
+			self.openTransactions[message.value].msg_haveRoute(self)
 
 		else:
 			log.log("Finlink received unsupported message: %s" % str(message))

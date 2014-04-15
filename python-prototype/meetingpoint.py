@@ -52,8 +52,8 @@ class MeetingPoint:
 
 			log.log("Matched transactions: " + str(pair))
 
-			pair[0].msg_haveRoute(fromPayerSide=False)
-			pair[1].msg_haveRoute(fromPayerSide=True)
+			pair[0].msg_haveRoute(self)
+			pair[1].msg_haveRoute(self)
 
 		except KeyError as e:
 

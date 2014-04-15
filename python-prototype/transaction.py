@@ -55,12 +55,17 @@ class Transaction:
 			"isPayerSide should only be called when routing is unfinished")
 
 
-	def msg_haveRoute(self, fromPayerSide):
+	def msg_haveRoute(self, link):
 		log.log("Transaction: haveRoute")
-		if fromPayerSide:
+		if self.payeeLink == None:
+			self.payeeLink = link
+			self.payerLink.msg_haveRoute(self)
+		elif self.payerLink == None:
+			self.payerLink = link
 			self.payeeLink.msg_haveRoute(self)
 		else:
-			self.payerLink.msg_haveRoute(self)
+			raise Exception(
+				"msg_haveRoute should only be called when routing is unfinished")
 
 
 	def msg_cancelRoute(self):
@@ -84,7 +89,6 @@ class Transaction:
 		for mp in self.routingContext.meetingPoints:
 			if mp.ID == self.meetingPoint:
 				mp.msg_makeRoute(self)
-				self.__setMissingSide(mp)
 				return True #found
 
 		return False #not found
@@ -108,11 +112,5 @@ class Transaction:
 		else:
 			self.payeeLink.msg_cancel(self)
 
-
-	def __setMissingSide(self, link):
-		if self.payeeLink == None:
-			self.payeeLink = link
-		if self.payerLink == None:
-			self.payerLink = link
 
 

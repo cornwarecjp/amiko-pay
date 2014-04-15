@@ -123,9 +123,9 @@ class Confirm(String):
 
 
 
-class HaveRoute(Message):
-	def __init__(self):
-		Message.__init__(self, ID_HAVEROUTE)
+class HaveRoute(String):
+	def __init__(self, value=""):
+		String.__init__(self, value, ID_HAVEROUTE)
 
 
 
@@ -134,9 +134,11 @@ class Cancel(Message):
 		Message.__init__(self, ID_CANCEL)
 
 
+
 class Commit(String):
 	def __init__(self, value=""):
 		String.__init__(self, value, ID_COMMIT)
+
 
 
 class MyURLs(String):
@@ -145,6 +147,7 @@ class MyURLs(String):
 
 	def getURLs(self):
 		return self.value.split("\n")
+
 
 
 class MakeRoute(Message):
