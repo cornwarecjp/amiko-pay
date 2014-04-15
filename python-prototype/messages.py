@@ -27,9 +27,10 @@ ID_RECEIPT     = 4
 ID_CONFIRM     = 5
 ID_MAKEROUTE   = 6
 ID_HAVEROUTE   = 7
-ID_CANCEL      = 8
-ID_COMMIT      = 9
-ID_MYURLS      = 10
+ID_LOCK        = 8
+ID_CANCEL      = 9
+ID_COMMIT      = 10
+ID_MYURLS      = 11
 
 
 class Message:
@@ -70,6 +71,7 @@ def deserialize(s):
 		ID_CONFIRM: Confirm,
 		ID_MAKEROUTE: MakeRoute,
 		ID_HAVEROUTE: HaveRoute,
+		ID_LOCK: Lock,
 		ID_CANCEL: Cancel,
 		ID_COMMIT: Commit,
 		ID_MYURLS: MyURLs
@@ -126,6 +128,12 @@ class Confirm(String):
 class HaveRoute(String):
 	def __init__(self, value=""):
 		String.__init__(self, value, ID_HAVEROUTE)
+
+
+
+class Lock(String):
+	def __init__(self, value=""):
+		String.__init__(self, value, ID_LOCK)
 
 
 

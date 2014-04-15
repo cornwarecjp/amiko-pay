@@ -182,6 +182,12 @@ class FinLink(event.Handler):
 		self.connection.sendMessage(messages.HaveRoute(transaction.hash))
 
 
+	def msg_lock(self, transaction):
+		log.log("Finlink: lock")
+		#TODO: check whether we're still connected
+		self.connection.sendMessage(messages.Lock(transaction.hash))
+
+
 	def __handleMessage(self, message):
 		#log.log("FinLink received message: " + repr(str()))
 
@@ -213,6 +219,10 @@ class FinLink(event.Handler):
 		elif message.__class__ == messages.HaveRoute:
 			log.log("Finlink received HaveRoute")
 			self.openTransactions[message.value].msg_haveRoute(self)
+
+		elif message.__class__ == messages.Lock:
+			log.log("Finlink received Lock")
+			self.openTransactions[message.value].msg_lock()
 
 		else:
 			log.log("Finlink received unsupported message: %s" % str(message))
