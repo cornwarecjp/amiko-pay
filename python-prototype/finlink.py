@@ -188,6 +188,12 @@ class FinLink(event.Handler):
 		self.connection.sendMessage(messages.Lock(transaction.hash))
 
 
+	def msg_commit(self, transaction):
+		log.log("Finlink: commit")
+		#TODO: check whether we're still connected
+		self.connection.sendMessage(messages.Commit(transaction.token))
+
+
 	def __handleMessage(self, message):
 		#log.log("FinLink received message: " + repr(str()))
 
@@ -223,6 +229,12 @@ class FinLink(event.Handler):
 		elif message.__class__ == messages.Lock:
 			log.log("Finlink received Lock")
 			self.openTransactions[message.value].msg_lock()
+
+		elif message.__class__ == messages.Commit:
+			log.log("Finlink received Commit")
+			token = message.value
+			hash = settings.hashAlgorithm(token)
+			self.openTransactions[hash].msg_commit(token)
 
 		else:
 			log.log("Finlink received unsupported message: %s" % str(message))
