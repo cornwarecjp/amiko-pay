@@ -184,7 +184,8 @@ class Amiko(threading.Thread):
 			#print state
 
 		for fl in state["finLinks"]:
-			self.routingContext.finLinks.append(finlink.FinLink(self.context,
+			self.routingContext.finLinks.append(finlink.FinLink(
+				self.context, self.routingContext,
 				self.settings, fl))
 
 		for mp in state["meetingPoints"]:

@@ -25,12 +25,14 @@ import messages
 import event
 import settings
 import log
+import transaction
 
 
 
 class FinLink(event.Handler):
-	def __init__(self, context, settingsArg, state):
+	def __init__(self, context, routingContext, settingsArg, state):
 		event.Handler.__init__(self, context)
+		self.routingContext = routingContext
 
 		self.localID  = str(state["localID"])
 		self.remoteID = str(state["remoteID"])
@@ -38,6 +40,8 @@ class FinLink(event.Handler):
 		self.localURL = "amikolink://%s/%s" % \
 			(settingsArg.getAdvertizedNetworkLocation(), self.localID)
 		self.remoteURL = str(state["remoteURL"])
+
+		self.openTransactions = {} #hash->transaction
 
 		self.__registerReconnectTimeoutHandler()
 
@@ -141,8 +145,35 @@ class FinLink(event.Handler):
 
 	def msg_makeRoute(self, transaction):
 		log.log("Finlink: makeRoute")
-		#Not yet implemented: send back a cancel immediately
-		transaction.msg_cancelRoute()
+
+		class CheckFail(Exception):
+			pass
+
+		try:
+
+			if not self.isConnected():
+				raise CheckFail("Not connected")
+
+			#TODO: do all sorts of checks to see if it makes sense to perform
+			#the transaction over this link.
+			#For instance, check the balance, the responsiveness of the other
+			#side, etc. etc.
+
+			#Remember link to transaction object:
+			self.openTransactions[transaction.hash] = transaction
+
+			#Send message:
+			self.connection.sendMessage(messages.MakeRoute(
+				transaction.amount,
+				transaction.isPayerSide(),
+				transaction.hash,
+				transaction.meetingPoint))
+
+		except CheckFail as f:
+			log.log("Route refused by finlink: " + str(f))
+
+			#Send back a cancel immediately
+			transaction.msg_cancelRoute()
 
 
 	def __handleMessage(self, message):
@@ -152,5 +183,28 @@ class FinLink(event.Handler):
 			#TODO: check URLs for validity etc.
 			#TODO: support multiple remote URLs (for now, just pick the first)
 			self.remoteURL = message.getURLs()[0]
+
+		elif message.__class__ == messages.MakeRoute:
+			log.log("Finlink received MakeRoute: %s" % str(message))
+
+			#TODO: do all sorts of checks to see if it makes sense to perform
+			#the transaction over this link.
+			#For instance, check the balance, the responsiveness of the other
+			#side, etc. etc.
+
+			#This will start the transaction routing
+			if message.isPayerSide:
+				self.openTransactions[message.hash] = transaction.Transaction(
+					self.context, self.routingContext,
+					message.amount, message.hash, message.meetingPoint,
+					payerLink=self)
+			else:
+				self.openTransactions[message.hash] = transaction.Transaction(
+					self.context, self.routingContext,
+					message.amount, message.hash, message.meetingPoint,
+					payeeLink=self)
+
+		else:
+			log.log("Finlink received unsupported message: %s" % str(message))
 
 

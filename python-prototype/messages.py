@@ -25,10 +25,11 @@ ID_LINK        = 2
 ID_PAY         = 3
 ID_RECEIPT     = 4
 ID_CONFIRM     = 5
-ID_HAVEROUTE   = 6
-ID_CANCEL      = 7
-ID_COMMIT      = 8
-ID_MYURLS      = 9
+ID_MAKEROUTE   = 6
+ID_HAVEROUTE   = 7
+ID_CANCEL      = 8
+ID_COMMIT      = 9
+ID_MYURLS      = 10
 
 
 class Message:
@@ -67,6 +68,7 @@ def deserialize(s):
 		ID_PAY: Pay,
 		ID_RECEIPT: Receipt,
 		ID_CONFIRM: Confirm,
+		ID_MAKEROUTE: MakeRoute,
 		ID_HAVEROUTE: HaveRoute,
 		ID_CANCEL: Cancel,
 		ID_COMMIT: Commit,
@@ -143,6 +145,54 @@ class MyURLs(String):
 
 	def getURLs(self):
 		return self.value.split("\n")
+
+
+class MakeRoute(Message):
+	def __init__(self, amount=0, isPayerSide=True, hash="", meetingPoint=""):
+		Message.__init__(self, ID_MAKEROUTE)
+		self.amount = amount
+		self.isPayerSide = isPayerSide
+		self.hash=hash
+		self.meetingPoint = meetingPoint
+
+
+	def serializeAttributes(self):
+		# 8-byte unsigned int in network byte order:
+		ret = struct.pack("!Q", self.amount)
+
+		# 4-byte unsigned int in network byte order:
+		hashLen = struct.pack("!I", len(self.hash))
+		ret += hashLen + self.hash
+
+		# 1-byte bool:
+		ret += struct.pack("!?", self.isPayerSide)
+
+		ret += self.meetingPoint
+
+		return ret
+
+
+	def deserializeAttributes(self, s):
+		# 8-byte unsigned int in network byte order:
+		self.amount = struct.unpack("!Q", s[:8])[0]
+		s = s[8:]
+
+		# 4-byte unsigned int in network byte order:
+		hashLen = struct.unpack("!I", s[:4])[0]
+		self.hash = s[4:4+hashLen]
+		s = s[4+hashLen:]
+
+		# 1-byte bool:
+		self.isPayerSide = struct.unpack("!?", s[0])[0]
+		s = s[1:]
+
+		self.meetingPoint = s
+
+
+	def __str__(self):
+		return "amount: %d; payerSide: %s; hash: %s; meeting point: %s" % \
+			(self.amount, str(self.isPayerSide), repr(self.hash), str(self.meetingPoint))
+
 
 
 class Receipt(Message):
