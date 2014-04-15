@@ -17,6 +17,8 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import traceback
+
 
 
 logfile = open("debug.log", "a")
@@ -25,4 +27,10 @@ def log(data):
 	logfile.write(data + '\n')
 	logfile.flush()
 	os.fsync(logfile.fileno())
+
+
+def logException():
+	text = traceback.format_exc()
+	log(text)
+
 

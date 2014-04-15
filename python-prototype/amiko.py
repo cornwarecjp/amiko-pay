@@ -26,6 +26,7 @@ import meetingpoint
 import paylink
 import settings
 import randomsource
+import log
 
 
 
@@ -172,6 +173,7 @@ class Amiko(threading.Thread):
 						self._commandReturnValue = s[0](self, *s[1], **s[2])
 					except Exception as e:
 						self._commandReturnValue = e
+						log.logException()
 					self._commandProcessed.set()
 					self._commandFunction = None
 
