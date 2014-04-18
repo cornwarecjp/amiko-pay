@@ -44,7 +44,6 @@ def handleCommand(cmd):
 
 	if cmd[0] in ["quit", "exit"]:
 		checkNumArgs(0, 0)
-		a.sendSignal(None, event.signals.quit)
 		a.stop()
 		sys.exit()
 	elif cmd[0] == "help":

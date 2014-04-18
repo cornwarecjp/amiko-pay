@@ -84,9 +84,6 @@ class Amiko(threading.Thread):
 
 		self.context = event.Context()
 
-		self.listener = network.Listener(self.context,
-			self.settings.listenHost, self.settings.listenPort)
-
 		self.routingContext = RoutingContext()
 		self.payees = []
 
@@ -106,11 +103,6 @@ class Amiko(threading.Thread):
 	def stop(self):
 		self.__stop = True
 		self.join()
-
-
-	@runInAmikoThread
-	def sendSignal(self, sender, signal, *args, **kwargs):
-		self.context.sendSignal(sender, signal, *args, **kwargs)
 
 
 	@runInAmikoThread
@@ -160,8 +152,14 @@ class Amiko(threading.Thread):
 
 
 	def run(self):
+		#Start listening
+		listener = network.Listener(self.context,
+			self.settings.listenHost, self.settings.listenPort)
+
+		#TODO: (re-)enable creation of new transactions
+
 		self.__stop = False
-		while not self.__stop:
+		while True:
 
 			self.context.dispatchNetworkEvents()
 			self.context.dispatchTimerEvents()
@@ -176,6 +174,14 @@ class Amiko(threading.Thread):
 						log.logException()
 					self._commandProcessed.set()
 					self._commandFunction = None
+
+			if self.__stop:
+				#TODO: stop creation of new transactions
+				#TODO: only break once there are no more open transactions
+				break
+
+		#This closes all network connections etc.
+		self.context.sendSignal(None, event.signals.quit)
 
 
 	def __loadState(self):

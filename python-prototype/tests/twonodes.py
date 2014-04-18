@@ -54,10 +54,7 @@ print node1.list()
 print "Node 2:"
 print node2.list()
 
-node1.sendSignal(None, event.signals.quit)
 node1.stop()
-
-node2.sendSignal(None, event.signals.quit)
 node2.stop()
 
 
