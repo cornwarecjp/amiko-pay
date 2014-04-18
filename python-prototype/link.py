@@ -16,7 +16,6 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
-import time
 import random
 from urlparse import urlparse
 
@@ -144,7 +143,7 @@ class Link(event.Handler):
 		# loop-back connections.
 		timeout = random.uniform(1.0, 2.0)
 
-		self.setTimer(time.time() + timeout, self.__handleReconnectTimeout)
+		self.setTimer(timeout, self.__handleReconnectTimeout)
 
 
 	def msg_makeRoute(self, transaction):

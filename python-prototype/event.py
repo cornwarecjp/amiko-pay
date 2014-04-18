@@ -65,8 +65,8 @@ class Context:
 			Context.EventConnection(sender, signal, handler))
 
 
-	def setTimer(self, timestamp, handler):
-		self.__timers.append(Context.Timer(timestamp, handler))
+	def setTimer(self, dt, handler):
+		self.__timers.append(Context.Timer(time.time() + dt, handler))
 
 
 	def removeConnectionsBySender(self, sender):
@@ -134,8 +134,8 @@ class Handler:
 		self.__handlers.add(handler)
 
 
-	def setTimer(self, timestamp, handler):
-		self.context.setTimer(timestamp, handler)
+	def setTimer(self, dt, handler):
+		self.context.setTimer(dt, handler)
 		self.__handlers.add(handler)
 
 
