@@ -178,10 +178,9 @@ class Connection(event.Handler):
 			self.__writeBuffer = self.__writeBuffer[bytesSent:]
 			#print "Sent bytes: ", bytesSent
 
-			# If necessary, connect again:
-			if self.__writeBuffer != "":
-				self.connect(self.socket, event.signals.readyForWrite,
-					self.__handleWriteAvailable)
+		#Disconnect once write is finished:
+		if self.__writeBuffer == "":
+			self.context.removeConnectionsByHandler(self.__handleWriteAvailable)
 
 
 	def __sendProtocolVersion(self):

@@ -45,7 +45,6 @@ class Context:
 			self.sender = sender
 			self.signal = signal
 			self.handler = handler
-			self.hasHappened = False
 
 	class Timer:
 		def __init__(self, timestamp, handler):
@@ -93,25 +92,13 @@ class Context:
 		rlist, wlist, xlist = select.select(rlist, wlist, [], 0.01)
 		#print " = %s, %s, %s" % (rlist, wlist, xlist)
 
-		#Call read handlers without removing the connections:
+		#Call write handlers:
+		for w in wlist:
+			self.sendSignal(w, signals.readyForWrite)
+
+		#Call read handlers:
 		for r in rlist:
 			self.sendSignal(r, signals.readyForRead)
-
-		#Mark relevant write connections as happened
-		for w in wlist:
-			for c in self.__eventConnections:
-				if c.sender == w and c.signal == signals.readyForWrite:
-					c.hasHappened = True
-
-		#Call handlers for all connections marked as happened
-		for w in wlist:
-			for c in self.__eventConnections:
-				if c.hasHappened:
-					c.handler()
-
-		#Remove connections which have just been called
-		self.__eventConnections = filter(
-			lambda c: not c.hasHappened, self.__eventConnections)
 
 
 	def dispatchTimerEvents(self):
