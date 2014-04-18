@@ -4,7 +4,10 @@
 	{
 	"localID": "node2",
 	"remoteID": "node1",
-	"remoteURL": ""
+	"remoteURL": "",
+	"channel":
+	{
+	}
 	}
 ],
 

@@ -26,6 +26,7 @@ import event
 import settings
 import log
 import transaction
+import paymentchannel
 
 
 
@@ -42,6 +43,8 @@ class Link(event.Handler):
 		self.remoteURL = str(state["remoteURL"])
 
 		self.openTransactions = {} #hash->transaction
+
+		self.paymentChannel = paymentchannel.PaymentChannel(state["channel"])
 
 		self.__registerReconnectTimeoutHandler()
 

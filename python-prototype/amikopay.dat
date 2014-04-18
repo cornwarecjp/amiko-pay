@@ -4,13 +4,19 @@
 	{
 	"localID": "A",
 	"remoteID": "B",
-	"remoteURL": "amikolink://localhost/B"
+	"remoteURL": "amikolink://localhost/B",
+	"channel":
+	{
+	}
 	},
 
 	{
 	"localID": "B",
 	"remoteID": "A",
-	"remoteURL": ""
+	"remoteURL": "",
+	"channel":
+	{
+	}
 	}
 ],
 
