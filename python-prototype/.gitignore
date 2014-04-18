@@ -2,5 +2,5 @@
 *.pyc
 
 #program output
-debug.log
+*.log
 

@@ -55,6 +55,8 @@ class Settings:
 		#files
 		self.stateFile = self.__get(
 			"files", "statefile", "amikopay.dat")
+		self.payLogFile = self.__get(
+			"files", "paylogfile", "payments.log")
 
 		self.__config = None
 

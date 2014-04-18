@@ -27,6 +27,7 @@ import paylink
 import settings
 import randomsource
 import log
+import paylog
 
 
 
@@ -86,6 +87,8 @@ class Amiko(threading.Thread):
 
 		self.routingContext = RoutingContext()
 		self.payees = []
+
+		self.payLog = paylog.PayLog(self.settings)
 
 		self.__stop = False
 
