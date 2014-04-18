@@ -195,10 +195,10 @@ class Amiko(threading.Thread):
 			state = json.load(fp)
 			#print state
 
-		for fl in state["links"]:
+		for lnk in state["links"]:
 			self.routingContext.links.append(link.Link(
 				self.context, self.routingContext,
-				self.settings, fl))
+				self.settings, lnk))
 
 		for mp in state["meetingPoints"]:
 			self.routingContext.meetingPoints.append(
