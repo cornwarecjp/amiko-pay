@@ -32,7 +32,7 @@ node1.start()
 node2 = amiko.Amiko(conffile="twonodes_2.conf")
 node2.start()
 
-#Allow finlinks to link
+#Allow links to connect
 time.sleep(3)
 
 print "Node 1:"

@@ -196,7 +196,7 @@ class Amiko(threading.Thread):
 			#print state
 
 		for fl in state["links"]:
-			self.routingContext.links.append(link.FinLink(
+			self.routingContext.links.append(link.Link(
 				self.context, self.routingContext,
 				self.settings, fl))
 

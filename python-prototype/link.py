@@ -1,4 +1,4 @@
-#    finlink.py
+#    link.py
 #    Copyright (C) 2014 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -29,7 +29,7 @@ import transaction
 
 
 
-class FinLink(event.Handler):
+class Link(event.Handler):
 	def __init__(self, context, routingContext, settingsArg, state):
 		event.Handler.__init__(self, context)
 		self.routingContext = routingContext
@@ -61,10 +61,10 @@ class FinLink(event.Handler):
 
 	def connect(self, connection):
 		if self.isConnected():
-			log.log("Finlink: Received a duplicate connection; closing it")
+			log.log("Link: Received a duplicate connection; closing it")
 			connection.close()
 
-		log.log("Finlink: Connection established (received)")
+		log.log("Link: Connection established (received)")
 		self.connection = connection
 		self.__registerConnectionHandlers()
 
@@ -86,7 +86,7 @@ class FinLink(event.Handler):
 
 
 	def __handleConnectionClosed(self):
-		log.log("Finlink: Connection is closed")
+		log.log("Link: Connection is closed")
 		self.connection = None
 
 		# Try to reconnect in the future:
@@ -98,7 +98,7 @@ class FinLink(event.Handler):
 		if self.isConnected():
 			return
 
-		log.log("Finlink reconnect timeout: connecting")
+		log.log("Link reconnect timeout: connecting")
 
 		URL = urlparse(self.remoteURL)
 		remoteHost = URL.hostname
@@ -110,7 +110,7 @@ class FinLink(event.Handler):
 			self.connection = network.Connection(self.context,
 				(remoteHost, remotePort))
 			self.__registerConnectionHandlers()
-			log.log("Finlink: Connection established (created)")
+			log.log("Link: Connection established (created)")
 
 			# Send a link establishment message:
 			self.connection.sendMessage(messages.Link(self.remoteID))
@@ -119,7 +119,7 @@ class FinLink(event.Handler):
 			self.connection.sendMessage(messages.MyURLs([self.localURL]))
 		except:
 			#TODO: log entire exception
-			log.log("Finlink: Connection creation failed")
+			log.log("Link: Connection creation failed")
 
 			if self.connection != None:
 				self.connection.close()
@@ -144,7 +144,7 @@ class FinLink(event.Handler):
 
 
 	def msg_makeRoute(self, transaction):
-		log.log("Finlink: makeRoute")
+		log.log("Link: makeRoute")
 
 		class CheckFail(Exception):
 			pass
@@ -170,32 +170,32 @@ class FinLink(event.Handler):
 				transaction.meetingPoint))
 
 		except CheckFail as f:
-			log.log("Route refused by finlink: " + str(f))
+			log.log("Route refused by link: " + str(f))
 
 			#Send back a cancel immediately
 			transaction.msg_cancelRoute()
 
 
 	def msg_haveRoute(self, transaction):
-		log.log("Finlink: haveRoute")
+		log.log("Link: haveRoute")
 		#TODO: check whether we're still connected
 		self.connection.sendMessage(messages.HaveRoute(transaction.hash))
 
 
 	def msg_lock(self, transaction):
-		log.log("Finlink: lock")
+		log.log("Link: lock")
 		#TODO: check whether we're still connected
 		self.connection.sendMessage(messages.Lock(transaction.hash))
 
 
 	def msg_commit(self, transaction):
-		log.log("Finlink: commit")
+		log.log("Link: commit")
 		#TODO: check whether we're still connected
 		self.connection.sendMessage(messages.Commit(transaction.token))
 
 
 	def __handleMessage(self, message):
-		#log.log("FinLink received message: " + repr(str()))
+		#log.log("Link received message: " + repr(str()))
 
 		if message.__class__ == messages.MyURLs:
 			#TODO: check URLs for validity etc.
@@ -203,7 +203,7 @@ class FinLink(event.Handler):
 			self.remoteURL = message.getURLs()[0]
 
 		elif message.__class__ == messages.MakeRoute:
-			log.log("Finlink received MakeRoute")
+			log.log("Link received MakeRoute")
 
 			#TODO: do all sorts of checks to see if it makes sense to perform
 			#the transaction over this link.
@@ -223,20 +223,20 @@ class FinLink(event.Handler):
 					payeeLink=self)
 
 		elif message.__class__ == messages.HaveRoute:
-			log.log("Finlink received HaveRoute")
+			log.log("Link received HaveRoute")
 			self.openTransactions[message.value].msg_haveRoute(self)
 
 		elif message.__class__ == messages.Lock:
-			log.log("Finlink received Lock")
+			log.log("Link received Lock")
 			self.openTransactions[message.value].msg_lock()
 
 		elif message.__class__ == messages.Commit:
-			log.log("Finlink received Commit")
+			log.log("Link received Commit")
 			token = message.value
 			hash = settings.hashAlgorithm(token)
 			self.openTransactions[hash].msg_commit(token)
 
 		else:
-			log.log("Finlink received unsupported message: %s" % str(message))
+			log.log("Link received unsupported message: %s" % str(message))
 
 
