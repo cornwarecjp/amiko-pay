@@ -21,7 +21,7 @@ import json
 
 import network
 import event
-import finlink
+import link
 import meetingpoint
 import paylink
 import settings
@@ -42,14 +42,14 @@ maxProtocolVersion = 1
 
 class RoutingContext:
 	def __init__(self):
-		self.finLinks = []
+		self.links = []
 		self.meetingPoints = []
 
 	def list(self):
 		return \
 		{
-			"finLinks":
-			[fl.list() for fl in self.finLinks],
+			"links":
+			[lnk.list() for lnk in self.links],
 
 			"meetingPoints":
 			[mp.list() for mp in self.meetingPoints]
@@ -195,8 +195,8 @@ class Amiko(threading.Thread):
 			state = json.load(fp)
 			#print state
 
-		for fl in state["finLinks"]:
-			self.routingContext.finLinks.append(finlink.FinLink(
+		for fl in state["links"]:
+			self.routingContext.links.append(link.FinLink(
 				self.context, self.routingContext,
 				self.settings, fl))
 
@@ -215,9 +215,9 @@ class Amiko(threading.Thread):
 
 
 	def __handleLinkSignal(self, connection, message):
-		for f in self.routingContext.finLinks:
-			if f.localID == message.value:
-				f.connect(connection)
+		for lnk in self.routingContext.links:
+			if lnk.localID == message.value:
+				lnk.connect(connection)
 				return
 
 		print "Received link message with unknown ID"

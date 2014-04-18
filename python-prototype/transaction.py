@@ -38,10 +38,10 @@ class Transaction:
 			return #found -> finished
 
 		#Initialize routing possibilities:
-		#Note: just list the IDs here, not references to actual finlink objects.
-		#This allows other code to remove finlinks while we're routing.
+		#Note: just list the IDs here, not references to actual link objects.
+		#This allows other code to remove links while we're routing.
 		self.__remainingRoutes = \
-			[fl.localID for fl in self.routingContext.finLinks]
+			[lnk.localID for lnk in self.routingContext.links]
 
 		self.__tryNextRoute()
 
@@ -98,10 +98,10 @@ class Transaction:
 		while len(self.__remainingRoutes) > 0:
 			nextRoute = self.__remainingRoutes.pop(0)
 
-			for fl in self.routingContext.finLinks:
-				if fl.localID == nextRoute:
+			for lnk in self.routingContext.links:
+				if lnk.localID == nextRoute:
 					log.log("Transaction: try next route")
-					fl.msg_makeRoute(self)
+					lnk.msg_makeRoute(self)
 					return
 
 		log.log("Transaction: no more route")
