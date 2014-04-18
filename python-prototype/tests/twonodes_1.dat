@@ -7,10 +7,13 @@
 	"remoteURL": "amikolink://localhost:4323/node2",
 	"channel":
 	{
-	"localBalance": 100,
-	"remoteBalance": 100,
-	"receivingAmount": 0,
-	"sendingAmount": 0
+		"amountLocal"           : 100,
+		"amountRemote"          : 100,
+		"amountIncomingReserved": 0,
+		"amountOutgoingReserved": 0,
+		"amountIncomingLocked"  : 0,
+		"amountOutgoingLocked"  : 0
+
 	}
 	}
 ],

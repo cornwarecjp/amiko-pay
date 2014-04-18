@@ -22,19 +22,22 @@ class PaymentChannel:
 	def __init__(self, state):
 
 		#Current balances:
-		self.localBalance = state["localBalance"]
-		self.remoteBalance = state["remoteBalance"]
-		self.receivingAmount = state["receivingAmount"]
-		self.sendingAmount = state["sendingAmount"]
-
+		self.amountLocal             = state["amountLocal"]
+		self.amountRemote            = state["amountRemote"]
+		self.amountIncomingReserved  = state["amountIncomingReserved"]
+		self.amountOutgoingReserved  = state["amountOutgoingReserved"]
+		self.amountIncomingLocked    = state["amountIncomingLocked"]
+		self.amountOutgoingLocked    = state["amountOutgoingLocked"]
 
 	def list(self):
 		return \
 		{
-		"localBalance": self.localBalance,
-		"remoteBalance": self.remoteBalance,
-		"receivingAmount": self.receivingAmount,
-		"sendingAmount": self.sendingAmount
+		"amountLocal"           : self.amountLocal,
+		"amountRemote"          : self.amountRemote,
+		"amountIncomingReserved": self.amountIncomingReserved,
+		"amountOutgoingReserved": self.amountOutgoingReserved,
+		"amountIncomingLocked"  : self.amountIncomingLocked,
+		"amountOutgoingLocked"  : self.amountOutgoingLocked
 		}
 
 
