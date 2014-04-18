@@ -7,6 +7,10 @@
 	"remoteURL": "amikolink://localhost/B",
 	"channel":
 	{
+	"localBalance": 100,
+	"remoteBalance": 100,
+	"receivingAmount": 0,
+	"sendingAmount": 0
 	}
 	},
 
@@ -16,6 +20,10 @@
 	"remoteURL": "",
 	"channel":
 	{
+	"localBalance": 100,
+	"remoteBalance": 100,
+	"receivingAmount": 0,
+	"sendingAmount": 0
 	}
 	}
 ],

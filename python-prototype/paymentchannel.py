@@ -20,6 +20,21 @@
 
 class PaymentChannel:
 	def __init__(self, state):
-		pass #TODO
+
+		#Current balances:
+		self.localBalance = state["localBalance"]
+		self.remoteBalance = state["remoteBalance"]
+		self.receivingAmount = state["receivingAmount"]
+		self.sendingAmount = state["sendingAmount"]
+
+
+	def list(self):
+		return \
+		{
+		"localBalance": self.localBalance,
+		"remoteBalance": self.remoteBalance,
+		"receivingAmount": self.receivingAmount,
+		"sendingAmount": self.sendingAmount
+		}
 
 

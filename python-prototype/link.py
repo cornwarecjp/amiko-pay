@@ -58,7 +58,8 @@ class Link(event.Handler):
 		"localURL": self.localURL,
 		"remoteID": self.remoteID,
 		"remoteURL": self.remoteURL,
-		"isConnected": self.isConnected()
+		"isConnected": self.isConnected(),
+		"channel": self.paymentChannel.list()
 		}
 
 
