@@ -23,15 +23,35 @@ class PayLog:
 		self.__file = open(settings.payLogFile, "a")
 
 
-	def writePayer(self, payer):
-		self.__writeLogLine() #TODO
+	def writePayer(self, p):
+		self.__write(-1, p)
 
 
-	def writePayee(self, payee):
-		self.__writeLogLine() #TODO
+	def writePayee(self, p):
+		self.__write(1, p)
 
 
-	def __writeLogLine(self):
-		self.__file.write("Hello world\n") #TODO
+	def __write(self, sign, p):
+		if p.state == p.states.committed:
+			self.__writeLogLine(sign*p.amount, p.receipt, p.state, p.ID, p.hash, p.token)
+		else:
+			#Don't write the token even if we know it:
+			#It might be abused by someone who as read access to the log file,
+			#to partially commit the transaction.
+			#TODO: analyze this scenario to see whether this precaution is necessary.
+			self.__writeLogLine(sign*p.amount, p.receipt, p.state, p.ID, p.hash, None)
+
+
+	def __writeLogLine(self, amount, receipt, status, ID, hash, token):
+		#TODO: add timestamp
+		line = ", ".join([
+			str(amount),
+			repr(receipt), #TODO: better dealing with special characters
+			status,
+			ID,
+			hash.encode("hex"),
+			"" if token==None else token.encode("hex")
+			])
+		self.__file.write(line + '\n')
 
 

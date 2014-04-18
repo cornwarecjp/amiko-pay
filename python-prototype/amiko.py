@@ -140,6 +140,7 @@ class Amiko(threading.Thread):
 	def confirmPayment(self, payer, payerAgrees):
 		self.__confirmPayment(payer, payerAgrees) #implemented in Amiko thread
 		payer.waitForFinished() #Must be done in this thread
+		self.payLog.writePayer(payer)
 
 
 	@runInAmikoThread
@@ -178,6 +179,8 @@ class Amiko(threading.Thread):
 					self._commandProcessed.set()
 					self._commandFunction = None
 
+			self.__movePayeesToPayLog()
+
 			if self.__stop:
 				#TODO: stop creation of new transactions
 				#TODO: only break once there are no more open transactions
@@ -200,6 +203,15 @@ class Amiko(threading.Thread):
 		for mp in state["meetingPoints"]:
 			self.routingContext.meetingPoints.append(
 				meetingpoint.MeetingPoint(str(mp["ID"])))
+
+
+	def __movePayeesToPayLog(self):
+		"Writes finished payee objects to pay log and then removes them"
+
+		for p in self.payees[:]: #copy of list, since the list will be modified
+			if p.state in [p.states.cancelled, p.states.committed]:
+				self.payLog.writePayee(p)
+				self.payees.remove(p)
 
 
 	def __handleLinkSignal(self, connection, message):
