@@ -19,6 +19,7 @@
 
 import sys
 import time
+import pprint
 
 sys.path.append("..")
 
@@ -36,10 +37,10 @@ node2.start()
 time.sleep(3)
 
 print "Node 1:"
-print node1.list()
+pprint.pprint(node1.list())
 
 print "Node 2:"
-print node2.list()
+pprint.pprint(node2.list())
 
 URL = node2.request(123, "receipt")
 print "Payment URL:", URL
@@ -52,10 +53,10 @@ print "Payment is ", payer.state
 time.sleep(0.5)
 
 print "Node 1:"
-print node1.list()
+pprint.pprint(node1.list())
 
 print "Node 2:"
-print node2.list()
+pprint.pprint(node2.list())
 
 node1.stop()
 node2.stop()
