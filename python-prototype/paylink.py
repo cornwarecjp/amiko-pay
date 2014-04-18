@@ -75,7 +75,9 @@ class Payer(event.Handler):
 		log.log("Payer side closing")
 
 		#1: adjust own state
-		self.state = self.states.cancelled #TODO: it depends, actually
+		#If locked, it can still become committed
+		if self.state not in [self.states.locked, self.states.committed]:
+			self.state = self.states.cancelled
 
 		#Important: disconnect BEFORE connection.close, since this method is
 		#a signal handler for the connection closed event.
@@ -85,6 +87,9 @@ class Payer(event.Handler):
 		#2: network traffic
 		self.connection.close()
 		self.context.sendSignal(self, event.signals.closed)
+
+		#3: internal messaging
+		#TODO
 
 		#Inform waiting thread(s) that the transaction is finished (cancelled)
 		self.__finished.set()
@@ -181,10 +186,12 @@ class Payer(event.Handler):
 			#1: adjust own state
 			self.token = message.value
 			self.state = self.states.committed
+			#2: network traffic
+			#close connection
+			self.close()
 			#3: internal messaging
 			self.__transaction.msg_commit(self.token)
 			#Inform waiting thread(s) that the transaction is finished (committed)
-			#TODO: close connection
 			self.__finished.set()
 
 		else:
@@ -236,7 +243,10 @@ class Payee(event.Handler):
 		log.log("Payee side closing")
 
 		#1: adjust own state
-		self.state = self.states.cancelled #TODO: it depends, actually
+		#If sent commit, it can still become committed
+		if self.state not in [self.states.sentCommit, self.states.committed]:
+			self.state = self.states.cancelled
+
 		#Important: disconnect BEFORE connection.close, since this method is
 		#a signal handler for the connection closed event.
 		#Otherwise, it could give an infinite recursion.
@@ -246,6 +256,9 @@ class Payee(event.Handler):
 		if self.isConnected():
 			self.connection.close()
 			self.connection = None
+
+		#3: internal messaging
+		#TODO
 
 		self.context.sendSignal(self, event.signals.closed)
 

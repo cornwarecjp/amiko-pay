@@ -48,6 +48,9 @@ payer = node1.pay(URL)
 node1.confirmPayment(payer, True)
 print "Payment is ", payer.state
 
+#Allow paylink to disconnect
+time.sleep(0.5)
+
 print "Node 1:"
 print node1.list()
 
