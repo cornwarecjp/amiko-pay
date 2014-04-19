@@ -155,6 +155,14 @@ class Amiko(threading.Thread):
 		return ret
 
 
+	@runInAmikoThread
+	def getBalance(self):
+		ret = 0
+		for lnk in self.routingContext.links:
+			ret += lnk.getBalance()
+		return ret
+
+
 	def run(self):
 		#Start listening
 		listener = network.Listener(self.context,

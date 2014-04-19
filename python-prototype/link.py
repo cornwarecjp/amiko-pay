@@ -62,6 +62,10 @@ class Link(event.Handler):
 		}
 
 
+	def getBalance(self):
+		return self.paymentChannel.amountLocal
+
+
 	def connect(self, connection):
 		if self.isConnected():
 			log.log("Link: Received a duplicate connection; closing it")

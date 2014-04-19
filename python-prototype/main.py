@@ -90,6 +90,9 @@ list
 		data = a.list()
 		pprint.pprint(data)
 
+	elif cmd[0] == "getbalance":
+		print a.getBalance()
+
 	else:
 		print "Unknown command. Enter \"help\" for a list of commands."
 
