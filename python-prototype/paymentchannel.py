@@ -75,3 +75,13 @@ class PaymentChannel:
 		del self.transactionsOutgoingReserved[hash]
 
 
+	def commitIncoming(self, hash):
+		self.amountLocal += self.transactionsIncomingLocked[hash]
+		del self.transactionsIncomingLocked[hash]
+
+
+	def commitOutgoing(self, hash):
+		self.amountRemote += self.transactionsOutgoingLocked[hash]
+		del self.transactionsOutgoingLocked[hash]
+
+
