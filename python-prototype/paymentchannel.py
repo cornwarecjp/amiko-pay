@@ -63,3 +63,15 @@ class PaymentChannel:
 			self.transactionsIncomingReserved[hash] = amount
 
 
+	def lockIncoming(self, hash):
+		self.transactionsIncomingLocked[hash] = \
+			self.transactionsIncomingReserved[hash]
+		del self.transactionsIncomingReserved[hash]
+
+
+	def lockOutgoing(self, hash):
+		self.transactionsOutgoingLocked[hash] = \
+			self.transactionsOutgoingReserved[hash]
+		del self.transactionsOutgoingReserved[hash]
+
+

@@ -188,6 +188,9 @@ class Link(event.Handler):
 	def msg_lock(self, transaction):
 		log.log("Link: lock")
 		#TODO: check whether we're still connected
+		self.paymentChannel.lockOutgoing(transaction.hash)
+		#TODO: get new Bitcoin transaction from paymentChannel and
+		# include it in the lock message
 		self.connection.sendMessage(messages.Lock(transaction.hash))
 
 
@@ -248,6 +251,10 @@ class Link(event.Handler):
 		elif message.__class__ == messages.Lock:
 			log.log("Link received Lock")
 			self.openTransactions[message.value].msg_lock()
+
+			#TODO: get new Bitcoin transaction from message and
+			# pass it to paymentChannel
+			self.paymentChannel.lockIncoming(message.value)
 
 		elif message.__class__ == messages.Commit:
 			log.log("Link received Commit")
