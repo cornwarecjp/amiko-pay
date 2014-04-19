@@ -43,3 +43,13 @@ class PaymentChannel:
 		}
 
 
+	def reserve(self, isPayerSide, hash, amount):
+		#TODO: checks
+
+		if isPayerSide:
+			self.amountLocal -= amount
+			self.transactionsOutgoingReserved[hash] = amount
+		else:
+			self.amountRemote -= amount
+			self.transactionsIncomingReserved[hash] = amount
+
