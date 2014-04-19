@@ -9,10 +9,10 @@
 	{
 		"amountLocal"           : 100,
 		"amountRemote"          : 100,
-		"amountIncomingReserved": 0,
-		"amountOutgoingReserved": 0,
-		"amountIncomingLocked"  : 0,
-		"amountOutgoingLocked"  : 0
+		"transactionsIncomingReserved": {},
+		"transactionsOutgoingReserved": {},
+		"transactionsIncomingLocked"  : {},
+		"transactionsOutgoingLocked"  : {}
 
 	}
 	}

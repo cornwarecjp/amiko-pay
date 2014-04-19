@@ -24,20 +24,22 @@ class PaymentChannel:
 		#Current balances:
 		self.amountLocal             = state["amountLocal"]
 		self.amountRemote            = state["amountRemote"]
-		self.amountIncomingReserved  = state["amountIncomingReserved"]
-		self.amountOutgoingReserved  = state["amountOutgoingReserved"]
-		self.amountIncomingLocked    = state["amountIncomingLocked"]
-		self.amountOutgoingLocked    = state["amountOutgoingLocked"]
+
+		self.transactionsIncomingReserved  = state["transactionsIncomingReserved"]
+		self.transactionsOutgoingReserved  = state["transactionsOutgoingReserved"]
+		self.transactionsIncomingLocked    = state["transactionsIncomingLocked"]
+		self.transactionsOutgoingLocked    = state["transactionsOutgoingLocked"]
 
 	def list(self):
 		return \
 		{
 		"amountLocal"           : self.amountLocal,
 		"amountRemote"          : self.amountRemote,
-		"amountIncomingReserved": self.amountIncomingReserved,
-		"amountOutgoingReserved": self.amountOutgoingReserved,
-		"amountIncomingLocked"  : self.amountIncomingLocked,
-		"amountOutgoingLocked"  : self.amountOutgoingLocked
+
+		"transactionsIncomingReserved": self.transactionsIncomingReserved,
+		"transactionsOutgoingReserved": self.transactionsOutgoingReserved,
+		"transactionsIncomingLocked"  : self.transactionsIncomingLocked,
+		"transactionsOutgoingLocked"  : self.transactionsOutgoingLocked
 		}
 
 
