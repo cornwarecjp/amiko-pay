@@ -7,8 +7,8 @@
 	"remoteURL": "amikolink://localhost:4323/node2",
 	"channel":
 	{
-		"amountLocal"           : 100,
-		"amountRemote"          : 100,
+		"amountLocal"           : 1000,
+		"amountRemote"          : 1000,
 		"transactionsIncomingReserved": {},
 		"transactionsOutgoingReserved": {},
 		"transactionsIncomingLocked"  : {},

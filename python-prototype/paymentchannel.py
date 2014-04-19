@@ -18,6 +18,11 @@
 
 
 
+class CheckFail(Exception):
+	pass
+
+
+
 class PaymentChannel:
 	def __init__(self, state):
 
@@ -44,12 +49,17 @@ class PaymentChannel:
 
 
 	def reserve(self, isPayerSide, hash, amount):
-		#TODO: checks
-
 		if isPayerSide:
+			if self.amountLocal < amount:
+				raise CheckFail("Insufficient funds")
+
 			self.amountLocal -= amount
 			self.transactionsOutgoingReserved[hash] = amount
 		else:
+			if self.amountRemote < amount:
+				raise CheckFail("Insufficient funds")
+
 			self.amountRemote -= amount
 			self.transactionsIncomingReserved[hash] = amount
+
 

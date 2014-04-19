@@ -149,13 +149,10 @@ class Link(event.Handler):
 	def msg_makeRoute(self, transaction):
 		log.log("Link: makeRoute")
 
-		class CheckFail(Exception):
-			pass
-
 		try:
 
 			if not self.isConnected():
-				raise CheckFail("Not connected")
+				raise paymentchannel.CheckFail("Not connected")
 
 			#TODO: do all sorts of checks to see if it makes sense to perform
 			#the transaction over this link.
@@ -175,7 +172,7 @@ class Link(event.Handler):
 				transaction.hash,
 				transaction.meetingPoint))
 
-		except CheckFail as f:
+		except paymentchannel.CheckFail as f:
 			log.log("Route refused by link: " + str(f))
 
 			#Send back a cancel immediately
@@ -211,17 +208,26 @@ class Link(event.Handler):
 		elif message.__class__ == messages.MakeRoute:
 			log.log("Link received MakeRoute")
 
-			#TODO: do all sorts of checks to see if it makes sense to perform
-			#the transaction over this link.
-			#For instance, check the responsiveness of the other side, etc. etc.
+			try:
+				#TODO: do all sorts of checks to see if it makes sense to perform
+				#the transaction over this link.
+				#For instance, check the responsiveness of the other side, etc. etc.
 
-			#This will check whether enough funds are availbale
-			#Note: if we're on the PAYER side of the meeting point,
-			#then we're on the PAYEE side of this link, for this transaction.
-			self.paymentChannel.reserve(
-				not message.isPayerSide, message.hash, message.amount)
+				#This will check whether enough funds are availbale
+				#Note: if we're on the PAYER side of the meeting point,
+				#then we're on the PAYEE side of this link, for this transaction.
+				self.paymentChannel.reserve(
+					not message.isPayerSide, message.hash, message.amount)
 
-			#TODO: exception handling for the above
+				#TODO: exception handling for the above
+
+			except paymentchannel.CheckFail as f:
+				log.log("Route refused by link: " + str(f))
+
+				#Send back a cancel immediately
+				#TODO
+
+				return
 
 			#This will start the transaction routing
 			if message.isPayerSide:
