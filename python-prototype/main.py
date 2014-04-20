@@ -56,8 +56,10 @@ help:
   Display this message.
 request amount [receipt]:
   Request payment of amount, with optional receipt
-pay URL
+pay URL [linkname]
   Pay the payment corresponding with URL
+  If linkname is given, payment routing is restricted to the link with the
+  given name.
 list
   Print a list of objects
 """
@@ -73,10 +75,14 @@ list
 		print URL
 
 	elif cmd[0] == "pay":
-		checkNumArgs(1, 1)
+		checkNumArgs(1, 2)
 
 		URL = cmd[1]
-		payer = a.pay(URL)
+		if len(cmd) < 3:
+			payer = a.pay(URL)
+		else:
+			linkname = cmd[2]
+			payer = a.pay(URL, linkname)
 
 		print "Receipt: ", repr(payer.receipt)
 		print "Amount: ", payer.amount

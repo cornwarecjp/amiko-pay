@@ -125,15 +125,23 @@ class Amiko(threading.Thread):
 			(self.settings.getAdvertizedNetworkLocation(), ID)
 
 
-	def pay(self, URL):
-		newPayer = self.__pay(URL) #implemented in Amiko thread
+	def pay(self, URL, linkname=None):
+		newPayer = self.__pay(URL, linkname) #implemented in Amiko thread
 		newPayer.waitForReceipt() #Must be done in this thread
 		return newPayer
 
 
 	@runInAmikoThread
-	def __pay(self, URL):
-		newPayer = paylink.Payer(self.context, self.routingContext, URL)
+	def __pay(self, URL, linkname=None):
+		rc = self.routingContext
+		if linkname != None:
+			rc = RoutingContext()
+			rc.links = \
+				[lnk for lnk in self.routingContext.links if lnk.name == linkname]
+			if len(rc.links) == 0:
+				raise Exception("There is no link with that name")
+
+		newPayer = paylink.Payer(self.context, rc, URL)
 		return newPayer
 
 
