@@ -29,7 +29,11 @@ import randomsource
 import log
 import paylog
 
-
+#Somehow it is hard to replace the above copyright information with a more
+#sensible doc string...
+__doc__ = """
+Top-level Application Programming Interface for the Amiko payment system
+"""
 
 version = "0.1.0 (unstable,development)"
 lastCopyrightYear = "2014"
@@ -41,6 +45,15 @@ maxProtocolVersion = 1
 
 
 class RoutingContext:
+	"""
+	The context in which transaction routing takes place.
+
+	Contains all objects relevant to routing, such as links and meeting points.
+
+	Intended for internal use by Amiko.
+	Not intended to be part of the API.
+	"""
+
 	def __init__(self):
 		self.links = []
 		self.meetingPoints = []
@@ -61,6 +74,9 @@ def runInAmikoThread(implementationFunc):
 	Function decorator, which can be used by Amiko methods to have them
 	called by an external thread, but have them run inside the internal thread
 	of the Amiko object.
+
+	Intended for internal use by Amiko.
+	Not intended to be part of the API.
 	"""
 
 	def remoteCaller(self, *args, **kwargs):
@@ -73,12 +89,34 @@ def runInAmikoThread(implementationFunc):
 			raise self._commandReturnValue
 		return self._commandReturnValue
 
+	remoteCaller.__doc__ = implementationFunc.__doc__
+
 	return remoteCaller
 
 
 
 class Amiko(threading.Thread):
+	"""
+	A single Amiko node.
+
+	A process can run multiple Amiko nodes by making multiple instances of
+	this class. Each instance can have its own configuration, and runs in its
+	own thread.
+
+	After creating an instance, it can be started with the start() method.
+
+	To stop the node, the stop() method must be called. This should always be
+	done before program termination.
+	"""
+
 	def __init__(self, conffile="amikopay.conf"):
+		"""
+		Constructor.
+
+		Arguments:
+		conffile: Name of the configuration file to be loaded.
+		"""
+
 		threading.Thread.__init__(self)
 
 		self.settings = settings.Settings(conffile)
@@ -104,12 +142,29 @@ class Amiko(threading.Thread):
 
 
 	def stop(self):
+		"""
+		Stops the Amiko object.
+
+		This method blocks until the Amiko object is stopped completely.
+		"""
+
 		self.__stop = True
 		self.join()
 
 
 	@runInAmikoThread
 	def request(self, amount, receipt):
+		"""
+		Request a payment.
+
+		Arguments:
+		amount : The amount (integer, in Satoshi) to be paid
+		receipt: A receipt for the payment
+
+		Return value:
+		The URL of the payment request
+		"""
+
 		#ID can be nonsecure random:
 		#It only needs to be semi-unique, not secret.
 		ID = randomsource.getNonSecureRandom(8).encode("hex")
@@ -126,6 +181,20 @@ class Amiko(threading.Thread):
 
 
 	def pay(self, URL, linkname=None):
+		"""
+		Start paying a payment.
+
+		Arguments:
+		URL     : The URL of the payment request
+		linkname: If not equal to None, payment routing is restricted to the
+		          link with the given name.
+
+		Return value:
+		A "payer" object, with the following attributes:
+			amount : The amount (integer, in Satoshi) to be paid
+			receipt: A receipt for the payment
+		"""
+
 		newPayer = self.__pay(URL, linkname) #implemented in Amiko thread
 		newPayer.waitForReceipt() #Must be done in this thread
 		return newPayer
@@ -146,6 +215,14 @@ class Amiko(threading.Thread):
 
 
 	def confirmPayment(self, payer, payerAgrees):
+		"""
+		Finish or cancel paying a payment.
+
+		Arguments:
+		payer      : A "payer" object as returned by the pay() method
+		payerAgrees: Boolean, indicating whether or not the user agrees to pay
+		"""
+
 		self.__confirmPayment(payer, payerAgrees) #implemented in Amiko thread
 		payer.waitForFinished() #Must be done in this thread
 		self.payLog.writePayer(payer)
@@ -158,6 +235,12 @@ class Amiko(threading.Thread):
 
 	@runInAmikoThread
 	def list(self):
+		"""
+		Return value:
+		A data structure, containing a summary of objects present in this
+		Amiko node.
+		"""
+
 		ret = self.routingContext.list()
 		ret["requests"] = [p.list() for p in self.payees]
 		return ret
@@ -165,6 +248,12 @@ class Amiko(threading.Thread):
 
 	@runInAmikoThread
 	def getBalance(self):
+		"""
+		Return value:
+		The sum of all funds directly available for spending
+		(integer, in Satoshi).
+		"""
+
 		ret = 0
 		for lnk in self.routingContext.links:
 			ret += lnk.getBalance()
@@ -172,6 +261,13 @@ class Amiko(threading.Thread):
 
 
 	def run(self):
+		"""
+		The thread function.
+
+		Intended for internal use by Amiko.
+		Not intended to be part of the API.
+		"""
+
 		#Start listening
 		listener = network.Listener(self.context,
 			self.settings.listenHost, self.settings.listenPort)
