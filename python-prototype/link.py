@@ -34,6 +34,7 @@ class Link(event.Handler):
 		event.Handler.__init__(self, context)
 		self.routingContext = routingContext
 
+		self.name  = str(state["name"])
 		self.localID  = str(state["localID"])
 		self.remoteID = str(state["remoteID"])
 
@@ -53,6 +54,7 @@ class Link(event.Handler):
 	def list(self):
 		return \
 		{
+		"name": self.name,
 		"localID": self.localID,
 		"localURL": self.localURL,
 		"remoteID": self.remoteID,

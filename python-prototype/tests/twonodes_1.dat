@@ -2,6 +2,7 @@
 "links":
 [
 	{
+	"name": "node1",
 	"localID": "node1",
 	"remoteID": "node2",
 	"remoteURL": "amikolink://localhost:4323/node2",

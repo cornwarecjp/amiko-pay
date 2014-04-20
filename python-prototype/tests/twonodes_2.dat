@@ -2,6 +2,7 @@
 "links":
 [
 	{
+	"name": "node2",
 	"localID": "node2",
 	"remoteID": "node1",
 	"remoteURL": "",
