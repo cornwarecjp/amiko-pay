@@ -34,16 +34,11 @@ class Transaction:
 		self.payerLink = payerLink
 		self.payeeLink = payeeLink
 
-		if self.__tryMeetingPoint():
-			return #found -> finished
-
 		#Initialize routing possibilities:
 		#Note: just list the IDs here, not references to actual link objects.
 		#This allows other code to remove links while we're routing.
 		self.__remainingRoutes = \
 			[lnk.localID for lnk in self.routingContext.links]
-
-		self.__tryNextRoute()
 
 
 	def isPayerSide(self):
@@ -53,6 +48,18 @@ class Transaction:
 			return False
 		raise Exception(
 			"isPayerSide should only be called when routing is unfinished")
+
+
+	def msg_makeRoute(self):
+
+		#If we are the meeting point, we're finished:
+		if self.__tryMeetingPoint():
+			return #found -> finished
+
+		#Note: this will just try the first route.
+		#However, if that fails we'll be notified about it, and then
+		#we'll try the next, and so on.
+		self.__tryNextRoute()
 
 
 	def msg_haveRoute(self, link):

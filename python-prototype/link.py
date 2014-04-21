@@ -241,7 +241,6 @@ class Link(event.Handler):
 
 				return
 
-			#This will start the transaction routing
 			if message.isPayerSide:
 				self.openTransactions[message.hash] = transaction.Transaction(
 					self.context, self.routingContext,
@@ -252,6 +251,9 @@ class Link(event.Handler):
 					self.context, self.routingContext,
 					message.amount, message.hash, message.meetingPoint,
 					payeeLink=self)
+
+			#This will start the transaction routing
+			self.openTransactions[message.hash].msg_makeRoute()
 
 		elif message.__class__ == messages.HaveRoute:
 			log.log("Link received HaveRoute")

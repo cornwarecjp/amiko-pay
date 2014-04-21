@@ -121,11 +121,13 @@ class Payer(event.Handler):
 				messages.Confirm(self.__meetingPoint))
 
 			#3: internal messaging
-			#This will start the transaction routing
 			self.__transaction = transaction.Transaction(
 				self.context, self.routingContext,
 				self.amount, self.hash, self.__meetingPoint,
 				payerLink=self)
+
+			#This will start the transaction routing
+			self.__transaction.msg_makeRoute()
 
 		else:
 			#1: adjust own state
@@ -329,11 +331,13 @@ class Payee(event.Handler):
 			self.state = self.states.confirmed
 
 			#3: internal messaging
-			#This will start the transaction routing
 			self.__transaction = transaction.Transaction(
 				self.context, self.routingContext,
 				self.amount, self.hash, self.__meetingPoint,
 				payeeLink=self)
+
+			#This will start the transaction routing
+			self.__transaction.msg_makeRoute()
 
 		elif situation == (self.states.initial, messages.Cancel):
 			log.log("Payee received cancel")
