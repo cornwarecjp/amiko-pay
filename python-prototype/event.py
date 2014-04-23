@@ -31,6 +31,7 @@ signals = utils.Enum([
 	"link",
 	"pay",
 	"message",
+	"save",
 	"quit"
 	])
 

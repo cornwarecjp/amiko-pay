@@ -129,6 +129,7 @@ class Amiko(threading.Thread):
 		self.payLog = paylog.PayLog(self.settings)
 
 		self.__stop = False
+		self.__doSave = False
 
 		self._commandFunctionLock = threading.Lock()
 		self._commandFunction = None
@@ -137,6 +138,7 @@ class Amiko(threading.Thread):
 
 		self.context.connect(None, event.signals.link, self.__handleLinkSignal)
 		self.context.connect(None, event.signals.pay, self.__handlePaySignal)
+		self.context.connect(None, event.signals.save, self.__handleSaveSignal)
 
 		self.__loadState()
 
@@ -268,6 +270,8 @@ class Amiko(threading.Thread):
 		Not intended to be part of the API.
 		"""
 
+		log.log("\n\nAmiko thread started")
+
 		#Start listening
 		listener = network.Listener(self.context,
 			self.settings.listenHost, self.settings.listenPort)
@@ -293,6 +297,10 @@ class Amiko(threading.Thread):
 
 			self.__movePayeesToPayLog()
 
+			if self.__doSave:
+				self.__saveState()
+				self.__doSave = False
+
 			if self.__stop:
 				#TODO: stop creation of new transactions
 				#TODO: only break once there are no more open transactions
@@ -300,6 +308,8 @@ class Amiko(threading.Thread):
 
 		#This closes all network connections etc.
 		self.context.sendSignal(None, event.signals.quit)
+
+		log.log("Amiko thread terminated\n\n")
 
 
 	def __loadState(self):
@@ -317,6 +327,10 @@ class Amiko(threading.Thread):
 				meetingpoint.MeetingPoint(str(mp["ID"])))
 
 
+	def __saveState(self):
+		log.log("STATE SAVE NOT YET IMPLEMENTED")
+
+
 	def __movePayeesToPayLog(self):
 		"Writes finished payee objects to pay log and then removes them"
 
@@ -332,7 +346,7 @@ class Amiko(threading.Thread):
 				lnk.connect(connection)
 				return
 
-		print "Received link message with unknown ID"
+		log.log("Received link message with unknown ID")
 		connection.close()
 
 
@@ -342,6 +356,12 @@ class Amiko(threading.Thread):
 				p.connect(connection)
 				return
 
-		print "Received pay message with unknown ID"
+		log.log("Received pay message with unknown ID")
 		connection.close()
+
+
+	def __handleSaveSignal(self):
+		log.log("Save handler called")
+		self.__doSave = True
+
 

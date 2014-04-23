@@ -195,6 +195,9 @@ class Link(event.Handler):
 		log.log("Link: lock")
 		#TODO: check whether we're still connected
 		self.paymentChannel.lockOutgoing(transaction.hash)
+
+		self.context.sendSignal(None, event.signals.save)
+
 		#TODO: get new Bitcoin transaction from paymentChannel and
 		# include it in the lock message
 		self.connection.sendMessage(messages.Lock(transaction.hash))
@@ -204,6 +207,9 @@ class Link(event.Handler):
 		log.log("Link: commit")
 		#TODO: check whether we're still connected
 		self.paymentChannel.commitOutgoing(transaction.hash)
+
+		self.context.sendSignal(None, event.signals.save)
+
 		#TODO: get new Bitcoin transaction from paymentChannel and
 		# include it in the lock message
 		self.connection.sendMessage(messages.Commit(transaction.token))
@@ -267,6 +273,8 @@ class Link(event.Handler):
 			self.paymentChannel.lockIncoming(message.value)
 			#TODO: exception handling for the above
 
+			self.context.sendSignal(None, event.signals.save)
+
 			self.openTransactions[message.value].msg_lock()
 
 		elif message.__class__ == messages.Commit:
@@ -278,6 +286,8 @@ class Link(event.Handler):
 			# pass it to paymentChannel
 			self.paymentChannel.commitIncoming(hash)
 			#TODO: exception handling for the above
+
+			self.context.sendSignal(None, event.signals.save)
 
 			self.openTransactions[hash].msg_commit(token)
 
