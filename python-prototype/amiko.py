@@ -136,9 +136,14 @@ class Amiko(threading.Thread):
 		self._commandProcessed = threading.Event()
 		self._commandReturnValue = None
 
-		self.context.connect(None, event.signals.link, self.__handleLinkSignal)
-		self.context.connect(None, event.signals.pay, self.__handlePaySignal)
-		self.context.connect(None, event.signals.save, self.__handleSaveSignal)
+		self.context.connect(None, event.signals.link,
+			self.__handleLinkSignal)
+		self.context.connect(None, event.signals.pay,
+			self.__handlePaySignal)
+		self.context.connect(None, event.signals.save,
+			self.__handleSaveSignal)
+		self.context.connectPost(event.signals.message,
+			self.__postHandleMessageSignal)
 
 		self.__loadState()
 
@@ -297,10 +302,6 @@ class Amiko(threading.Thread):
 
 			self.__movePayeesToPayLog()
 
-			if self.__doSave:
-				self.__saveState()
-				self.__doSave = False
-
 			if self.__stop:
 				#TODO: stop creation of new transactions
 				#TODO: only break once there are no more open transactions
@@ -363,5 +364,13 @@ class Amiko(threading.Thread):
 	def __handleSaveSignal(self):
 		log.log("Save handler called")
 		self.__doSave = True
+
+
+	def __postHandleMessageSignal(self, message):
+		log.log("Message post-handler called: " + str(message))
+
+		if self.__doSave:
+			self.__saveState()
+			self.__doSave = False
 
 

@@ -56,6 +56,7 @@ class Context:
 	def __init__(self):
 		# Each element is an EventConnection
 		self.__eventConnections = []
+		self.__postEventConnections = []
 
 		# Each element is a Timer
 		self.__timers = []
@@ -64,6 +65,11 @@ class Context:
 	def connect(self, sender, signal, handler):
 		self.__eventConnections.append(
 			Context.EventConnection(sender, signal, handler))
+
+
+	def connectPost(self, signal, handler):
+		self.__postEventConnections.append(
+			Context.EventConnection(None, signal, handler))
 
 
 	def setTimer(self, dt, handler):
@@ -78,6 +84,8 @@ class Context:
 	def removeConnectionsByHandler(self, handler):
 		self.__eventConnections = filter(lambda c: c.handler != handler,
 			self.__eventConnections)
+		self.__postEventConnections = filter(lambda c: c.handler != handler,
+			self.__postEventConnections)
 		self.__timers = filter(lambda c: c.handler != handler,
 			self.__timers)
 
@@ -116,6 +124,11 @@ class Context:
 		for h in handlers:
 			h(*args, **kwargs)
 
+		handlers = [c.handler for c in self.__postEventConnections
+			if c.signal == signal]
+		for h in handlers:
+			h(*args, **kwargs)
+
 
 
 class Handler:
@@ -132,6 +145,11 @@ class Handler:
 
 	def connect(self, sender, signal, handler):
 		self.context.connect(sender, signal, handler)
+		self.__handlers.add(handler)
+
+
+	def connectPost(self, signal, handler):
+		self.context.connectPost(signal, handler)
 		self.__handlers.add(handler)
 
 
