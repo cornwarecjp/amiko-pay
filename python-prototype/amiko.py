@@ -17,6 +17,7 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 import threading
+import os
 import json
 
 import network
@@ -312,6 +313,16 @@ class Amiko(threading.Thread):
 
 
 	def __loadState(self):
+
+		oldFile = self.settings.stateFile + ".old"
+		if os.access(oldFile, os.F_OK):
+			if os.access(self.settings.stateFile, os.F_OK):
+				#Remove old file if normal state file exists:
+				os.remove(oldFile)
+			else:
+				#Use old file if state file does not exist:
+				os.rename(oldFile, self.settings.stateFile)
+
 		with open(self.settings.stateFile, 'rb') as fp:
 			state = json.load(fp)
 			#print state
@@ -336,12 +347,17 @@ class Amiko(threading.Thread):
 
 		#print state
 
-		saveFile = self.settings.stateFile + ".save"
-		log.log("Saving in " + saveFile)
-		with open(saveFile, 'wb') as fp:
+		newFile = self.settings.stateFile + ".new"
+		log.log("Saving in " + newFile)
+		with open(newFile, 'wb') as fp:
 			fp.write(state)
 
-		#TODO: move from saveFile to self.settings.stateFile
+		oldFile = self.settings.stateFile + ".old"
+
+		#Replace old data with new data
+		os.rename(self.settings.stateFile, oldFile)
+		os.rename(newFile, self.settings.stateFile)
+		os.remove(oldFile)
 
 
 	def __getState(self, verbose=False):
