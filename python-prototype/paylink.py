@@ -228,7 +228,7 @@ class Payee(event.Handler):
 		self.__payeeHasRoute = False
 
 
-	def list(self):
+	def getState(self):
 		return \
 		{
 		"ID": self.ID,

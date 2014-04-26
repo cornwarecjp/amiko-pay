@@ -51,7 +51,7 @@ class Link(event.Handler):
 		self.connection = None
 
 
-	def list(self):
+	def getState(self):
 		return \
 		{
 		"name": self.name,
@@ -60,7 +60,7 @@ class Link(event.Handler):
 		"remoteID": self.remoteID,
 		"remoteURL": self.remoteURL,
 		"isConnected": self.isConnected(),
-		"channel": self.paymentChannel.list(),
+		"channel": self.paymentChannel.getState(),
 		"openTransactions": self.openTransactions.keys()
 		}
 

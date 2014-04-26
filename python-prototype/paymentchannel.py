@@ -35,7 +35,7 @@ class PaymentChannel:
 		self.transactionsIncomingLocked    = state["transactionsIncomingLocked"]
 		self.transactionsOutgoingLocked    = state["transactionsOutgoingLocked"]
 
-	def list(self):
+	def getState(self):
 		return \
 		{
 		"amountLocal"           : self.amountLocal,

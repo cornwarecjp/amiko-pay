@@ -28,7 +28,7 @@ class MeetingPoint:
 		self.__transactionPairs = {}
 
 
-	def list(self):
+	def getState(self):
 		return \
 		{
 		"ID": self.ID,

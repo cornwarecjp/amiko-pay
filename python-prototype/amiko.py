@@ -58,14 +58,14 @@ class RoutingContext:
 		self.links = []
 		self.meetingPoints = []
 
-	def list(self):
+	def getState(self):
 		return \
 		{
 			"links":
-			[lnk.list() for lnk in self.links],
+			[lnk.getState() for lnk in self.links],
 
 			"meetingPoints":
-			[mp.list() for mp in self.meetingPoints]
+			[mp.getState() for mp in self.meetingPoints]
 		}
 
 
@@ -248,8 +248,8 @@ class Amiko(threading.Thread):
 		Amiko node.
 		"""
 
-		ret = self.routingContext.list()
-		ret["requests"] = [p.list() for p in self.payees]
+		ret = self.routingContext.getState()
+		ret["requests"] = [p.getState() for p in self.payees]
 		return ret
 
 
