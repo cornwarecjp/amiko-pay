@@ -228,17 +228,20 @@ class Payee(event.Handler):
 		self.__payeeHasRoute = False
 
 
-	def getState(self):
-		return \
+	def getState(self, verbose=False):
+		ret = \
 		{
 		"ID": self.ID,
 		"amount": self.amount,
 		"receipt": self.receipt,
 		"hash": self.hash.encode("hex"),
-		"meetingPoint": self.__meetingPoint,
-		"isConnected": self.isConnected(),
 		"state": self.state
 		}
+		if verbose:
+			ret["meetingPoint"] =  self.__meetingPoint
+			ret["isConnected"] = self.isConnected()
+
+		return ret
 
 
 	def close(self):

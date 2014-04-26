@@ -37,7 +37,7 @@ class PaymentChannel:
 		self.transactionsOutgoingLocked    = {} #TODO state["transactionsOutgoingLocked"]
 
 
-	def getState(self):
+	def getState(self, verbose=False):
 		return \
 		{
 		"amountLocal"           : self.amountLocal,

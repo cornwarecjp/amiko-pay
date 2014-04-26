@@ -51,19 +51,21 @@ class Link(event.Handler):
 		self.connection = None
 
 
-	def getState(self):
-		return \
+	def getState(self, verbose=False):
+		ret = \
 		{
 		"name": self.name,
 		"localID": self.localID,
-		"localURL": self.localURL,
 		"remoteID": self.remoteID,
 		"remoteURL": self.remoteURL,
-		"isConnected": self.isConnected(),
-		"channel": self.paymentChannel.getState(),
+		"channel": self.paymentChannel.getState(verbose),
 		"openTransactions":
 			[k.encode("hex") for k in self.openTransactions.keys()]
 		}
+		if verbose:
+			ret["isConnected"] = self.isConnected()
+			ret["localURL"] = self.localURL
+		return ret
 
 
 	def getBalance(self):
