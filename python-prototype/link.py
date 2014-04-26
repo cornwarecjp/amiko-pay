@@ -60,7 +60,8 @@ class Link(event.Handler):
 		"remoteID": self.remoteID,
 		"remoteURL": self.remoteURL,
 		"isConnected": self.isConnected(),
-		"channel": self.paymentChannel.list()
+		"channel": self.paymentChannel.list(),
+		"openTransactions": self.openTransactions.keys()
 		}
 
 
@@ -214,6 +215,9 @@ class Link(event.Handler):
 		# include it in the lock message
 		self.connection.sendMessage(messages.Commit(transaction.token))
 
+		#We don't need this anymore:
+		del self.openTransactions[transaction.hash]
+
 
 	def __handleMessage(self, message):
 		#log.log("Link received message: " + repr(str()))
@@ -290,6 +294,9 @@ class Link(event.Handler):
 			self.context.sendSignal(None, event.signals.save)
 
 			self.openTransactions[hash].msg_commit(token)
+
+			#We don't need this anymore:
+			del self.openTransactions[hash]
 
 		else:
 			log.log("Link received unsupported message: %s" % str(message))

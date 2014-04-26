@@ -31,7 +31,8 @@ class MeetingPoint:
 	def list(self):
 		return \
 		{
-		"ID": self.ID
+		"ID": self.ID,
+		"openTransactions": self.__transactionPairs.keys()
 		}
 
 
@@ -74,5 +75,8 @@ class MeetingPoint:
 		log.log("Meeting point: commit")
 		pair = self.__transactionPairs[transaction.hash]
 		pair[1].msg_commit(transaction.token)
+
+		#We don't need this anymore:
+		del self.__transactionPairs[transaction.hash]
 
 
