@@ -61,7 +61,8 @@ class Link(event.Handler):
 		"remoteURL": self.remoteURL,
 		"isConnected": self.isConnected(),
 		"channel": self.paymentChannel.getState(),
-		"openTransactions": self.openTransactions.keys()
+		"openTransactions":
+			[k.encode("hex") for k in self.openTransactions.keys()]
 		}
 
 

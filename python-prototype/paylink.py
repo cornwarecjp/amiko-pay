@@ -234,7 +234,7 @@ class Payee(event.Handler):
 		"ID": self.ID,
 		"amount": self.amount,
 		"receipt": self.receipt,
-		"hash": self.hash,
+		"hash": self.hash.encode("hex"),
 		"meetingPoint": self.__meetingPoint,
 		"isConnected": self.isConnected(),
 		"state": self.state

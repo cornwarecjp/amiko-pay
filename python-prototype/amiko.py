@@ -248,9 +248,7 @@ class Amiko(threading.Thread):
 		Amiko node.
 		"""
 
-		ret = self.routingContext.getState()
-		ret["requests"] = [p.getState() for p in self.payees]
-		return ret
+		return self.__getState()
 
 
 	@runInAmikoThread
@@ -329,16 +327,42 @@ class Amiko(threading.Thread):
 
 
 	def __saveState(self):
-		log.log("STATE SAVE NOT YET IMPLEMENTED")
+		state = self.__getState()
+
+		#ensure_ascii doesn't seem to do what I expected,
+		#so it becomes required that state is ASCII-only.
+		state = json.dumps(state, sort_keys=True, ensure_ascii=True,
+			indent=4, separators=(',', ': '))
+
+		#print state
+
+		saveFile = self.settings.stateFile + ".save"
+		log.log("Saving in " + saveFile)
+		with open(saveFile, 'wb') as fp:
+			fp.write(state)
+
+		#TODO: move from saveFile to self.settings.stateFile
+
+
+	def __getState(self):
+		ret = self.routingContext.getState()
+		ret["requests"] = [p.getState() for p in self.payees]
+		return ret
 
 
 	def __movePayeesToPayLog(self):
 		"Writes finished payee objects to pay log and then removes them"
 
+		doSave = False
+
 		for p in self.payees[:]: #copy of list, since the list will be modified
 			if p.state in [p.states.cancelled, p.states.committed]:
 				self.payLog.writePayee(p)
 				self.payees.remove(p)
+				doSave = True
+
+		if doSave:
+			self.__saveState()
 
 
 	def __handleLinkSignal(self, connection, message):

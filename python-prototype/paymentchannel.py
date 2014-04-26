@@ -30,10 +30,12 @@ class PaymentChannel:
 		self.amountLocal             = state["amountLocal"]
 		self.amountRemote            = state["amountRemote"]
 
-		self.transactionsIncomingReserved  = state["transactionsIncomingReserved"]
-		self.transactionsOutgoingReserved  = state["transactionsOutgoingReserved"]
-		self.transactionsIncomingLocked    = state["transactionsIncomingLocked"]
-		self.transactionsOutgoingLocked    = state["transactionsOutgoingLocked"]
+		#hash -> amount
+		self.transactionsIncomingReserved  = {} #TODO state["transactionsIncomingReserved"]
+		self.transactionsOutgoingReserved  = {} #TODO state["transactionsOutgoingReserved"]
+		self.transactionsIncomingLocked    = {} #TODO state["transactionsIncomingLocked"]
+		self.transactionsOutgoingLocked    = {} #TODO state["transactionsOutgoingLocked"]
+
 
 	def getState(self):
 		return \
@@ -41,11 +43,22 @@ class PaymentChannel:
 		"amountLocal"           : self.amountLocal,
 		"amountRemote"          : self.amountRemote,
 
-		"transactionsIncomingReserved": self.transactionsIncomingReserved,
-		"transactionsOutgoingReserved": self.transactionsOutgoingReserved,
-		"transactionsIncomingLocked"  : self.transactionsIncomingLocked,
-		"transactionsOutgoingLocked"  : self.transactionsOutgoingLocked
+		"transactionsIncomingReserved":
+			self.__encodeDict(self.transactionsIncomingReserved),
+		"transactionsOutgoingReserved": 
+			self.__encodeDict(self.transactionsOutgoingReserved),
+		"transactionsIncomingLocked"  : 
+			self.__encodeDict(self.transactionsIncomingLocked),
+		"transactionsOutgoingLocked"  : 
+			self.__encodeDict(self.transactionsOutgoingLocked)
 		}
+
+
+	def __encodeDict(self, d):
+		ret = {}
+		for k,v in d.iteritems():
+			ret[k.encode("hex")] = v
+		return ret
 
 
 	def reserve(self, isPayerSide, hash, amount):

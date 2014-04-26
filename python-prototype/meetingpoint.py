@@ -32,7 +32,8 @@ class MeetingPoint:
 		return \
 		{
 		"ID": self.ID,
-		"openTransactions": self.__transactionPairs.keys()
+		"openTransactions":
+			[k.encode("hex") for k in self.__transactionPairs.keys()]
 		}
 
 
