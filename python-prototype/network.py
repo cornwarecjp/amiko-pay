@@ -32,6 +32,7 @@ class Listener(event.Handler):
 		event.Handler.__init__(self, context)
 
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		log.log("Listener opened: " + str(self.socket.fileno()))
 
 		#TODO: do we want to keep this in production code?
 		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -45,7 +46,7 @@ class Listener(event.Handler):
 
 
 	def close(self):
-		log.log("Listener close")
+		log.log("Listener closed: " + str(self.socket.fileno()))
 		self.disconnectAll()
 		self.context.removeConnectionsBySender(self.socket)
 		self.socket.close()
@@ -69,6 +70,8 @@ class Connection(event.Handler):
 			self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.socket.connect(arg)
 
+		log.log("Connection opened: " + str(self.socket.fileno()))
+
 		#self.socket.setblocking(False)
 
 		self.__writeBuffer = ""
@@ -86,7 +89,7 @@ class Connection(event.Handler):
 
 
 	def close(self):
-		log.log("Connection close")
+		log.log("Connection closed: " + str(self.socket.fileno()))
 
 		try:
 			self.socket.shutdown(socket.SHUT_RDWR)
@@ -120,6 +123,9 @@ class Connection(event.Handler):
 
 
 	def __send(self, data):
+		if self.isClosed():
+			raise Exception("Connection is closed")
+
 		self.__writeBuffer += data
 		self.connect(self.socket, event.signals.readyForWrite,
 			self.__handleWriteAvailable)
