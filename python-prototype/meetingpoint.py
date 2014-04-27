@@ -66,6 +66,22 @@ class MeetingPoint:
 			self.__transactionPairs[transaction.hash] = pair
 
 
+	def msg_endRoute(self, transaction):
+		log.log("Meeting point: endRoute")
+
+		pair = self.__transactionPairs[transaction.hash]
+
+		#We don't need this anymore:
+		del self.__transactionPairs[transaction.hash]
+
+		otherSide = pair[0]
+		if transaction.isPayerSide():
+			otherSide = pair[1]
+
+		if otherSide != None:
+			otherSide.msg_cancelRoute()
+
+
 	def msg_lock(self, transaction):
 		log.log("Meeting point: lock")
 		pair = self.__transactionPairs[transaction.hash]

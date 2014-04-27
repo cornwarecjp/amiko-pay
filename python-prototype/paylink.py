@@ -355,6 +355,15 @@ class Payee(event.Handler):
 			#2: network traffic
 			self.__checkRoutesAndConfirmToPayer()
 
+		elif situation == (self.states.confirmed, messages.Cancel):
+			log.log("Payee received cancel after confirm")
+			#1: adjust own state
+			self.state = self.states.cancelled
+			#2: network traffic
+			self.close()
+			#3: internal messaging
+			self.__transaction.msg_endRoute()
+
 		else:
 			log.log("Payee received unsupported message for state %s: %s" % \
 				(self.state, message))

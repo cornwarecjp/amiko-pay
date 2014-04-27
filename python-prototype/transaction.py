@@ -39,6 +39,7 @@ class Transaction:
 		#This allows other code to remove links while we're routing.
 		self.__remainingRoutes = \
 			[lnk.localID for lnk in self.routingContext.links]
+		self.__currentRoute = None
 
 
 	def isPayerSide(self):
@@ -81,6 +82,11 @@ class Transaction:
 		self.__tryNextRoute()
 
 
+	def msg_endRoute(self):
+		log.log("Transaction: endRoute")
+		self.__currentRoute.msg_endRoute(self)
+
+
 	def msg_lock(self):
 		log.log("Transaction: lock")
 		self.payeeLink.msg_lock(self)
@@ -95,6 +101,7 @@ class Transaction:
 	def __tryMeetingPoint(self):
 		for mp in self.routingContext.meetingPoints:
 			if mp.ID == self.meetingPoint:
+				self.__currentRoute = mp
 				mp.msg_makeRoute(self)
 				return True #found
 
@@ -108,11 +115,13 @@ class Transaction:
 			for lnk in self.routingContext.links:
 				if lnk.localID == nextRoute:
 					log.log("Transaction: try next route")
+					self.__currentRoute = lnk
 					lnk.msg_makeRoute(self)
 					return
 
 		log.log("Transaction: no more route")
 		#No more route: send cancel back to source
+		self.__currentRoute = None
 		del self.__remainingRoutes
 		if self.isPayerSide():
 			self.payerLink.msg_cancel(self)
