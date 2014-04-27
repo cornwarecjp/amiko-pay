@@ -76,6 +76,7 @@ class Link(event.Handler):
 		if self.isConnected():
 			log.log("Link: Received a duplicate connection; closing it")
 			connection.close()
+			return
 
 		log.log("Link: Connection established (received)")
 		self.connection = connection
@@ -154,6 +155,7 @@ class Link(event.Handler):
 		timeout = random.uniform(1.0, 2.0)
 
 		self.setTimer(timeout, self.__handleReconnectTimeout)
+		log.log("Link: set reconnect timeout to %f s" % timeout)
 
 
 	def msg_makeRoute(self, transaction):
