@@ -89,6 +89,9 @@ class Connection(event.Handler):
 
 
 	def close(self):
+		if self.__isClosed:
+			return #don't close again
+
 		log.log("Connection closed: " + str(self.socket.fileno()))
 
 		try:
