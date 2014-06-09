@@ -20,11 +20,16 @@
 import time
 import sys
 import pprint
+from decimal import Decimal
 
 import amiko
 import event
 import network
 import messages
+
+
+def formatBitcoinAmount(value):
+	return str(Decimal(value) / 100000) + " mBTC"
 
 
 def handleCommand(cmd):
@@ -99,7 +104,7 @@ getbalance
 		pprint.pprint(data)
 
 	elif cmd[0] == "getbalance":
-		print a.getBalance()
+		print formatBitcoinAmount(a.getBalance())
 
 	else:
 		print "Unknown command. Enter \"help\" for a list of commands."
