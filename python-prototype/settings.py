@@ -58,6 +58,10 @@ class Settings:
 		self.payLogFile = self.__get(
 			"files", "paylogfile", "payments.log")
 
+		#bitcoin RPC
+		self.bitcoinRPCURL = self.__get(
+			"bitcoind", "RPCURL", "http://user:password@127.0.0.1:8332")
+
 		self.__config = None
 
 
