@@ -29,6 +29,7 @@ import settings
 import randomsource
 import log
 import paylog
+import bitcoind
 
 #Somehow it is hard to replace the above copyright information with a more
 #sensible doc string...
@@ -121,6 +122,8 @@ class Amiko(threading.Thread):
 		threading.Thread.__init__(self)
 
 		self.settings = settings.Settings(conffile)
+
+		self.bitcoind = bitcoind.Bitcoind(self.settings)
 
 		self.context = event.Context()
 
