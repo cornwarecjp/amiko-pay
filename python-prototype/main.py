@@ -21,10 +21,6 @@ import time
 import sys
 import pprint
 
-#This is here to allow the code to import bitcoinrpc.authproxy from the code tree
-#TODO: maybe move bitcoinrpc to this directory.
-sys.path += ['..']
-
 import amiko
 import event
 import network
