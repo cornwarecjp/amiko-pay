@@ -62,6 +62,8 @@ pay URL [linkname]
   given name.
 list
   Print a list of objects
+getbalance
+  Print balance information
 """
 	elif cmd[0] == "request":
 		checkNumArgs(1, 2)

@@ -266,6 +266,10 @@ class Amiko(threading.Thread):
 		ret = 0
 		for lnk in self.routingContext.links:
 			ret += lnk.getBalance()
+
+		freeBalance = self.bitcoind.getBalance()
+		ret += freeBalance
+
 		return ret
 
 

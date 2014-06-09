@@ -6,13 +6,18 @@ import log
 
 class Bitcoind:
 	def __init__(self, settings):
-		log.log("Connecting to Bitcoin daemon...")
+		log.log("Making connection to Bitcoin daemon...")
 		self.access = AuthServiceProxy(settings.bitcoinRPCURL)
-		log.log("...connected to Bitcoin daemon")
+		log.log("...done")
 		
-		print self.getInfo()
+
+	def getBalance(self):
+		return self.DecimaltoAmount(self.access.getbalance())
 
 
-	def getInfo(self):
-		return self.access.getinfo()
+	def DecimaltoAmount(self, value):
+		return int(value*100000000)
+
+
+
 
