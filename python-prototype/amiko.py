@@ -30,6 +30,7 @@ import randomsource
 import log
 import paylog
 import bitcoind
+import watchdog
 
 #Somehow it is hard to replace the above copyright information with a more
 #sensible doc string...
@@ -124,6 +125,7 @@ class Amiko(threading.Thread):
 		self.settings = settings.Settings(conffile)
 
 		self.bitcoind = bitcoind.Bitcoind(self.settings)
+		self.watchdog = watchdog.Watchdog(self.bitcoind)
 
 		self.context = event.Context()
 
@@ -294,6 +296,7 @@ class Amiko(threading.Thread):
 
 			self.context.dispatchNetworkEvents()
 			self.context.dispatchTimerEvents()
+			self.watchdog.check()
 
 			with self._commandFunctionLock:
 				s = self._commandFunction
