@@ -29,6 +29,8 @@ class Watchdog:
 		self.lastCheckedBlock = self.bitcoind.getBlockCount()
 		self.onSpentCallbacks = {}
 
+		self.toBeCheckedTransactionHashes = set([])
+
 		#Test:
 		def callback():
 			print "Callback"
@@ -54,12 +56,28 @@ class Watchdog:
 
 		self.checkMemoryPool()
 
+		self.checkTransactionHashes()
+
 
 	def checkNextBlock(self):
 		block = self.lastCheckedBlock + 1
 		print "Checking block %d..." % block
 
 		for thash in self.bitcoind.getTransactionHashesByBlockHeight(block):
+			self.toBeCheckedTransactionHashes.add(thash)
+
+		print "...Done checking block"
+		self.lastCheckedBlock = block
+
+
+	def checkMemoryPool(self):
+		#print "checkMemoryPool" #TODO
+		pass
+
+
+	def checkTransactionHashes(self):
+		for thash in self.toBeCheckedTransactionHashes:
+			#print "Checking transaction %s..." % thash
 			t = self.bitcoind.getTransaction(thash)
 			for txin in t["vin"]:
 
@@ -71,13 +89,7 @@ class Watchdog:
 					print "FOUND!"
 					self.onSpentCallbacks[txid]()
 					del self.onSpentCallbacks[txid]
+			#print "...Done checking transaction"
 
-		print "...Done checking block"
-		self.lastCheckedBlock = block
-
-
-	def checkMemoryPool(self):
-		#print "checkMemoryPool" #TODO
-		pass
-
+		self.toBeCheckedTransactionHashes = set([])
 
