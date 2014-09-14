@@ -274,6 +274,14 @@ class Amiko(threading.Thread):
 		return {"amiko": amikoBalance, "bitcoin": bitcoinBalance}
 
 
+	@runInAmikoThread
+	def deposit(self, linkname, amount):
+		"""
+		"""
+		#TODO
+		print "Depositing %d into %s" % (amount, linkname)
+
+
 	def run(self):
 		"""
 		The thread function.

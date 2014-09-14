@@ -69,6 +69,8 @@ list
   Print a list of objects
 getbalance
   Print balance information
+deposit linkname amount
+  Deposit amount into a link
 """
 	elif cmd[0] == "request":
 		checkNumArgs(1, 2)
@@ -98,7 +100,6 @@ getbalance
 		a.confirmPayment(payer, OK)
 		print "Payment is ", payer.state
 
-
 	elif cmd[0] == "list":
 		data = a.list()
 		pprint.pprint(data)
@@ -107,6 +108,18 @@ getbalance
 		b = a.getBalance()
 		for k,v in b.iteritems():
 			print k, formatBitcoinAmount(v)
+
+	elif cmd[0] == "deposit":
+		checkNumArgs(2, 2)
+
+		linkname = cmd[1]
+		amount = int(cmd[2])
+
+		if raw_input("Are you sure (y/n)? ") != 'y':
+			print "Aborted"
+			return
+
+		a.deposit(linkname, amount)
 
 	else:
 		print "Unknown command. Enter \"help\" for a list of commands."
