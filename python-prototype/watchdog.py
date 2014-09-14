@@ -54,14 +54,18 @@ class Watchdog:
 
 
 	def check(self):
+		#Don't check anything if there's nothing to check for:
 		if len(self.onSpentCallbacks) == 0:
 			self.lastCheckedBlock = self.bitcoind.getBlockCount()
+			self.toBeCheckedTransactionHashes = set([])
 			return
 
-		if self.bitcoind.getBlockCount() > self.lastCheckedBlock:
-			self.checkNextBlock()
+		#ONLY check for new transactions if we have nothing in the queue:
+		if len(self.toBeCheckedTransactionHashes) == 0:
+			if self.bitcoind.getBlockCount() > self.lastCheckedBlock:
+				self.checkNextBlock()
 
-		self.checkMemoryPool()
+			self.checkMemoryPool()
 
 		self.checkTransactionHashes()
 
@@ -83,7 +87,17 @@ class Watchdog:
 
 
 	def checkTransactionHashes(self):
-		for thash in self.toBeCheckedTransactionHashes:
+		#log.log("Watchdog: checking transaction hashes...")
+
+		#Since, in event.py, the wait for network events has a 0.01 s timeout,
+		# this limits us to checking 1000 tx/s.
+		#TODO: maybe make this number configurable.
+		maxNumberOfChecks = 10
+
+		numberOfChecks = min(len(self.toBeCheckedTransactionHashes), maxNumberOfChecks)
+		for i in range(numberOfChecks):
+			thash = self.toBeCheckedTransactionHashes.pop()
+
 			#print "Checking transaction %s..." % thash
 			t = self.bitcoind.getTransaction(thash)
 			for txin in t["vin"]:
@@ -99,5 +113,6 @@ class Watchdog:
 					del self.onSpentCallbacks[txid]
 			#print "...Done checking transaction"
 
-		self.toBeCheckedTransactionHashes = set([])
+		#log.log("Watchdog: ...done checking transaction hashes")
+
 
