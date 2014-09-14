@@ -104,7 +104,9 @@ getbalance
 		pprint.pprint(data)
 
 	elif cmd[0] == "getbalance":
-		print formatBitcoinAmount(a.getBalance())
+		b = a.getBalance()
+		for k,v in b.iteritems():
+			print k, formatBitcoinAmount(v)
 
 	else:
 		print "Unknown command. Enter \"help\" for a list of commands."

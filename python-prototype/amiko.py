@@ -261,18 +261,17 @@ class Amiko(threading.Thread):
 	def getBalance(self):
 		"""
 		Return value:
-		The sum of all funds directly available for spending
+		Dictionary, containing the Amiko and the Bitcoin balance
 		(integer, in Satoshi).
 		"""
 
-		ret = 0
+		amikoBalance = 0
 		for lnk in self.routingContext.links:
-			ret += lnk.getBalance()
+			amikoBalance += lnk.getBalance()
 
-		freeBalance = self.bitcoind.getBalance()
-		ret += freeBalance
+		bitcoinBalance = self.bitcoind.getBalance()
 
-		return ret
+		return {"amiko": amikoBalance, "bitcoin": bitcoinBalance}
 
 
 	def run(self):
