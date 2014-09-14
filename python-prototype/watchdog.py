@@ -17,6 +17,9 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 
+import log
+
+
 
 class Watchdog:
 	"""
@@ -61,12 +64,12 @@ class Watchdog:
 
 	def checkNextBlock(self):
 		block = self.lastCheckedBlock + 1
-		print "Checking block %d..." % block
+		log.log("Watchdog: checking block %d..." % block)
 
 		for thash in self.bitcoind.getTransactionHashesByBlockHeight(block):
 			self.toBeCheckedTransactionHashes.add(thash)
 
-		print "...Done checking block"
+		log.log("Watchdog: ...done checking block")
 		self.lastCheckedBlock = block
 
 
@@ -86,7 +89,8 @@ class Watchdog:
 
 				txid = txin["txid"]
 				if txid in self.onSpentCallbacks:
-					print "FOUND!"
+					log.log("Watchdog: found a transaction spend!")
+					print "Watchdog: found a transaction spend!"
 					self.onSpentCallbacks[txid]()
 					del self.onSpentCallbacks[txid]
 			#print "...Done checking transaction"
