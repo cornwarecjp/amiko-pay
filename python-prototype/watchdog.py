@@ -54,6 +54,10 @@ class Watchdog:
 
 
 	def check(self):
+		if len(self.onSpentCallbacks) == 0:
+			self.lastCheckedBlock = self.bitcoind.getBlockCount()
+			return
+
 		if self.bitcoind.getBlockCount() > self.lastCheckedBlock:
 			self.checkNextBlock()
 
