@@ -26,6 +26,7 @@ import settings
 import log
 import transaction
 import channel
+import multisigchannel
 
 
 
@@ -44,7 +45,7 @@ class Link(event.Handler):
 
 		self.openTransactions = {} #hash->transaction
 
-		self.channel = channel.Channel(state["channel"])
+		self.channel = multisigchannel.MultiSigChannel(state["channel"])
 
 		self.__registerReconnectTimeoutHandler()
 

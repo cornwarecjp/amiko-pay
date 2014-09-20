@@ -24,6 +24,12 @@ class CheckFail(Exception):
 
 
 class Channel:
+	"""
+	Payment channel without any protection.
+	This implements a pure Ripple-style system, with full trust between
+	neighbors.
+	"""
+
 	def __init__(self, state):
 
 		#Current balances:
