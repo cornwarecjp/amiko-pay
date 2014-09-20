@@ -1,4 +1,4 @@
-#    paymentchannel.py
+#    channel.py
 #    Copyright (C) 2014 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -23,7 +23,7 @@ class CheckFail(Exception):
 
 
 
-class PaymentChannel:
+class Channel:
 	def __init__(self, state):
 
 		#Current balances:
@@ -63,7 +63,7 @@ class PaymentChannel:
 
 	def deposit(self, amount):
 		#TODO
-		print "PaymentChannel.deposit", amount
+		print "Channel.deposit", amount
 
 
 	def reserve(self, isPayerSide, hash, amount):

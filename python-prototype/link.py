@@ -44,7 +44,7 @@ class Link(event.Handler):
 
 		self.openTransactions = {} #hash->transaction
 
-		self.channel = channel.PaymentChannel(state["channel"])
+		self.channel = channel.Channel(state["channel"])
 
 		self.__registerReconnectTimeoutHandler()
 
