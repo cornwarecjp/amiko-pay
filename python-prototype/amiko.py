@@ -277,9 +277,18 @@ class Amiko(threading.Thread):
 	@runInAmikoThread
 	def deposit(self, linkname, amount):
 		"""
+		Deposit into a link.
+
+		Arguments:
+		linkname: the name of the link
+		amount: the amount (integer, Satoshi) to be deposited
 		"""
-		#TODO
-		print "Depositing %d into %s" % (amount, linkname)
+
+		links = \
+			[lnk for lnk in self.routingContext.links if lnk.name == linkname]
+		if len(links) == 0:
+			raise Exception("There is no link with that name")
+		links[0].deposit(amount)
 
 
 	def run(self):

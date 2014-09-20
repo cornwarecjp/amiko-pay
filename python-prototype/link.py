@@ -72,6 +72,11 @@ class Link(event.Handler):
 		return self.paymentChannel.amountLocal
 
 
+	def deposit(self, amount):
+		#TODO: deposit messaging
+		self.paymentChannel.deposit(amount)
+
+
 	def connect(self, connection):
 		if self.isConnected():
 			log.log("Link: Received a duplicate connection; closing it")

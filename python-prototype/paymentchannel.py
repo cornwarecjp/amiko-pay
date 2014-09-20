@@ -61,6 +61,11 @@ class PaymentChannel:
 		return ret
 
 
+	def deposit(self, amount):
+		#TODO
+		print "PaymentChannel.deposit", amount
+
+
 	def reserve(self, isPayerSide, hash, amount):
 		if isPayerSide:
 			if self.amountLocal < amount:
