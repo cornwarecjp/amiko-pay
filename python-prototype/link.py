@@ -25,7 +25,7 @@ import event
 import settings
 import log
 import transaction
-import paymentchannel
+import channel
 
 
 
@@ -44,7 +44,7 @@ class Link(event.Handler):
 
 		self.openTransactions = {} #hash->transaction
 
-		self.paymentChannel = paymentchannel.PaymentChannel(state["channel"])
+		self.channel = channel.PaymentChannel(state["channel"])
 
 		self.__registerReconnectTimeoutHandler()
 
@@ -58,7 +58,7 @@ class Link(event.Handler):
 		"localID": self.localID,
 		"remoteID": self.remoteID,
 		"remoteURL": self.remoteURL,
-		"channel": self.paymentChannel.getState(verbose),
+		"channel": self.channel.getState(verbose),
 		"openTransactions":
 			[k.encode("hex") for k in self.openTransactions.keys()]
 		}
@@ -69,12 +69,12 @@ class Link(event.Handler):
 
 
 	def getBalance(self):
-		return self.paymentChannel.amountLocal
+		return self.channel.amountLocal
 
 
 	def deposit(self, amount):
 		#TODO: deposit messaging
-		self.paymentChannel.deposit(amount)
+		self.channel.deposit(amount)
 
 
 	def connect(self, connection):
@@ -169,14 +169,14 @@ class Link(event.Handler):
 		try:
 
 			if not self.isConnected():
-				raise paymentchannel.CheckFail("Not connected")
+				raise channel.CheckFail("Not connected")
 
 			#TODO: do all sorts of checks to see if it makes sense to perform
 			#the transaction over this link.
 			#For instance, check the responsiveness of the other side, etc. etc.
 
 			#This will check whether enough funds are availbale
-			self.paymentChannel.reserve(
+			self.channel.reserve(
 				transaction.isPayerSide(), transaction.hash, transaction.amount)
 
 			#Remember link to transaction object:
@@ -189,7 +189,7 @@ class Link(event.Handler):
 				transaction.hash,
 				transaction.meetingPoint))
 
-		except paymentchannel.CheckFail as f:
+		except channel.CheckFail as f:
 			log.log("Route refused by link: " + str(f))
 
 			#Send back a cancel immediately
@@ -205,11 +205,11 @@ class Link(event.Handler):
 	def msg_lock(self, transaction):
 		log.log("Link: lock")
 		#TODO: check whether we're still connected
-		self.paymentChannel.lockOutgoing(transaction.hash)
+		self.channel.lockOutgoing(transaction.hash)
 
 		self.context.sendSignal(None, event.signals.save)
 
-		#TODO: get new Bitcoin transaction from paymentChannel and
+		#TODO: get new Bitcoin transaction from channel and
 		# include it in the lock message
 		self.connection.sendMessage(messages.Lock(transaction.hash))
 
@@ -217,11 +217,11 @@ class Link(event.Handler):
 	def msg_commit(self, transaction):
 		log.log("Link: commit")
 		#TODO: check whether we're still connected
-		self.paymentChannel.commitOutgoing(transaction.hash)
+		self.channel.commitOutgoing(transaction.hash)
 
 		self.context.sendSignal(None, event.signals.save)
 
-		#TODO: get new Bitcoin transaction from paymentChannel and
+		#TODO: get new Bitcoin transaction from channel and
 		# include it in the lock message
 		self.connection.sendMessage(messages.Commit(transaction.token))
 
@@ -248,12 +248,12 @@ class Link(event.Handler):
 				#This will check whether enough funds are availbale
 				#Note: if we're on the PAYER side of the meeting point,
 				#then we're on the PAYEE side of this link, for this transaction.
-				self.paymentChannel.reserve(
+				self.channel.reserve(
 					not message.isPayerSide, message.hash, message.amount)
 
 				#TODO: exception handling for the above
 
-			except paymentchannel.CheckFail as f:
+			except channel.CheckFail as f:
 				log.log("Route refused by link: " + str(f))
 
 				#Send back a cancel immediately
@@ -283,8 +283,8 @@ class Link(event.Handler):
 			log.log("Link received Lock")
 
 			#TODO: get new Bitcoin transaction from message and
-			# pass it to paymentChannel
-			self.paymentChannel.lockIncoming(message.value)
+			# pass it to channel
+			self.channel.lockIncoming(message.value)
 			#TODO: exception handling for the above
 
 			self.context.sendSignal(None, event.signals.save)
@@ -297,8 +297,8 @@ class Link(event.Handler):
 			hash = settings.hashAlgorithm(token)
 
 			#TODO: get new Bitcoin transaction from message and
-			# pass it to paymentChannel
-			self.paymentChannel.commitIncoming(hash)
+			# pass it to channel
+			self.channel.commitIncoming(hash)
 			#TODO: exception handling for the above
 
 			self.context.sendSignal(None, event.signals.save)
