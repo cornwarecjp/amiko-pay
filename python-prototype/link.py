@@ -86,8 +86,9 @@ class Link(event.Handler):
 
 
 	def deposit(self, amount):
+		self.channels.append(multisigchannel.constructFromDeposit(amount))
 		#TODO: deposit messaging
-		self.channels[0].deposit(amount)
+		self.context.sendSignal(None, event.signals.save)
 
 
 	def connect(self, connection):

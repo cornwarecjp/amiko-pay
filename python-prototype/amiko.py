@@ -332,6 +332,10 @@ class Amiko(threading.Thread):
 					self._commandProcessed.set()
 					self._commandFunction = None
 
+			if self.__doSave:
+				self.__saveState()
+				self.__doSave = False
+
 			self.__movePayeesToPayLog()
 
 			if self.__stop:

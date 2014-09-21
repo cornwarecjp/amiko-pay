@@ -33,3 +33,16 @@ class MultiSigChannel(channel.Channel):
 		return "multisig"
 
 
+
+def constructFromDeposit(amount):
+	state = \
+	{
+    "amountLocal" : amount,
+    "amountRemote": 0,
+    "transactionsIncomingLocked"  : {},
+    "transactionsIncomingReserved": {},
+    "transactionsOutgoingLocked"  : {},
+    "transactionsOutgoingReserved": {}
+	}
+	return MultiSigChannel(state)
+

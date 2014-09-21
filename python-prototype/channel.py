@@ -72,11 +72,6 @@ class Channel:
 		return ret
 
 
-	def deposit(self, amount):
-		#TODO
-		print "Channel.deposit", amount
-
-
 	def reserve(self, isPayerSide, hash, amount):
 		if isPayerSide:
 			if self.amountLocal < amount:
