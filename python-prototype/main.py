@@ -69,6 +69,10 @@ list
   Print a list of objects
 getbalance
   Print balance information
+makelink localname [remoteURL]
+  Make a new link.
+  If remoteURL is given, connect to that URL.
+  Prints the local link URL.
 deposit linkname amount
   Deposit amount into a link
 """
@@ -110,6 +114,16 @@ deposit linkname amount
 		keys.sort()
 		for k in keys:
 			print k, formatBitcoinAmount(balance[k])
+
+	elif cmd[0] == "makelink":
+		checkNumArgs(1, 2)
+
+		localName = cmd[1]
+		if len(cmd) < 3:
+			print a.makeLink(localName)
+		else:
+			remoteURL = cmd[2]
+			print a.makeLink(localName, remoteURL)
 
 	elif cmd[0] == "deposit":
 		checkNumArgs(2, 2)

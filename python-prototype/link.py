@@ -252,7 +252,17 @@ class Link(event.Handler):
 		if message.__class__ == messages.MyURLs:
 			#TODO: check URLs for validity etc.
 			#TODO: support multiple remote URLs (for now, just pick the first)
-			self.remoteURL = message.getURLs()[0]
+			remoteURL = message.getURLs()[0]
+			URL = urlparse(remoteURL)
+
+			oldRemoteID = self.remoteID
+			oldRemoteURL = self.remoteURL
+
+			self.remoteID = URL.path[1:]
+			self.remoteURL = remoteURL
+
+			if oldRemoteID != self.remoteID or oldRemoteURL != self.remoteURL:
+				self.context.sendSignal(None, event.signals.save)
 
 		elif message.__class__ == messages.MakeRoute:
 			log.log("Link received MakeRoute")

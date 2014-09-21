@@ -19,6 +19,7 @@
 import threading
 import os
 import json
+from urlparse import urlparse
 
 import network
 import event
@@ -279,6 +280,30 @@ class Amiko(threading.Thread):
 					ret[k] = v
 
 		return ret
+
+
+	@runInAmikoThread
+	def makeLink(self, localName, remoteURL=""):
+		remoteID = ""
+		if remoteURL != "":
+			URL = urlparse(remoteURL)
+			remoteID = URL.path[1:]
+		state = \
+		{
+            "channels": [],
+            "localID": localName, #TODO: is this different from name???
+            "name": localName,
+            "openTransactions": [],
+            "remoteID": remoteID,
+            "remoteURL": remoteURL
+		}
+		newLink = link.Link(
+			self.context, self.routingContext,
+			self.settings, state)
+		self.routingContext.links.append(newLink)
+
+		self.context.sendSignal(None, event.signals.save)
+		return newLink.localURL
 
 
 	@runInAmikoThread
