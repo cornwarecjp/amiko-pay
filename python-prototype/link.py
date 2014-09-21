@@ -70,7 +70,11 @@ class Link(event.Handler):
 
 
 	def getBalance(self):
-		return self.channel.amountLocal
+		return \
+		{
+			"availableForSpending": self.channel.amountLocal,
+			"availableForReceiving": self.channel.amountRemote
+		}
 
 
 	def deposit(self, amount):

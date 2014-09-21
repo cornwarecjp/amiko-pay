@@ -105,9 +105,11 @@ deposit linkname amount
 		pprint.pprint(data)
 
 	elif cmd[0] == "getbalance":
-		b = a.getBalance()
-		for k,v in b.iteritems():
-			print k, formatBitcoinAmount(v)
+		balance = a.getBalance()
+		keys = balance.keys()
+		keys.sort()
+		for k in keys:
+			print k, formatBitcoinAmount(balance[k])
 
 	elif cmd[0] == "deposit":
 		checkNumArgs(2, 2)

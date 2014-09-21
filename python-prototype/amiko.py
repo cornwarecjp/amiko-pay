@@ -261,17 +261,24 @@ class Amiko(threading.Thread):
 	def getBalance(self):
 		"""
 		Return value:
-		Dictionary, containing the Amiko and the Bitcoin balance
+		Dictionary, containing different balances
 		(integer, in Satoshi).
 		"""
 
-		amikoBalance = 0
+		balances = [{"bitcoin": self.bitcoind.getBalance()}]
+
 		for lnk in self.routingContext.links:
-			amikoBalance += lnk.getBalance()
+			balances.append(lnk.getBalance())
 
-		bitcoinBalance = self.bitcoind.getBalance()
+		ret = {}
+		for b in balances:
+			for k,v in b.iteritems():
+				try:
+					ret[k] += v
+				except KeyError:
+					ret[k] = v
 
-		return {"amiko": amikoBalance, "bitcoin": bitcoinBalance}
+		return ret
 
 
 	@runInAmikoThread
