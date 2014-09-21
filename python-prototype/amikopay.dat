@@ -1,14 +1,16 @@
 {
     "links": [
         {
-            "channel": {
-                "amountLocal": 100,
-                "amountRemote": 100,
-                "transactionsIncomingLocked": {},
-                "transactionsIncomingReserved": {},
-                "transactionsOutgoingLocked": {},
-                "transactionsOutgoingReserved": {}
-            },
+            "channels": [
+                {
+                    "amountLocal": 100,
+                    "amountRemote": 100,
+                    "transactionsIncomingLocked": {},
+                    "transactionsIncomingReserved": {},
+                    "transactionsOutgoingLocked": {},
+                    "transactionsOutgoingReserved": {}
+                }
+            ],
             "localID": "A",
             "name": "A",
             "openTransactions": [],
@@ -16,14 +18,16 @@
             "remoteURL": "amikolink://localhost/B"
         },
         {
-            "channel": {
-                "amountLocal": 100,
-                "amountRemote": 100,
-                "transactionsIncomingLocked": {},
-                "transactionsIncomingReserved": {},
-                "transactionsOutgoingLocked": {},
-                "transactionsOutgoingReserved": {}
-            },
+            "channels": [
+                {
+                    "amountLocal": 100,
+                    "amountRemote": 100,
+                    "transactionsIncomingLocked": {},
+                    "transactionsIncomingReserved": {},
+                    "transactionsOutgoingLocked": {},
+                    "transactionsOutgoingReserved": {}
+                }
+            ],
             "localID": "B",
             "name": "B",
             "openTransactions": [],

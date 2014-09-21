@@ -45,7 +45,9 @@ class Link(event.Handler):
 
 		self.openTransactions = {} #hash->transaction
 
-		self.channel = multisigchannel.MultiSigChannel(state["channel"])
+		self.channels = []
+		for c in state["channels"]:
+			self.channels.append(multisigchannel.MultiSigChannel(c))
 
 		self.__registerReconnectTimeoutHandler()
 
@@ -59,7 +61,7 @@ class Link(event.Handler):
 		"localID": self.localID,
 		"remoteID": self.remoteID,
 		"remoteURL": self.remoteURL,
-		"channel": self.channel.getState(verbose),
+		"channels": [c.getState(verbose) for c in self.channels],
 		"openTransactions":
 			[k.encode("hex") for k in self.openTransactions.keys()]
 		}
@@ -72,14 +74,14 @@ class Link(event.Handler):
 	def getBalance(self):
 		return \
 		{
-			"availableForSpending": self.channel.amountLocal,
-			"availableForReceiving": self.channel.amountRemote
+			"availableForSpending": sum([c.amountLocal for c in self.channels]),
+			"availableForReceiving": sum([c.amountRemote for c in self.channels])
 		}
 
 
 	def deposit(self, amount):
 		#TODO: deposit messaging
-		self.channel.deposit(amount)
+		self.channels[0].deposit(amount)
 
 
 	def connect(self, connection):
@@ -181,7 +183,8 @@ class Link(event.Handler):
 			#For instance, check the responsiveness of the other side, etc. etc.
 
 			#This will check whether enough funds are availbale
-			self.channel.reserve(
+			#TODO: use multiple channels
+			self.channels[0].reserve(
 				transaction.isPayerSide(), transaction.hash, transaction.amount)
 
 			#Remember link to transaction object:
@@ -210,7 +213,8 @@ class Link(event.Handler):
 	def msg_lock(self, transaction):
 		log.log("Link: lock")
 		#TODO: check whether we're still connected
-		self.channel.lockOutgoing(transaction.hash)
+		#TODO: use multiple channels
+		self.channels[0].lockOutgoing(transaction.hash)
 
 		self.context.sendSignal(None, event.signals.save)
 
@@ -222,7 +226,8 @@ class Link(event.Handler):
 	def msg_commit(self, transaction):
 		log.log("Link: commit")
 		#TODO: check whether we're still connected
-		self.channel.commitOutgoing(transaction.hash)
+		#TODO: use multiple channels
+		self.channels[0].commitOutgoing(transaction.hash)
 
 		self.context.sendSignal(None, event.signals.save)
 
@@ -253,7 +258,8 @@ class Link(event.Handler):
 				#This will check whether enough funds are availbale
 				#Note: if we're on the PAYER side of the meeting point,
 				#then we're on the PAYEE side of this link, for this transaction.
-				self.channel.reserve(
+				#TODO: use multiple channels
+				self.channels[0].reserve(
 					not message.isPayerSide, message.hash, message.amount)
 
 				#TODO: exception handling for the above
@@ -289,7 +295,8 @@ class Link(event.Handler):
 
 			#TODO: get new Bitcoin transaction from message and
 			# pass it to channel
-			self.channel.lockIncoming(message.value)
+			#TODO: use multiple channels
+			self.channels[0].lockIncoming(message.value)
 			#TODO: exception handling for the above
 
 			self.context.sendSignal(None, event.signals.save)
@@ -303,7 +310,8 @@ class Link(event.Handler):
 
 			#TODO: get new Bitcoin transaction from message and
 			# pass it to channel
-			self.channel.commitIncoming(hash)
+			#TODO: use multiple channels
+			self.channels[0].commitIncoming(hash)
 			#TODO: exception handling for the above
 
 			self.context.sendSignal(None, event.signals.save)
