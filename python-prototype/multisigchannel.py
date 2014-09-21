@@ -29,3 +29,7 @@ class MultiSigChannel(channel.Channel):
 		channel.Channel.__init__(self, state)
 
 
+	def getType(self):
+		return "multisig"
+
+

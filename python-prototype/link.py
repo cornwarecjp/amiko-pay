@@ -47,7 +47,13 @@ class Link(event.Handler):
 
 		self.channels = []
 		for c in state["channels"]:
-			self.channels.append(multisigchannel.MultiSigChannel(c))
+			if c["type"] == "plain":
+				self.channels.append(channel.Channel(c))
+			elif c["type"] == "multisig":
+				self.channels.append(multisigchannel.MultiSigChannel(c))
+			else:
+				raise Exception("Unrecognized channel type \"%s\"" % \
+					c["type"])
 
 		self.__registerReconnectTimeoutHandler()
 

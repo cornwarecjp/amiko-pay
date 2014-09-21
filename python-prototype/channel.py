@@ -43,9 +43,14 @@ class Channel:
 		self.transactionsOutgoingLocked    = {} #TODO state["transactionsOutgoingLocked"]
 
 
+	def getType(self):
+		return "plain"
+
+
 	def getState(self, verbose=False):
 		return \
 		{
+		"type"                  : self.getType(),
 		"amountLocal"           : self.amountLocal,
 		"amountRemote"          : self.amountRemote,
 
