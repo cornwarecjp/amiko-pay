@@ -23,21 +23,23 @@ See multisigchannel.py.
 For now, we need support for transactions with the following:
 
 Bitcoin standard:
-	ScriptPubKey: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+	ScriptPubKey: DUP HASH160 <pubKeyHash> EQUALVERIFY CHECKSIG
 	ScriptSig:    <sig> <pubKey>
 
 2-of-2 multisig:
-	ScriptPubKey: 2 <pubKey1> <pubKey2> 2 CHECKMULTISIGVERIFY
+	ScriptPubKey: 2 <pubKey1> <pubKey2> 2 CHECKMULTISIG
 	ScriptSig:    <sig1> <sig2>
 
 Signature and secret:
-	ScriptPubKey: <pubKey> CHECKSIGVERIFY SHA256 <secretHash> EQUALVERIFY
+	ScriptPubKey: <pubKey> CHECKSIGVERIFY SHA256 <secretHash> EQUAL
 	ScriptSig:    <secret> <sig>
 
 Time locking
 """
 
-
+#see https://en.bitcoin.it/wiki/Transactions
+#see https://en.bitcoin.it/wiki/Protocol_specification
+#see https://en.bitcoin.it/wiki/Script
 
 def packVarInt(i):
 	if i < 0xfd:
@@ -50,53 +52,103 @@ def packVarInt(i):
 		return struct.pack('B', 0xff) + struct.pack('<Q', i) #uint64_t
 
 
+
+class OP:
+	TWO = 0x52
+	DUP = 0x76
+	EQUAL  = 0x87
+	EQUALVERIFY = 0x88
+	SHA256 = 0xa8
+	HASH160 = 0xa9
+	CHECKSIG = 0xac
+	CHECKSIGVERIFY = 0xad
+	CHECKMULTISIG = 0xae
+
+
+
+class Script:
+	@staticmethod
+	def standardPubKey(pubKeyHash):
+		return Script((OP.DUP, OP.HASH160, pubKeyHash, OP.EQUALVERIFY, OP.CHECKSIG))
+
+
+	@staticmethod
+	def multiSigPubKey(pubKey1, pubKey2):
+		return Script((OP.TWO, pubKey1, pubKey2, OP.TWO, OP.CHECKMULTISIG))
+
+
+	@staticmethod
+	def secretPubKey(pubKey, secretHash):
+		return Script((pubKey, OP.CHECKSIGVERIFY, OP.SHA256, secretHash, OP.EQUAL))
+
+
+	def __init__(self, elements=tuple()):
+		self.elements = elements
+
+
+	def serialize(self):
+		return ''.join([self.__serializeElement(e) for e in self.elements])
+
+
+	def __serializeElement(self, e):
+		if type(e) == str:
+			if len(e) <= 0x4b:
+				return struct.pack('B', len(e)) + e
+			elif len(e)<= 0xff:
+				return struct.pack('B', 0x4c) + struct.pack('B', len(e)) + e
+			elif len(e) <= 0xffff:
+				return struct.pack('B', 0x4d) + struct.pack('<H', len(e)) + e
+			elif len(e) <= 0xffffffff:
+				return struct.pack('B', 0x4e) + struct.pack('<I', len(e)) + e
+			else:
+				raise Exception('Too long data for a script item')
+		elif type(e) == int:
+			return struct.pack('B', e)
+		else:
+			raise Exception('Unsupported element type in script')
+
+
+
 class TxIn:
-	def __init__(self):
-		#Example data:
-		self.previousOutputHash = 'X'*32 #TODO
-		self.previousOutputIndex = 0
-		self.scriptSig = '' #TODO
+	def __init__(self, outputHash, outputIndex):
+		self.previousOutputHash = outputHash
+		self.previousOutputIndex = outputIndex
+		self.scriptSig = Script() #Default: no signature (to be filled in later)
 
 
-	#https://en.bitcoin.it/wiki/Transactions
-	#Untested code!!!
 	def serialize(self):
 		ret = self.previousOutputHash
 		ret += struct.pack('<I', self.previousOutputIndex) #uint32_t
-		ret += packVarInt(len(self.scriptSig))
-		ret += self.scriptSig
+		scriptSig = self.scriptSig.serialize()
+		ret += packVarInt(len(scriptSig))
+		ret += scriptSig
 		ret += struct.pack('<I', 0xffffffff) #sequence number, uint32_t
 
 		return ret
 
 
 class TxOut:
-	def __init__(self):
-		#Example data:
-		self.amount = 0
-		self.scriptPubKey = '' #TODO
+	def __init__(self, amount, scriptPubKey):
+		self.amount = amount
+		self.scriptPubKey = scriptPubKey
 
 
-	#https://en.bitcoin.it/wiki/Transactions
-	#Untested code!!!
 	def serialize(self):
 		ret = struct.pack('<Q', self.amount) #uint64_t
-		ret += packVarInt(len(self.scriptPubKey))
-		ret += self.scriptPubKey		
+		scriptPubKey = self.scriptPubKey.serialize()
+		ret += packVarInt(len(scriptPubKey))
+		ret += scriptPubKey		
 
 		return ret
 
 
 class Transaction:
 	def __init__(self, tx_in, tx_out, lockTime=0):
-		#Example data:
 		self.tx_in = tx_in
 		self.tx_out = tx_out
 		self.lockTime = lockTime
 
 
-	#https://en.bitcoin.it/wiki/Transactions
-	#Untested code!!!
 	def serialize(self):
 		ret = struct.pack('<I', 1) #version, uint32_t
 		ret += packVarInt(len(self.tx_in))
