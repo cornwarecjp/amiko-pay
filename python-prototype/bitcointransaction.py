@@ -17,6 +17,8 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 import struct
+import copy
+import hashlib
 
 """
 See multisigchannel.py.
@@ -160,4 +162,60 @@ class Transaction:
 		ret += struct.pack('<I', self.lockTime) #uint32_t
 		return ret
 
+
+	def signInput(self, index, scriptSigTemplate, privateKeys):
+		#https://en.bitcoin.it/wiki/OP_CHECKSIG
+
+		#1.	the public key and the signature are popped from the stack, in that
+		#	order. If the hash-type value is 0, then it is replaced by the
+		#	last_byte of the signature. Then the last byte of the signature is
+		#	always deleted.
+		#2.	A new subscript is created from the instruction from the most
+		#	recently parsed OP_CODESEPARATOR (last one in script) to the end of
+		#	the script. If there is no OP_CODESEPARATOR the entire script
+		#	becomes the subscript (hereby referred to as subScript)
+		#3.	The sig is deleted from subScript.
+		#4.	All OP_CODESEPARATORS are removed from subScript
+
+		#Since there is no OP_CODESEPARATOR or signature in scriptPubKey:
+		subScript = scriptPubKey #TODO
+
+		#6.	A copy is made of the current transaction (hereby referred to txCopy)
+		txCopy = copy.deepcopy(self)
+
+		#7.	The scripts for all transaction inputs in txCopy are set to empty
+		#	scripts (exactly 1 byte 0x00)
+		for tx_in in txCopy.tx_in:
+			tx_in.scriptSig = Script() #Empty (zero-byte)
+
+		#8.	The script for the current transaction input in txCopy is set to
+		#	subScript (lead in by its length as a var-integer encoded!)
+		txCopy.tx_in[index].scriptSig = subScript
+
+		#An array of bytes is constructed from the serialized txCopy appended by
+		#four bytes for the hash type.
+		hashType = 1 #SIGHASH_ALL
+		signatureBody = txCopy.serialize() + struct.pack('<I', hashType) #uint32_t
+
+		#This array is sha256 hashed twice,
+		bodyHash = hashlib.sha256(signatureBody).digest()
+		bodyHash = hashlib.sha256(bodyHash).digest()
+
+		#then the public key is used to check the supplied signature against the
+		#hash. The secp256k1 elliptic curve is used for the verification with
+		#the given public key.
+		elements = scriptSigTemplate[:]
+		for key in privateKeys:
+			sig = sign(bodyHash, key) #TODO
+
+			#5.	The hashtype is removed from the last byte of the sig and stored
+			#hashType = sig[-1]
+			#sig = sig[:-1]
+			#Here we do the inverse - add hashType:
+			sig += struct.pack('B', hashType) #uint8_t
+
+			i = elements.index(None)
+			elements[i] = sig
+
+		self.tx_in[index].scriptSig = Script(elements)
 
