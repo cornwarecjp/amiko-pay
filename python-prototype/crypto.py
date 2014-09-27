@@ -39,6 +39,13 @@ libssl.o2i_ECPublicKey.restype = ctypes.c_void_p
 libssl.i2o_ECPublicKey.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 libssl.i2o_ECPublicKey.restype = ctypes.c_int
 
+libssl.ECDSA_size.argtypes = [ctypes.c_void_p]
+libssl.ECDSA_size.restype = ctypes.c_int
+
+libssl.ECDSA_sign.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_int,
+	ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p] 
+libssl.ECDSA_sign.restype = ctypes.c_int
+
 
 
 libssl.SSL_load_error_strings()
@@ -77,7 +84,9 @@ class Key:
 
 		b = ctypes.create_string_buffer(key)
 
-		if not libssl.o2i_ECPublicKey(ctypes.byref(self.keyData), ctypes.byref(ctypes.pointer(b)), len(key)):
+		if not libssl.o2i_ECPublicKey(
+				ctypes.byref(self.keyData), ctypes.byref(ctypes.pointer(b)),
+				len(key)):
 			#TODO: reset key state
 			raise Exception("o2i_ECPublicKey failed")
 
@@ -100,6 +109,26 @@ class Key:
 		return ''.join([c for c in b])
 
 
+	#TODO: get/set private key
+
+
+	def sign(self, data):
+		if not self.hasPrivateKey:
+			raise Exception("private key unknown")
+
+		size = ctypes.c_int(libssl.ECDSA_size(self.keyData))
+
+		b_data = ctypes.create_string_buffer(data)
+
+		b_sig = ctypes.create_string_buffer(size.value)
+
+		if not libssl.ECDSA_sign(0, ctypes.byref(b_data), len(data), ctypes.byref(b_sig), ctypes.byref(size), self.keyData):
+			raise Exception("ECDSA_sign failed")
+
+		return ''.join([b_sig[i] for i in range(size.value)]) #size contains actual size
+
+
+
 #Test:
 privKey = Key()
 privKey.makeNewKey()
@@ -107,8 +136,11 @@ privKey.makeNewKey()
 pubKey = Key()
 pubKey.setPublicKey(privKey.getPublicKey())
 
-print repr(privKey.getPublicKey())
-print repr(pubKey.getPublicKey())
+data = "blablabla"
+
+sig = privKey.sign(data)
+
+print repr(sig)
 
 cleanup()
 
