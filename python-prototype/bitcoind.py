@@ -16,6 +16,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
+import binascii
+
 from bitcoinrpc.authproxy import AuthServiceProxy
 
 import log
@@ -45,6 +47,15 @@ class Bitcoind:
 
 	def getTransaction(self, thash):
 		return self.access.getrawtransaction(thash, 1)
+
+
+	def listUnspent(self):
+		ret = self.access.listunspent()
+		for vout in ret:
+			vout["txid"] = binascii.unhexlify(vout["txid"])
+			vout["scriptPubKey"] = binascii.unhexlify(vout["scriptPubKey"])
+			vout["amount"] = self.DecimaltoAmount(vout["amount"])
+		return ret
 
 
 	def DecimaltoAmount(self, value):

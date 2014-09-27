@@ -24,23 +24,35 @@ sys.path.append("..")
 
 import settings
 import bitcoind
+import bitcoinutils
 from bitcointransaction import Transaction, TxIn, TxOut, Script
 
 s = settings.Settings("../amikopay.conf")
 d = bitcoind.Bitcoind(s)
 
+amount = int(100000 * float(raw_input("Amount to be transferred (mBTC): ")))
+fee = 10000 #0.1 mBTC
+
 print d.getBalance()
+
+totalIn, inputs = bitcoinutils.getInputsForAmount(d, amount+fee)
+change = totalIn - fee - amount
+
+print "%d -> %d, %d, %d" % (totalIn, amount, change, fee)
 
 tx = Transaction(
 	tx_in = [
-		TxIn('X'*32, 0)
+		TxIn(x[0], x[1])
+		for x in inputs
 		],
 	tx_out = [
-		TxOut(5000000, Script.standardPubKey(
-			binascii.unhexlify("1AA0CD1CBEA6E7458A7ABAD512A9D9EA1AFB225E")
+		TxOut(amount, Script.standardPubKey(
+			#The TO-address (it's mine - thanks for donating :-P)
+			binascii.unhexlify("fd5627c5eff58991dec54877272e82f758ea8b65")
 			)),
-		TxOut(3354000000, Script.standardPubKey(
-			binascii.unhexlify("0EAB5BEA436A0484CFAB12485EFDA0B78B4ECC52")
+		TxOut(change, Script.standardPubKey(
+			#The CHANGE-address (it's mine - thanks for donating :-P)
+			binascii.unhexlify("ab22c699d3e72f2c1e4896508bf9d8d7910104d0")
 			))
 		]
 	)
