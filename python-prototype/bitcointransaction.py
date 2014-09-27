@@ -20,6 +20,10 @@ import struct
 import copy
 import hashlib
 
+import crypto
+
+
+
 """
 See multisigchannel.py.
 For now, we need support for transactions with the following:
