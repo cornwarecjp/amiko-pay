@@ -1,5 +1,6 @@
 #    crypto.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2009-2012 by the Bitcoin developers
+#    Copyright (C) 2013-2014 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -50,6 +51,12 @@ libssl.ECDSA_verify.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_int,
 	ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p]
 libssl.ECDSA_verify.restype = ctypes.c_int
 
+libssl.SHA256.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p]
+libssl.SHA256.restype = ctypes.c_char_p
+
+libssl.RIPEMD160.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p]
+libssl.RIPEMD160.restype = ctypes.c_char_p
+
 
 
 libssl.SSL_load_error_strings()
@@ -60,6 +67,17 @@ libssl.SSL_library_init()
 def cleanup():
 	libssl.ERR_free_strings()
 
+
+def SHA256(data):
+	b = ctypes.create_string_buffer(32)
+	libssl.SHA256(data, len(data), b)
+	return ''.join(b)
+
+
+def RIPEMD160(data):
+	b = ctypes.create_string_buffer(20)
+	libssl.RIPEMD160(data, len(data), b)
+	return ''.join(b)
 
 
 class Key:
