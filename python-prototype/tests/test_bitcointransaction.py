@@ -27,6 +27,10 @@ import bitcoind
 import bitcoinutils
 from bitcointransaction import Transaction, TxIn, TxOut, Script
 
+from crypto import Key
+
+
+
 s = settings.Settings("../amikopay.conf")
 d = bitcoind.Bitcoind(s)
 
@@ -56,6 +60,13 @@ tx = Transaction(
 			))
 		]
 	)
+
+for i in range(len(inputs)):
+	scriptPubKey = Script.deserialize(inputs[i][2])
+	key = Key()
+	key.makeNewKey() #TODO: get private key from bitcoind
+	tx.signInput(i, scriptPubKey, [None, key.getPublicKey()], [key])
+
 
 print tx.serialize().encode("hex")
 

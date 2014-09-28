@@ -20,8 +20,6 @@ import struct
 import copy
 import hashlib
 
-import crypto
-
 
 
 """
@@ -86,6 +84,33 @@ class Script:
 	@staticmethod
 	def secretPubKey(pubKey, secretHash):
 		return Script((pubKey, OP.CHECKSIGVERIFY, OP.SHA256, secretHash, OP.EQUAL))
+
+
+	@staticmethod
+	def deserialize(data):
+		elements = []
+		while len(data) > 0:
+			opcode = struct.unpack('B', data[0])[0]
+			data = data[1:]
+
+			if opcode <= 0x4e:
+				if opcode <= 0x4b:
+					length = opcode
+				elif opcode == 0x4c:
+					length = struct.unpack('B', data[:1])
+					data = data[1:]
+				elif opcode == 0x4d:
+					length = struct.unpack('<H', data[:2])
+					data = data[2:]
+				elif opcode == 0x4e:
+					length = struct.unpack('<I', data[:4])
+					data = data[4:]
+				elements.append(data[:length])
+				data = data[length:]
+			else:
+				elements.append(opcode)
+
+		return Script(elements)
 
 
 	def __init__(self, elements=tuple()):
@@ -167,7 +192,7 @@ class Transaction:
 		return ret
 
 
-	def signInput(self, index, scriptSigTemplate, privateKeys):
+	def signInput(self, index, scriptPubKey, scriptSigTemplate, privateKeys):
 		#https://en.bitcoin.it/wiki/OP_CHECKSIG
 
 		#1.	the public key and the signature are popped from the stack, in that
@@ -182,7 +207,7 @@ class Transaction:
 		#4.	All OP_CODESEPARATORS are removed from subScript
 
 		#Since there is no OP_CODESEPARATOR or signature in scriptPubKey:
-		subScript = scriptPubKey #TODO
+		subScript = scriptPubKey
 
 		#6.	A copy is made of the current transaction (hereby referred to txCopy)
 		txCopy = copy.deepcopy(self)
@@ -210,7 +235,7 @@ class Transaction:
 		#the given public key.
 		elements = scriptSigTemplate[:]
 		for key in privateKeys:
-			sig = sign(bodyHash, key) #TODO
+			sig = key.sign(bodyHash)
 
 			#5.	The hashtype is removed from the last byte of the sig and stored
 			#hashType = sig[-1]
