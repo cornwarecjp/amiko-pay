@@ -19,6 +19,17 @@
 
 
 def getInputsForAmount(bitcoind, amount):
+	"""
+	Return value:
+	total, [(txid, vout, scriptPubKey, privateKey), ...]
+
+	total: the total amount of all the inputs (>= amount)
+	txid: input transaction hash
+	vout: input transaction index
+	scriptPubKey: input transaction scriptPubKey (serialized)
+	privateKey: corresponding private key
+	"""
+
 	unspent = bitcoind.listUnspent()
 
 	#TODO: think about the best policy here.
@@ -47,7 +58,11 @@ def getInputsForAmount(bitcoind, amount):
 			used.append(u)
 			total += u["amount"]
 
+	for u in used:
+		address = u["address"]
+		u["privateKey"] = bitcoind.getPrivateKey(address)
+
 	return total, [
-		(u["txid"], u["vout"], u["scriptPubKey"])
+		(u["txid"], u["vout"], u["scriptPubKey"], u["privateKey"])
 		for u in used]
 

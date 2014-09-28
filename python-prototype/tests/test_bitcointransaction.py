@@ -63,6 +63,7 @@ tx = Transaction(
 
 for i in range(len(inputs)):
 	scriptPubKey = Script.deserialize(inputs[i][2])
+	print "Private key: ", inputs[i][3]
 	key = Key()
 	key.makeNewKey() #TODO: get private key from bitcoind
 	tx.signInput(i, scriptPubKey, [None, key.getPublicKey()], [key])

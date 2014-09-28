@@ -58,6 +58,11 @@ class Bitcoind:
 		return ret
 
 
+	def getPrivateKey(self, address):
+		key = self.access.dumpprivkey(address)
+		return key
+
+
 	def DecimaltoAmount(self, value):
 		return int(value*100000000)
 
