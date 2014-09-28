@@ -52,15 +52,14 @@ class Bitcoind:
 	def listUnspent(self):
 		ret = self.access.listunspent()
 		for vout in ret:
-			vout["txid"] = binascii.unhexlify(vout["txid"])
+			vout["txid"] = binascii.unhexlify(vout["txid"])[::-1] #reversed; TODO: is this the right place?
 			vout["scriptPubKey"] = binascii.unhexlify(vout["scriptPubKey"])
 			vout["amount"] = self.DecimaltoAmount(vout["amount"])
 		return ret
 
 
 	def getPrivateKey(self, address):
-		key = self.access.dumpprivkey(address)
-		return key
+		return self.access.dumpprivkey(address)
 
 
 	def DecimaltoAmount(self, value):

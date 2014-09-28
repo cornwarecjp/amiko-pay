@@ -16,6 +16,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
+import base58
+
 
 
 def getInputsForAmount(bitcoind, amount):
@@ -60,7 +62,8 @@ def getInputsForAmount(bitcoind, amount):
 
 	for u in used:
 		address = u["address"]
-		u["privateKey"] = bitcoind.getPrivateKey(address)
+		u["privateKey"] = base58.decodeBase58Check(
+			bitcoind.getPrivateKey(address), 128)
 
 	return total, [
 		(u["txid"], u["vout"], u["scriptPubKey"], u["privateKey"])
