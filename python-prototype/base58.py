@@ -43,16 +43,50 @@ def encodeBase58(data):
 			break
 		ret = ret + base58Chars[0]
 
-	# Convert little endian std::string to big endian
+	# Convert little endian string to big endian
 	ret = ret[::-1]
 
 	return ret
+
+
+def decodeBase58(data):
+	#TODO: there might be a bug when the to-be-decoded value is zero
+
+	#Leading zeroes:
+	zeroes = ""
+	while len(data) > 0 and data[0] == base58Chars[0]:
+		zeroes += '\0'
+		data = data[1:]
+
+	#Big endian base58 decoding:
+	bignum = 0
+	for c in data:
+		digit = base58Chars.index(c)
+		bignum = 58*bignum + digit
+
+	#To big endian:
+	ret = binascii.unhexlify("%x" % bignum)
+
+	#Skip zeroes:
+	while len(ret) > 0 and ret[0] == '\0':
+		ret = ret[1:]
+
+	return zeroes + ret
 
 
 def encodeBase58Check_noVersion(data):
 	# add 4-byte hash check to the end
 	checksum = SHA256(SHA256(data))[:4]
 	return encodeBase58(data + checksum)
+
+
+def decodeBase58Check_noVersion(data):
+	decoded = decodeBase58(data)
+	checksum = decoded[-4:]
+	rest = decoded[:-4]
+	if checksum != SHA256(SHA256(rest))[:4]:
+		raise Exception("Checksum failed")
+	return rest
 
 
 def encodeBase58Check(data, version):
@@ -70,6 +104,12 @@ def encodeBase58Check(data, version):
 		struct.pack('B', version) + data)
 
 
+def decodeBase58Check(data, version):
+	decoded = decodeBase58Check_noVersion(data)
+	if version != struct.unpack('B', decoded[0])[0]:
+		raise Exception("Version mismatch")
+	return decoded[1:]
+
 
 if __name__ == "__main__":
 
@@ -78,6 +118,7 @@ if __name__ == "__main__":
 		hashedPK = RIPEMD160(SHA256(pubKey))
 
 		print testDescr, encodeBase58Check(hashedPK, 0) == address
+		print testDescr, decodeBase58Check(address, 0) == hashedPK
 
 
 	#I just took some random keys from the block chain
