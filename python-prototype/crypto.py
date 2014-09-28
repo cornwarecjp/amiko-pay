@@ -34,6 +34,27 @@ libssl.EC_KEY_free.argtypes = [ctypes.c_void_p]
 libssl.EC_KEY_generate_key.argtypes = [ctypes.c_void_p]
 libssl.EC_KEY_new_by_curve_name.restype = ctypes.c_int
 
+libssl.EC_KEY_get0_group.argtypes = [ctypes.c_void_p]
+libssl.EC_KEY_get0_group.restype = ctypes.c_void_p
+
+libssl.EC_KEY_check_key.argtypes = [ctypes.c_void_p]
+libssl.EC_KEY_check_key.restype = ctypes.c_int
+
+libssl.EC_KEY_set_private_key.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+libssl.EC_KEY_set_private_key.restype = ctypes.c_int
+
+libssl.EC_KEY_set_public_key.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+libssl.EC_KEY_set_public_key.restype = ctypes.c_int
+
+libssl.EC_POINT_new.argtypes = [ctypes.c_void_p]
+libssl.EC_POINT_new.restype = ctypes.c_void_p
+
+libssl.EC_POINT_free.argtypes = [ctypes.c_void_p]
+
+libssl.EC_POINT_mul.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p,
+	ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
+libssl.EC_POINT_mul.restype = ctypes.c_int
+
 libssl.o2i_ECPublicKey.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_long]
 libssl.o2i_ECPublicKey.restype = ctypes.c_void_p
 
@@ -57,6 +78,33 @@ libssl.SHA256.restype = ctypes.c_char_p
 libssl.RIPEMD160.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p]
 libssl.RIPEMD160.restype = ctypes.c_char_p
 
+libssl.d2i_ECPrivateKey.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_long]
+libssl.d2i_ECPrivateKey.restype = ctypes.c_void_p
+
+libssl.BN_init.argtypes = [ctypes.c_void_p]
+
+libssl.BN_bin2bn.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_void_p]
+libssl.BN_bin2bn.restype = ctypes.c_void_p
+
+libssl.BN_clear_free.argtypes = [ctypes.c_void_p]
+
+libssl.BN_CTX_new.argtypes = []
+libssl.BN_CTX_new.restype = ctypes.c_void_p
+
+libssl.BN_CTX_free.argtypes = [ctypes.c_void_p]
+
+
+#Structs:
+class BIGNUM(ctypes.Structure):
+	_fields_ = \
+	[
+	("d", ctypes.c_void_p),	# Pointer to an array of 'BN_BITS2' bit chunks.
+	("top", ctypes.c_int),	# Index of last used d +1.
+	# The next are internal book keeping for bn_expand.
+	("dmax", ctypes.c_int),	# Size of the d array.
+	("neg", ctypes.c_int),	# one if the number is negative
+	("flags", ctypes.c_int)
+	]
 
 
 libssl.SSL_load_error_strings()
@@ -131,7 +179,49 @@ class Key:
 		return ''.join([c for c in b])
 
 
-	#TODO: get/set private key
+	def setPrivateKey(self, key):
+		priv_key = BIGNUM()
+		libssl.BN_init(ctypes.byref(priv_key))
+		if not libssl.BN_bin2bn(key, len(key), ctypes.byref(priv_key)):
+			raise Exception("BN_bin2bn failed")
+
+		# Generate a private key from just the secret parameter
+		ctx = None
+		pub_key = None
+
+		if not self.keyData:
+			raise Exception("Key structure not initialized")
+
+		group = ctypes.c_void_p(libssl.EC_KEY_get0_group(self.keyData))
+
+		try:
+			ctx = ctypes.c_void_p(libssl.BN_CTX_new())
+			if not ctx:
+				raise Exception("BN_CTX_new failed")
+
+			pub_key = ctypes.c_void_p(libssl.EC_POINT_new(group))
+			if not pub_key:
+				raise Exception("EC_POINT_new failed")
+
+			if not libssl.EC_POINT_mul(group, pub_key, ctypes.byref(priv_key), None, None, ctx):
+				raise Exception("EC_POINT_mul failed")
+
+			libssl.EC_KEY_set_private_key(self.keyData, ctypes.byref(priv_key))
+			libssl.EC_KEY_set_public_key(self.keyData, pub_key)
+
+		finally:
+			if pub_key:
+				libssl.EC_POINT_free(pub_key)
+			if ctx:
+				libssl.BN_CTX_free(ctx)
+
+			libssl.BN_clear_free(ctypes.byref(priv_key))
+
+		self.hasPublicKey = True
+		self.hasPrivateKey = True
+
+
+	#TODO: get private key
 
 
 	def sign(self, data):
