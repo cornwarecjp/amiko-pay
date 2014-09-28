@@ -46,6 +46,10 @@ libssl.ECDSA_sign.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_int,
 	ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p] 
 libssl.ECDSA_sign.restype = ctypes.c_int
 
+libssl.ECDSA_verify.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_int, 
+	ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p]
+libssl.ECDSA_verify.restype = ctypes.c_int
+
 
 
 libssl.SSL_load_error_strings()
@@ -122,26 +126,51 @@ class Key:
 
 		b_sig = ctypes.create_string_buffer(size.value)
 
-		if not libssl.ECDSA_sign(0, ctypes.byref(b_data), len(data), ctypes.byref(b_sig), ctypes.byref(size), self.keyData):
+		if not libssl.ECDSA_sign(0, ctypes.byref(b_data), len(data),
+				ctypes.byref(b_sig), ctypes.byref(size), self.keyData):
 			raise Exception("ECDSA_sign failed")
 
 		return ''.join([b_sig[i] for i in range(size.value)]) #size contains actual size
 
 
+	def verify(self, data, signature):
+		if not self.hasPublicKey:
+			raise Exception("public key unknown")
 
-#Test:
-privKey = Key()
-privKey.makeNewKey()
+		b_data = ctypes.create_string_buffer(data)
 
-pubKey = Key()
-pubKey.setPublicKey(privKey.getPublicKey())
+		# -1 = error, 0 = bad sig, 1 = good
+		result = libssl.ECDSA_verify(0, b_data, len(data), signature, len(signature), self.keyData)
+		if result == 1:
+			return True
+		if result == 0:
+			return False
+		raise Exception("ECDSA_verify failed")
 
-data = "blablabla"
 
-sig = privKey.sign(data)
 
-print repr(sig)
+if __name__ == "__main__":
+	#Test:
+	privKey = Key()
+	privKey.makeNewKey()
 
-cleanup()
+	pubKey = Key()
+	pubKey.setPublicKey(privKey.getPublicKey())
+
+	data = "blablabla"
+
+	goodSig = privKey.sign(data)
+	print "Good signature:", pubKey.verify(data, goodSig)
+
+	otherKey = Key()
+	otherKey.makeNewKey()
+	badSig1 = otherKey.sign(data)
+
+	badSig2 = privKey.sign("bad data")
+
+	print "Bad signature 1:", pubKey.verify(data, badSig1)
+	print "Bad signature 2:", pubKey.verify(data, badSig2)
+
+	cleanup()
 
 
