@@ -68,5 +68,9 @@ for i in range(len(inputs)):
 	tx.signInput(i, scriptPubKey, [None, key.getPublicKey()], [key])
 
 
-print tx.serialize().encode("hex")
+tx = tx.serialize()
+print tx.encode("hex")
+
+
+d.sendRawTransaction(tx)
 

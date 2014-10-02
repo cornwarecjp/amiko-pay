@@ -39,6 +39,10 @@ class Bitcoind:
 		return self.access.getblockcount()
 
 
+	def getPrivateKey(self, address):
+		return self.access.dumpprivkey(address)
+
+
 	def getTransactionHashesByBlockHeight(self, height):
 		bhash = self.access.getblockhash(height)
 		block = self.access.getblock(bhash)
@@ -58,8 +62,8 @@ class Bitcoind:
 		return ret
 
 
-	def getPrivateKey(self, address):
-		return self.access.dumpprivkey(address)
+	def sendRawTransaction(self, txData):
+		self.access.sendrawtransaction(txData.encode("hex"))
 
 
 	def DecimaltoAmount(self, value):
