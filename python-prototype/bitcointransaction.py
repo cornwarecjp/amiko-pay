@@ -18,7 +18,7 @@
 
 import struct
 import copy
-import hashlib
+from crypto import SHA256
 
 
 
@@ -58,6 +58,7 @@ def packVarInt(i):
 
 
 class OP:
+	ZERO = 0x00
 	TWO = 0x52
 	DUP = 0x76
 	EQUAL  = 0x87
@@ -192,7 +193,7 @@ class Transaction:
 		return ret
 
 
-	def signInput(self, index, scriptPubKey, scriptSigTemplate, privateKeys):
+	def getSignatureBodyHash(self, index, scriptPubKey, hashType=1):
 		#https://en.bitcoin.it/wiki/OP_CHECKSIG
 
 		#1.	the public key and the signature are popped from the stack, in that
@@ -223,28 +224,40 @@ class Transaction:
 
 		#An array of bytes is constructed from the serialized txCopy appended by
 		#four bytes for the hash type.
-		hashType = 1 #SIGHASH_ALL
 		signatureBody = txCopy.serialize() + struct.pack('<I', hashType) #uint32_t
 
 		#This array is sha256 hashed twice,
-		bodyHash = hashlib.sha256(signatureBody).digest()
-		bodyHash = hashlib.sha256(bodyHash).digest()
+		bodyHash = SHA256(SHA256(signatureBody))
 
-		#then the public key is used to check the supplied signature against the
-		#hash. The secp256k1 elliptic curve is used for the verification with
-		#the given public key.
+		return bodyHash
+
+
+	def signInputWithSignatures(self, index, scriptSigTemplate, signatures):
 		elements = scriptSigTemplate[:]
-		for key in privateKeys:
-			sig = key.sign(bodyHash)
-
-			#5.	The hashtype is removed from the last byte of the sig and stored
-			#hashType = sig[-1]
-			#sig = sig[:-1]
-			#Here we do the inverse - add hashType:
-			sig += struct.pack('B', hashType) #uint8_t
-
+		for sig in signatures:
 			i = elements.index(None)
 			elements[i] = sig
 
 		self.tx_in[index].scriptSig = Script(elements)
+
+
+	def signInput(self, index, scriptPubKey, scriptSigTemplate, privateKeys):
+		hashType = 1 #SIGHASH_ALL
+		bodyHash = self.getSignatureBodyHash(index, scriptPubKey, hashType)
+
+		#then the public key is used to check the supplied signature against the
+		#hash. The secp256k1 elliptic curve is used for the verification with
+		#the given public key.
+
+		#5.	The hashtype is removed from the last byte of the sig and stored
+		#hashType = sig[-1]
+		#sig = sig[:-1]
+		#Here we do the inverse - add hashType:
+		signatures = \
+		[
+			key.sign(bodyHash) + struct.pack('B', hashType) #uint8_t
+			for key in privateKeys
+		]
+
+		self.signInputWithSignatures(signatures)
 

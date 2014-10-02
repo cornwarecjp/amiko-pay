@@ -17,9 +17,9 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 import base58
+import struct
 
-
-from bitcointransaction import Transaction, TxIn, TxOut, Script
+from bitcointransaction import Transaction, TxIn, TxOut, Script, OP
 
 from crypto import Key, SHA256
 
@@ -129,6 +129,33 @@ def sendToMultiSigPubKey(bitcoind, amount, toPubKey1, toPubKey2, changeHash, fee
 		key.setPrivateKey(inputs[i][3])
 		tx.signInput(i, scriptPubKey, [None, key.getPublicKey()], [key])
 
+
+	tx = tx.serialize()
+	print tx.encode("hex")
+
+	bitcoind.sendRawTransaction(tx)
+
+	return SHA256(SHA256(tx)) #Note: in Bitcoin, the tx hash is shown reversed!
+
+
+def makeSpendMultiSigTransaction(bitcoind, outputHash, outputIndex, amount, toHash, fee):
+	tx = Transaction(
+		tx_in = [TxIn(outputHash, outputIndex)],
+		tx_out = [TxOut(amount-fee, Script.standardPubKey(toHash))]
+		)
+
+	return tx
+
+
+def signMultiSigTransaction(tx, outputIndex, toPubKey1, toPubKey2, key):
+	hashType = 1 #SIGHASH_ALL
+	scriptPubKey = Script.multiSigPubKey(toPubKey1, toPubKey2)
+	bodyHash = tx.getSignatureBodyHash(outputIndex, scriptPubKey, hashType)
+	return key.sign(bodyHash) + struct.pack('B', hashType) #uint8_t
+
+
+def spendMultiSigTransaction(bitcoind, tx, sig1, sig2):
+	tx.signInputWithSignatures(0, [OP.ZERO, None, None], [sig1, sig2])
 
 	tx = tx.serialize()
 	print tx.encode("hex")
