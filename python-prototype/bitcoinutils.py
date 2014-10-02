@@ -19,6 +19,11 @@
 import base58
 
 
+from bitcointransaction import Transaction, TxIn, TxOut, Script
+
+from crypto import Key, SHA256
+
+
 
 def getInputsForAmount(bitcoind, amount):
 	"""
@@ -68,4 +73,35 @@ def getInputsForAmount(bitcoind, amount):
 	return total, [
 		(u["txid"], u["vout"], u["scriptPubKey"], u["privateKey"])
 		for u in used]
+
+
+def sendToStandardPubKey(bitcoind, amount, toHash, changeHash, fee):
+	totalIn, inputs = getInputsForAmount(bitcoind, amount+fee)
+	change = totalIn - fee - amount
+
+	print "%d -> %d, %d, %d" % (totalIn, amount, change, fee)
+
+	tx = Transaction(
+		tx_in = [
+			TxIn(x[0], x[1])
+			for x in inputs
+			],
+		tx_out = [
+			TxOut(amount, Script.standardPubKey(toHash)),
+			TxOut(change, Script.standardPubKey(changeHash))
+			]
+		)
+
+	for i in range(len(inputs)):
+		scriptPubKey = Script.deserialize(inputs[i][2])
+		key = Key()
+		key.setPrivateKey(inputs[i][3])
+		tx.signInput(i, scriptPubKey, [None, key.getPublicKey()], [key])
+
+
+	tx = tx.serialize()
+
+	bitcoind.sendRawTransaction(tx)
+
+	return SHA256(SHA256(tx)) #Note: in Bitcoin, the tx hash is shown reversed!
 
