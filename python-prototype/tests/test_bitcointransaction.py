@@ -24,19 +24,47 @@ sys.path.append("..")
 
 import settings
 import bitcoind
-from bitcoinutils import sendToStandardPubKey
+import base58
+from crypto import Key
+from bitcoinutils import sendToStandardPubKey, sendToMultiSigPubKey
+
+
 
 s = settings.Settings("../amikopay.conf")
 d = bitcoind.Bitcoind(s)
 
+#(these addresses are mine - thanks for donating :-P)
+keyHash1 = binascii.unhexlify("fd5627c5eff58991dec54877272e82f758ea8b65")
+keyHash2 = binascii.unhexlify("ab22c699d3e72f2c1e4896508bf9d8d7910104d0")
+
+address1 = base58.encodeBase58Check(keyHash1, 0)
+address2 = base58.encodeBase58Check(keyHash2, 0)
+print address1
+print address2
+
+#Note: this will fail, unless you change toe above addresses to some of your own
+privKey1 = base58.decodeBase58Check(d.getPrivateKey(address1), 128)
+privKey2 = base58.decodeBase58Check(d.getPrivateKey(address2), 128)
+
+key1 = Key()
+key1.setPrivateKey(privKey1)
+key2 = Key()
+key2.setPrivateKey(privKey2)
+
+print key1.getPublicKey().encode("hex")
+print key2.getPublicKey().encode("hex")
+
+
+
 amount = int(100000 * float(raw_input("Amount to be transferred (mBTC): ")))
 fee = 10000 #0.1 mBTC
 
-tx = sendToStandardPubKey(d, amount,
+tx = sendToMultiSigPubKey(d, amount,
+	key1.getPublicKey(),
+	key2.getPublicKey(),
 	#(these addresses are mine - thanks for donating :-P)
-	toHash=binascii.unhexlify("fd5627c5eff58991dec54877272e82f758ea8b65"),
-	changeHash=binascii.unhexlify("ab22c699d3e72f2c1e4896508bf9d8d7910104d0"),
+	keyHash2,
 	fee=fee)
 
-print tx.encode("hex")
+print "Tx hash:", tx[::-1].encode("hex")
 

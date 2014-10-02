@@ -105,3 +105,35 @@ def sendToStandardPubKey(bitcoind, amount, toHash, changeHash, fee):
 
 	return SHA256(SHA256(tx)) #Note: in Bitcoin, the tx hash is shown reversed!
 
+
+def sendToMultiSigPubKey(bitcoind, amount, toPubKey1, toPubKey2, changeHash, fee):
+	totalIn, inputs = getInputsForAmount(bitcoind, amount+fee)
+	change = totalIn - fee - amount
+
+	print "%d -> %d, %d, %d" % (totalIn, amount, change, fee)
+
+	tx = Transaction(
+		tx_in = [
+			TxIn(x[0], x[1])
+			for x in inputs
+			],
+		tx_out = [
+			TxOut(amount, Script.multiSigPubKey(toPubKey1, toPubKey2)),
+			TxOut(change, Script.standardPubKey(changeHash))
+			]
+		)
+
+	for i in range(len(inputs)):
+		scriptPubKey = Script.deserialize(inputs[i][2])
+		key = Key()
+		key.setPrivateKey(inputs[i][3])
+		tx.signInput(i, scriptPubKey, [None, key.getPublicKey()], [key])
+
+
+	tx = tx.serialize()
+	print tx.encode("hex")
+
+	bitcoind.sendRawTransaction(tx)
+
+	return SHA256(SHA256(tx)) #Note: in Bitcoin, the tx hash is shown reversed!
+
