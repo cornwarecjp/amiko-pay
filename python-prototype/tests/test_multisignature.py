@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    test_bitcointransaction.py
+#    test_multisignature.py
 #    Copyright (C) 2014 by CJP
 #
 #    This file is part of Amiko Pay.
