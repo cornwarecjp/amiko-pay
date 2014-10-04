@@ -259,5 +259,10 @@ class Transaction:
 			for key in privateKeys
 		]
 
-		self.signInputWithSignatures(signatures)
+		self.signInputWithSignatures(index, scriptSigTemplate, signatures)
+
+
+	def getTransactionID(self):
+		return SHA256(SHA256(self.serialize())) #Note: in Bitcoin, the tx hash is shown reversed!
+
 

@@ -27,7 +27,7 @@ import bitcoind
 import base58
 from crypto import Key
 from bitcoinutils import sendToMultiSigPubKey
-from bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction, spendMultiSigTransaction
+from bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction, applyMultiSigSignatures
 
 
 
@@ -59,26 +59,29 @@ print key2.getPublicKey().encode("hex")
 amount = int(100000 * float(raw_input("Amount to be transferred (mBTC): ")))
 fee = 10000 #0.1 mBTC
 
-"""
-tx = sendToMultiSigPubKey(d, amount,
-	key1.getPublicKey(),
-	key2.getPublicKey(),
-	#(these addresses are mine - thanks for donating :-P)
-	keyHash2,
-	fee=fee)
-"""
+outputHash = binascii.unhexlify(raw_input("Input hash (empty: create multisig): "))[::-1]
 
-outputHash = binascii.unhexlify(raw_input("Transaction hash: "))[::-1]
-outputIndex = 0
+if outputHash == "":
+	tx = sendToMultiSigPubKey(d, amount,
+		key1.getPublicKey(),
+		key2.getPublicKey(),
+		keyHash2,
+		fee=fee)
+else:
+	outputIndex = 0
 
-tx = makeSpendMultiSigTransaction(d, outputHash, outputIndex, amount, keyHash1, fee)
+	tx = makeSpendMultiSigTransaction(d, outputHash, outputIndex, amount, keyHash1, fee)
 
-sig1 = signMultiSigTransaction(tx, outputIndex, key1.getPublicKey(), key2.getPublicKey(), key1)
-sig2 = signMultiSigTransaction(tx, outputIndex, key1.getPublicKey(), key2.getPublicKey(), key2)
+	sig1 = signMultiSigTransaction(tx, outputIndex, key1.getPublicKey(), key2.getPublicKey(), key1)
+	sig2 = signMultiSigTransaction(tx, outputIndex, key1.getPublicKey(), key2.getPublicKey(), key2)
 
-tx = spendMultiSigTransaction(d, tx, sig1, sig2)
-
+	applyMultiSigSignatures(tx, sig1, sig2)
 
 
-print "Tx hash:", tx[::-1].encode("hex")
+print "Tx:", tx.serialize().encode("hex")
+
+print "Tx ID:", tx.getTransactionID()[::-1].encode("hex")
+
+tx = tx.serialize()
+d.sendRawTransaction(tx)
 

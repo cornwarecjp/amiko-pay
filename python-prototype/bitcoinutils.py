@@ -98,12 +98,7 @@ def sendToStandardPubKey(bitcoind, amount, toHash, changeHash, fee):
 		key.setPrivateKey(inputs[i][3])
 		tx.signInput(i, scriptPubKey, [None, key.getPublicKey()], [key])
 
-
-	tx = tx.serialize()
-
-	bitcoind.sendRawTransaction(tx)
-
-	return SHA256(SHA256(tx)) #Note: in Bitcoin, the tx hash is shown reversed!
+	return tx
 
 
 def sendToMultiSigPubKey(bitcoind, amount, toPubKey1, toPubKey2, changeHash, fee):
@@ -129,13 +124,7 @@ def sendToMultiSigPubKey(bitcoind, amount, toPubKey1, toPubKey2, changeHash, fee
 		key.setPrivateKey(inputs[i][3])
 		tx.signInput(i, scriptPubKey, [None, key.getPublicKey()], [key])
 
-
-	tx = tx.serialize()
-	print tx.encode("hex")
-
-	bitcoind.sendRawTransaction(tx)
-
-	return SHA256(SHA256(tx)) #Note: in Bitcoin, the tx hash is shown reversed!
+	return tx
 
 
 def makeSpendMultiSigTransaction(bitcoind, outputHash, outputIndex, amount, toHash, fee):
@@ -154,13 +143,7 @@ def signMultiSigTransaction(tx, outputIndex, toPubKey1, toPubKey2, key):
 	return key.sign(bodyHash) + struct.pack('B', hashType) #uint8_t
 
 
-def spendMultiSigTransaction(bitcoind, tx, sig1, sig2):
+def applyMultiSigSignatures(tx, sig1, sig2):
 	tx.signInputWithSignatures(0, [OP.ZERO, None, None], [sig1, sig2])
 
-	tx = tx.serialize()
-	print tx.encode("hex")
-
-	bitcoind.sendRawTransaction(tx)
-
-	return SHA256(SHA256(tx)) #Note: in Bitcoin, the tx hash is shown reversed!
 
