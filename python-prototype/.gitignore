@@ -4,3 +4,6 @@
 #program output
 *.log
 
+#Coverage output
+.coveragerc
+
