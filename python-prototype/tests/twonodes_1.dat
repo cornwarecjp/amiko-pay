@@ -6,16 +6,16 @@
 	"localID": "node1",
 	"remoteID": "node2",
 	"remoteURL": "amikolink://localhost:4323/node2",
-	"channel":
-	{
+	"channels":
+	[{
 		"amountLocal"           : 1000,
 		"amountRemote"          : 1000,
 		"transactionsIncomingReserved": {},
 		"transactionsOutgoingReserved": {},
 		"transactionsIncomingLocked"  : {},
-		"transactionsOutgoingLocked"  : {}
-
-	}
+		"transactionsOutgoingLocked"  : {},
+        "type": "plain"
+	}]
 	}
 ],
 

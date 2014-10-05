@@ -6,15 +6,16 @@
 	"localID": "node2",
 	"remoteID": "node1",
 	"remoteURL": "",
-	"channel":
-	{
+	"channels":
+	[{
 		"amountLocal"           : 1000,
 		"amountRemote"          : 1000,
 		"transactionsIncomingReserved": {},
 		"transactionsOutgoingReserved": {},
 		"transactionsIncomingLocked"  : {},
-		"transactionsOutgoingLocked"  : {}
-	}
+		"transactionsOutgoingLocked"  : {},
+        "type": "plain"
+	}]
 	}
 ],
 
