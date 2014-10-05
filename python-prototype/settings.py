@@ -60,7 +60,7 @@ class Settings:
 
 		#bitcoin RPC
 		self.bitcoinRPCURL = self.__get(
-			"bitcoind", "RPCURL", "http://user:password@127.0.0.1:8332")
+			"bitcoind", "RPCURL", "")
 
 		self.__config = None
 

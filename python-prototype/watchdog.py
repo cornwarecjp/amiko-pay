@@ -29,6 +29,11 @@ class Watchdog:
 
 	def __init__(self, bitcoind):
 		self.bitcoind = bitcoind
+
+		if not self.bitcoind.isConnected():
+			log.log("No bitcoind connection; watchdog will be inactive!")
+			return
+
 		self.lastCheckedBlock = self.bitcoind.getBlockCount()
 		self.onSpentCallbacks = {}
 
@@ -54,6 +59,9 @@ class Watchdog:
 
 
 	def check(self):
+		if not self.bitcoind.isConnected():
+			return
+
 		#Don't check anything if there's nothing to check for:
 		if len(self.onSpentCallbacks) == 0:
 			self.lastCheckedBlock = self.bitcoind.getBlockCount()

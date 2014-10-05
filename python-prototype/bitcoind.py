@@ -26,9 +26,17 @@ import log
 
 class Bitcoind:
 	def __init__(self, settings):
-		log.log("Making connection to Bitcoin daemon...")
-		self.access = AuthServiceProxy(settings.bitcoinRPCURL)
-		log.log("...done")
+		if settings.bitcoinRPCURL != "":
+			log.log("Making connection to Bitcoin daemon...")
+			self.access = AuthServiceProxy(settings.bitcoinRPCURL)
+			log.log("...done")
+		else:
+			log.log("Bitcoin-RPC URL is not set: not connecting")
+			self.access = None
+
+
+	def isConnected(self):
+		return self.access != None
 		
 
 	def getBalance(self):
