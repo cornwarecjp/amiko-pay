@@ -21,6 +21,21 @@ import ctypes
 
 libssl = ctypes.cdll.LoadLibrary("libssl.so") #Will be different on windows
 
+
+
+#Structs:
+class BIGNUM(ctypes.Structure):
+	_fields_ = \
+	[
+	("d", ctypes.c_void_p),	# Pointer to an array of 'BN_BITS2' bit chunks.
+	("top", ctypes.c_int),	# Index of last used d +1.
+	# The next are internal book keeping for bn_expand.
+	("dmax", ctypes.c_int),	# Size of the d array.
+	("neg", ctypes.c_int),	# one if the number is negative
+	("flags", ctypes.c_int)
+	]
+
+
 #Constants:
 NID_secp256k1 = 714
 
@@ -36,6 +51,9 @@ libssl.EC_KEY_new_by_curve_name.restype = ctypes.c_int
 
 libssl.EC_KEY_get0_group.argtypes = [ctypes.c_void_p]
 libssl.EC_KEY_get0_group.restype = ctypes.c_void_p
+
+libssl.EC_KEY_get0_private_key.argtypes = [ctypes.c_void_p]
+libssl.EC_KEY_get0_private_key.restype = ctypes.c_void_p
 
 libssl.EC_KEY_check_key.argtypes = [ctypes.c_void_p]
 libssl.EC_KEY_check_key.restype = ctypes.c_int
@@ -86,6 +104,9 @@ libssl.BN_init.argtypes = [ctypes.c_void_p]
 libssl.BN_bin2bn.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_void_p]
 libssl.BN_bin2bn.restype = ctypes.c_void_p
 
+libssl.BN_bn2bin.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+libssl.BN_bn2bin.restype = ctypes.c_int
+
 libssl.BN_clear_free.argtypes = [ctypes.c_void_p]
 
 libssl.BN_CTX_new.argtypes = []
@@ -93,18 +114,12 @@ libssl.BN_CTX_new.restype = ctypes.c_void_p
 
 libssl.BN_CTX_free.argtypes = [ctypes.c_void_p]
 
+libssl.BN_num_bits.argtypes = [ctypes.c_void_p]
+libssl.BN_num_bits.restype = ctypes.c_int
 
-#Structs:
-class BIGNUM(ctypes.Structure):
-	_fields_ = \
-	[
-	("d", ctypes.c_void_p),	# Pointer to an array of 'BN_BITS2' bit chunks.
-	("top", ctypes.c_int),	# Index of last used d +1.
-	# The next are internal book keeping for bn_expand.
-	("dmax", ctypes.c_int),	# Size of the d array.
-	("neg", ctypes.c_int),	# one if the number is negative
-	("flags", ctypes.c_int)
-	]
+def BN_num_bytes(a):
+	return (libssl.BN_num_bits(a)+7)/8
+
 
 
 libssl.SSL_load_error_strings()
@@ -134,9 +149,14 @@ class Key:
 		self.hasPublicKey = False
 		self.hasPrivateKey = False
 
+		#keep a reference to ensure that we're deleted before libssl:
+		self.libssl = libssl
+
 
 	def __del__(self):
-		libssl.EC_KEY_free(self.keyData)
+		#Somehow, the module-level libssl becomes None at some point in time
+		#during shutdown. Use the local reference instead.
+		self.libssl.EC_KEY_free(self.keyData)
 
 
 	#TODO: copy behavior
@@ -176,7 +196,7 @@ class Key:
 		if libssl.i2o_ECPublicKey(self.keyData, ctypes.byref(ctypes.pointer(b))) != size:
 			raise Exception("i2o_ECPublicKey returned unexpected size")
 
-		return ''.join([c for c in b])
+		return ''.join(c for c in b)
 
 
 	def setPrivateKey(self, key):
@@ -221,7 +241,23 @@ class Key:
 		self.hasPrivateKey = True
 
 
-	#TODO: get private key
+
+	def getPrivateKey(self):
+		if not self.hasPrivateKey:
+			raise Exception("private key unknown")
+
+		bn = libssl.EC_KEY_get0_private_key(self.keyData)
+		if not bn:
+			raise Exception("EC_KEY_get0_private_key failed")
+
+		nBytes = BN_num_bytes(bn)
+		b = ctypes.create_string_buffer(nBytes)
+
+		n = libssl.BN_bn2bin(bn, b)
+		if n != nBytes:
+			raise Exception("BN_bn2bin failed")
+
+		return "\0"*(32-nBytes) + ''.join(c for c in b)
 
 
 	def sign(self, data):
@@ -278,6 +314,14 @@ if __name__ == "__main__":
 
 	print "Bad signature 1:", pubKey.verify(data, badSig1)
 	print "Bad signature 2:", pubKey.verify(data, badSig2)
+
+	priv = privKey.getPrivateKey()
+	privKey2 = Key()
+	privKey2.setPrivateKey(priv)
+	print "Private key is constant:", privKey2.getPrivateKey() == priv
+
+	goodSig = privKey2.sign(data)
+	print "Good signature 2:", pubKey.verify(data, goodSig)
 
 	cleanup()
 
