@@ -1,2 +1,9 @@
+# Precompiled Python
 *.pyc
+
+#program output
+*.log
+
+#Coverage output
+.coverage
 
