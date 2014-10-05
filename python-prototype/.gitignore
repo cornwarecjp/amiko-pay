@@ -5,5 +5,5 @@
 *.log
 
 #Coverage output
-.coveragerc
+.coverage
 
