@@ -57,6 +57,7 @@ must be inspected, meaning that
   "unrolled loops" which traverse the entire Merkle trees of several blocks.
   This will make the scriptPubKey orders of magnitude larger than the script
   provided here.
+
 For these reasons, it is considered impossible to extend this partial solution
 to a full solution. It remains To Be Determined whether the partial solution is
 good enough to be useful.
