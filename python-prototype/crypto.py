@@ -126,7 +126,10 @@ libssl.SSL_load_error_strings()
 libssl.SSL_library_init()
 
 
-
+#Note: it might be possible to register this with Python's atexit module, but
+#it might be necessary to make sure that all constructed objects (such as keys)
+#are freed before calling this.Calling this at program termination shouldn't be
+#that essential anyway, so wel'll leave it to the application code.
 def cleanup():
 	libssl.ERR_free_strings()
 
