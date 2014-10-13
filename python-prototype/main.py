@@ -26,6 +26,7 @@ import amiko
 import event
 import network
 import messages
+import crypto
 
 
 def formatBitcoinAmount(value):
@@ -50,6 +51,7 @@ def handleCommand(cmd):
 	if cmd[0] in ["quit", "exit"]:
 		checkNumArgs(0, 0)
 		a.stop()
+		crypto.cleanup()
 		sys.exit()
 	elif cmd[0] == "help":
 		checkNumArgs(0, 0)
