@@ -47,7 +47,7 @@ class Channel:
 		return "plain"
 
 
-	def getState(self, verbose=False):
+	def getState(self, forDisplay=False):
 		return \
 		{
 		"type"                  : self.getType(),

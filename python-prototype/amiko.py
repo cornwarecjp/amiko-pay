@@ -62,14 +62,14 @@ class RoutingContext:
 		self.links = []
 		self.meetingPoints = []
 
-	def getState(self, verbose=False):
+	def getState(self, forDisplay=False):
 		return \
 		{
 			"links":
-			[lnk.getState(verbose) for lnk in self.links],
+			[lnk.getState(forDisplay) for lnk in self.links],
 
 			"meetingPoints":
-			[mp.getState(verbose) for mp in self.meetingPoints]
+			[mp.getState(forDisplay) for mp in self.meetingPoints]
 		}
 
 
@@ -255,7 +255,7 @@ class Amiko(threading.Thread):
 		Amiko node.
 		"""
 
-		return self.__getState(verbose=True)
+		return self.__getState(forDisplay=True)
 
 
 	@runInAmikoThread
@@ -400,7 +400,7 @@ class Amiko(threading.Thread):
 
 
 	def __saveState(self):
-		state = self.__getState(verbose=False)
+		state = self.__getState(forDisplay=False)
 
 		#ensure_ascii doesn't seem to do what I expected,
 		#so it becomes required that state is ASCII-only.
@@ -422,9 +422,9 @@ class Amiko(threading.Thread):
 		os.remove(oldFile)
 
 
-	def __getState(self, verbose=False):
-		ret = self.routingContext.getState(verbose)
-		ret["requests"] = [p.getState(verbose) for p in self.payees]
+	def __getState(self, forDisplay=False):
+		ret = self.routingContext.getState(forDisplay)
+		ret["requests"] = [p.getState(forDisplay) for p in self.payees]
 		return ret
 
 

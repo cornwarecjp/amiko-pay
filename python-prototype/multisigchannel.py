@@ -128,9 +128,10 @@ class MultiSigChannel(channel.Channel):
 		return "multisig"
 
 
-	def getState(self, verbose=False):
-		ret = channel.Channel.getState(self, verbose)
-		ret["ownPrivateKey"] = self.ownKey.getPrivateKey().encode("hex")
+	def getState(self, forDisplay=False):
+		ret = channel.Channel.getState(self, forDisplay)
+		if not forDisplay:
+			ret["ownPrivateKey"] = self.ownKey.getPrivateKey().encode("hex")
 		return ret
 
 

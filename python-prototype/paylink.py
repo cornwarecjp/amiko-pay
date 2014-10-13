@@ -228,7 +228,7 @@ class Payee(event.Handler):
 		self.__payeeHasRoute = False
 
 
-	def getState(self, verbose=False):
+	def getState(self, forDisplay=False):
 		ret = \
 		{
 		"ID": self.ID,
@@ -237,7 +237,7 @@ class Payee(event.Handler):
 		"hash": self.hash.encode("hex"),
 		"state": self.state
 		}
-		if verbose:
+		if forDisplay:
 			ret["meetingPoint"] =  self.__meetingPoint
 			ret["isConnected"] = self.isConnected()
 

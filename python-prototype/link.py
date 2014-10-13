@@ -60,18 +60,18 @@ class Link(event.Handler):
 		self.connection = None
 
 
-	def getState(self, verbose=False):
+	def getState(self, forDisplay=False):
 		ret = \
 		{
 		"name": self.name,
 		"localID": self.localID,
 		"remoteID": self.remoteID,
 		"remoteURL": self.remoteURL,
-		"channels": [c.getState(verbose) for c in self.channels],
+		"channels": [c.getState(forDisplay) for c in self.channels],
 		"openTransactions":
 			[k.encode("hex") for k in self.openTransactions.keys()]
 		}
-		if verbose:
+		if forDisplay:
 			ret["isConnected"] = self.isConnected()
 			ret["localURL"] = self.localURL
 		return ret
