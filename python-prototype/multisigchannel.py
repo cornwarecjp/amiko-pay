@@ -16,8 +16,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
+import binascii
+
 import channel
 import bitcointransaction
+import crypto
+
+
 
 """
 We use a variation of the following. The variation basically consists of having
@@ -113,14 +118,26 @@ class MultiSigChannel(channel.Channel):
 
 	def __init__(self, state):
 		channel.Channel.__init__(self, state)
+		self.ownKey = crypto.Key()
+		self.ownKey.setPrivateKey(
+			binascii.unhexlify(state["ownPrivateKey"])
+			)
 
 
 	def getType(self):
 		return "multisig"
 
 
+	def getState(self, verbose=False):
+		ret = channel.Channel.getState(self, verbose)
+		ret["ownPrivateKey"] = self.ownKey.getPrivateKey().encode("hex")
+		return ret
+
+
 
 def constructFromDeposit(amount):
+	key = crypto.Key()
+	key.makeNewKey()
 	state = \
 	{
     "amountLocal" : amount,
@@ -128,7 +145,9 @@ def constructFromDeposit(amount):
     "transactionsIncomingLocked"  : {},
     "transactionsIncomingReserved": {},
     "transactionsOutgoingLocked"  : {},
-    "transactionsOutgoingReserved": {}
+    "transactionsOutgoingReserved": {},
+
+	"ownPrivateKey": key.getPrivateKey().encode("hex")
 	}
 	return MultiSigChannel(state)
 
