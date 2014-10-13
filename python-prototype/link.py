@@ -80,13 +80,17 @@ class Link(event.Handler):
 	def getBalance(self):
 		return \
 		{
-			"availableForSpending": sum([c.amountLocal for c in self.channels]),
-			"availableForReceiving": sum([c.amountRemote for c in self.channels])
+			"availableForSpending": sum(c.amountLocal for c in self.channels),
+			"availableForReceiving": sum(c.amountRemote for c in self.channels)
 		}
 
 
 	def deposit(self, amount):
-		self.channels.append(multisigchannel.constructFromDeposit(amount))
+		try:
+			newID = 1 + max(c.ID for c in self.channels)
+		except ValueError:
+			newID = 0
+		self.channels.append(multisigchannel.constructFromDeposit(newID, amount))
 		#TODO: deposit messaging
 		self.context.sendSignal(None, event.signals.save)
 

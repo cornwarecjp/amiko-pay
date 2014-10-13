@@ -136,19 +136,20 @@ class MultiSigChannel(channel.Channel):
 
 
 
-def constructFromDeposit(amount):
+def constructFromDeposit(ID, amount):
 	key = crypto.Key()
 	key.makeNewKey()
 	state = \
 	{
-    "amountLocal" : amount,
-    "amountRemote": 0,
-    "transactionsIncomingLocked"  : {},
-    "transactionsIncomingReserved": {},
-    "transactionsOutgoingLocked"  : {},
-    "transactionsOutgoingReserved": {},
+		"ID": ID,
+		"amountLocal" : amount,
+		"amountRemote": 0,
+		"transactionsIncomingLocked"  : {},
+		"transactionsIncomingReserved": {},
+		"transactionsOutgoingLocked"  : {},
+		"transactionsOutgoingReserved": {},
 
-	"ownPrivateKey": key.getPrivateKey().encode("hex")
+		"ownPrivateKey": key.getPrivateKey().encode("hex")
 	}
 	return MultiSigChannel(state)
 
