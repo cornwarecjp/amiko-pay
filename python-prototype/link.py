@@ -362,12 +362,16 @@ class Link(event.Handler):
 				else:
 					newChannel = multisigchannel.constructFromDepositMessage(message)
 					self.channels.append(newChannel)
-					#TODO: send back next-stage message
+					reply = newChannel.processDepositMessage(message)
+					if reply != None:
+						self.connection.sendMessage(reply)
 					self.context.sendSignal(None, event.signals.save)
 			else:
 				try:
 					channel = self.channels[existingIDs.index(message.ID)]
-					#TODO: process message
+					reply = channel.processDepositMessage(message)
+					if reply != None:
+						self.connection.sendMessage(reply)
 					self.context.sendSignal(None, event.signals.save)
 				except ValueError:
 					log.log("Follow-up deposit message contains non-existing ID")
