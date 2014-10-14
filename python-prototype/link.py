@@ -86,12 +86,17 @@ class Link(event.Handler):
 
 
 	def deposit(self, amount):
+		if not self.isConnected():
+			raise Exception("Not connected")
+
 		try:
 			newID = 1 + max(c.ID for c in self.channels)
 		except ValueError:
 			newID = 0
-		self.channels.append(multisigchannel.constructFromDeposit(newID, amount))
-		#TODO: deposit messaging
+
+		newChannel = multisigchannel.constructFromDeposit(newID, amount)
+		self.channels.append(newChannel)
+		self.connection.sendMessage(newChannel.makeDepositMessage())
 		self.context.sendSignal(None, event.signals.save)
 
 
@@ -342,6 +347,31 @@ class Link(event.Handler):
 			#We don't need this anymore:
 			del self.openTransactions[hash]
 
+		elif message.__class__ == messages.Deposit:
+			log.log("Link received Deposit")
+
+			existingIDs = [c.ID for c in self.channels]
+
+			if message.stage == 0:
+				if message.ID in existingIDs:
+					log.log("Initial deposit message contains already existing ID")
+					#TODO: send refusal reply?
+				elif message.type not in ["multisig"]:
+					log.log("Initial deposit message with unsupported channel type")
+					#TODO: send refusal reply?
+				else:
+					newChannel = multisigchannel.constructFromDepositMessage(message)
+					self.channels.append(newChannel)
+					#TODO: send back next-stage message
+					self.context.sendSignal(None, event.signals.save)
+			else:
+				try:
+					channel = self.channels[existingIDs.index(message.ID)]
+					#TODO: process message
+					self.context.sendSignal(None, event.signals.save)
+				except ValueError:
+					log.log("Follow-up deposit message contains non-existing ID")
+					#TODO: send refusal reply?
 		else:
 			log.log("Link received unsupported message: %s" % str(message))
 

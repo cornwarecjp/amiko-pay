@@ -21,6 +21,7 @@ import binascii
 import channel
 import bitcointransaction
 import crypto
+import struct
 
 
 
@@ -135,6 +136,10 @@ class MultiSigChannel(channel.Channel):
 		return ret
 
 
+	def getDepositData(self):
+		return self.ownKey.getPublicKey()
+
+
 
 def constructFromDeposit(ID, amount):
 	key = crypto.Key()
@@ -144,6 +149,25 @@ def constructFromDeposit(ID, amount):
 		"ID": ID,
 		"amountLocal" : amount,
 		"amountRemote": 0,
+		"transactionsIncomingLocked"  : {},
+		"transactionsIncomingReserved": {},
+		"transactionsOutgoingLocked"  : {},
+		"transactionsOutgoingReserved": {},
+
+		"ownPrivateKey": key.getPrivateKey().encode("hex")
+	}
+	return MultiSigChannel(state)
+
+
+
+def constructFromDepositMessage(message):
+	key = crypto.Key()
+	key.makeNewKey()
+	state = \
+	{
+		"ID": message.ID,
+		"amountLocal" : 0,
+		"amountRemote": message.amount,
 		"transactionsIncomingLocked"  : {},
 		"transactionsIncomingReserved": {},
 		"transactionsOutgoingLocked"  : {},

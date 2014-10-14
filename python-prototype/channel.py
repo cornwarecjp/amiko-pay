@@ -16,6 +16,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
+import messages
+
 
 
 class CheckFail(Exception):
@@ -72,6 +74,16 @@ class Channel:
 		for k,v in d.iteritems():
 			ret[k.encode("hex")] = v
 		return ret
+
+
+	def makeDepositMessage(self):
+		depositData = self.ownKey.getPublicKey()
+		return messages.Deposit(
+			self.ID, self.amountLocal, self.getType(), 0, self.getDepositData())
+
+
+	def getDepositData(self):
+		return ""
 
 
 	def reserve(self, isPayerSide, hash, amount):
