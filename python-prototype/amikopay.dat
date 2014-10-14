@@ -4,6 +4,7 @@
             "channels": [
                 {
                     "ID": 0,
+                    "stage": 0,
                     "amountLocal": 100,
                     "amountRemote": 100,
                     "transactionsIncomingLocked": {},
@@ -23,6 +24,7 @@
             "channels": [
                 {
                     "ID": 0,
+                    "stage": 0,
                     "amountLocal": 100,
                     "amountRemote": 100,
                     "transactionsIncomingLocked": {},

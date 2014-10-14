@@ -140,6 +140,9 @@ class MultiSigChannel(channel.Channel):
 		return self.ownKey.getPublicKey()
 
 
+	def processDepositMessage(self, message):
+		return None
+
 
 def constructFromDeposit(ID, amount):
 	key = crypto.Key()
@@ -147,6 +150,7 @@ def constructFromDeposit(ID, amount):
 	state = \
 	{
 		"ID": ID,
+		"stage": 0,
 		"amountLocal" : amount,
 		"amountRemote": 0,
 		"transactionsIncomingLocked"  : {},
@@ -166,6 +170,7 @@ def constructFromDepositMessage(message):
 	state = \
 	{
 		"ID": message.ID,
+		"stage": 0,
 		"amountLocal" : 0,
 		"amountRemote": message.amount,
 		"transactionsIncomingLocked"  : {},

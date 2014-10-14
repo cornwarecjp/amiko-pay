@@ -34,6 +34,7 @@ class Channel:
 
 	def __init__(self, state):
 		self.ID = state["ID"]
+		self.stage = state["stage"]
 
 		#Current balances:
 		self.amountLocal             = state["amountLocal"]
@@ -54,6 +55,7 @@ class Channel:
 		return \
 		{
 		"ID"                    : self.ID,
+		"stage"                 : self.stage,
 		"type"                  : self.getType(),
 		"amountLocal"           : self.amountLocal,
 		"amountRemote"          : self.amountRemote,
