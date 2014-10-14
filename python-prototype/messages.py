@@ -31,6 +31,7 @@ ID_LOCK        = 8
 ID_CANCEL      = 9
 ID_COMMIT      = 10
 ID_MYURLS      = 11
+ID_DEPOSIT     = 12
 
 
 class Message:
@@ -74,7 +75,8 @@ def deserialize(s):
 		ID_LOCK: Lock,
 		ID_CANCEL: Cancel,
 		ID_COMMIT: Commit,
-		ID_MYURLS: MyURLs
+		ID_MYURLS: MyURLs,
+		ID_DEPOSIT: Deposit
 		}[ID]
 	except KeyError:
 		raise Exception("Deserialize failed: unknown type ID")
@@ -269,4 +271,77 @@ class Receipt(Message):
 		return "amount: %d; receipt: \"%s\"; hash: %s; meeting points: %s" % \
 			(self.amount, self.receipt, repr(self.hash), str(self.meetingPoints))
 
+
+
+class Deposit(Message):
+	def __init__(self, ID=0, amount=0, type="", depositData=""):
+		Message.__init__(self, ID_DEPOSIT)
+		self.ID = ID
+		self.amount = amount
+		self.type = type
+		self.depositData = depositData #serialized link-type dependent data
+
+
+	def serializeAttributes(self):
+		# 4-byte unsigned int in network byte order:
+		ret = struct.pack("!I", self.ID)
+
+		# 8-byte unsigned int in network byte order:
+		ret += struct.pack("!Q", self.amount)
+
+		# 4-byte unsigned int in network byte order:
+		typeLen = struct.pack("!I", len(self.type))
+		ret += typeLen + self.type
+
+		ret += self.depositData
+
+		return ret
+
+
+	def deserializeAttributes(self, s):
+		# 4-byte unsigned int in network byte order:
+		self.ID = struct.unpack("!I", s[:4])[0]
+		s = s[4:]
+
+		# 8-byte unsigned int in network byte order:
+		self.amount = struct.unpack("!Q", s[:8])[0]
+		s = s[8:]
+
+		# 4-byte unsigned int in network byte order:
+		typeLen = struct.unpack("!I", s[:4])[0]
+		self.type = s[4:4+typeLen]
+		s = s[4+typeLen:]
+
+		self.depositData = s
+
+
+	def __str__(self):
+		return "ID: %d; amount: %d; type: %s" % \
+			(self.ID, self.amount, self.type)
+
+
+
+if __name__ == "__main__":
+	for clss in [
+		String,
+		Link,
+		Pay,
+		Receipt,
+		Confirm,
+		MakeRoute,
+		HaveRoute,
+		Lock,
+		Cancel,
+		Commit,
+		MyURLs,
+		Deposit
+		]:
+
+			a = clss()
+			s1 = a.serialize()
+			b = deserialize(s1)
+			s2 = b.serialize()
+			print str(a)
+			print str(b)
+			print s1 == s2
 
