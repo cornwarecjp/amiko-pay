@@ -79,9 +79,9 @@ class Channel:
 
 
 	def makeDepositMessage(self):
-		depositData = self.ownKey.getPublicKey()
 		return messages.Deposit(
-			self.ID, self.amountLocal, self.getType(), 0, self.getDepositData())
+			self.ID, self.amountLocal, self.getType(), self.stage,
+			self.getDepositData())
 
 
 	def getDepositData(self):

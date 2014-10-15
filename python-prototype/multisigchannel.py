@@ -17,12 +17,12 @@
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
 import binascii
+import struct
 
 import channel
 import bitcointransaction
 import crypto
-import struct
-
+import messages
 
 
 """
@@ -119,10 +119,18 @@ class MultiSigChannel(channel.Channel):
 
 	def __init__(self, state):
 		channel.Channel.__init__(self, state)
+
 		self.ownKey = crypto.Key()
 		self.ownKey.setPrivateKey(
 			binascii.unhexlify(state["ownPrivateKey"])
 			)
+
+		self.peerKey = None
+		if "peerPublicKey" in state:
+			self.peerKey = crypto.Key()
+			self.peerKey.setPublicKey(
+				binascii.unhexlify(state["peerPublicKey"])
+				)
 
 
 	def getType(self):
@@ -133,6 +141,8 @@ class MultiSigChannel(channel.Channel):
 		ret = channel.Channel.getState(self, forDisplay)
 		if not forDisplay:
 			ret["ownPrivateKey"] = self.ownKey.getPrivateKey().encode("hex")
+		if self.peerKey != None:
+			ret["peerPublicKey"] = self.peerKey.getPublicKey().encode("hex")
 		return ret
 
 
@@ -141,6 +151,22 @@ class MultiSigChannel(channel.Channel):
 
 
 	def processDepositMessage(self, message):
+		if self.stage == -1 and message.stage == 0:
+			#Received deposit message with public key from peer
+			self.stage = 1
+			self.peerKey = crypto.Key()
+			self.peerKey.setPublicKey(message.depositData)
+			return messages.Deposit(
+				self.ID, 0, self.getType(), self.stage, self.ownKey.getPublicKey())
+		elif self.stage == 0 and message.stage == 1:
+			#Received reply on own deposit message
+			self.stage = 2
+			self.peerKey = crypto.Key()
+			self.peerKey.setPublicKey(message.depositData)
+			#TODO: make T1, T2
+			#TODO: send T2
+			print "DONE"
+		#TODO: rest of deposit messaging
 		return None
 
 
@@ -170,7 +196,7 @@ def constructFromDepositMessage(message):
 	state = \
 	{
 		"ID": message.ID,
-		"stage": 0,
+		"stage": -1,
 		"amountLocal" : 0,
 		"amountRemote": message.amount,
 		"transactionsIncomingLocked"  : {},
