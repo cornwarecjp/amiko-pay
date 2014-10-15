@@ -78,16 +78,6 @@ class Channel:
 		return ret
 
 
-	def makeDepositMessage(self):
-		return messages.Deposit(
-			self.ID, self.amountLocal, self.getType(), self.stage,
-			self.getDepositData())
-
-
-	def getDepositData(self):
-		return ""
-
-
 	def reserve(self, isPayerSide, hash, amount):
 		if isPayerSide:
 			if self.amountLocal < amount:

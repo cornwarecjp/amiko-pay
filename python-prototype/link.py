@@ -96,7 +96,7 @@ class Link(event.Handler):
 
 		newChannel = multisigchannel.constructFromDeposit(newID, amount)
 		self.channels.append(newChannel)
-		self.connection.sendMessage(newChannel.makeDepositMessage())
+		self.connection.sendMessage(newChannel.makeDepositMessage(None))
 		self.context.sendSignal(None, event.signals.save)
 
 
@@ -362,14 +362,14 @@ class Link(event.Handler):
 				else:
 					newChannel = multisigchannel.constructFromDepositMessage(message)
 					self.channels.append(newChannel)
-					reply = newChannel.processDepositMessage(message)
+					reply = newChannel.makeDepositMessage(message)
 					if reply != None:
 						self.connection.sendMessage(reply)
 					self.context.sendSignal(None, event.signals.save)
 			else:
 				try:
 					channel = self.channels[existingIDs.index(message.ID)]
-					reply = channel.processDepositMessage(message)
+					reply = channel.makeDepositMessage(message)
 					if reply != None:
 						self.connection.sendMessage(reply)
 					self.context.sendSignal(None, event.signals.save)

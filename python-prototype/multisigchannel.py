@@ -146,12 +146,14 @@ class MultiSigChannel(channel.Channel):
 		return ret
 
 
-	def getDepositData(self):
-		return self.ownKey.getPublicKey()
-
-
-	def processDepositMessage(self, message):
-		if self.stage == -1 and message.stage == 0:
+	def makeDepositMessage(self, message):
+		if self.stage == -2 and message == None:
+			#Initial message:
+			self.stage = 0
+			return messages.Deposit(
+				self.ID, self.amountLocal, self.getType(), self.stage,
+				self.ownKey.getPublicKey())
+		elif self.stage == -1 and message.stage == 0:
 			#Received deposit message with public key from peer
 			self.stage = 1
 			self.peerKey = crypto.Key()
@@ -167,6 +169,8 @@ class MultiSigChannel(channel.Channel):
 			#TODO: send T2
 			print "DONE"
 		#TODO: rest of deposit messaging
+		else:
+			raise Exception("Received illegal deposit message")
 		return None
 
 
@@ -176,7 +180,7 @@ def constructFromDeposit(ID, amount):
 	state = \
 	{
 		"ID": ID,
-		"stage": 0,
+		"stage": -2,
 		"amountLocal" : amount,
 		"amountRemote": 0,
 		"transactionsIncomingLocked"  : {},
