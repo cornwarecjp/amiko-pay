@@ -31,9 +31,10 @@ import multisigchannel
 
 
 class Link(event.Handler):
-	def __init__(self, context, routingContext, settingsArg, state):
+	def __init__(self, context, routingContext, bitcoind, settingsArg, state):
 		event.Handler.__init__(self, context)
 		self.routingContext = routingContext
+		self.bitcoind = bitcoind
 
 		self.name  = str(state["name"])
 		self.localID  = str(state["localID"])

@@ -298,7 +298,7 @@ class Amiko(threading.Thread):
             "remoteURL": remoteURL
 		}
 		newLink = link.Link(
-			self.context, self.routingContext,
+			self.context, self.routingContext, self.bitcoind,
 			self.settings, state)
 		self.routingContext.links.append(newLink)
 
@@ -391,7 +391,7 @@ class Amiko(threading.Thread):
 
 		for lnk in state["links"]:
 			self.routingContext.links.append(link.Link(
-				self.context, self.routingContext,
+				self.context, self.routingContext, self.bitcoind,
 				self.settings, lnk))
 
 		for mp in state["meetingPoints"]:
