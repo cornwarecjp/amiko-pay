@@ -117,8 +117,9 @@ class MultiSigChannel(channel.Channel):
 	Payment channel with Bitcoin multi-signature transaction protection.
 	"""
 
-	def __init__(self, state):
+	def __init__(self, bitcoind, state):
 		channel.Channel.__init__(self, state)
+		self.bitcoind = bitcoind
 
 		self.ownKey = crypto.Key()
 		self.ownKey.setPrivateKey(
@@ -174,7 +175,7 @@ class MultiSigChannel(channel.Channel):
 		return None
 
 
-def constructFromDeposit(ID, amount):
+def constructFromDeposit(bitcoind, ID, amount):
 	key = crypto.Key()
 	key.makeNewKey()
 	state = \
@@ -190,11 +191,11 @@ def constructFromDeposit(ID, amount):
 
 		"ownPrivateKey": key.getPrivateKey().encode("hex")
 	}
-	return MultiSigChannel(state)
+	return MultiSigChannel(bitcoind, state)
 
 
 
-def constructFromDepositMessage(message):
+def constructFromDepositMessage(bitcoind, message):
 	key = crypto.Key()
 	key.makeNewKey()
 	state = \
@@ -210,5 +211,5 @@ def constructFromDepositMessage(message):
 
 		"ownPrivateKey": key.getPrivateKey().encode("hex")
 	}
-	return MultiSigChannel(state)
+	return MultiSigChannel(bitcoind, state)
 

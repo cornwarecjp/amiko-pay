@@ -49,9 +49,13 @@ class Link(event.Handler):
 		self.channels = []
 		for c in state["channels"]:
 			if c["type"] == "plain":
-				self.channels.append(channel.Channel(c))
+				self.channels.append(
+					channel.Channel(c)
+					)
 			elif c["type"] == "multisig":
-				self.channels.append(multisigchannel.MultiSigChannel(c))
+				self.channels.append(
+					multisigchannel.MultiSigChannel(self.bitcoind, c)
+					)
 			else:
 				raise Exception("Unrecognized channel type \"%s\"" % \
 					c["type"])
@@ -95,7 +99,7 @@ class Link(event.Handler):
 		except ValueError:
 			newID = 0
 
-		newChannel = multisigchannel.constructFromDeposit(newID, amount)
+		newChannel = multisigchannel.constructFromDeposit(self.bitcoind, newID, amount)
 		self.channels.append(newChannel)
 		self.connection.sendMessage(newChannel.makeDepositMessage(None))
 		self.context.sendSignal(None, event.signals.save)
@@ -361,7 +365,8 @@ class Link(event.Handler):
 					log.log("Initial deposit message with unsupported channel type")
 					#TODO: send refusal reply?
 				else:
-					newChannel = multisigchannel.constructFromDepositMessage(message)
+					newChannel = multisigchannel.constructFromDepositMessage(
+						self.bitcoind, message)
 					self.channels.append(newChannel)
 					reply = newChannel.makeDepositMessage(message)
 					if reply != None:
