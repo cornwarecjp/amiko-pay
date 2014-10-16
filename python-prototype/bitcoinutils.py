@@ -127,7 +127,7 @@ def sendToMultiSigPubKey(bitcoind, amount, toPubKey1, toPubKey2, changeHash, fee
 	return tx
 
 
-def makeSpendMultiSigTransaction(bitcoind, outputHash, outputIndex, amount, toHash, fee):
+def makeSpendMultiSigTransaction(outputHash, outputIndex, amount, toHash, fee):
 	tx = Transaction(
 		tx_in = [TxIn(outputHash, outputIndex)],
 		tx_out = [TxOut(amount-fee, Script.standardPubKey(toHash))]
