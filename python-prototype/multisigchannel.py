@@ -24,6 +24,9 @@ import bitcointransaction
 import crypto
 import messages
 
+from bitcoinutils import sendToMultiSigPubKey
+from bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction, applyMultiSigSignatures
+
 
 """
 We use a variation of the following. The variation basically consists of having
@@ -133,6 +136,17 @@ class MultiSigChannel(channel.Channel):
 				binascii.unhexlify(state["peerPublicKey"])
 				)
 
+		self.T1 = None
+		self.T2 = None
+		if "T1" in state:
+			self.T1 = bitcointransaction.Transaction.deserialize(
+				binascii.unhexlify(state["T1"])
+				)
+		if "T2" in state:
+			self.T2 = bitcointransaction.Transaction.deserialize(
+				binascii.unhexlify(state["T2"])
+				)
+
 
 	def getType(self):
 		return "multisig"
@@ -144,7 +158,39 @@ class MultiSigChannel(channel.Channel):
 			ret["ownPrivateKey"] = self.ownKey.getPrivateKey().encode("hex")
 		if self.peerKey != None:
 			ret["peerPublicKey"] = self.peerKey.getPublicKey().encode("hex")
+		if self.T1 != None:
+			if forDisplay:
+				ret["T1"] = self.T1.getTransactionID().encode("hex")[::-1]
+			else:
+				ret["T1"] = self.T1.serialize().encode("hex")
+		if self.T2 != None:
+			if forDisplay:
+				ret["T2"] = self.T2.getTransactionID().encode("hex")[::-1]
+			else:
+				ret["T2"] = self.T2.serialize().encode("hex")
 		return ret
+
+
+	def makeT1AndT2(self):
+		fee = 10000 #0.1 mBTC
+
+		if self.amountLocal <= 2*fee: #both deposit and withdraw fees
+			raise Exception("The deposited amount needs to be more than the transaction fees")
+
+		ownPubKey = self.ownKey.getPublicKey()
+		peerPubKey = self.peerKey.getPublicKey()
+		returnKeyHash = crypto.RIPEMD160(crypto.SHA256(ownPubKey))
+
+		self.T1 = sendToMultiSigPubKey(self.bitcoind, self.amountLocal,
+			ownPubKey,
+			peerPubKey,
+			returnKeyHash,
+			fee)
+
+		T1_ID = self.T1.getTransactionID() #opposite endianness as in Bitcoind
+
+		self.T2 = makeSpendMultiSigTransaction(
+			T1_ID, 0, self.amountLocal, returnKeyHash, fee)
 
 
 	def makeDepositMessage(self, message):
@@ -166,7 +212,7 @@ class MultiSigChannel(channel.Channel):
 			self.stage = 2
 			self.peerKey = crypto.Key()
 			self.peerKey.setPublicKey(message.depositData)
-			#TODO: make T1, T2
+			self.makeT1AndT2()
 			#TODO: send T2
 			print "DONE"
 		#TODO: rest of deposit messaging
