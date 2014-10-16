@@ -274,13 +274,14 @@ class Receipt(Message):
 
 
 class Deposit(Message):
-	def __init__(self, ID=0, amount=0, type="", stage=0, depositData=""):
+	#TODO: maybe remove amount attribute (it can be derived from payload)
+	def __init__(self, ID=0, amount=0, type="", stage=0, payload=""):
 		Message.__init__(self, ID_DEPOSIT)
 		self.ID = ID
 		self.amount = amount
 		self.type = type
 		self.stage = stage
-		self.depositData = depositData #serialized link-type dependent data
+		self.payload = payload #serialized link-type dependent data
 
 
 	def serializeAttributes(self):
@@ -297,7 +298,7 @@ class Deposit(Message):
 		# 1-byte unsigned int:
 		ret += struct.pack("!B", self.stage)
 
-		ret += self.depositData
+		ret += self.payload
 
 		return ret
 
@@ -320,7 +321,7 @@ class Deposit(Message):
 		self.stage = struct.unpack("!B", s[0])[0]
 		s = s[1:]
 
-		self.depositData = s
+		self.payload = s
 
 
 	def __str__(self):

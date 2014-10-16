@@ -181,7 +181,9 @@ class MultiSigChannel(channel.Channel):
 		peerPubKey = self.peerKey.getPublicKey()
 		returnKeyHash = crypto.RIPEMD160(crypto.SHA256(ownPubKey))
 
-		self.T1 = sendToMultiSigPubKey(self.bitcoind, self.amountLocal,
+		#We send an extra fee here, so that T2's initial return becomes
+		# exactly self.amountLocal
+		self.T1 = sendToMultiSigPubKey(self.bitcoind, self.amountLocal + fee,
 			ownPubKey,
 			peerPubKey,
 			returnKeyHash,
@@ -189,8 +191,11 @@ class MultiSigChannel(channel.Channel):
 
 		T1_ID = self.T1.getTransactionID() #opposite endianness as in Bitcoind
 
+		#TODO: set lock time!!!
+		#The amount argument is the amount in the INPUT of T2, so it's again
+		#with an added fee, to make the OUTPUT equal to self.amountLocal.
 		self.T2 = makeSpendMultiSigTransaction(
-			T1_ID, 0, self.amountLocal, returnKeyHash, fee)
+			T1_ID, 0, self.amountLocal + fee, returnKeyHash, fee)
 
 
 	def makeDepositMessage(self, message):
@@ -200,24 +205,38 @@ class MultiSigChannel(channel.Channel):
 			return messages.Deposit(
 				self.ID, self.amountLocal, self.getType(), self.stage,
 				self.ownKey.getPublicKey())
+
 		elif self.stage == -1 and message.stage == 0:
 			#Received deposit message with public key from peer
 			self.stage = 1
 			self.peerKey = crypto.Key()
-			self.peerKey.setPublicKey(message.depositData)
+			self.peerKey.setPublicKey(message.payload)
 			return messages.Deposit(
 				self.ID, 0, self.getType(), self.stage, self.ownKey.getPublicKey())
+
 		elif self.stage == 0 and message.stage == 1:
 			#Received reply on own deposit message
 			self.stage = 2
 			self.peerKey = crypto.Key()
-			self.peerKey.setPublicKey(message.depositData)
+			self.peerKey.setPublicKey(message.payload)
 			self.makeT1AndT2()
-			#TODO: send T2
+			return messages.Deposit(
+				self.ID, self.amountLocal, self.getType(), self.stage,
+				self.T2.serialize())
+
+		elif self.stage == 1 and message.stage == 2:
+			#Received T2
+			self.stage = 3
+			self.T2 = bitcointransaction.Transaction.deserialize(message.payload)
+			#TODO: maybe re-serialize to check consistency
+			#TODO: check amount
+			#TODO: make + send signature
 			print "DONE"
+
 		#TODO: rest of deposit messaging
 		else:
 			raise Exception("Received illegal deposit message")
+
 		return None
 
 
