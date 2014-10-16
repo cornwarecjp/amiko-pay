@@ -56,6 +56,24 @@ def packVarInt(i):
 		return struct.pack('B', 0xff) + struct.pack('<Q', i) #uint64_t
 
 
+def unpackVarInt(data):
+	firstByte = struct.unpack('B', data[0])[0] #uint8_t
+	if firstByte < 0xfd:
+		value = firstByte
+		return value, 1
+	elif firstByte == 0xfd:
+		value = struct.unpack('<H', data[1:3])[0] #uint16_t
+		return value, 3
+	elif firstByte == 0xfe:
+		value = struct.unpack('<I', data[1:5])[0] #uint32_t
+		return value, 5
+	elif firstByte == 0xff:
+		value = struct.unpack('<Q', data[1:9])[0] #uint64_t
+		return value, 9
+
+	raise Exception("Bug detected in unpackVarInt")
+
+
 
 class OP:
 	ZERO = 0x00
@@ -142,6 +160,31 @@ class Script:
 
 
 class TxIn:
+	@staticmethod
+	def deserialize(data):
+		outputHash = data[:32]
+		data = data[32:]
+
+		outputIndex = struct.unpack('<I', data[:4])[0] #uint32_t
+		data = data[4:]
+
+		scriptSigLen, numBytesInLen = unpackVarInt(data)
+		data = data[numBytesInLen:]
+
+		scriptSig = Script.deserialize(data[:scriptSigLen])
+		data = data[scriptSigLen:]
+
+		sequenceNumber = struct.unpack('<I', data[:4])[0] #uint32_t
+		if sequenceNumber != 0xffffffff:
+			raise Exception("Deserialization failed: non-standard sequence number")
+
+		obj = TxIn(outputHash, outputIndex)
+		obj.scriptSig = scriptSig
+		numBytes = 36 + numBytesInLen + scriptSigLen + 4
+
+		return obj, numBytes
+
+
 	def __init__(self, outputHash, outputIndex):
 		self.previousOutputHash = outputHash
 		self.previousOutputIndex = outputIndex
@@ -160,6 +203,22 @@ class TxIn:
 
 
 class TxOut:
+	@staticmethod
+	def deserialize(data):
+		amount = struct.unpack('<Q', data[:8])[0] #uint64_t
+		data = data[8:]
+
+		scriptPubKeyLen, numBytesInLen = unpackVarInt(data)
+		data = data[numBytesInLen:]
+
+		scriptPubKey = Script.deserialize(data[:scriptPubKeyLen])
+
+		obj = TxOut(amount, scriptPubKey)
+		numBytes = 8 + numBytesInLen + scriptPubKeyLen
+
+		return obj, numBytes
+
+
 	def __init__(self, amount, scriptPubKey):
 		self.amount = amount
 		self.scriptPubKey = scriptPubKey
@@ -175,6 +234,43 @@ class TxOut:
 
 
 class Transaction:
+	@staticmethod
+	def deserialize(data):
+		version = struct.unpack('<I', data[:4])[0] #version, uint32_t
+		data = data[4:]
+
+		if version != 1:
+			raise Exception("Transaction deserialization failed: version != 1")
+
+		num_tx_in, numBytes = unpackVarInt(data)
+		data = data[numBytes:]
+		tx_in = []
+		for i in range(num_tx_in):
+			obj, numBytes = TxIn.deserialize(data)
+			data = data[numBytes:]
+			tx_in.append(obj)
+
+		num_tx_out, numBytes = unpackVarInt(data)
+		data = data[numBytes:]
+		tx_out = []
+		for i in range(num_tx_out):
+			obj, numBytes = TxOut.deserialize(data)
+			data = data[numBytes:]
+			tx_out.append(obj)
+
+		#To make sure we're not accepting a transaction that has been serialized
+		#in a non-standard way (e.g. containing trailing information).
+		#This might be important when making/checking signatures.
+		#It might be advisable anyway to re-serialize a received transaction and
+		#check whether the result matches the original.
+		if len(data) != 4:
+			raise Exception("Transaction deserialization failed: incorrect data length")
+
+		lockTime = struct.unpack('<I', data[:4])[0] #uint32_t
+
+		return Transaction(tx_in, tx_out, lockTime)
+
+
 	def __init__(self, tx_in, tx_out, lockTime=0):
 		self.tx_in = tx_in
 		self.tx_out = tx_out

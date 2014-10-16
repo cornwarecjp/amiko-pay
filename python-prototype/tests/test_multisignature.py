@@ -26,6 +26,7 @@ import settings
 import bitcoind
 import base58
 from crypto import Key
+import bitcointransaction
 from bitcoinutils import sendToMultiSigPubKey
 from bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction, applyMultiSigSignatures
 
@@ -82,6 +83,10 @@ print "Tx:", tx.serialize().encode("hex")
 
 print "Tx ID:", tx.getTransactionID()[::-1].encode("hex")
 
-tx = tx.serialize()
-d.sendRawTransaction(tx)
+tx_s = tx.serialize()
+#d.sendRawTransaction(tx_s)
+
+tx = bitcointransaction.Transaction.deserialize(tx_s)
+tx_s2 = tx.serialize()
+print "Serialization remains constant: ", tx_s == tx_s2
 
