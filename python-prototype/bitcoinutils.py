@@ -105,7 +105,7 @@ def sendToMultiSigPubKey(bitcoind, amount, toPubKey1, toPubKey2, changeHash, fee
 	totalIn, inputs = getInputsForAmount(bitcoind, amount+fee)
 	change = totalIn - fee - amount
 
-	print "%d -> %d, %d, %d" % (totalIn, amount, change, fee)
+	#print "%d -> %d, %d, %d" % (totalIn, amount, change, fee)
 
 	tx = Transaction(
 		tx_in = [
