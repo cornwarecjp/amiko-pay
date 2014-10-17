@@ -116,13 +116,13 @@ class Script:
 				if opcode <= 0x4b:
 					length = opcode
 				elif opcode == 0x4c:
-					length = struct.unpack('B', data[:1])
+					length = struct.unpack('B', data[:1])[0]
 					data = data[1:]
 				elif opcode == 0x4d:
-					length = struct.unpack('<H', data[:2])
+					length = struct.unpack('<H', data[:2])[0]
 					data = data[2:]
 				elif opcode == 0x4e:
-					length = struct.unpack('<I', data[:4])
+					length = struct.unpack('<I', data[:4])[0]
 					data = data[4:]
 				elements.append(data[:length])
 				data = data[length:]
