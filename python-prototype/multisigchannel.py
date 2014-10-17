@@ -252,12 +252,23 @@ class MultiSigChannel(channel.Channel):
 				self.peerKey, signature):
 					raise Exception("Signature failure!") #TODO: what to do now?
 			self.peerSignature = signature
+			T1_serialized = self.T1.serialize()
 			#TODO: publish T1 in Bitcoind
 			self.stage = 4
-			#TODO: send T1 to peer
+			return messages.Deposit(
+				self.ID, self.getType(), self.stage, T1_serialized)
+
+		elif self.stage == 3 and message.stage == 4:
+			T1_serialized = message.payload
+			self.T1 = bitcointransaction.Transaction.deserialize(T1_serialized)
+			#TODO: maybe re-serialize to check consistency
+			#TODO: check T1
+			#TODO: publish T1 in Bitcoind
+			#TODO: check whether T1 is accepted (maybe leave this to later code)
+
+			self.stage = 5
 			print "DONE"
 
-		#TODO: rest of deposit messaging
 		else:
 			raise Exception("Received illegal deposit message")
 
