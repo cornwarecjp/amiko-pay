@@ -140,6 +140,7 @@ class MultiSigChannel(channel.Channel):
 
 		self.T1 = None
 		self.T2 = None
+		self.peerSignature = None
 		if "T1" in state:
 			self.T1 = bitcointransaction.Transaction.deserialize(
 				binascii.unhexlify(state["T1"])
@@ -148,6 +149,8 @@ class MultiSigChannel(channel.Channel):
 			self.T2 = bitcointransaction.Transaction.deserialize(
 				binascii.unhexlify(state["T2"])
 				)
+		if "peerSignature" in state:
+			self.peerSignature = binascii.unhexlify(state["peerSignature"])
 
 
 	def getType(self):
@@ -171,11 +174,13 @@ class MultiSigChannel(channel.Channel):
 				ret["T2"] = self.T2.getTransactionID().encode("hex")[::-1]
 			else:
 				ret["T2"] = self.T2.serialize().encode("hex")
+		if self.peerSignature != None:
+			ret["peerSignature"] = self.peerSignature.encode("hex")
 		return ret
 
 
 	def makeT1AndT2(self):
-		fee = 10000 #0.1 mBTC
+		fee = 10000 #0.1 mBTC (TODO: make configurable)
 
 		if self.amountLocal <= 2*fee: #both deposit and withdraw fees
 			raise Exception("The deposited amount needs to be more than the transaction fees")
@@ -211,29 +216,40 @@ class MultiSigChannel(channel.Channel):
 
 		elif self.stage == -1 and message.stage == 0:
 			#Received deposit message with public key from peer
-			self.stage = 1
 			self.peerKey = crypto.Key()
 			self.peerKey.setPublicKey(message.payload)
+			self.stage = 1
 			return messages.Deposit(
 				self.ID, self.getType(), self.stage, self.ownKey.getPublicKey())
 
 		elif self.stage == 0 and message.stage == 1:
 			#Received reply on own deposit message
-			self.stage = 2
 			self.peerKey = crypto.Key()
 			self.peerKey.setPublicKey(message.payload)
 			self.makeT1AndT2()
+			self.stage = 2
 			return messages.Deposit(
 				self.ID, self.getType(), self.stage,
 				self.T2.serialize())
 
 		elif self.stage == 1 and message.stage == 2:
 			#Received T2
-			self.stage = 3
 			self.T2 = bitcointransaction.Transaction.deserialize(message.payload)
 			#TODO: maybe re-serialize to check consistency
 			self.amountRemote = sum(tx.amount for tx in self.T2.tx_out)
-			#TODO: make + send signature
+			signature = signMultiSigTransaction(
+				self.T2, 0, self.peerKey.getPublicKey(), self.ownKey.getPublicKey(),
+				self.ownKey)
+			self.stage = 3
+			return messages.Deposit(
+				self.ID, self.getType(), self.stage, signature)
+
+		elif self.stage == 2 and message.stage == 3:
+			signature = message.payload
+			#TODO: check signature
+			#TODO: publish T1
+			self.peerSignature = signature
+			self.stage = 4
 			print "DONE"
 
 		#TODO: rest of deposit messaging
