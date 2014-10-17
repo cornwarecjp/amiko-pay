@@ -124,6 +124,8 @@ class MultiSigChannel(channel.Channel):
 		channel.Channel.__init__(self, state)
 		self.bitcoind = bitcoind
 
+		self.stage = state["stage"]
+
 		self.ownKey = crypto.Key()
 		self.ownKey.setPrivateKey(
 			binascii.unhexlify(state["ownPrivateKey"])
@@ -154,6 +156,7 @@ class MultiSigChannel(channel.Channel):
 
 	def getState(self, forDisplay=False):
 		ret = channel.Channel.getState(self, forDisplay)
+		ret["stage"] =  self.stage
 		if not forDisplay:
 			ret["ownPrivateKey"] = self.ownKey.getPrivateKey().encode("hex")
 		if self.peerKey != None:
