@@ -206,7 +206,7 @@ class MultiSigChannel(channel.Channel):
 			#Initial message:
 			self.stage = 0
 			return messages.Deposit(
-				self.ID, self.amountLocal, self.getType(), self.stage,
+				self.ID, self.getType(), self.stage,
 				self.ownKey.getPublicKey())
 
 		elif self.stage == -1 and message.stage == 0:
@@ -215,7 +215,7 @@ class MultiSigChannel(channel.Channel):
 			self.peerKey = crypto.Key()
 			self.peerKey.setPublicKey(message.payload)
 			return messages.Deposit(
-				self.ID, 0, self.getType(), self.stage, self.ownKey.getPublicKey())
+				self.ID, self.getType(), self.stage, self.ownKey.getPublicKey())
 
 		elif self.stage == 0 and message.stage == 1:
 			#Received reply on own deposit message
@@ -224,7 +224,7 @@ class MultiSigChannel(channel.Channel):
 			self.peerKey.setPublicKey(message.payload)
 			self.makeT1AndT2()
 			return messages.Deposit(
-				self.ID, self.amountLocal, self.getType(), self.stage,
+				self.ID, self.getType(), self.stage,
 				self.T2.serialize())
 
 		elif self.stage == 1 and message.stage == 2:
@@ -232,7 +232,7 @@ class MultiSigChannel(channel.Channel):
 			self.stage = 3
 			self.T2 = bitcointransaction.Transaction.deserialize(message.payload)
 			#TODO: maybe re-serialize to check consistency
-			#TODO: check amount
+			self.amountRemote = sum(tx.amount for tx in self.T2.tx_out)
 			#TODO: make + send signature
 			print "DONE"
 
@@ -271,7 +271,7 @@ def constructFromDepositMessage(bitcoind, message):
 		"ID": message.ID,
 		"stage": -1,
 		"amountLocal" : 0,
-		"amountRemote": message.amount,
+		"amountRemote": 0, #To be increased later
 		"transactionsIncomingLocked"  : {},
 		"transactionsIncomingReserved": {},
 		"transactionsOutgoingLocked"  : {},

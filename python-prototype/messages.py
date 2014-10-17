@@ -274,11 +274,9 @@ class Receipt(Message):
 
 
 class Deposit(Message):
-	#TODO: maybe remove amount attribute (it can be derived from payload)
-	def __init__(self, ID=0, amount=0, type="", stage=0, payload=""):
+	def __init__(self, ID=0, type="", stage=0, payload=""):
 		Message.__init__(self, ID_DEPOSIT)
 		self.ID = ID
-		self.amount = amount
 		self.type = type
 		self.stage = stage
 		self.payload = payload #serialized link-type dependent data
@@ -287,9 +285,6 @@ class Deposit(Message):
 	def serializeAttributes(self):
 		# 4-byte unsigned int in network byte order:
 		ret = struct.pack("!I", self.ID)
-
-		# 8-byte unsigned int in network byte order:
-		ret += struct.pack("!Q", self.amount)
 
 		# 4-byte unsigned int in network byte order:
 		typeLen = struct.pack("!I", len(self.type))
@@ -308,10 +303,6 @@ class Deposit(Message):
 		self.ID = struct.unpack("!I", s[:4])[0]
 		s = s[4:]
 
-		# 8-byte unsigned int in network byte order:
-		self.amount = struct.unpack("!Q", s[:8])[0]
-		s = s[8:]
-
 		# 4-byte unsigned int in network byte order:
 		typeLen = struct.unpack("!I", s[:4])[0]
 		self.type = s[4:4+typeLen]
@@ -325,8 +316,8 @@ class Deposit(Message):
 
 
 	def __str__(self):
-		return "ID: %d; amount: %d; type: %s; stage: %d" % \
-			(self.ID, self.amount, self.type, self.stage)
+		return "ID: %d; type: %s; stage: %d" % \
+			(self.ID, self.type, self.stage)
 
 
 
