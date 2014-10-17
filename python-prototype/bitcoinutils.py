@@ -143,6 +143,16 @@ def signMultiSigTransaction(tx, outputIndex, toPubKey1, toPubKey2, key):
 	return key.sign(bodyHash) + struct.pack('B', hashType) #uint8_t
 
 
+def verifyMultiSigSignature(tx, outputIndex, toPubKey1, toPubKey2, key, signature):
+	hashType = struct.unpack('B', signature[-1])[0] #uint8_t
+	if hashType != 1: #SIGHASH_ALL
+		return False
+	signature = signature[:-1]
+	scriptPubKey = Script.multiSigPubKey(toPubKey1, toPubKey2)
+	bodyHash = tx.getSignatureBodyHash(outputIndex, scriptPubKey, hashType)
+	return key.verify(bodyHash, signature)
+
+
 def applyMultiSigSignatures(tx, sig1, sig2):
 	tx.signInputWithSignatures(0, [OP.ZERO, None, None], [sig1, sig2])
 

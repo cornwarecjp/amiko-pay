@@ -25,7 +25,8 @@ import crypto
 import messages
 
 from bitcoinutils import sendToMultiSigPubKey
-from bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction, applyMultiSigSignatures
+from bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction
+from bitcoinutils import verifyMultiSigSignature, applyMultiSigSignatures
 
 
 """
@@ -246,10 +247,14 @@ class MultiSigChannel(channel.Channel):
 
 		elif self.stage == 2 and message.stage == 3:
 			signature = message.payload
-			#TODO: check signature
-			#TODO: publish T1
+			if not verifyMultiSigSignature(
+				self.T2, 0, self.ownKey.getPublicKey(), self.peerKey.getPublicKey(),
+				self.peerKey, signature):
+					raise Exception("Signature failure!") #TODO: what to do now?
 			self.peerSignature = signature
+			#TODO: publish T1 in Bitcoind
 			self.stage = 4
+			#TODO: send T1 to peer
 			print "DONE"
 
 		#TODO: rest of deposit messaging
