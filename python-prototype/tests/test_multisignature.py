@@ -25,7 +25,7 @@ sys.path.append("..")
 import settings
 import bitcoind
 import base58
-from crypto import Key
+from crypto import Key, RIPEMD160, SHA256
 import bitcointransaction
 from bitcoinutils import sendToMultiSigPubKey
 from bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction, applyMultiSigSignatures
@@ -44,7 +44,7 @@ address2 = base58.encodeBase58Check(keyHash2, 0)
 print address1
 print address2
 
-#Note: this will fail, unless you change toe above addresses to some of your own
+#Note: this will fail, unless you change the above addresses to some of your own
 privKey1 = base58.decodeBase58Check(d.getPrivateKey(address1), 128)
 privKey2 = base58.decodeBase58Check(d.getPrivateKey(address2), 128)
 
@@ -56,6 +56,8 @@ key2.setPrivateKey(privKey2)
 print key1.getPublicKey().encode("hex")
 print key2.getPublicKey().encode("hex")
 
+print base58.encodeBase58Check(RIPEMD160(SHA256(key1.getPublicKey())), 0)
+print base58.encodeBase58Check(RIPEMD160(SHA256(key2.getPublicKey())), 0)
 
 amount = int(100000 * float(raw_input("Amount to be transferred (mBTC): ")))
 fee = 10000 #0.1 mBTC
