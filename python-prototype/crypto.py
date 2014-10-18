@@ -39,6 +39,9 @@ class BIGNUM(ctypes.Structure):
 #Constants:
 NID_secp256k1 = 714
 
+POINT_CONVERSION_COMPRESSED = 2
+POINT_CONVERSION_UNCOMPRESSED = 4
+
 
 #Function prototype modifications:
 libssl.EC_KEY_new_by_curve_name.argtypes = [ctypes.c_int]
@@ -57,6 +60,8 @@ libssl.EC_KEY_get0_private_key.restype = ctypes.c_void_p
 
 libssl.EC_KEY_check_key.argtypes = [ctypes.c_void_p]
 libssl.EC_KEY_check_key.restype = ctypes.c_int
+
+libssl.EC_KEY_set_conv_form.argtypes = [ctypes.c_void_p, ctypes.c_int]
 
 libssl.EC_KEY_set_private_key.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 libssl.EC_KEY_set_private_key.restype = ctypes.c_int
@@ -151,6 +156,7 @@ class Key:
 		self.keyData = ctypes.c_void_p(libssl.EC_KEY_new_by_curve_name(NID_secp256k1))
 		self.hasPublicKey = False
 		self.hasPrivateKey = False
+		self.hasCompressedPublicKey = False
 
 		#keep a reference to ensure that we're deleted before libssl:
 		self.libssl = libssl
@@ -166,14 +172,24 @@ class Key:
 	#TODO: comparison behavior
 
 
-	def makeNewKey(self):
+	def makeNewKey(self, compressed=True):
 		if not libssl.EC_KEY_generate_key(self.keyData):
 			raise Exception("EC_KEY_generate_key failed")
+
+		self.setPublicKeyCompression(compressed)
 		self.hasPublicKey = True
 		self.hasPrivateKey = True
 
 
+	def setPublicKeyCompression(self, compressed):
+		libssl.EC_KEY_set_conv_form(self.keyData,
+			POINT_CONVERSION_COMPRESSED if compressed else POINT_CONVERSION_UNCOMPRESSED
+			)
+		self.hasCompressedPublicKey = compressed
+
+
 	def setPublicKey(self, key):
+		compressed = len(key) == 33
 
 		b = ctypes.create_string_buffer(key)
 
@@ -183,6 +199,7 @@ class Key:
 			#TODO: reset key state
 			raise Exception("o2i_ECPublicKey failed")
 
+		self.setPublicKeyCompression(compressed)
 		self.hasPublicKey = True
 		self.hasPrivateKey = False
 
@@ -203,6 +220,9 @@ class Key:
 
 
 	def setPrivateKey(self, key):
+		compressed = len(key) == 33
+		key = key[:32]
+
 		priv_key = BIGNUM()
 		libssl.BN_init(ctypes.byref(priv_key))
 		if not libssl.BN_bin2bn(key, len(key), ctypes.byref(priv_key)):
@@ -240,6 +260,7 @@ class Key:
 
 			libssl.BN_clear_free(ctypes.byref(priv_key))
 
+		self.setPublicKeyCompression(compressed)
 		self.hasPublicKey = True
 		self.hasPrivateKey = True
 
@@ -260,7 +281,10 @@ class Key:
 		if n != nBytes:
 			raise Exception("BN_bn2bin failed")
 
-		return "\0"*(32-nBytes) + ''.join(c for c in b)
+		ret = "\0"*(32-nBytes) + ''.join(c for c in b)
+		if self.hasCompressedPublicKey:
+			ret += chr(1)
+		return ret
 
 
 	def sign(self, data):
@@ -298,33 +322,35 @@ class Key:
 
 if __name__ == "__main__":
 	#Test:
-	privKey = Key()
-	privKey.makeNewKey()
+	for compression in [False, True]:
+		print "Public key compression: ", compression
+		privKey = Key()
+		privKey.makeNewKey(compression)
 
-	pubKey = Key()
-	pubKey.setPublicKey(privKey.getPublicKey())
+		pubKey = Key()
+		pubKey.setPublicKey(privKey.getPublicKey())
 
-	data = "blablabla"
+		data = "blablabla"
 
-	goodSig = privKey.sign(data)
-	print "Good signature:", pubKey.verify(data, goodSig)
+		goodSig = privKey.sign(data)
+		print "Good signature:", pubKey.verify(data, goodSig)
 
-	otherKey = Key()
-	otherKey.makeNewKey()
-	badSig1 = otherKey.sign(data)
+		otherKey = Key()
+		otherKey.makeNewKey()
+		badSig1 = otherKey.sign(data)
 
-	badSig2 = privKey.sign("bad data")
+		badSig2 = privKey.sign("bad data")
 
-	print "Bad signature 1:", pubKey.verify(data, badSig1)
-	print "Bad signature 2:", pubKey.verify(data, badSig2)
+		print "Bad signature 1:", pubKey.verify(data, badSig1)
+		print "Bad signature 2:", pubKey.verify(data, badSig2)
 
-	priv = privKey.getPrivateKey()
-	privKey2 = Key()
-	privKey2.setPrivateKey(priv)
-	print "Private key is constant:", privKey2.getPrivateKey() == priv
+		priv = privKey.getPrivateKey()
+		privKey2 = Key()
+		privKey2.setPrivateKey(priv)
+		print "Private key is constant:", privKey2.getPrivateKey() == priv
 
-	goodSig = privKey2.sign(data)
-	print "Good signature 2:", pubKey.verify(data, goodSig)
+		goodSig = privKey2.sign(data)
+		print "Good signature 2:", pubKey.verify(data, goodSig)
 
 	cleanup()
 
