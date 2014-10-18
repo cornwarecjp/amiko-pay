@@ -165,15 +165,16 @@ class MultiSigChannel(channel.Channel):
 		ret = channel.Channel.getState(self, forDisplay)
 		ret["stage"] =  self.stage
 		ret["ownAddress"] = self.ownAddress
+		if forDisplay:
+			pubKey = self.ownKey.getPublicKey()
+			ret["ownPublicKey"] = pubKey.encode("hex")
 		if self.peerKey != None:
+			pubKey = self.peerKey.getPublicKey()
+			ret["peerPublicKey"] = pubKey.encode("hex")
 			if forDisplay:
 				ret["peerAddress"] = base58.encodeBase58Check(
-					crypto.RIPEMD160(crypto.SHA256(
-						self.peerKey.getPublicKey()
-						)),
+					crypto.RIPEMD160(crypto.SHA256(pubKey)),
 					0)
-			else:
-				ret["peerPublicKey"] = self.peerKey.getPublicKey().encode("hex")
 		if self.T1 != None:
 			if forDisplay:
 				ret["T1"] = self.T1.getTransactionID().encode("hex")[::-1]
