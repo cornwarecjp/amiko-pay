@@ -77,6 +77,8 @@ makelink localname [remoteURL]
   Prints the local link URL.
 deposit linkname amount
   Deposit amount into a link
+withdraw linkname channelID
+  Withdraw from a channel of a link
 """
 	elif cmd[0] == "request":
 		checkNumArgs(1, 2)
@@ -138,6 +140,18 @@ deposit linkname amount
 			return
 
 		a.deposit(linkname, amount)
+
+	elif cmd[0] == "withdraw":
+		checkNumArgs(2, 2)
+
+		linkname = cmd[1]
+		channelID = int(cmd[2])
+
+		if raw_input("Are you sure (y/n)? ") != 'y':
+			print "Aborted"
+			return
+
+		a.withdraw(linkname, channelID)
 
 	else:
 		print "Unknown command. Enter \"help\" for a list of commands."

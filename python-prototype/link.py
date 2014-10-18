@@ -105,6 +105,14 @@ class Link(event.Handler):
 		self.context.sendSignal(None, event.signals.save)
 
 
+	def withdraw(self, channelID):
+		if not self.isConnected():
+			raise Exception("Not connected")
+
+		print "withdraw"
+		#TODO
+
+
 	def connect(self, connection):
 		if self.isConnected():
 			log.log("Link: Received a duplicate connection; closing it")

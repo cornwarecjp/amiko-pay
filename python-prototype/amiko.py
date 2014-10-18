@@ -323,6 +323,23 @@ class Amiko(threading.Thread):
 		links[0].deposit(amount)
 
 
+	@runInAmikoThread
+	def withdraw(self, linkname, channelID):
+		"""
+		Withdraw from a link.
+
+		Arguments:
+		linkname: the name of the link
+		channelID: the channel ID of the channel to be withdrawn
+		"""
+
+		links = \
+			[lnk for lnk in self.routingContext.links if lnk.name == linkname]
+		if len(links) == 0:
+			raise Exception("There is no link with that name")
+		links[0].withdraw(channelID)
+
+
 	def run(self):
 		"""
 		The thread function.
