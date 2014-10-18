@@ -23,6 +23,7 @@ import channel
 import bitcointransaction
 import crypto
 import messages
+import base58
 
 from bitcoinutils import sendToMultiSigPubKey
 from bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction
@@ -127,10 +128,12 @@ class MultiSigChannel(channel.Channel):
 
 		self.stage = state["stage"]
 
-		self.ownKey = crypto.Key()
-		self.ownKey.setPrivateKey(
-			binascii.unhexlify(state["ownPrivateKey"])
+		self.ownAddress = str(state["ownAddress"])
+		ownPrivateKey = base58.decodeBase58Check(
+			self.bitcoind.getPrivateKey(self.ownAddress), 128
 			)
+		self.ownKey = crypto.Key()
+		self.ownKey.setPrivateKey(ownPrivateKey)
 
 		self.peerKey = None
 		if "peerPublicKey" in state:
@@ -161,10 +164,16 @@ class MultiSigChannel(channel.Channel):
 	def getState(self, forDisplay=False):
 		ret = channel.Channel.getState(self, forDisplay)
 		ret["stage"] =  self.stage
-		if not forDisplay:
-			ret["ownPrivateKey"] = self.ownKey.getPrivateKey().encode("hex")
+		ret["ownAddress"] = self.ownAddress
 		if self.peerKey != None:
-			ret["peerPublicKey"] = self.peerKey.getPublicKey().encode("hex")
+			if forDisplay:
+				ret["peerAddress"] = base58.encodeBase58Check(
+					crypto.RIPEMD160(crypto.SHA256(
+						self.peerKey.getPublicKey()
+						)),
+					0)
+			else:
+				ret["peerPublicKey"] = self.peerKey.getPublicKey().encode("hex")
 		if self.T1 != None:
 			if forDisplay:
 				ret["T1"] = self.T1.getTransactionID().encode("hex")[::-1]
@@ -276,8 +285,7 @@ class MultiSigChannel(channel.Channel):
 
 
 def constructFromDeposit(bitcoind, ID, amount):
-	key = crypto.Key()
-	key.makeNewKey()
+	ownAddress = bitcoind.getNewAddress()
 	state = \
 	{
 		"ID": ID,
@@ -289,15 +297,14 @@ def constructFromDeposit(bitcoind, ID, amount):
 		"transactionsOutgoingLocked"  : {},
 		"transactionsOutgoingReserved": {},
 
-		"ownPrivateKey": key.getPrivateKey().encode("hex")
+		"ownAddress": ownAddress
 	}
 	return MultiSigChannel(bitcoind, state)
 
 
 
 def constructFromDepositMessage(bitcoind, message):
-	key = crypto.Key()
-	key.makeNewKey()
+	ownAddress = bitcoind.getNewAddress()
 	state = \
 	{
 		"ID": message.ID,
@@ -309,7 +316,7 @@ def constructFromDepositMessage(bitcoind, message):
 		"transactionsOutgoingLocked"  : {},
 		"transactionsOutgoingReserved": {},
 
-		"ownPrivateKey": key.getPrivateKey().encode("hex")
+		"ownAddress": ownAddress
 	}
 	return MultiSigChannel(bitcoind, state)
 

@@ -80,6 +80,16 @@ class Bitcoind:
 		return self.access.getblockcount()
 
 
+	def getNewAddress(self):
+		"""
+		Return value:
+		str, Base58Check-encoded address
+
+		Generates and returns a new address.
+		"""
+		return self.access.getnewaddress()
+
+
 	def getPrivateKey(self, address):
 		"""
 		Arguments:
