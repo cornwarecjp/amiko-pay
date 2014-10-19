@@ -113,3 +113,8 @@ class Channel:
 		del self.transactionsOutgoingLocked[hash]
 
 
+	def makeWithdrawMessage(self, message):
+		print "Withdraw (NYI)"
+		return None #TODO
+
+

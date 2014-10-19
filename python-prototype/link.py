@@ -109,8 +109,15 @@ class Link(event.Handler):
 		if not self.isConnected():
 			raise Exception("Not connected")
 
-		print "withdraw"
-		#TODO
+		existingIDs = [c.ID for c in self.channels]
+		if channelID not in existingIDs:
+			raise Exception("Channel ID does not exist")
+
+		channel = self.channels[existingIDs.index(channelID)]
+		msg = channel.makeWithdrawMessage(None)
+		if msg != None:
+			self.connection.sendMessage(msg)
+		self.context.sendSignal(None, event.signals.save)
 
 
 	def connect(self, connection):
