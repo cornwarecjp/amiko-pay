@@ -18,13 +18,18 @@
 
 import os
 import traceback
+import time
 
 
 
 logfile = open("debug.log", "a")
 
 def log(data):
-	logfile.write(data + '\n')
+	t = time.time()
+	ms = int(1000*t % 1000)
+	t_str = time.strftime("%Y-%m-%d %H:%M:%S.", time.localtime(t)) + ("%03d" % ms)
+
+	logfile.write(t_str + ' ' + data + '\n')
 	logfile.flush()
 	os.fsync(logfile.fileno())
 
