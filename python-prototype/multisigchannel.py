@@ -285,6 +285,11 @@ class MultiSigChannel(channel.Channel):
 		return None
 
 
+	def makeWithdrawMessage(self, message):
+		print "Withdraw (NYI)"
+		return None #TODO
+
+
 def constructFromDeposit(bitcoind, ID, amount):
 	ownAddress = bitcoind.getNewAddress()
 	state = \
