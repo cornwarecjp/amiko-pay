@@ -193,7 +193,7 @@ class Link(event.Handler):
 		# Use random time-out to prevent repeating connect collisions.
 		# This is especially important for the (not so important)
 		# loop-back connections.
-		timeout = random.uniform(2.0, 5.0)
+		timeout = random.uniform(1.0, 10.0)
 
 		self.setTimer(timeout, self.__handleReconnectTimeout)
 		log.log("Link: set reconnect timeout to %f s" % timeout)
