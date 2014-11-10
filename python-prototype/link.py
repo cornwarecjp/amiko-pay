@@ -60,9 +60,13 @@ class Link(event.Handler):
 				raise Exception("Unrecognized channel type \"%s\"" % \
 					c["type"])
 
-		self.__registerReconnectTimeoutHandler()
-
 		self.connection = None
+		self.dice = random.randint(0, 0xffffffff) #for connect collision decision
+
+		#After the time-out, we'll try to establish a connection.
+		#The reason for not connecting immediately is that, in the case of a
+		#link to self (useful for testing), the listener may still be inactive.
+		self.__registerReconnectTimeoutHandler(timeout=0.1)
 
 
 	def getState(self, forDisplay=False):
@@ -120,11 +124,23 @@ class Link(event.Handler):
 		self.context.sendSignal(None, event.signals.save)
 
 
-	def connect(self, connection):
+	def connect(self, connection, message):
 		if self.isConnected():
-			log.log("Link: Received a duplicate connection; closing it")
-			connection.close()
-			return
+			if message.dice > self.dice:
+				log.log("Link: Received a duplicate connection with larger dice value; closing own connection")
+				self.connection.close()
+				#Fall-through: accept the new connection
+			elif message.dice < self.dice:
+				log.log("Link: Received a duplicate connection with smaller dice value; closing it")
+				connection.close()
+				return
+			else:
+				#Note: this is very unlikely (1 in every 2**32 times)
+				log.log("Link: Received a duplicate connection with equal dice value; closing it")
+				#Choose new dice value:
+				self.dice = random.randint(0, 0xffffffff)
+				connection.close()
+				return
 
 		log.log("Link: Connection established (received)")
 		self.connection = connection
@@ -175,13 +191,13 @@ class Link(event.Handler):
 			log.log("Link: Connection established (created)")
 
 			# Send a link establishment message:
-			self.connection.sendMessage(messages.Link(self.remoteID))
+			self.connection.sendMessage(messages.Link(self.remoteID, self.dice))
 
 			# Send URLs
 			self.connection.sendMessage(messages.MyURLs([self.localURL]))
 		except:
-			#TODO: log entire exception
-			log.log("Link: Connection creation failed")
+			log.log("Link: Connection creation failed:")
+			log.logException()
 
 			if self.connection != None:
 				self.connection.close()
@@ -191,16 +207,11 @@ class Link(event.Handler):
 			self.__registerReconnectTimeoutHandler()
 
 
-	def __registerReconnectTimeoutHandler(self):
+	def __registerReconnectTimeoutHandler(self, timeout=10.0):
 
 		#Reconnect doesn't make sense if we don't know where to connect to
 		if self.remoteURL == "":
 			return
-
-		# Use random time-out to prevent repeating connect collisions.
-		# This is especially important for the (not so important)
-		# loop-back connections.
-		timeout = random.uniform(1.0, 10.0)
 
 		self.setTimer(timeout, self.__handleReconnectTimeout)
 		log.log("Link: set reconnect timeout to %f s" % timeout)

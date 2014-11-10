@@ -462,8 +462,8 @@ class Amiko(threading.Thread):
 
 	def __handleLinkSignal(self, connection, message):
 		for lnk in self.routingContext.links:
-			if lnk.localID == message.value:
-				lnk.connect(connection)
+			if lnk.localID == message.ID:
+				lnk.connect(connection, message)
 				return
 
 		log.log("Received link message with unknown ID")

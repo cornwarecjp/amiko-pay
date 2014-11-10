@@ -109,12 +109,6 @@ class String(Message):
 
 
 
-class Link(String):
-	def __init__(self, value=""):
-		String.__init__(self, value, ID_LINK)
-
-
-
 class Pay(String):
 	def __init__(self, value=""):
 		String.__init__(self, value, ID_PAY)
@@ -157,6 +151,32 @@ class MyURLs(String):
 
 	def getURLs(self):
 		return self.value.split("\n")
+
+
+
+class Link(Message):
+	def __init__(self, ID="", dice=0):
+		Message.__init__(self, ID_LINK)
+		self.ID = ID
+		self.dice = dice
+
+
+	def serializeAttributes(self):
+		# 4-byte unsigned int in network byte order:
+		dice = struct.pack("!I", self.dice)
+
+		return dice + self.ID
+
+
+	def deserializeAttributes(self, s):
+		# 4-byte unsigned int in network byte order:
+		self.dice = struct.unpack("!I", s[:4])[0]
+
+		self.ID = s[4:]
+
+
+	def __str__(self):
+		return "dice: %d; ID: %s" % (self.dice, self.ID)
 
 
 
