@@ -142,7 +142,8 @@ stages = \
 	"WaitingForT1",
 	"",
 ]
-stages = {x: i for i, x in enumerate(stages)}
+stages = {x: i for i, x in enumerate(stages)} #name   -> integer
+stageNames = {v:k for k,v in stages.items()}  #iteger -> name
 
 class MultiSigChannel(channel.Channel):
 	"""
@@ -153,7 +154,7 @@ class MultiSigChannel(channel.Channel):
 		channel.Channel.__init__(self, state)
 		self.bitcoind = bitcoind
 
-		self.stage = state["stage"]
+		self.stage = stages[state["stage"]] #name -> integer
 
 		self.ownAddress = str(state["ownAddress"])
 		ownPrivateKey = base58.decodeBase58Check(
@@ -190,7 +191,7 @@ class MultiSigChannel(channel.Channel):
 
 	def getState(self, forDisplay=False):
 		ret = channel.Channel.getState(self, forDisplay)
-		ret["stage"] =  self.stage
+		ret["stage"] = stageNames[self.stage]
 		ret["ownAddress"] = self.ownAddress
 		if forDisplay:
 			pubKey = self.ownKey.getPublicKey()
@@ -312,7 +313,7 @@ class MultiSigChannel(channel.Channel):
 			T1_serialized = message.payload
 			self.T1 = bitcointransaction.Transaction.deserialize(T1_serialized)
 			#TODO: maybe re-serialize to check consistency
-			#TODO: check T1
+			#TODO: check T1 (and that it matches T2)
 			#TODO: publish T1 in Bitcoind
 			#TODO: check whether T1 is accepted (maybe leave this to later code)
 
@@ -335,7 +336,7 @@ def constructFromDeposit(bitcoind, ID, amount):
 	state = \
 	{
 		"ID": ID,
-		"stage": stages["OwnDeposit_Initial"],
+		"stage": "OwnDeposit_Initial",
 		"amountLocal" : amount,
 		"amountRemote": 0,
 		"transactionsIncomingLocked"  : {},
@@ -354,7 +355,7 @@ def constructFromDepositMessage(bitcoind, message):
 	state = \
 	{
 		"ID": message.ID,
-		"stage": stages["PeerDeposit_Initial"],
+		"stage": "PeerDeposit_Initial",
 		"amountLocal" : 0,
 		"amountRemote": 0, #To be increased later
 		"transactionsIncomingLocked"  : {},
