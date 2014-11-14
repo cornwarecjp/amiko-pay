@@ -351,6 +351,11 @@ def constructFromDeposit(bitcoind, ID, amount):
 
 
 def constructFromDepositMessage(bitcoind, message):
+
+	#TODO: check for available funds, so we don't end up with a mess
+	#if halfway the process it turns out we can not do the deposit because of
+	#insufficient funds.
+
 	ownAddress = bitcoind.getNewAddress()
 	state = \
 	{
