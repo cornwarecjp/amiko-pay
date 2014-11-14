@@ -115,7 +115,34 @@ two parties. Elaboration on such use cases is a left as an exercise for the
 reader. 
 """
 
+"""
+Named stages of a multi-signature channel.
+The channel forms a state machine that transitions between those states.
+Possible state transitions:
+(construction)               -> OwnDeposit_Initial
+OwnDeposit_Initial           -> OwnDeposit_SendingPublicKey
+OwnDeposit_SendingPublicKey  -> OwnDeposit_SendingT2
+OwnDeposit_SendingT2         -> WaitingForT1
 
+(construction)               -> PeerDeposit_Initial
+PeerDeposit_Initial          -> PeerDeposit_SendingPublicKey
+PeerDeposit_SendingPublicKey -> PeerDeposit_SendingSignature
+PeerDeposit_SendingSignature -> WaitingForT1
+
+WaitingForT1                 -> TBD
+"""
+stages = \
+[
+	"OwnDeposit_Initial",
+	"OwnDeposit_SendingPublicKey",
+	"OwnDeposit_SendingT2",
+	"PeerDeposit_Initial",
+	"PeerDeposit_SendingPublicKey",
+	"PeerDeposit_SendingSignature",
+	"WaitingForT1",
+	"",
+]
+stages = {x: i for i, x in enumerate(stages)}
 
 class MultiSigChannel(channel.Channel):
 	"""
@@ -218,32 +245,41 @@ class MultiSigChannel(channel.Channel):
 
 
 	def makeDepositMessage(self, message):
-		if self.stage == -2 and message == None:
-			#Initial message:
-			self.stage = 0
-			return messages.Deposit(
-				self.ID, self.getType(), self.stage,
-				self.ownKey.getPublicKey())
+		if self.stage == stages["OwnDeposit_Initial"] and \
+			message == None:
 
-		elif self.stage == -1 and message.stage == 0:
+			#Initial message:
+			self.stage = stages["OwnDeposit_SendingPublicKey"]
+			return messages.Deposit(
+				self.ID, self.getType(), isInitial=True, stage=self.stage,
+				payload=self.ownKey.getPublicKey())
+
+		elif self.stage == stages["PeerDeposit_Initial"] and \
+			message.stage == stages["OwnDeposit_SendingPublicKey"]:
+
 			#Received deposit message with public key from peer
 			self.peerKey = crypto.Key()
 			self.peerKey.setPublicKey(message.payload)
-			self.stage = 1
+			self.stage = stages["PeerDeposit_SendingPublicKey"]
 			return messages.Deposit(
-				self.ID, self.getType(), self.stage, self.ownKey.getPublicKey())
+				self.ID, self.getType(), stage=self.stage,
+				payload=self.ownKey.getPublicKey())
 
-		elif self.stage == 0 and message.stage == 1:
+		elif self.stage == stages["OwnDeposit_SendingPublicKey"] and \
+			message.stage == stages["PeerDeposit_SendingPublicKey"]:
+
 			#Received reply on own deposit message
 			self.peerKey = crypto.Key()
 			self.peerKey.setPublicKey(message.payload)
 			self.makeT1AndT2()
-			self.stage = 2
+			self.stage = stages["OwnDeposit_SendingT2"]
 			return messages.Deposit(
-				self.ID, self.getType(), self.stage,
-				self.T2.serialize())
+				self.ID, self.getType(), stage=self.stage,
+				payload=self.T2.serialize())
 
-		elif self.stage == 1 and message.stage == 2:
+		elif self.stage == stages["PeerDeposit_SendingPublicKey"] and \
+			message.stage == stages["OwnDeposit_SendingT2"]:
+
 			#Received T2
 			self.T2 = bitcointransaction.Transaction.deserialize(message.payload)
 			#TODO: maybe re-serialize to check consistency
@@ -251,11 +287,13 @@ class MultiSigChannel(channel.Channel):
 			signature = signMultiSigTransaction(
 				self.T2, 0, self.peerKey.getPublicKey(), self.ownKey.getPublicKey(),
 				self.ownKey)
-			self.stage = 3
+			self.stage = stages["PeerDeposit_SendingSignature"]
 			return messages.Deposit(
-				self.ID, self.getType(), self.stage, signature)
+				self.ID, self.getType(), stage=self.stage, payload=signature)
 
-		elif self.stage == 2 and message.stage == 3:
+		elif self.stage == stages["OwnDeposit_SendingT2"] and \
+			message.stage == stages["PeerDeposit_SendingSignature"]:
+
 			signature = message.payload
 			if not verifyMultiSigSignature(
 				self.T2, 0, self.ownKey.getPublicKey(), self.peerKey.getPublicKey(),
@@ -264,11 +302,13 @@ class MultiSigChannel(channel.Channel):
 			self.peerSignature = signature
 			T1_serialized = self.T1.serialize()
 			#TODO: publish T1 in Bitcoind
-			self.stage = 4
+			self.stage = stages["WaitingForT1"]
 			return messages.Deposit(
-				self.ID, self.getType(), self.stage, T1_serialized)
+				self.ID, self.getType(), stage=self.stage, payload=T1_serialized)
 
-		elif self.stage == 3 and message.stage == 4:
+		elif self.stage == stages["PeerDeposit_SendingSignature"] and \
+			message.stage == stages["WaitingForT1"]:
+
 			T1_serialized = message.payload
 			self.T1 = bitcointransaction.Transaction.deserialize(T1_serialized)
 			#TODO: maybe re-serialize to check consistency
@@ -276,7 +316,7 @@ class MultiSigChannel(channel.Channel):
 			#TODO: publish T1 in Bitcoind
 			#TODO: check whether T1 is accepted (maybe leave this to later code)
 
-			self.stage = 5
+			self.stage = stages["WaitingForT1"]
 			print "DONE"
 
 		else:
@@ -295,7 +335,7 @@ def constructFromDeposit(bitcoind, ID, amount):
 	state = \
 	{
 		"ID": ID,
-		"stage": -2,
+		"stage": stages["OwnDeposit_Initial"],
 		"amountLocal" : amount,
 		"amountRemote": 0,
 		"transactionsIncomingLocked"  : {},
@@ -314,7 +354,7 @@ def constructFromDepositMessage(bitcoind, message):
 	state = \
 	{
 		"ID": message.ID,
-		"stage": -1,
+		"stage": stages["PeerDeposit_Initial"],
 		"amountLocal" : 0,
 		"amountRemote": 0, #To be increased later
 		"transactionsIncomingLocked"  : {},

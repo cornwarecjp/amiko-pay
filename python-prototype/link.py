@@ -383,7 +383,7 @@ class Link(event.Handler):
 
 			existingIDs = [c.ID for c in self.channels]
 
-			if message.stage == 0:
+			if message.isInitial:
 				if message.ID in existingIDs:
 					log.log("Initial deposit message contains already existing ID")
 					#TODO: send refusal reply?

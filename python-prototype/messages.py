@@ -294,10 +294,11 @@ class Receipt(Message):
 
 
 class Deposit(Message):
-	def __init__(self, ID=0, type="", stage=0, payload=""):
+	def __init__(self, ID=0, type="", isInitial=False, stage=0, payload=""):
 		Message.__init__(self, ID_DEPOSIT)
 		self.ID = ID
 		self.type = type
+		self.isInitial = isInitial
 		self.stage = stage
 		self.payload = payload #serialized link-type dependent data
 
@@ -309,6 +310,9 @@ class Deposit(Message):
 		# 4-byte unsigned int in network byte order:
 		typeLen = struct.pack("!I", len(self.type))
 		ret += typeLen + self.type
+
+		# 1-byte unsigned int:
+		ret += struct.pack("!B", int(self.isInitial))
 
 		# 1-byte unsigned int:
 		ret += struct.pack("!B", self.stage)
@@ -329,6 +333,10 @@ class Deposit(Message):
 		s = s[4+typeLen:]
 
 		# 1-byte unsigned int:
+		self.isInitial = bool(struct.unpack("!B", s[0])[0])
+		s = s[1:]
+
+		# 1-byte unsigned int:
 		self.stage = struct.unpack("!B", s[0])[0]
 		s = s[1:]
 
@@ -336,8 +344,8 @@ class Deposit(Message):
 
 
 	def __str__(self):
-		return "ID: %d; type: %s; stage: %d" % \
-			(self.ID, self.type, self.stage)
+		return "ID: %d; type: %s; isInitial: %s; stage: %d" % \
+			(self.ID, self.type, str(self.isInitial), self.stage)
 
 
 
