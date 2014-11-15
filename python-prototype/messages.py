@@ -32,6 +32,7 @@ ID_CANCEL      = 9
 ID_COMMIT      = 10
 ID_MYURLS      = 11
 ID_DEPOSIT     = 12
+ID_WITHDRAW    = 13
 
 
 class Message:
@@ -76,7 +77,8 @@ def deserialize(s):
 		ID_CANCEL: Cancel,
 		ID_COMMIT: Commit,
 		ID_MYURLS: MyURLs,
-		ID_DEPOSIT: Deposit
+		ID_DEPOSIT: Deposit,
+		ID_WITHDRAW: Withdraw
 		}[ID]
 	except KeyError:
 		raise Exception("Deserialize failed: unknown type ID")
@@ -293,26 +295,17 @@ class Receipt(Message):
 
 
 
-class Deposit(Message):
-	def __init__(self, ID=0, type="", isInitial=False, stage=0, payload=""):
-		Message.__init__(self, ID_DEPOSIT)
-		self.ID = ID
-		self.type = type
-		self.isInitial = isInitial
+class ChannelMessage(Message):
+	def __init__(self, typeID, channelID=0, stage=0, payload=""):
+		Message.__init__(self, typeID)
+		self.channelID = channelID
 		self.stage = stage
 		self.payload = payload #serialized link-type dependent data
 
 
 	def serializeAttributes(self):
 		# 4-byte unsigned int in network byte order:
-		ret = struct.pack("!I", self.ID)
-
-		# 4-byte unsigned int in network byte order:
-		typeLen = struct.pack("!I", len(self.type))
-		ret += typeLen + self.type
-
-		# 1-byte unsigned int:
-		ret += struct.pack("!B", int(self.isInitial))
+		ret = struct.pack("!I", self.channelID)
 
 		# 1-byte unsigned int:
 		ret += struct.pack("!B", self.stage)
@@ -324,17 +317,8 @@ class Deposit(Message):
 
 	def deserializeAttributes(self, s):
 		# 4-byte unsigned int in network byte order:
-		self.ID = struct.unpack("!I", s[:4])[0]
+		self.channelID = struct.unpack("!I", s[:4])[0]
 		s = s[4:]
-
-		# 4-byte unsigned int in network byte order:
-		typeLen = struct.unpack("!I", s[:4])[0]
-		self.type = s[4:4+typeLen]
-		s = s[4+typeLen:]
-
-		# 1-byte unsigned int:
-		self.isInitial = bool(struct.unpack("!B", s[0])[0])
-		s = s[1:]
 
 		# 1-byte unsigned int:
 		self.stage = struct.unpack("!B", s[0])[0]
@@ -344,8 +328,51 @@ class Deposit(Message):
 
 
 	def __str__(self):
-		return "ID: %d; type: %s; isInitial: %s; stage: %d" % \
-			(self.ID, self.type, str(self.isInitial), self.stage)
+		return "channelID: %d; stage: %d" % (self.channelID, self.stage)
+
+
+
+class Deposit(ChannelMessage):
+	def __init__(self, channelID=0, type="", isInitial=False, stage=0, payload=""):
+		ChannelMessage.__init__(self, ID_DEPOSIT, channelID, stage, payload)
+		self.type = type
+		self.isInitial = isInitial
+
+
+	def serializeAttributes(self):
+		# 4-byte unsigned int in network byte order:
+		typeLen = struct.pack("!I", len(self.type))
+		ret = typeLen + self.type
+
+		# 1-byte unsigned int:
+		ret += struct.pack("!B", int(self.isInitial))
+
+		ret += ChannelMessage.serializeAttributes(self)
+		return ret
+
+
+	def deserializeAttributes(self, s):
+		# 4-byte unsigned int in network byte order:
+		typeLen = struct.unpack("!I", s[:4])[0]
+		self.type = s[4:4+typeLen]
+		s = s[4+typeLen:]
+
+		# 1-byte unsigned int:
+		self.isInitial = bool(struct.unpack("!B", s[0])[0])
+		s = s[1:]
+
+		ChannelMessage.deserializeAttributes(self, s)
+
+
+	def __str__(self):
+		return "channelID: %d; type: %s; isInitial: %s; stage: %d" % \
+			(self.channelID, self.type, str(self.isInitial), self.stage)
+
+
+
+class Withdraw(ChannelMessage):
+	def __init__(self, channelID=0, stage=0, payload=""):
+		ChannelMessage.__init__(self, ID_WITHDRAW, channelID, stage, payload)
 
 
 

@@ -140,7 +140,7 @@ stages = \
 	"PeerDeposit_SendingPublicKey",
 	"PeerDeposit_SendingSignature",
 	"WaitingForT1",
-	"",
+	"Ready",
 ]
 stages = {x: i for i, x in enumerate(stages)} #name   -> integer
 stageNames = {v:k for k,v in stages.items()}  #iteger -> name
@@ -245,6 +245,15 @@ class MultiSigChannel(channel.Channel):
 			T1_ID, 0, self.amountLocal + fee, returnKeyHash, fee)
 
 
+	def checkT1(self):
+		if self.stage != stages["WaitingForT1"]:
+			return
+
+		#TODO: check whether T1 has some confirmations
+		#TODO: add a watchdog entry for spending of T1
+		self.stage = stages["Ready"]
+
+
 	def makeDepositMessage(self, message):
 		if self.stage == stages["OwnDeposit_Initial"] and \
 			message == None:
@@ -327,15 +336,21 @@ class MultiSigChannel(channel.Channel):
 
 
 	def makeWithdrawMessage(self, message):
+		self.checkT1()
+
+		if self.stage != stages["Ready"]:
+			raise Exception("Can not withdraw: channel must be Ready, but is " + \
+				stageNames[self.stage])
+
 		print "Withdraw (NYI)"
 		return None #TODO
 
 
-def constructFromDeposit(bitcoind, ID, amount):
+def constructFromDeposit(bitcoind, channelID, amount):
 	ownAddress = bitcoind.getNewAddress()
 	state = \
 	{
-		"ID": ID,
+		"ID": channelID,
 		"stage": "OwnDeposit_Initial",
 		"amountLocal" : amount,
 		"amountRemote": 0,
@@ -359,7 +374,7 @@ def constructFromDepositMessage(bitcoind, message):
 	ownAddress = bitcoind.getNewAddress()
 	state = \
 	{
-		"ID": message.ID,
+		"ID": message.channelID,
 		"stage": "PeerDeposit_Initial",
 		"amountLocal" : 0,
 		"amountRemote": 0, #To be increased later

@@ -384,8 +384,8 @@ class Link(event.Handler):
 			existingIDs = [c.ID for c in self.channels]
 
 			if message.isInitial:
-				if message.ID in existingIDs:
-					log.log("Initial deposit message contains already existing ID")
+				if message.channelID in existingIDs:
+					log.log("Initial deposit message contains already existing channel ID")
 					#TODO: send refusal reply?
 				elif message.type not in ["multisig"]:
 					log.log("Initial deposit message with unsupported channel type")
@@ -400,13 +400,13 @@ class Link(event.Handler):
 					self.context.sendSignal(None, event.signals.save)
 			else:
 				try:
-					channel = self.channels[existingIDs.index(message.ID)]
+					channel = self.channels[existingIDs.index(message.channelID)]
 					reply = channel.makeDepositMessage(message)
 					if reply != None:
 						self.connection.sendMessage(reply)
 					self.context.sendSignal(None, event.signals.save)
 				except ValueError:
-					log.log("Follow-up deposit message contains non-existing ID")
+					log.log("Follow-up deposit message contains non-existing channel ID")
 					#TODO: send refusal reply?
 		else:
 			log.log("Link received unsupported message: %s" % str(message))
