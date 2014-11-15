@@ -133,10 +133,10 @@ PeerDeposit_SendingSignature  -> WaitingForT1
 WaitingForT1                  -> Ready
 
 Ready                         -> OwnWithdraw_SendingT3
-OwnWithdraw_SendingT3         -> TBD
+OwnWithdraw_SendingT3         -> Closed
 
 Ready                         -> PeerWithdraw_SendingSignature
-PeerWithdraw_SendingSignature -> TBD
+PeerWithdraw_SendingSignature -> Closed
 """
 stages = \
 [
@@ -149,9 +149,8 @@ stages = \
 	"WaitingForT1",
 	"Ready",
 	"OwnWithdraw_SendingT3",
-
-	"PeerWithdraw_SendingSignature"
-
+	"PeerWithdraw_SendingSignature",
+	"Closed"
 ]
 stages = {x: i for i, x in enumerate(stages)} #name   -> integer
 stageNames = {v:k for k,v in stages.items()}  #iteger -> name
@@ -337,8 +336,10 @@ class MultiSigChannel(channel.Channel):
 					raise Exception("Signature failure!") #TODO: what to do now?
 			self.peerSignature = signature
 			T1_serialized = self.T1.serialize()
-			#TODO: publish T1 in Bitcoind
 			self.stage = stages["WaitingForT1"]
+
+			#TODO: publish T1 in Bitcoind
+
 			return messages.Deposit(
 				self.ID, self.getType(), stage=self.stage, payload=T1_serialized)
 
@@ -349,10 +350,11 @@ class MultiSigChannel(channel.Channel):
 			self.T1 = bitcointransaction.Transaction.deserialize(T1_serialized)
 			#TODO: maybe re-serialize to check consistency
 			#TODO: check T1 (and that it matches T2)
-			#TODO: publish T1 in Bitcoind
-			#TODO: check whether T1 is accepted (maybe leave this to later code)
 
 			self.stage = stages["WaitingForT1"]
+
+			#TODO: publish T1 in Bitcoind
+
 			print "DONE"
 
 		else:
@@ -391,8 +393,41 @@ class MultiSigChannel(channel.Channel):
 		elif self.stage == stages["OwnWithdraw_SendingT3"] and \
 			message.stage == stages["PeerWithdraw_SendingSignature"]:
 
-			#TODO
-			print "Withdraw (NYI)"
+			peerSignature = message.payload
+			if not verifyMultiSigSignature(
+				self.T3, 0, self.ownKey.getPublicKey(), self.peerKey.getPublicKey(),
+				self.peerKey, peerSignature):
+					raise Exception("Signature failure!") #TODO: what to do now?
+
+			ownSignature = signMultiSigTransaction(
+				self.T3, 0, self.peerKey.getPublicKey(), self.ownKey.getPublicKey(),
+				self.ownKey)
+
+			applyMultiSigSignatures(self.T3, ownSignature, peerSignature)
+
+			self.T2 = self.T3
+			self.T3 = None
+			self.stage = stages["Closed"]
+
+			#TODO: publish T2 in Bitcoind
+
+			return messages.Withdraw(
+				self.ID, stage=self.stage, payload=self.T2.serialize())
+
+		elif self.stage == stages["PeerWithdraw_SendingSignature"] and \
+			message.stage == stages["Closed"]:
+
+			T3 = bitcointransaction.Transaction.deserialize(message.payload)
+			#TODO: maybe re-serialize to check consistency
+			#TODO: lots of checks on T3 (IMPORTANT!)
+
+			self.T2 = T3
+			self.T3 = None
+			self.stage = stages["Closed"]
+
+			#TODO: publish T2 in Bitcoind
+
+			print "DONE"
 
 		else:
 			raise Exception("Received illegal withdraw message")
