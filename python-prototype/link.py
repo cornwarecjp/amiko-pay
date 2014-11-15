@@ -408,6 +408,22 @@ class Link(event.Handler):
 				except ValueError:
 					log.log("Follow-up deposit message contains non-existing channel ID")
 					#TODO: send refusal reply?
+
+		elif message.__class__ == messages.Withdraw:
+			log.log("Link received Withdraw")
+
+			existingIDs = [c.ID for c in self.channels]
+
+			try:
+				channel = self.channels[existingIDs.index(message.channelID)]
+				reply = channel.makeWithdrawMessage(message)
+				if reply != None:
+					self.connection.sendMessage(reply)
+				self.context.sendSignal(None, event.signals.save)
+			except ValueError:
+				log.log("Withdraw message contains non-existing channel ID")
+				#TODO: send refusal reply?
+
 		else:
 			log.log("Link received unsupported message: %s" % str(message))
 

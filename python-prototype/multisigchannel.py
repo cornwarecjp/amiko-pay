@@ -18,6 +18,7 @@
 
 import binascii
 import struct
+import copy
 
 import channel
 import bitcointransaction
@@ -119,17 +120,23 @@ reader.
 Named stages of a multi-signature channel.
 The channel forms a state machine that transitions between those states.
 Possible state transitions:
-(construction)               -> OwnDeposit_Initial
-OwnDeposit_Initial           -> OwnDeposit_SendingPublicKey
-OwnDeposit_SendingPublicKey  -> OwnDeposit_SendingT2
-OwnDeposit_SendingT2         -> WaitingForT1
+(construction)                -> OwnDeposit_Initial
+OwnDeposit_Initial            -> OwnDeposit_SendingPublicKey
+OwnDeposit_SendingPublicKey   -> OwnDeposit_SendingT2
+OwnDeposit_SendingT2          -> WaitingForT1
 
-(construction)               -> PeerDeposit_Initial
-PeerDeposit_Initial          -> PeerDeposit_SendingPublicKey
-PeerDeposit_SendingPublicKey -> PeerDeposit_SendingSignature
-PeerDeposit_SendingSignature -> WaitingForT1
+(construction)                -> PeerDeposit_Initial
+PeerDeposit_Initial           -> PeerDeposit_SendingPublicKey
+PeerDeposit_SendingPublicKey  -> PeerDeposit_SendingSignature
+PeerDeposit_SendingSignature  -> WaitingForT1
 
-WaitingForT1                 -> TBD
+WaitingForT1                  -> Ready
+
+Ready                         -> OwnWithdraw_SendingT3
+OwnWithdraw_SendingT3         -> TBD
+
+Ready                         -> PeerWithdraw_SendingSignature
+PeerWithdraw_SendingSignature -> TBD
 """
 stages = \
 [
@@ -141,6 +148,10 @@ stages = \
 	"PeerDeposit_SendingSignature",
 	"WaitingForT1",
 	"Ready",
+	"OwnWithdraw_SendingT3",
+
+	"PeerWithdraw_SendingSignature"
+
 ]
 stages = {x: i for i, x in enumerate(stages)} #name   -> integer
 stageNames = {v:k for k,v in stages.items()}  #iteger -> name
@@ -172,6 +183,7 @@ class MultiSigChannel(channel.Channel):
 
 		self.T1 = None
 		self.T2 = None
+		self.T3 = None
 		self.peerSignature = None
 		if "T1" in state:
 			self.T1 = bitcointransaction.Transaction.deserialize(
@@ -180,6 +192,10 @@ class MultiSigChannel(channel.Channel):
 		if "T2" in state:
 			self.T2 = bitcointransaction.Transaction.deserialize(
 				binascii.unhexlify(state["T2"])
+				)
+		if "T3" in state:
+			self.T3 = bitcointransaction.Transaction.deserialize(
+				binascii.unhexlify(state["T3"])
 				)
 		if "peerSignature" in state:
 			self.peerSignature = binascii.unhexlify(state["peerSignature"])
@@ -213,6 +229,11 @@ class MultiSigChannel(channel.Channel):
 				ret["T2"] = self.T2.getTransactionID().encode("hex")[::-1]
 			else:
 				ret["T2"] = self.T2.serialize().encode("hex")
+		if self.T3 != None:
+			if forDisplay:
+				ret["T3"] = self.T3.getTransactionID().encode("hex")[::-1]
+			else:
+				ret["T3"] = self.T3.serialize().encode("hex")
 		if self.peerSignature != None:
 			ret["peerSignature"] = self.peerSignature.encode("hex")
 		return ret
@@ -252,6 +273,11 @@ class MultiSigChannel(channel.Channel):
 		#TODO: check whether T1 has some confirmations
 		#TODO: add a watchdog entry for spending of T1
 		self.stage = stages["Ready"]
+
+
+	def makeWithdrawT3(self):
+		self.T3 = copy.deepcopy(self.T2)
+		self.T3.lockTime = 0
 
 
 	def makeDepositMessage(self, message):
@@ -338,12 +364,40 @@ class MultiSigChannel(channel.Channel):
 	def makeWithdrawMessage(self, message):
 		self.checkT1()
 
-		if self.stage != stages["Ready"]:
-			raise Exception("Can not withdraw: channel must be Ready, but is " + \
-				stageNames[self.stage])
+		if message == None:
+			if self.stage != stages["Ready"]:
+				raise Exception("Can not withdraw: channel must be Ready, but is " + \
+					stageNames[self.stage])
 
-		print "Withdraw (NYI)"
-		return None #TODO
+			self.makeWithdrawT3()
+			self.stage = stages["OwnWithdraw_SendingT3"]
+			return messages.Withdraw(
+				self.ID, stage=self.stage, payload=self.T3.serialize())
+
+		elif self.stage == stages["Ready"] and \
+			message.stage == stages["OwnWithdraw_SendingT3"]:
+
+			#Received T3
+			self.T3 = bitcointransaction.Transaction.deserialize(message.payload)
+			#TODO: maybe re-serialize to check consistency
+			#TODO: lots of checks on T3 (IMPORTANT!)
+			signature = signMultiSigTransaction(
+				self.T3, 0, self.peerKey.getPublicKey(), self.ownKey.getPublicKey(),
+				self.ownKey)
+			self.stage = stages["PeerWithdraw_SendingSignature"]
+			return messages.Withdraw(
+				self.ID, stage=self.stage, payload=signature)
+
+		elif self.stage == stages["OwnWithdraw_SendingT3"] and \
+			message.stage == stages["PeerWithdraw_SendingSignature"]:
+
+			#TODO
+			print "Withdraw (NYI)"
+
+		else:
+			raise Exception("Received illegal withdraw message")
+
+		return None
 
 
 def constructFromDeposit(bitcoind, channelID, amount):
