@@ -351,7 +351,8 @@ class MultiSigChannel(channel.Channel):
 			T1_serialized = self.T1.serialize()
 			self.stage = stages["WaitingForT1"]
 
-			#TODO: publish T1 in Bitcoind
+			#Publish T1 in Bitcoind
+			self.bitcoind.sendRawTransaction(T1_serialized)
 
 			return messages.Deposit(
 				self.ID, self.getType(), stage=self.stage, payload=T1_serialized)
@@ -366,7 +367,8 @@ class MultiSigChannel(channel.Channel):
 
 			self.stage = stages["WaitingForT1"]
 
-			#TODO: publish T1 in Bitcoind
+			#Publish T1 in Bitcoind
+			self.bitcoind.sendRawTransaction(T1_serialized)
 
 			print "DONE"
 
@@ -421,10 +423,12 @@ class MultiSigChannel(channel.Channel):
 			self.T3 = None
 			self.stage = stages["Closed"]
 
-			#TODO: publish T2 in Bitcoind
+			#Publish T2 in Bitcoind
+			T2_serialized = self.T2.serialize()
+			self.bitcoind.sendRawTransaction(T2_serialized)
 
 			return messages.Withdraw(
-				self.ID, stage=self.stage, payload=self.T2.serialize())
+				self.ID, stage=self.stage, payload=T2_serialized)
 
 		elif self.stage == stages["PeerWithdraw_SendingSignature"] and \
 			message.stage == stages["Closed"]:
@@ -437,7 +441,9 @@ class MultiSigChannel(channel.Channel):
 			self.T3 = None
 			self.stage = stages["Closed"]
 
-			#TODO: publish T2 in Bitcoind
+			#Publish T2 in Bitcoind
+			T2_serialized = message.payload
+			self.bitcoind.sendRawTransaction(T2_serialized)
 
 			print "DONE"
 
