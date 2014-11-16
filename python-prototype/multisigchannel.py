@@ -417,7 +417,10 @@ class MultiSigChannel(channel.Channel):
 			ownSignature = signMultiSigTransaction(
 				self.T3, 0, pubKey1, pubKey2, self.ownKey)
 
-			applyMultiSigSignatures(self.T3, ownSignature, peerSignature)
+			if self.hasFirstPublicKey:
+				applyMultiSigSignatures(self.T3, ownSignature, peerSignature)
+			else:
+				applyMultiSigSignatures(self.T3, peerSignature, ownSignature)
 
 			self.T2 = self.T3
 			self.T3 = None
