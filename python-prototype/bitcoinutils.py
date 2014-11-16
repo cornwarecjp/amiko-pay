@@ -39,6 +39,9 @@ def getInputsForAmount(bitcoind, amount):
 
 	unspent = bitcoind.listUnspent()
 
+	#Filter: only use "normal" outputs, not multisig etc.
+	unspent = [u for u in unspent if "address" in u]
+
 	#TODO: think about the best policy here.
 	#Possible objectives:
 	# - minimizing taint between addresses (privacy protection)
