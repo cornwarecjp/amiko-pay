@@ -180,6 +180,8 @@ class MultiSigChannel(channel.Channel):
 				binascii.unhexlify(state["peerPublicKey"])
 				)
 
+		self.hasFirstPublicKey = bool(state["hasFirstPublicKey"])
+
 		self.T1 = None
 		self.T2 = None
 		self.T3 = None
@@ -218,6 +220,8 @@ class MultiSigChannel(channel.Channel):
 				ret["peerAddress"] = base58.encodeBase58Check(
 					crypto.RIPEMD160(crypto.SHA256(pubKey)),
 					0)
+		ret["hasFirstPublicKey"] = int(self.hasFirstPublicKey)
+
 		if self.T1 != None:
 			if forDisplay:
 				ret["T1"] = self.T1.getTransactionID().encode("hex")[::-1]
@@ -250,6 +254,7 @@ class MultiSigChannel(channel.Channel):
 
 		#We send an extra fee here, so that T2's initial return becomes
 		# exactly self.amountLocal
+		assert self.hasFirstPublicKey
 		self.T1 = sendToMultiSigPubKey(self.bitcoind, self.amountLocal + fee,
 			ownPubKey,
 			peerPubKey,
@@ -277,6 +282,12 @@ class MultiSigChannel(channel.Channel):
 	def makeWithdrawT3(self):
 		self.T3 = copy.deepcopy(self.T2)
 		self.T3.lockTime = 0
+
+
+	def getPublicKeyPair(self):
+		if self.hasFirstPublicKey:
+			return self.ownKey.getPublicKey(), self.peerKey.getPublicKey()
+		return self.peerKey.getPublicKey(), self.ownKey.getPublicKey()
 
 
 	def makeDepositMessage(self, message):
@@ -319,6 +330,7 @@ class MultiSigChannel(channel.Channel):
 			self.T2 = bitcointransaction.Transaction.deserialize(message.payload)
 			#TODO: maybe re-serialize to check consistency
 			self.amountRemote = sum(tx.amount for tx in self.T2.tx_out)
+			assert not self.hasFirstPublicKey
 			signature = signMultiSigTransaction(
 				self.T2, 0, self.peerKey.getPublicKey(), self.ownKey.getPublicKey(),
 				self.ownKey)
@@ -330,6 +342,7 @@ class MultiSigChannel(channel.Channel):
 			message.stage == stages["PeerDeposit_SendingSignature"]:
 
 			signature = message.payload
+			assert self.hasFirstPublicKey
 			if not verifyMultiSigSignature(
 				self.T2, 0, self.ownKey.getPublicKey(), self.peerKey.getPublicKey(),
 				self.peerKey, signature):
@@ -383,10 +396,9 @@ class MultiSigChannel(channel.Channel):
 			self.T3 = bitcointransaction.Transaction.deserialize(message.payload)
 			#TODO: maybe re-serialize to check consistency
 			#TODO: lots of checks on T3 (IMPORTANT!)
-			#TODO: reverse the public key order when necessary
+			pubKey1, pubKey2 = self.getPublicKeyPair()
 			signature = signMultiSigTransaction(
-				self.T3, 0, self.peerKey.getPublicKey(), self.ownKey.getPublicKey(),
-				self.ownKey)
+				self.T3, 0, pubKey1, pubKey2, self.ownKey)
 			self.stage = stages["PeerWithdraw_SendingSignature"]
 			return messages.Withdraw(
 				self.ID, stage=self.stage, payload=signature)
@@ -395,16 +407,13 @@ class MultiSigChannel(channel.Channel):
 			message.stage == stages["PeerWithdraw_SendingSignature"]:
 
 			peerSignature = message.payload
-			#TODO: reverse the public key order when necessary
+			pubKey1, pubKey2 = self.getPublicKeyPair()
 			if not verifyMultiSigSignature(
-				self.T3, 0, self.ownKey.getPublicKey(), self.peerKey.getPublicKey(),
-				self.peerKey, peerSignature):
+				self.T3, 0, pubKey1, pubKey2, self.peerKey, peerSignature):
 					raise Exception("Signature failure!") #TODO: what to do now?
 
-			#TODO: reverse the public key order when necessary
 			ownSignature = signMultiSigTransaction(
-				self.T3, 0, self.ownKey.getPublicKey(), self.peerKey.getPublicKey(),
-				self.ownKey)
+				self.T3, 0, pubKey1, pubKey2, self.ownKey)
 
 			applyMultiSigSignatures(self.T3, ownSignature, peerSignature)
 
@@ -451,7 +460,8 @@ def constructFromDeposit(bitcoind, channelID, amount):
 		"transactionsOutgoingLocked"  : {},
 		"transactionsOutgoingReserved": {},
 
-		"ownAddress": ownAddress
+		"ownAddress": ownAddress,
+		"hasFirstPublicKey": 1
 	}
 	return MultiSigChannel(bitcoind, state)
 
@@ -475,7 +485,8 @@ def constructFromDepositMessage(bitcoind, message):
 		"transactionsOutgoingLocked"  : {},
 		"transactionsOutgoingReserved": {},
 
-		"ownAddress": ownAddress
+		"ownAddress": ownAddress,
+		"hasFirstPublicKey": 0
 	}
 	return MultiSigChannel(bitcoind, state)
 
