@@ -383,6 +383,7 @@ class MultiSigChannel(channel.Channel):
 			self.T3 = bitcointransaction.Transaction.deserialize(message.payload)
 			#TODO: maybe re-serialize to check consistency
 			#TODO: lots of checks on T3 (IMPORTANT!)
+			#TODO: reverse the public key order when necessary
 			signature = signMultiSigTransaction(
 				self.T3, 0, self.peerKey.getPublicKey(), self.ownKey.getPublicKey(),
 				self.ownKey)
@@ -394,13 +395,15 @@ class MultiSigChannel(channel.Channel):
 			message.stage == stages["PeerWithdraw_SendingSignature"]:
 
 			peerSignature = message.payload
+			#TODO: reverse the public key order when necessary
 			if not verifyMultiSigSignature(
 				self.T3, 0, self.ownKey.getPublicKey(), self.peerKey.getPublicKey(),
 				self.peerKey, peerSignature):
 					raise Exception("Signature failure!") #TODO: what to do now?
 
+			#TODO: reverse the public key order when necessary
 			ownSignature = signMultiSigTransaction(
-				self.T3, 0, self.peerKey.getPublicKey(), self.ownKey.getPublicKey(),
+				self.T3, 0, self.ownKey.getPublicKey(), self.peerKey.getPublicKey(),
 				self.ownKey)
 
 			applyMultiSigSignatures(self.T3, ownSignature, peerSignature)
