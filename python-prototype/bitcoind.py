@@ -18,7 +18,7 @@
 
 import binascii
 
-from bitcoinrpc.authproxy import AuthServiceProxy
+from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 
 import log
 
@@ -171,8 +171,17 @@ class Bitcoind:
 
 		Send the given serialized transaction over the Bitcoin network.
 		"""
-
-		self.access.sendrawtransaction(txData.encode("hex"))
+		try:
+			self.access.sendrawtransaction(txData.encode("hex"))
+		except JSONRPCException as e:
+			#Temporary work-around: ignore one specific error message, which
+			#occurs when re-sending an already sent transaction.
+			#This should be changed for later Bitcoind versions.
+			#See src/rpcrawtransaction.cpp in the Bitcoind sources.
+			if e.error['code'] == -22 and e.error['message'] == u'TX rejected':
+				pass
+			else:
+				raise
 
 
 	def DecimaltoAmount(self, value):
