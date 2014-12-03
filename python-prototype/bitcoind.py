@@ -191,12 +191,61 @@ class Bitcoind_Real:
 
 
 
+class Bitcoind_Dummy:
+	"""
+	Simulated connection to a Bitcoin daemon process.
+	"""
+
+	def __init__(self, settings):
+		pass
+
+
+	def isConnected(self):
+		return True
+		
+
+	def getBalance(self):
+		return 0
+
+
+	def getBlockCount(self):
+		return 0
+
+
+	def getNewAddress(self):
+		raise Exception("Not yet implemented")
+
+
+	def getPrivateKey(self, address):
+		raise Exception("Not yet implemented")
+
+
+	def getTransactionHashesByBlockHeight(self, height):
+		raise Exception("Not yet implemented")
+
+
+	def getTransaction(self, thash):
+		raise Exception("Not yet implemented")
+
+
+	def listUnspent(self):
+		raise Exception("Not yet implemented")
+
+
+	def sendRawTransaction(self, txData):
+		raise Exception("Not yet implemented")
+
+
+
 #This is a proxy-class that wraps different implementations.
 #The reason for having this is to be able to choose, at run-time, between a
 #real bitcoind connection, or (for testing purposes) a dummy.
 class Bitcoind:
 	def __init__(self, settings):
-		self.bitcoind = Bitcoind_Real(settings)
+		if settings.bitcoinRPCURL == "dummy":
+			self.bitcoind = Bitcoind_Dummy(settings)
+		else:
+			self.bitcoind = Bitcoind_Real(settings)
 
 
 	def __getattr__(self, attr, *args):
