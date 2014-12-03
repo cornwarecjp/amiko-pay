@@ -23,6 +23,9 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 import log
 
 
+RPC_TRANSACTION_ALREADY_IN_CHAIN= -27 # Transaction already in chain
+
+
 
 class Bitcoind:
 	"""
@@ -174,11 +177,10 @@ class Bitcoind:
 		try:
 			self.access.sendrawtransaction(txData.encode("hex"))
 		except JSONRPCException as e:
-			#Temporary work-around: ignore one specific error message, which
-			#occurs when re-sending an already sent transaction.
-			#This should be changed for later Bitcoind versions.
-			#See src/rpcrawtransaction.cpp in the Bitcoind sources.
-			if e.error['code'] == -22 and e.error['message'] == u'TX rejected':
+			if e.error['code'] == RPC_TRANSACTION_ALREADY_IN_CHAIN:
+				#It's perfectly fine (but very unlikely) that the transaction is
+				#already in the block chain.
+				#After all, we WANT it to end up in the block chain!
 				pass
 			else:
 				raise
