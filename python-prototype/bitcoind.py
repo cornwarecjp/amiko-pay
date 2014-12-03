@@ -27,7 +27,7 @@ RPC_TRANSACTION_ALREADY_IN_CHAIN= -27 # Transaction already in chain
 
 
 
-class Bitcoind:
+class Bitcoind_Real:
 	"""
 	Connection to a Bitcoin daemon process.
 	"""
@@ -190,5 +190,16 @@ class Bitcoind:
 		return int(value*100000000)
 
 
+
+#This is a proxy-class that wraps different implementations.
+#The reason for having this is to be able to choose, at run-time, between a
+#real bitcoind connection, or (for testing purposes) a dummy.
+class Bitcoind:
+	def __init__(self, settings):
+		self.bitcoind = Bitcoind_Real(settings)
+
+
+	def __getattr__(self, attr, *args):
+		return getattr(self.bitcoind, attr, *args)
 
 
