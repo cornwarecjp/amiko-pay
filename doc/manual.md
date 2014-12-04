@@ -63,8 +63,10 @@ Scenario: A and B want to establish a payment link.
 
 Step 1:
 A calls the "makelink" command, with a link name as argument:
+
 	(A) > makelink linkNameAtA
 	(A) amikolink://A.com/linkNameAtA
+
 The result is an amikolink URL.
 
 Note that A can now see the link information with the "list" command.
@@ -88,6 +90,7 @@ web interface.
 
 Step 3:
 B calls the "makelink" command with a name and the amikolink URL as argument:
+
 	(B) > makelink linkNameAtB amikolink://A.com/linkNameAtA
 
 Note that B can now see the link information with the "list" command:
@@ -142,8 +145,10 @@ to perform the payment.
 
 Step 1:
 B calls the "request" command, with as arguments
+
 * the amount to be received
 * (optionally) a receipt
+
 The result is an amikopay URL:
 
 	(B) > request 20000 SomeReceiptText
