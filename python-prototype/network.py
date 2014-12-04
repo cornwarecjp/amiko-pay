@@ -171,10 +171,8 @@ class Connection(event.Handler):
 
 				self.__handleMessage(msg)
 
-		except Exception as e:
-			#TODO: to logger?
-			print "Exception while handling received data from socket: "
-			traceback.print_exc()
+		except:
+			log.logException()
 			self.close()
 
 
