@@ -9,7 +9,7 @@ of Amiko Pay can lead to loss of bitcoins. If you still wish to continue, you
 should at least take the following precautions:
 
 * Use Amiko Pay only in combination with a Bitcoin wallet containing a very small
-  number of bitcoins. You should be prepared to lose all bitcoins in your wallet
+  amount of bitcoins. You should be prepared to lose all bitcoins in your wallet
   as a result of bugs and missing features in the Amiko Pay software.
   This is also true for the bitcoins in your wallet which are not explicitly
   used through the Amiko Pay user interface!
