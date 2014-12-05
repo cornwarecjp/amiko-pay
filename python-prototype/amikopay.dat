@@ -1,44 +1,5 @@
 {
-    "links": [
-        {
-            "channels": [
-                {
-                    "ID": 0,
-                    "amountLocal": 100,
-                    "amountRemote": 100,
-                    "transactionsIncomingLocked": {},
-                    "transactionsIncomingReserved": {},
-                    "transactionsOutgoingLocked": {},
-                    "transactionsOutgoingReserved": {},
-                    "type": "plain"
-                }
-            ],
-            "localID": "A",
-            "name": "A",
-            "openTransactions": [],
-            "remoteID": "B",
-            "remoteURL": "amikolink://localhost/B"
-        },
-        {
-            "channels": [
-                {
-                    "ID": 0,
-                    "amountLocal": 100,
-                    "amountRemote": 100,
-                    "transactionsIncomingLocked": {},
-                    "transactionsIncomingReserved": {},
-                    "transactionsOutgoingLocked": {},
-                    "transactionsOutgoingReserved": {},
-                    "type": "plain"
-                }
-            ],
-            "localID": "B",
-            "name": "B",
-            "openTransactions": [],
-            "remoteID": "A",
-            "remoteURL": "amikolink://localhost/A"
-        }
-    ],
+    "links": [],
     "meetingPoints": [
         {
             "ID": "myself",
