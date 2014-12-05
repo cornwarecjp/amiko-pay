@@ -456,6 +456,27 @@ class MultiSigChannel(channel.Channel):
 		return None
 
 
+	def lockIncoming(self, hash):
+		channel.Channel.lockIncoming(self, hash)
+		#TODO: Receive, check and update the transaction
+
+
+	def lockOutgoing(self, hash):
+		channel.Channel.lockOutgoing(self, hash)
+		#TODO: Update and send the transaction
+
+
+	def commitIncoming(self, hash):
+		channel.Channel.commitIncoming(self, hash)
+		#TODO: Receive, check and update the transaction
+
+
+	def commitOutgoing(self, hash):
+		channel.Channel.commitOutgoing(self, hash)
+		#TODO: Update and send the transaction
+
+
+
 def constructFromDeposit(bitcoind, channelID, amount):
 	ownAddress = bitcoind.getNewAddress()
 	state = \
