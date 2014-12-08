@@ -91,7 +91,8 @@ class Channel:
 			self.transactionsIncomingReserved[hash] = amount
 
 
-	def lockIncoming(self, hash):
+	def lockIncoming(self, message):
+		hash = message.value
 		self.transactionsIncomingLocked[hash] = \
 			self.transactionsIncomingReserved[hash]
 		del self.transactionsIncomingReserved[hash]
@@ -104,7 +105,7 @@ class Channel:
 		return messages.Lock(hash)
 
 
-	def commitIncoming(self, hash):
+	def commitIncoming(self, hash, message):
 		self.amountLocal += self.transactionsIncomingLocked[hash]
 		del self.transactionsIncomingLocked[hash]
 

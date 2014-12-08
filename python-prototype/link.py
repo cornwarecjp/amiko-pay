@@ -346,10 +346,8 @@ class Link(event.Handler):
 		elif message.__class__ == messages.Lock:
 			log.log("Link received Lock")
 
-			#TODO: get new Bitcoin transaction from message and
-			# pass it to channel
 			#TODO: use multiple channels
-			self.channels[0].lockIncoming(message.value)
+			self.channels[0].lockIncoming(message)
 			#TODO: exception handling for the above
 
 			self.context.sendSignal(None, event.signals.save)
@@ -361,10 +359,8 @@ class Link(event.Handler):
 			token = message.value
 			hash = settings.hashAlgorithm(token)
 
-			#TODO: get new Bitcoin transaction from message and
-			# pass it to channel
 			#TODO: use multiple channels
-			self.channels[0].commitIncoming(hash)
+			self.channels[0].commitIncoming(hash, message)
 			#TODO: exception handling for the above
 
 			self.context.sendSignal(None, event.signals.save)
