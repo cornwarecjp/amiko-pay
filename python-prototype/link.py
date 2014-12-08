@@ -261,26 +261,22 @@ class Link(event.Handler):
 		log.log("Link: lock")
 		#TODO: check whether we're still connected
 		#TODO: use multiple channels
-		self.channels[0].lockOutgoing(transaction.hash)
+		message = self.channels[0].lockOutgoing(transaction.hash)
 
 		self.context.sendSignal(None, event.signals.save)
 
-		#TODO: get new Bitcoin transaction from channel and
-		# include it in the lock message
-		self.connection.sendMessage(messages.Lock(transaction.hash))
+		self.connection.sendMessage(message)
 
 
 	def msg_commit(self, transaction):
 		log.log("Link: commit")
 		#TODO: check whether we're still connected
 		#TODO: use multiple channels
-		self.channels[0].commitOutgoing(transaction.hash)
+		message = self.channels[0].commitOutgoing(transaction.hash, transaction.token)
 
 		self.context.sendSignal(None, event.signals.save)
 
-		#TODO: get new Bitcoin transaction from channel and
-		# include it in the lock message
-		self.connection.sendMessage(messages.Commit(transaction.token))
+		self.connection.sendMessage(message)
 
 		#We don't need this anymore:
 		del self.openTransactions[transaction.hash]

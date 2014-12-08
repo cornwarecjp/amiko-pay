@@ -462,7 +462,7 @@ class MultiSigChannel(channel.Channel):
 
 
 	def lockOutgoing(self, hash):
-		channel.Channel.lockOutgoing(self, hash)
+		return channel.Channel.lockOutgoing(self, hash)
 		#TODO: Update and send the transaction
 
 
@@ -471,8 +471,8 @@ class MultiSigChannel(channel.Channel):
 		#TODO: Receive, check and update the transaction
 
 
-	def commitOutgoing(self, hash):
-		channel.Channel.commitOutgoing(self, hash)
+	def commitOutgoing(self, hash, token):
+		return channel.Channel.commitOutgoing(self, hash, token)
 		#TODO: Update and send the transaction
 
 
