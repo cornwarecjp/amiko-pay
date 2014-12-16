@@ -2,43 +2,28 @@
 System requirements
 =======================================
 
-Amiko Pay uses the following libraries:
-* POSIX sockets (available on all modern UNIX/Linux operating systems)
-* OpenSSL ("libssl")
-* liburiparser
+The Python prototype of Amiko Pay is developed with Python 2.7.
+It is recommended to use Python 2.7 to run Amiko Pay. Other versions might
+also work (especially other 2.x versions), but this has not been tested.
 
-Amiko Pay is developed on Linux, but it will probably work on all UNIX-like
-systems, and you might be able to compile it for windows too. As an example,
-you will need the following packages in Ubuntu 12.04:
-* build-essential
-* libssl-dev
-* liburiparser-dev
+In addition, Amiko Pay uses several functions from the OpenSSL library.
+Amiko Pay attempts to load these functions from the shared library file
+"libssl.so". This is a common name of OpenSSL on Linux; on other systems,
+you may beed to change the code a bit; e.g. on windows, the library will
+probably have a .dll extension.
 
-
-=======================================
-Build instructions (C++ code)
-=======================================
-
-Open a terminal, and go to the directory that contains this file.
-Enter the comands:
-
-cd old-cpp
-make
-
-If there were no errors, the executable file "amikopay" has been created.
-That's it!
-
-If you encountered errors when building, they are probably related to how
-Amiko Pay tries to use the programming libraries: this can be dependent on your
-operating system. You can change the settings in the file "Makefile" and retry
-building.
+For access to the Bitcoin network, Amiko Pay uses the RPC interface of Bitcoin
+Core. You should either use the bitcoind program, or the Qt version with the
+"-server" commandline option, or any compatible program, to provide this
+interface. Bitcoin Core version 0.9 or later is recommended; very old versions
+are likely to fail.
 
 
 =======================================
 Installation instructions
 =======================================
 
-There is no "standard" way of installing Amiko Pay. You can choose for yourself
-where you want to place the executable file.
-
+There is no "standard" way of installing Amiko Pay. At this moment, the
+recommended way of using Amiko Pay is to run it directly from its source code
+directory.
 
