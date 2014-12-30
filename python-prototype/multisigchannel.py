@@ -284,6 +284,37 @@ class MultiSigChannel(channel.Channel):
 		self.T3.lockTime = 0
 
 
+	def makeTransactionT3(self):
+		amountLocal = \
+			self.amountLocal + \
+			sum(self.transactionsOutgoingReserved.values())
+		amountRemote = \
+			self.amountRemote + \
+			sum(self.transactionsIncomingReserved.values())
+		amountLocked = \
+			sum(self.transactionsOutgoingLocked.values()) + \
+			sum(self.transactionsIncomingLocked.values())
+		#TODO: check that the sum of the above equals T1's output minus fee
+
+		ownPubKey = self.ownKey.getPublicKey()
+		peerPubKey = self.peerKey.getPublicKey()
+		ownKeyHash = crypto.RIPEMD160(crypto.SHA256(ownPubKey))
+		peerKeyHash = crypto.RIPEMD160(crypto.SHA256(peerPubKey))
+
+		self.T3 = copy.deepcopy(self.T2)
+		self.T3.tx_out = [
+			bitcointransaction.TxOut(
+				amountLocal,
+				bitcointransaction.Script.standardPubKey(ownKeyHash)),
+			bitcointransaction.TxOut(
+				amountRemote,
+				bitcointransaction.Script.standardPubKey(peerKeyHash)),
+			bitcointransaction.TxOut(
+				amountLocked,
+				bitcointransaction.Script.multiSigPubKey(ownPubKey, peerPubKey))
+			]
+
+
 	def getPublicKeyPair(self):
 		if self.hasFirstPublicKey:
 			return self.ownKey.getPublicKey(), self.peerKey.getPublicKey()
@@ -462,8 +493,12 @@ class MultiSigChannel(channel.Channel):
 
 
 	def lockOutgoing(self, hash):
-		return channel.Channel.lockOutgoing(self, hash)
+		message = channel.Channel.lockOutgoing(self, hash)
+		self.makeTransactionT3()
+		#TODO: sign
+		message.payload = "TODO"
 		#TODO: Update and send the transaction
+		return message
 
 
 	def commitIncoming(self, hash, message):
@@ -472,8 +507,12 @@ class MultiSigChannel(channel.Channel):
 
 
 	def commitOutgoing(self, hash, token):
-		return channel.Channel.commitOutgoing(self, hash, token)
+		message = channel.Channel.commitOutgoing(self, hash, token)
+		self.makeTransactionT3()
+		#TODO: sign
+		message.payload = "TODO"
 		#TODO: Update and send the transaction
+		return message
 
 
 
