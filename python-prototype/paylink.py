@@ -186,7 +186,7 @@ class Payer(event.Handler):
 			#TODO: check that token matches hash (IMPORTANT)
 			log.log("Payer: commit")
 			#1: adjust own state
-			self.token = message.value
+			self.token = message.token
 			self.state = self.states.committed
 			#2: network traffic
 			#close connection
@@ -310,7 +310,7 @@ class Payee(event.Handler):
 		#1: adjust own state
 		self.state = self.states.sentCommit
 		#2: network traffic
-		self.connection.sendMessage(messages.Commit(self.token))
+		self.connection.sendMessage(messages.Commit(token=self.token))
 
 
 	def msg_commit(self, transaction):

@@ -92,7 +92,7 @@ class Channel:
 
 
 	def lockIncoming(self, message):
-		hash = message.value
+		hash = message.hash
 		self.transactionsIncomingLocked[hash] = \
 			self.transactionsIncomingReserved[hash]
 		del self.transactionsIncomingReserved[hash]
@@ -102,7 +102,7 @@ class Channel:
 		self.transactionsOutgoingLocked[hash] = \
 			self.transactionsOutgoingReserved[hash]
 		del self.transactionsOutgoingReserved[hash]
-		return messages.Lock(hash)
+		return messages.Lock(self.ID, hash=hash)
 
 
 	def commitIncoming(self, hash, message):
@@ -113,5 +113,5 @@ class Channel:
 	def commitOutgoing(self, hash, token):
 		self.amountRemote += self.transactionsOutgoingLocked[hash]
 		del self.transactionsOutgoingLocked[hash]
-		return messages.Commit(token)
+		return messages.Commit(self.ID, token=token)
 

@@ -352,11 +352,11 @@ class Link(event.Handler):
 
 			self.context.sendSignal(None, event.signals.save)
 
-			self.openTransactions[message.value].msg_lock()
+			self.openTransactions[message.hash].msg_lock()
 
 		elif message.__class__ == messages.Commit:
 			log.log("Link received Commit")
-			token = message.value
+			token = message.token
 			hash = settings.hashAlgorithm(token)
 
 			#TODO: use multiple channels

@@ -129,21 +129,9 @@ class HaveRoute(String):
 
 
 
-class Lock(String):
-	def __init__(self, value=""):
-		String.__init__(self, value, ID_LOCK)
-
-
-
 class Cancel(Message):
 	def __init__(self):
 		Message.__init__(self, ID_CANCEL)
-
-
-
-class Commit(String):
-	def __init__(self, value=""):
-		String.__init__(self, value, ID_COMMIT)
 
 
 
@@ -373,6 +361,66 @@ class Deposit(ChannelMessage):
 class Withdraw(ChannelMessage):
 	def __init__(self, channelID=0, stage=0, payload=""):
 		ChannelMessage.__init__(self, ID_WITHDRAW, channelID, stage, payload)
+
+
+
+class Lock(ChannelMessage):
+	def __init__(self, channelID=0, hash="", payload=""):
+		ChannelMessage.__init__(self, ID_LOCK, channelID, payload=payload)
+		self.hash = hash
+
+
+	def serializeAttributes(self):
+		# 4-byte unsigned int in network byte order:
+		hashLen = struct.pack("!I", len(self.hash))
+		ret = hashLen + self.hash
+
+		ret += ChannelMessage.serializeAttributes(self)
+		return ret
+
+
+	def deserializeAttributes(self, s):
+		# 4-byte unsigned int in network byte order:
+		hashLen = struct.unpack("!I", s[:4])[0]
+		self.hash = s[4:4+hashLen]
+		s = s[4+hashLen:]
+
+		ChannelMessage.deserializeAttributes(self, s)
+
+
+	def __str__(self):
+		return "channelID: %d; hash: %s" % \
+			(self.channelID, self.hash.encode("hex"))
+
+
+
+class Commit(ChannelMessage):
+	def __init__(self, channelID=0, token="", payload=""):
+		ChannelMessage.__init__(self, ID_COMMIT, channelID, payload=payload)
+		self.token = token
+
+
+	def serializeAttributes(self):
+		# 4-byte unsigned int in network byte order:
+		tokenLen = struct.pack("!I", len(self.token))
+		ret = tokenLen + self.token
+
+		ret += ChannelMessage.serializeAttributes(self)
+		return ret
+
+
+	def deserializeAttributes(self, s):
+		# 4-byte unsigned int in network byte order:
+		tokenLen = struct.unpack("!I", s[:4])[0]
+		self.token = s[4:4+tokenLen]
+		s = s[4+tokenLen:]
+
+		ChannelMessage.deserializeAttributes(self, s)
+
+
+	def __str__(self):
+		return "channelID: %d; token: %s" % \
+			(self.channelID, self.token.encode("hex"))
 
 
 
