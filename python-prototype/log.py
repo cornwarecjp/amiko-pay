@@ -16,7 +16,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
 
-import os
+#import os
 import traceback
 import time
 
@@ -31,7 +31,7 @@ def log(data):
 
 	logfile.write(t_str + ' ' + data + '\n')
 	logfile.flush()
-	os.fsync(logfile.fileno())
+	#os.fsync(logfile.fileno())
 
 
 def logException():
