@@ -517,6 +517,7 @@ class MultiSigChannel(channel.Channel):
 			else:
 				applyMultiSigSignatures(self.T2_latest, peerSignature, ownSignature)
 
+			self.peerSignature = peerSignature
 			self.T2_peerSigned = copy.deepcopy(self.T2_latest)
 			self.stage = stages["Closed"]
 
@@ -535,6 +536,7 @@ class MultiSigChannel(channel.Channel):
 			#TODO: lots of checks on T2 (IMPORTANT!)
 
 			self.T2_latest = T2
+			#self.peerSignature = TODO
 			self.T2_peerSigned = copy.deepcopy(T2)
 			self.stage = stages["Closed"]
 
@@ -561,11 +563,6 @@ class MultiSigChannel(channel.Channel):
 		channel.Channel.reserve(self, isPayerSide, hash, amount)
 
 
-	def lockIncoming(self, message):
-		channel.Channel.lockIncoming(self, message)
-		#TODO: Receive, check and update the transaction
-
-
 	def lockOutgoing(self, hash):
 		message = channel.Channel.lockOutgoing(self, hash)
 
@@ -579,6 +576,27 @@ class MultiSigChannel(channel.Channel):
 
 		message.payload = sigLen + ownSignature + self.T2_latest.serialize()
 		return message
+
+
+	def lockIncoming(self, message):
+		s = message.payload
+		sigLen = struct.unpack("!I", s[:4])[0]
+		s = s[4:]
+		peerSignature = s[:sigLen]
+		T2 = bitcointransaction.Transaction.deserialize(s[sigLen:])
+
+		pubKey1, pubKey2 = self.getPublicKeyPair()
+		if not verifyMultiSigSignature(
+			T2, 0, pubKey1, pubKey2, self.peerKey, peerSignature):
+				raise Exception("Signature failure!") #TODO: what to do now?
+
+		#TODO: lots of checks on T2 (IMPORTANT!)
+
+		self.peerSignature = peerSignature
+		self.T2_latest = T2
+		self.T2_peerSigned = copy.deepcopy(T2)
+
+		channel.Channel.lockIncoming(self, message)
 
 
 	def commitIncoming(self, hash, message):
