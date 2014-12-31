@@ -132,10 +132,12 @@ PeerDeposit_SendingSignature  -> WaitingForT1
 
 WaitingForT1                  -> Ready
 
-Ready                         -> OwnWithdraw_SendingT3
+Ready                         -> Stopping
+Stopping                      -> Stopped
+Stopped                       -> OwnWithdraw_SendingT3
 OwnWithdraw_SendingT3         -> Closed
 
-Ready                         -> PeerWithdraw_SendingSignature
+Stopped                       -> PeerWithdraw_SendingSignature
 PeerWithdraw_SendingSignature -> Closed
 """
 stages = \
@@ -148,6 +150,8 @@ stages = \
 	"PeerDeposit_SendingSignature",
 	"WaitingForT1",
 	"Ready",
+	"Stopping",
+	"Stopped",
 	"OwnWithdraw_SendingT3",
 	"PeerWithdraw_SendingSignature",
 	"Closed"
@@ -277,6 +281,15 @@ class MultiSigChannel(channel.Channel):
 		#TODO: check whether T1 has some confirmations
 		#TODO: add a watchdog entry for spending of T1
 		self.stage = stages["Ready"]
+
+
+	def checkStopped(self):
+		if self.stage == stages["Stopping"] and \
+			len(self.transactionsIncomingReserved) == 0 and \
+			len(self.transactionsOutgoingReserved) == 0 and \
+			len(self.transactionsIncomingLocked) == 0 and \
+			len(self.transactionsOutgoingLocked) == 0:
+				self.stage = stages["Stopped"]
 
 
 	def makeWithdrawT3(self):
@@ -412,9 +425,20 @@ class MultiSigChannel(channel.Channel):
 	def makeWithdrawMessage(self, message):
 		self.checkT1()
 
+		#TODO: make some code to enter the "stopping" state prior to withdrawing,
+		#and then wait until there are no more ongoing transactions.
+		#This is not necessary for low-volume tests in controlled environments,
+		#but as soon as people start transferring other peoples' transactions,
+		#you want to be able to stop other peoples' transactions from
+		#interfering with your withdrawal.
+		if self.stage == stages["Ready"]:
+			self.stage = stages["Stopping"]
+
+		self.checkStopped()
+
 		if message == None:
-			if self.stage != stages["Ready"]:
-				raise Exception("Can not withdraw: channel must be Ready, but is " + \
+			if self.stage != stages["Stopped"]:
+				raise Exception("Can not withdraw: channel must be Stopped, but is " + \
 					stageNames[self.stage])
 
 			self.makeWithdrawT3()
@@ -422,7 +446,7 @@ class MultiSigChannel(channel.Channel):
 			return messages.Withdraw(
 				self.ID, stage=self.stage, payload=self.T3.serialize())
 
-		elif self.stage == stages["Ready"] and \
+		elif self.stage == stages["Stopped"] and \
 			message.stage == stages["OwnWithdraw_SendingT3"]:
 
 			#Received T3
@@ -485,6 +509,17 @@ class MultiSigChannel(channel.Channel):
 			raise Exception("Received illegal withdraw message")
 
 		return None
+
+
+	def reserve(self, isPayerSide, hash, amount):
+		self.checkT1()
+
+		if self.stage != stages["Ready"]:
+			raise channel.Channel.CheckFail(
+				"Can not reserve: channel must be Ready, but is " + \
+				stageNames[self.stage])
+
+		channel.Channel.reserve(self, isPayerSide, hash, amount)
 
 
 	def lockIncoming(self, message):
