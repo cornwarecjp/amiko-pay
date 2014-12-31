@@ -554,7 +554,7 @@ class MultiSigChannel(channel.Channel):
 		self.checkT1()
 
 		if self.stage != stages["Ready"]:
-			raise channel.Channel.CheckFail(
+			raise channel.CheckFail(
 				"Can not reserve: channel must be Ready, but is " + \
 				stageNames[self.stage])
 
@@ -568,10 +568,16 @@ class MultiSigChannel(channel.Channel):
 
 	def lockOutgoing(self, hash):
 		message = channel.Channel.lockOutgoing(self, hash)
+
 		self.makeTransactionT2()
-		#TODO: sign
-		message.payload = "TODO"
-		#TODO: Update and send the transaction
+		pubKey1, pubKey2 = self.getPublicKeyPair()
+		ownSignature = signMultiSigTransaction(
+			self.T2_latest, 0, pubKey1, pubKey2, self.ownKey)
+
+		# 4-byte unsigned int in network byte order:
+		sigLen = struct.pack("!I", len(ownSignature))
+
+		message.payload = sigLen + ownSignature + self.T2_latest.serialize()
 		return message
 
 
