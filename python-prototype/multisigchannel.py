@@ -563,9 +563,7 @@ class MultiSigChannel(channel.Channel):
 		channel.Channel.reserve(self, isPayerSide, hash, amount)
 
 
-	def lockOutgoing(self, hash):
-		message = channel.Channel.lockOutgoing(self, hash)
-
+	def makeTransactionPayload(self):
 		self.makeTransactionT2()
 		pubKey1, pubKey2 = self.getPublicKeyPair()
 		ownSignature = signMultiSigTransaction(
@@ -574,12 +572,11 @@ class MultiSigChannel(channel.Channel):
 		# 4-byte unsigned int in network byte order:
 		sigLen = struct.pack("!I", len(ownSignature))
 
-		message.payload = sigLen + ownSignature + self.T2_latest.serialize()
-		return message
+		return sigLen + ownSignature + self.T2_latest.serialize()
 
 
-	def lockIncoming(self, message):
-		s = message.payload
+	def processTransactionPayload(self, payload):
+		s = payload
 		sigLen = struct.unpack("!I", s[:4])[0]
 		s = s[4:]
 		peerSignature = s[:sigLen]
@@ -596,21 +593,27 @@ class MultiSigChannel(channel.Channel):
 		self.T2_latest = T2
 		self.T2_peerSigned = copy.deepcopy(T2)
 
+
+	def lockOutgoing(self, hash):
+		message = channel.Channel.lockOutgoing(self, hash)
+		message.payload = self.makeTransactionPayload()
+		return message
+
+
+	def lockIncoming(self, message):
+		self.processTransactionPayload(message.payload)
 		channel.Channel.lockIncoming(self, message)
-
-
-	def commitIncoming(self, hash, message):
-		channel.Channel.commitIncoming(self, hash, message)
-		#TODO: Receive, check and update the transaction
 
 
 	def commitOutgoing(self, hash, token):
 		message = channel.Channel.commitOutgoing(self, hash, token)
-		self.makeTransactionT2()
-		#TODO: sign
-		message.payload = "TODO"
-		#TODO: Update and send the transaction
+		message.payload = self.makeTransactionPayload()
 		return message
+
+
+	def commitIncoming(self, hash, message):
+		self.processTransactionPayload(message.payload)
+		channel.Channel.commitIncoming(self, hash, message)
 
 
 
