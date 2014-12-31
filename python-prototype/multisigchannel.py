@@ -354,17 +354,22 @@ class MultiSigChannel(channel.Channel):
 		ownKeyHash = crypto.RIPEMD160(crypto.SHA256(ownPubKey))
 		peerKeyHash = crypto.RIPEMD160(crypto.SHA256(peerPubKey))
 
-		self.T2_latest.tx_out = [
-			bitcointransaction.TxOut(
+		self.T2_latest.tx_out = []
+		if amountLocal > 0:
+			self.T2_latest.tx_out.append(bitcointransaction.TxOut(
 				amountLocal,
-				bitcointransaction.Script.standardPubKey(ownKeyHash)),
-			bitcointransaction.TxOut(
+				bitcointransaction.Script.standardPubKey(ownKeyHash))
+				)
+		if amountRemote > 0:
+			self.T2_latest.tx_out.append(bitcointransaction.TxOut(
 				amountRemote,
-				bitcointransaction.Script.standardPubKey(peerKeyHash)),
-			bitcointransaction.TxOut(
+				bitcointransaction.Script.standardPubKey(peerKeyHash))
+				)
+		if amountLocked > 0:
+			self.T2_latest.tx_out.append(bitcointransaction.TxOut(
 				amountLocked,
 				bitcointransaction.Script.multiSigPubKey(ownPubKey, peerPubKey))
-			]
+				)
 
 
 	def getPublicKeyPair(self):
