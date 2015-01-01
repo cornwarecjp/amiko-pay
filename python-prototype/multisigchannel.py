@@ -269,17 +269,17 @@ class MultiSigChannel(channel.Channel):
 
 		if self.T1 != None:
 			if forDisplay:
-				ret["T1"] = self.T1.getTransactionID().encode("hex")[::-1]
+				ret["T1"] = self.T1.getTransactionID()[::-1].encode("hex")
 			else:
 				ret["T1"] = self.T1.serialize().encode("hex")
 		if self.T2_peerSigned != None:
 			if forDisplay:
-				ret["T2_peerSigned"] = self.T2_peerSigned.getTransactionID().encode("hex")[::-1]
+				ret["T2_peerSigned"] = self.T2_peerSigned.getTransactionID()[::-1].encode("hex")
 			else:
 				ret["T2_peerSigned"] = self.T2_peerSigned.serialize().encode("hex")
 		if self.T2_latest != None:
 			if forDisplay:
-				ret["T2_latest"] = self.T2_latest.getTransactionID().encode("hex")[::-1]
+				ret["T2_latest"] = self.T2_latest.getTransactionID()[::-1].encode("hex")
 			else:
 				ret["T2_latest"] = self.T2_latest.serialize().encode("hex")
 		if self.peerSignature != None:
