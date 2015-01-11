@@ -1,5 +1,5 @@
 #    multisigchannel.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
