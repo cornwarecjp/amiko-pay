@@ -27,16 +27,9 @@ https://github.com/cornwarecjp/amiko-pay
 How to use
 ==========
 
-Before using Amiko-pay, please check whether any local laws restrict the use of
-this software. Ideally, there should be no such laws, but if they do exist,
-you may still be able to use Amiko-pay legally by constraining the behavior of
-the software, for instance through its settings. The makers of Amiko-pay do not
-encourage breaking the law; if you decide to break the law, you do this at
-your own responsibility.
-
 Please read the file "COPYING" for licensing information.
 
-Compilation and installation instructions can be found in the file "INSTALL".
+Installation instructions can be found in the file "INSTALL".
 
 See doc/manual.md for further usage information.
 

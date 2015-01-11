@@ -1,7 +1,21 @@
 (Note: this manual applies to the Python prototype version)
 
-WARNING!!!!
+WARNINGS!!!
 ===========
+
+Legal warning
+-------------
+
+Before using Amiko-pay, please check whether any local laws restrict the use of
+this software. Ideally, there should be no such laws, but if they do exist,
+you may still be able to use Amiko-pay legally by constraining the behavior of
+the software, for instance through its settings. The makers of Amiko-pay do not
+encourage breaking the law; if you decide to break the law, you do this at
+your own responsibility.
+
+
+Reliability and security warning
+--------------------------------
 
 This is unfinished and extremely experimental software; use at your own risk!
 At the moment, safety mechanisms (of any kind) are virtually absent, so the use
@@ -26,6 +40,27 @@ Before starting amiko-pay, please have a look at the file amikopay.conf.
 Change the settings in this file to your preferred settings before starting
 Amiko Pay. By default, Amiko Pay searches for amikopay.conf in the current
 working directory (".").
+
+
+Backups
+=======
+
+Private keys created and used by Amiko Pay are stored in your Bitcoin wallet
+as Bitcoin addresses, so if you back up your Bitcoin wallet, those private keys
+are in your backup.
+
+Besides private keys, Amiko Pay stores additional information, which is needed
+to be able to withdraw bitcoins from links. By default, this additional
+information is stored in the file "amikopay.dat" in the current working
+directory ("."); the name and location of this file is a setting.
+
+In case of a crash during the update of the state file, you may also find a file
+named <A>.new or <A>.old, where <A> is the state filename (e.g. amikopay.dat.new
+or amikopay.dat.old). In that case, you may need to inspect the files to
+determine which is the best file to start a recovery.
+
+You need to backup these files to make sure you keep access to your bitcoins in
+case you lose these files.
 
 
 Starting Amiko Pay
@@ -173,12 +208,6 @@ payment. If A confirms the payment, the payment is performed:
 If the payment is successful, balances on the payment channel(s) between A and B
 are adjusted in such a way that the bitcoins are subtracted from A's balance and
 added to B's balance.
-
-Note: implementation of payments is not yet finished, so this does not yet work.
-Although balances seem to be adjusted, the underlying Bitcoin transactions of the
-payment channels are not. The result is that, at the time of withdrawing, the
-amounts in the payment channels are fully transferred back to their initial
-depositors.
 
 
 Withdrawing from a link
