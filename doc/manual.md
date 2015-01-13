@@ -19,8 +19,10 @@ Reliability and security warning
 
 This is unfinished and extremely experimental software; use at your own risk!
 At the moment, safety mechanisms (of any kind) are virtually absent, so the use
-of Amiko Pay can lead to loss of bitcoins. If you still wish to continue, you
-should at least take the following precautions:
+of Amiko Pay can lead to loss of bitcoins. A list of known vulnerabilities is
+maintained in doc/vulnerabilities.md.
+
+If you still wish to continue, you should at least take the following precautions:
 
 * Use Amiko Pay only in combination with a Bitcoin wallet containing a very small
   amount of bitcoins. You should be prepared to lose all bitcoins in your wallet
