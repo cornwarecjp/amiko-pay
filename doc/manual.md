@@ -1,7 +1,7 @@
 (Note: this manual applies to the Python prototype version)
 
-WARNINGS!!!
-===========
+WARNINGS
+========
 
 Legal warning
 -------------
@@ -33,6 +33,13 @@ If you still wish to continue, you should at least take the following precaution
   on networks you fully trust. Do not configure Amiko Pay to open a port that
   is accessible from the Internet, if you do not want to risk hackers accessing
   your system.
+
+
+Compatibility warning
+---------------------
+
+This version of Amiko Pay is not guaranteed to remain compatible with future
+versions, and there is not guaranteed to be a clean migration path.
 
 
 Settings
