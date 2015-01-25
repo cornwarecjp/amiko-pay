@@ -1,6 +1,6 @@
 #    crypto.py
 #    Copyright (C) 2009-2012 by the Bitcoin developers
-#    Copyright (C) 2013-2014 by CJP
+#    Copyright (C) 2013-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
