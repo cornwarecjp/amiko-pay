@@ -73,10 +73,39 @@ class Test(unittest.TestCase):
 		with DummyFile() as f:
 			log.log("foobar")
 
-			#A single line has been written, and then flushed:
+			#A single item has been written, and then flushed:
 			self.assertEqual(len(f.data), 2)
 			self.assertEqual(type(f.data[0]), str)
 			self.assertEqual(f.data[1], f.flush)
+
+			line = f.data[0]
+
+			#The expected data is present, including a trailing newline:
+			self.assertTrue(line.endswith("foobar\n"))
+			#TODO: test the timestamp
+
+
+	def test_logException(self):
+		"Test the logException function"
+		with DummyFile() as f:
+			try:
+				x = 1 / 0
+			except:
+				log.logException()
+
+			#A single item has been written, and then flushed:
+			self.assertEqual(len(f.data), 2)
+			self.assertEqual(type(f.data[0]), str)
+			self.assertEqual(f.data[1], f.flush)
+
+			lines = f.data[0].split('\n')
+
+			#The expected data is present, including a trailing newline:
+			self.assertTrue("Traceback" in lines[0])
+			self.assertTrue('File "test_log.py", line' in lines[1])
+			self.assertTrue("x = 1 / 0" in lines[2])
+			self.assertTrue("ZeroDivisionError: integer division or modulo by zero" in lines[3])
+			self.assertGreater(len(lines), 4)
 
 
 if __name__ == "__main__":
