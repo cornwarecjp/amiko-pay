@@ -417,9 +417,15 @@ class Amiko(threading.Thread):
 				#Use old file if state file does not exist:
 				os.rename(oldFile, self.settings.stateFile)
 
-		with open(self.settings.stateFile, 'rb') as fp:
-			state = json.load(fp)
-			#print state
+		try:
+			with open(self.settings.stateFile, 'rb') as fp:
+				state = json.load(fp)
+				#print state
+		except IOError:
+			log.log("Failed to load from %s" % self.settings.stateFile)
+			log.log("Starting with empty state")
+			state = {"links":[], "meetingPoints":[]}
+
 
 		for lnk in state["links"]:
 			self.routingContext.links.append(link.Link(
@@ -429,6 +435,8 @@ class Amiko(threading.Thread):
 		for mp in state["meetingPoints"]:
 			self.routingContext.meetingPoints.append(
 				meetingpoint.MeetingPoint(str(mp["ID"])))
+
+		#TODO: process requests
 
 
 	def __saveState(self):
