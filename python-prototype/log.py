@@ -26,7 +26,7 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-#import os
+
 import traceback
 import time
 
@@ -35,16 +35,30 @@ import time
 logfile = open("debug.log", "a")
 
 def log(data):
+	"""
+	Writes data to a log file.
+
+	Arguments:
+	data: str, to be written to the log file.
+	      log() adds a timestamp and a trailing newline, so these do not need
+	      to be present in data.
+	"""
+
 	t = time.time()
 	ms = int(1000*t % 1000)
 	t_str = time.strftime("%Y-%m-%d %H:%M:%S.", time.localtime(t)) + ("%03d" % ms)
 
 	logfile.write(t_str + ' ' + data + '\n')
 	logfile.flush()
-	#os.fsync(logfile.fileno())
+
 
 
 def logException():
+	"""
+	Logs exception information, including traceback.
+	Should only be called inside exception handling code.
+	"""
+
 	text = traceback.format_exc()
 	log(text)
 
