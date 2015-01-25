@@ -34,14 +34,49 @@ import testenvironment
 import log
 
 
+class DummyFile:
+	def __init__(self):
+		self.data = []
+
+
+	def __enter__(self):
+		self.oldFile = log.logfile
+		log.logfile = self
+		return self
+
+
+	def __exit__(self, exc_type, exc_val, exc_tb):
+		log.logfile = self.oldFile
+
+
+	def write(self, line):
+		self.data.append(line)
+
+
+	def flush(self):
+		self.data.append(self.flush)
+
 
 class Test(unittest.TestCase):
-	def setUp(self):
-		pass
+	def test_logFileMode(self):
+		"Test whether log file is opened in append mode"
+		self.assertEqual(log.logfile.mode, "a")
 
-	def test_foo(self):
-		"Test whether tests work"
-		pass
+
+	def test_logFileName(self):
+		"Test whether log filename is debug.log"
+		self.assertEqual(log.logfile.name, "debug.log")
+
+
+	def test_log(self):
+		"Test the log function"
+		with DummyFile() as f:
+			log.log("foobar")
+
+			#A single line has been written, and then flushed:
+			self.assertEqual(len(f.data), 2)
+			self.assertEqual(type(f.data[0]), str)
+			self.assertEqual(f.data[1], f.flush)
 
 
 if __name__ == "__main__":
