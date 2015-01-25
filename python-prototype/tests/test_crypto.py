@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    all.py
+#    test_crypto.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -31,8 +31,13 @@ import unittest
 
 import testenvironment
 
-from test_log import Test as test_log
-from test_crypto import Test as test_crypto
+import crypto
+
+
+
+class Test(unittest.TestCase):
+	pass
+
 
 
 if __name__ == "__main__":
