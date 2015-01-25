@@ -124,17 +124,21 @@ class Amiko(threading.Thread):
 	done before program termination.
 	"""
 
-	def __init__(self, conffile="amikopay.conf"):
+	def __init__(self, conf="amikopay.conf"):
 		"""
 		Constructor.
 
 		Arguments:
-		conffile: Name of the configuration file to be loaded.
+		conf: Name of the configuration file to be loaded, or a
+		      settings.Settings instance
 		"""
 
 		threading.Thread.__init__(self)
 
-		self.settings = settings.Settings(conffile)
+		if isinstance(conf, settings.Settings):
+			self.settings = conf
+		else:
+			self.settings = settings.Settings(conf)
 
 		self.bitcoind = bitcoind.Bitcoind(self.settings)
 		self.watchdog = watchdog.Watchdog(self.bitcoind)
