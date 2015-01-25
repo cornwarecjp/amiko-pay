@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #    twonodes.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -27,11 +27,10 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-import sys
 import time
 import pprint
 
-sys.path.append("..")
+import testenvironment
 
 import amiko
 import event

@@ -1,10 +1,12 @@
 test:
 	-rm .coverage
-	python-coverage run --branch twonodes.py
+	-rm -rf coverage-html
+	#python-coverage run --branch --append twonodes.py
+	python-coverage run --branch --append all.py
 	python-coverage html -d coverage-html
 	python-coverage report -m
 
 clean:
 	rm -f *.log *.dat
-	rm -rf coverage-html
+	rm -rf .coverage coverage-html
 
