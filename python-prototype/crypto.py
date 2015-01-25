@@ -329,39 +329,3 @@ class Key:
 		raise Exception("ECDSA_verify failed")
 
 
-
-if __name__ == "__main__":
-	#Test:
-	for compression in [False, True]:
-		print "Public key compression: ", compression
-		privKey = Key()
-		privKey.makeNewKey(compression)
-
-		pubKey = Key()
-		pubKey.setPublicKey(privKey.getPublicKey())
-
-		data = "blablabla"
-
-		goodSig = privKey.sign(data)
-		print "Good signature:", pubKey.verify(data, goodSig)
-
-		otherKey = Key()
-		otherKey.makeNewKey()
-		badSig1 = otherKey.sign(data)
-
-		badSig2 = privKey.sign("bad data")
-
-		print "Bad signature 1:", pubKey.verify(data, badSig1)
-		print "Bad signature 2:", pubKey.verify(data, badSig2)
-
-		priv = privKey.getPrivateKey()
-		privKey2 = Key()
-		privKey2.setPrivateKey(priv)
-		print "Private key is constant:", privKey2.getPrivateKey() == priv
-
-		goodSig = privKey2.sign(data)
-		print "Good signature 2:", pubKey.verify(data, goodSig)
-
-	cleanup()
-
-

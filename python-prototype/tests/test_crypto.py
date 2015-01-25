@@ -28,6 +28,7 @@
 #    OpenSSL library used as well as that of the covered work.
 
 import unittest
+import binascii
 
 import testenvironment
 
@@ -36,8 +37,170 @@ import crypto
 
 
 class Test(unittest.TestCase):
-	pass
+	def test_cleanup(self):
+		"Test the cleanup function"
+		crypto.cleanup()
 
+		#Now undo the cleanup:
+		crypto.libssl.SSL_load_error_strings()
+
+
+	def test_SHA256(self):
+		"Test the SHA256 function"
+
+		#Empty string example taken from Wikipedia:
+		self.assertEqual(crypto.SHA256(
+			""
+			).encode("hex"),
+			"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+			)
+		#Pre-calculated using Linux sha256sum application:
+		self.assertEqual(crypto.SHA256(
+			"Amiko Pay"
+			).encode("hex"),
+			"81f50a37123696415c4e1ee6849faa09a6f8f355efcfa81992e850da07a834bd"
+			)
+
+
+	def test_RIPEMD160(self):
+		"Test the RIPEMD160 function"
+
+		#Examples from Wikipedia:
+		self.assertEqual(crypto.RIPEMD160(
+			""
+			).encode("hex"),
+			"9c1185a5c5e9fc54612808977ee8f548b2258d31"
+			)
+		self.assertEqual(crypto.RIPEMD160(
+			"The quick brown fox jumps over the lazy dog"
+			).encode("hex"),
+			"37f332f68db77bd9d7edd4969571ad671cf9dd3b"
+			)
+		self.assertEqual(crypto.RIPEMD160(
+			"The quick brown fox jumps over the lazy cog"
+			).encode("hex"),
+			"132072df690933835eb8b6ad0b77e7b6f14acad7"
+			)
+
+
+	def test_emptyKey(self):
+		"Test behavior of an empty key object"
+		key = crypto.Key()
+
+		self.assertRaises(Exception, key.getPublicKey)
+		self.assertRaises(Exception, key.getPrivateKey)
+		self.assertRaises(Exception, key.sign, "foo")
+		self.assertRaises(Exception, key.verify, "foo", "bar")
+
+
+	def __testPrivateKey(self, key, lenPubKey, lenPrivKey):
+		publicKey = key.getPublicKey()
+		self.assertEqual(type(publicKey), str)
+		self.assertEqual(len(publicKey), lenPubKey)
+
+		privateKey = key.getPrivateKey()
+		self.assertEqual(type(privateKey), str)
+		self.assertEqual(len(privateKey), lenPrivKey)
+
+		message = "foo"
+		signature = key.sign(message)
+		self.assertEqual(type(signature), str)
+		self.assertLess(len(signature), 74)
+
+		self.assertTrue(key.verify(message, signature))
+		self.assertFalse(key.verify("bar", signature))
+
+		key2 = crypto.Key()
+		key2.setPublicKey(publicKey)
+		self.assertTrue(key2.verify(message, signature))
+		self.assertFalse(key2.verify("bar", signature))
+
+
+	def test_newKey(self):
+		"Test behavior of a new private key object"
+		key = crypto.Key()
+		key.makeNewKey(compressed=False)
+		self.__testPrivateKey(key, 65, 32)
+
+		key = crypto.Key()
+		key.makeNewKey(compressed=True)
+		self.__testPrivateKey(key, 33, 33)
+
+
+	def __getKeyPair(self, compressed):
+		#These are pre-generated using the crypto module itself.
+		#So using these for testing is nothing more than a regression test.
+		if compressed:
+			return \
+				binascii.unhexlify("024bccac7bf794f8dd3d165ff03d412d0a03628055bca4d1f64d37a2fd6ec0348b"), \
+				binascii.unhexlify("abdc2d26c81366e95ccccb7b9cb1c64117126d2bdd6c745aace317b27d733f6601"), \
+				binascii.unhexlify("3045022100f08fa87b0b7e500657d6fff1306e5c92928fada816168925f43a952f07caf0fc02200ca08dad7811874f49a481199e3c23b2fa719ec99d5abad092b6cf230bff7642")
+		else:
+			return \
+				binascii.unhexlify("040329c4cdf0f29f9e44010fabe22d5c6c9ad8983429b192ebdb27d95435a092a9735aa54cd1cd4532d4b3dd0963b1d5ca9c7449af7098213347a2472ec1b2603b"), \
+				binascii.unhexlify("a74550a2d67f817a7445a4a81665088379847a786ed20f7f736abd547b62e94f"), \
+				binascii.unhexlify("30440220054d1c48dc5f4b013411239114f8521f76094158a21bceec6766949cde7a766602200655cfb1333cee44a3b8a33a4dec048412ae1bf790e704a1844d66e95b8b55f7")
+
+
+	def test_privateKey(self):
+		"Test behavior of an imported private key object"
+
+		publicKey ,privateKey, fooSignature = self.__getKeyPair(compressed=False)
+		key = crypto.Key()
+		key.setPrivateKey(privateKey)
+		self.__testPrivateKey(key, 65, 32)
+		self.assertEqual(key.getPublicKey(), publicKey)
+		self.assertEqual(key.getPrivateKey(), privateKey)
+		self.assertTrue(key.verify("foo", fooSignature))
+		self.assertFalse(key.verify("bar", fooSignature))
+
+
+		publicKey ,privateKey, fooSignature = self.__getKeyPair(compressed=True)
+		key = crypto.Key()
+		key.setPrivateKey(privateKey)
+		self.__testPrivateKey(key, 33, 33)
+		self.assertEqual(key.getPublicKey(), publicKey)
+		self.assertEqual(key.getPrivateKey(), privateKey)
+		self.assertTrue(key.verify("foo", fooSignature))
+		self.assertFalse(key.verify("bar", fooSignature))
+
+
+	def test_publicKey(self):
+		"Test behavior of a public key object"
+
+		for compressed in (False, True):
+			publicKey ,privateKey, fooSignature = self.__getKeyPair(compressed=compressed)
+			key = crypto.Key()
+			key.setPublicKey(publicKey)
+			self.assertEqual(type(key.getPublicKey()), str)
+			self.assertEqual(key.getPublicKey(), publicKey)
+			self.assertRaises(Exception, key.getPrivateKey)
+			self.assertTrue(key.verify("foo", fooSignature))
+			self.assertFalse(key.verify("bar", fooSignature))
+
+
+	def test_crossSigning(self):
+		"Test whether one key's signature is accepted with another public key"
+
+		for compressed in (False, True):
+			priv1 = crypto.Key()
+			priv1.makeNewKey(compressed=compressed)
+			priv2 = crypto.Key()
+			priv2.makeNewKey(compressed=compressed)
+			self.assertNotEqual(priv1.getPrivateKey(), priv2.getPrivateKey())
+			self.assertNotEqual(priv1.getPublicKey(), priv2.getPublicKey())
+
+			message = "foo"
+			sig1 = priv1.sign(message)
+			sig2 = priv2.sign(message)
+
+			pub1 = crypto.Key()
+			pub1.setPublicKey(priv1.getPublicKey())
+			pub2 = crypto.Key()
+			pub2.setPublicKey(priv2.getPublicKey())
+
+			self.assertTrue(pub1.verify(message, sig1))
+			self.assertFalse(pub1.verify(message, sig2))
 
 
 if __name__ == "__main__":
