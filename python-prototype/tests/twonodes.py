@@ -35,12 +35,28 @@ sys.path.append("..")
 
 import amiko
 import event
+import settings
 
-
-
-node1 = amiko.Amiko(conffile="twonodes_1.conf")
+settings1 = settings.Settings()
+settings1.RPCURL = "dummy"
+settings1.listenHost = "localhost"
+settings1.listenPort = 4322
+settings1.advertizedHost = settings1.listenHost
+settings1.advertizedPort = settings1.listenPort
+settings1.stateFile = "twonodes_1.dat"
+settings1.payLogFile = "payments1.log"
+node1 = amiko.Amiko(settings1)
 node1.start()
-node2 = amiko.Amiko(conffile="twonodes_2.conf")
+
+settings2 = settings.Settings()
+settings2.RPCURL = "dummy"
+settings2.listenHost = "localhost"
+settings2.listenPort = 4323
+settings2.advertizedHost = settings2.listenHost
+settings2.advertizedPort = settings2.listenPort
+settings2.stateFile = "twonodes_2.dat"
+settings2.payLogFile = "payments2.log"
+node2 = amiko.Amiko(settings2)
 node2.start()
 
 #Allow links to connect
