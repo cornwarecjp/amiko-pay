@@ -45,6 +45,35 @@ settings1.advertizedHost = settings1.listenHost
 settings1.advertizedPort = settings1.listenPort
 settings1.stateFile = "twonodes_1.dat"
 settings1.payLogFile = "payments1.log"
+with open(settings1.stateFile, "wb") as f:
+	f.write("""
+		{
+		"links":
+		[
+			{
+			"name": "node1",
+			"localID": "node1",
+			"remoteID": "node2",
+			"remoteURL": "amikolink://localhost:4323/node2",
+			"channels":
+			[{
+				"ID": 0,
+				"amountLocal"           : 1000,
+				"amountRemote"          : 1000,
+				"transactionsIncomingReserved": {},
+				"transactionsOutgoingReserved": {},
+				"transactionsIncomingLocked"  : {},
+				"transactionsOutgoingLocked"  : {},
+				"type": "plain"
+			}]
+			}
+		],
+
+		"meetingPoints": [],
+
+		"payees": []
+		}
+		""")
 node1 = amiko.Amiko(settings1)
 node1.start()
 
@@ -56,6 +85,40 @@ settings2.advertizedHost = settings2.listenHost
 settings2.advertizedPort = settings2.listenPort
 settings2.stateFile = "twonodes_2.dat"
 settings2.payLogFile = "payments2.log"
+with open(settings2.stateFile, "wb") as f:
+	f.write("""
+		{
+		"links":
+		[
+			{
+			"name": "node2",
+			"localID": "node2",
+			"remoteID": "node1",
+			"remoteURL": "",
+			"channels":
+			[{
+				"ID": 0,
+				"amountLocal"           : 1000,
+				"amountRemote"          : 1000,
+				"transactionsIncomingReserved": {},
+				"transactionsOutgoingReserved": {},
+				"transactionsIncomingLocked"  : {},
+				"transactionsOutgoingLocked"  : {},
+				"type": "plain"
+			}]
+			}
+		],
+
+		"meetingPoints":
+		[
+			{
+			"ID": "node2"
+			}
+		],
+
+		"payees": []
+		}
+		""")
 node2 = amiko.Amiko(settings2)
 node2.start()
 
