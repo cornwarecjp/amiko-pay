@@ -36,6 +36,34 @@ import crypto
 
 
 
+class DummyLibSSL:
+	def __init__(self):
+		self.returnValues = {}
+
+	def __enter__(self):
+		self.oldLibSSL = crypto.libssl
+		crypto.libssl = self
+		return self
+
+
+	def __exit__(self, exc_type, exc_val, exc_tb):
+		crypto.libssl = self.oldLibSSL
+
+
+	def __getattr__(self, name):
+		def generic_method(*args, **kwargs):
+			#print name, args, kwargs
+			return self.returnValues[name].pop(0)
+
+		return generic_method
+
+
+	def EC_KEY_free(self, data):
+		#Special case (won't pass through getattr)
+		pass
+
+
+
 class Test(unittest.TestCase):
 	def test_cleanup(self):
 		"Test the cleanup function"
@@ -201,6 +229,111 @@ class Test(unittest.TestCase):
 
 			self.assertTrue(pub1.verify(message, sig1))
 			self.assertFalse(pub1.verify(message, sig2))
+
+
+	def test_failures(self):
+		"Test what happens in case of libssl failures"
+
+		#Note: this is an incredibly white-box test.
+		#Its main purpose is to get full code coverage, to make sure all
+		#lines of the code "work" as intended.
+
+		with DummyLibSSL() as libssl:
+			libssl.returnValues = {'EC_KEY_new_by_curve_name': [1]}
+			key = crypto.Key()
+
+			libssl.returnValues = {'EC_KEY_generate_key': [0]}
+			self.assertRaises(Exception, key.makeNewKey)
+
+			libssl.returnValues = {'o2i_ECPublicKey': [0]}
+			self.assertRaises(Exception, key.setPublicKey, '')
+
+			libssl.returnValues = \
+			{
+			'EC_KEY_generate_key': [1],
+			'EC_KEY_set_conv_form': [None]
+			}
+			key.makeNewKey()
+
+			libssl.returnValues = {'i2o_ECPublicKey': [0]}
+			self.assertRaises(Exception, key.getPublicKey)
+
+			libssl.returnValues = {'i2o_ECPublicKey': [32, 33]}
+			self.assertRaises(Exception, key.getPublicKey)
+
+			libssl.returnValues = {'BN_init': [None], 'BN_bin2bn': [0]}
+			self.assertRaises(Exception, key.setPrivateKey, '')
+
+			libssl.returnValues = \
+			{
+			'EC_KEY_new_by_curve_name': [0],
+			'BN_init': [None],
+			'BN_bin2bn': [1]
+			}
+			key = crypto.Key()
+			self.assertRaises(Exception, key.setPrivateKey, '')
+
+			libssl.returnValues = {'EC_KEY_new_by_curve_name': [1]}
+			key = crypto.Key()
+
+			libssl.returnValues = \
+			{
+			'BN_init': [None],
+			'BN_bin2bn': [1],
+			'EC_KEY_get0_group': [None],
+			'BN_CTX_new': [0]
+			}
+			self.assertRaises(Exception, key.setPrivateKey, '')
+
+			libssl.returnValues = \
+			{
+			'BN_init': [None],
+			'BN_bin2bn': [1],
+			'EC_KEY_get0_group': [None],
+			'BN_CTX_new': [1],
+			'EC_POINT_new': [0]
+			}
+			self.assertRaises(Exception, key.setPrivateKey, '')
+
+			libssl.returnValues = \
+			{
+			'BN_init': [None],
+			'BN_bin2bn': [1],
+			'EC_KEY_get0_group': [None],
+			'BN_CTX_new': [1],
+			'EC_POINT_new': [1],
+			'EC_POINT_mul': [0]
+			}
+			self.assertRaises(Exception, key.setPrivateKey, '')
+
+			libssl.returnValues = \
+			{
+			'EC_KEY_generate_key': [1],
+			'EC_KEY_set_conv_form': [None]
+			}
+			key.makeNewKey()
+
+			libssl.returnValues = {'EC_KEY_get0_private_key': [0]}
+			self.assertRaises(Exception, key.getPrivateKey)
+
+			libssl.returnValues = \
+			{
+			'EC_KEY_get0_private_key': [1],
+			'BN_num_bits': [32*8],
+			'BN_bn2bin': [33]
+			}
+			self.assertRaises(Exception, key.getPrivateKey)
+
+			libssl.returnValues = \
+			{
+			'ECDSA_size': [71],
+			'ECDSA_sign': [0]
+			}
+			self.assertRaises(Exception, key.sign, '')
+
+			libssl.returnValues = {'ECDSA_verify': [-1]}
+			self.assertRaises(Exception, key.verify, '', '')
+
 
 
 if __name__ == "__main__":
