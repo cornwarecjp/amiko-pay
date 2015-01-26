@@ -146,23 +146,65 @@ libssl.SSL_library_init()
 #are freed before calling this.Calling this at program termination shouldn't be
 #that essential anyway, so wel'll leave it to the application code.
 def cleanup():
+	"""
+	Clean up. Should be called on program termination.
+	After cleanup(), no more crypto.py functions should be called.
+	"""
+
 	libssl.ERR_free_strings()
 
 
 def SHA256(data):
+	"""
+	Calculate the SHA256 hash of given data
+
+	Arguments:
+	data : str; the data of which to calculate the SHA256 hash
+
+	Return value:
+	str; the SHA256 hash.
+	Note: this is in binary form (not hexadecimal).
+	Note 2: this is in OpenSSL's byte order, which is the reverse of
+	        (at least some cases of) the byte order used in Bitcoin.
+	"""
+
 	b = ctypes.create_string_buffer(32)
 	libssl.SHA256(data, len(data), b)
 	return ''.join(b)
 
 
 def RIPEMD160(data):
+	"""
+	Calculate the RIPEMD160 hash of given data
+
+	Arguments:
+	data : str; the data of which to calculate the RIPEMD160 hash
+
+	Return value:
+	str; the RIPEMD160 hash.
+	Note: this is in binary form (not hexadecimal).
+	"""
+
 	b = ctypes.create_string_buffer(20)
 	libssl.RIPEMD160(data, len(data), b)
 	return ''.join(b)
 
 
 class Key:
+	"""
+	An ECDSA key object.
+
+	Contains either no keys, a public key or a public/private key pair.
+	Supports both "compressed" and "non-compressed" public keys, in the same way
+	as Bitcoin.
+	"""
+
 	def __init__(self):
+		"""
+		Constructor.
+		The constructed object does not contain any key data.
+		"""
+
 		self.keyData = ctypes.c_void_p(libssl.EC_KEY_new_by_curve_name(NID_secp256k1))
 		self.hasPublicKey = False
 		self.hasPrivateKey = False
@@ -173,6 +215,10 @@ class Key:
 
 
 	def __del__(self):
+		"""
+		Destructor.
+		"""
+
 		#Somehow, the module-level libssl becomes None at some point in time
 		#during shutdown. Use the local reference instead.
 		self.libssl.EC_KEY_free(self.keyData)
@@ -183,6 +229,16 @@ class Key:
 
 
 	def makeNewKey(self, compressed=True):
+		"""
+		Generates a new public/private key pair.
+
+		Arguments:
+		compressed: bool; use compressed public keys (default: True)
+
+		Exceptions:
+		Exception: key generating failed
+		"""
+
 		if not libssl.EC_KEY_generate_key(self.keyData):
 			raise Exception("EC_KEY_generate_key failed")
 
@@ -192,6 +248,14 @@ class Key:
 
 
 	def setPublicKeyCompression(self, compressed):
+		"""
+		Choose between compressed and non-compressed public keys.
+		Note: only intended for internal use in the Key class.
+
+		Arguments:
+		compressed: bool; use compressed public keys
+		"""
+
 		libssl.EC_KEY_set_conv_form(self.keyData,
 			POINT_CONVERSION_COMPRESSED if compressed else POINT_CONVERSION_UNCOMPRESSED
 			)
@@ -199,6 +263,19 @@ class Key:
 
 
 	def setPublicKey(self, key):
+		"""
+		Sets a public key.
+		Previous key data (if any) is discarded.
+
+		Arguments:
+		key: str; the public key data
+		     Note: should be 33 bytes for compressed public keys, or 65 bytes
+		     for non-compressed public keys.
+
+		Exceptions:
+		Exception: setting the key failed
+		"""
+
 		compressed = len(key) == 33
 
 		b = ctypes.create_string_buffer(key)
@@ -215,6 +292,16 @@ class Key:
 
 
 	def getPublicKey(self):
+		"""
+		Gets a public key.
+
+		Return value:
+		str; the public key data.
+
+		Exceptions:
+		Exception: getting the key failed
+		"""
+
 		if not self.hasPublicKey:
 			raise Exception("Public key unknown")
 
@@ -230,6 +317,19 @@ class Key:
 
 
 	def setPrivateKey(self, key):
+		"""
+		Sets a private key.
+		Previous key data (if any) is discarded.
+
+		Arguments:
+		key: str; the private key data
+		     Note: should be 33 bytes for compressed public keys, or 32 bytes
+		     for non-compressed public keys.
+
+		Exceptions:
+		Exception: setting the key failed
+		"""
+
 		compressed = len(key) == 33
 		key = key[:32]
 
@@ -277,6 +377,16 @@ class Key:
 
 
 	def getPrivateKey(self):
+		"""
+		Gets a private key.
+
+		Return value:
+		str; the private key data.
+
+		Exceptions:
+		Exception: getting the key failed
+		"""
+
 		if not self.hasPrivateKey:
 			raise Exception("private key unknown")
 
@@ -298,6 +408,20 @@ class Key:
 
 
 	def sign(self, data):
+		"""
+		Sign the given data
+		Note: private key must be available.
+
+		Arguments:
+		data : str; the data to be signed.
+
+		Return value:
+		str; the signature.
+
+		Exceptions:
+		Exception: signing failed
+		"""
+
 		if not self.hasPrivateKey:
 			raise Exception("private key unknown")
 
@@ -315,6 +439,21 @@ class Key:
 
 
 	def verify(self, data, signature):
+		"""
+		Verify the given signature.
+		Note: public key must be available.
+
+		Arguments:
+		data : str; the data to which the signature applies.
+		signature : str; the signature.
+
+		Return value:
+		bool; indicates whether the signature is correct (True) or not (False)
+
+		Exceptions:
+		Exception: signature verification failed
+		"""
+
 		if not self.hasPublicKey:
 			raise Exception("public key unknown")
 
