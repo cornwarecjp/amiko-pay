@@ -1,7 +1,7 @@
 #    base58.py
 #    Copyright (c) 2009-2010 Satoshi Nakamoto
 #    Copyright (c) 2009-2012 The Bitcoin Developers
-#    Copyright (C) 2013-2014 by CJP
+#    Copyright (C) 2013-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -40,7 +40,7 @@ base58Chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
 def encodeBase58(data):
 	# Convert big endian data to bignum
-	bignum = int(data.encode("hex"), 16)
+	bignum = int('00' + data.encode("hex"), 16) #00 is necessary in case of empty string
 
 	ret = ""
 	while bignum > 0:
@@ -60,8 +60,6 @@ def encodeBase58(data):
 
 
 def decodeBase58(data):
-	#TODO: there might be a bug when the to-be-decoded value is zero
-
 	#Leading zeroes:
 	zeroes = ""
 	while len(data) > 0 and data[0] == base58Chars[0]:
@@ -75,7 +73,12 @@ def decodeBase58(data):
 		bignum = 58*bignum + digit
 
 	#To big endian:
-	ret = binascii.unhexlify("%x" % bignum)
+	#First to hex:
+	ret = "%x" % bignum
+	#Add leading zero to force even-length: (unhexlify doesn't like odd-length)
+	ret = "0"*(len(ret) & 1) + ret
+	#Then to binary string:
+	ret = binascii.unhexlify(ret)
 
 	#Skip zeroes:
 	while len(ret) > 0 and ret[0] == '\0':
@@ -119,33 +122,4 @@ def decodeBase58Check(data, version):
 	if version != struct.unpack('B', decoded[0])[0]:
 		raise Exception("Version mismatch")
 	return decoded[1:]
-
-
-if __name__ == "__main__":
-
-	def testPubKey(testDescr, hexPubKey, address):
-		pubKey = binascii.unhexlify(hexPubKey)
-		hashedPK = RIPEMD160(SHA256(pubKey))
-
-		print testDescr, encodeBase58Check(hashedPK, 0) == address
-		print testDescr, decodeBase58Check(address, 0) == hashedPK
-
-
-	#I just took some random keys from the block chain
-	#(thanks to blockexplorer.com for the service).
-	#I have no idea whose keys they are.
-
-	#hash160 = 66750c10f3f64d0e4b8d6d80fa3d9f08cb59cdd3
-	testPubKey("  The address of a public key corresponds to the known value",
-		"0406e4a5c2a5f8dcfbfbadd86dd4fc908e4de1068599f2a818677f8eb0f4e375"
-		"b220fb7c0845960d0ec2c11cdffa4b22dbb264e6f2e8c0b90d196985aa11cfd435",
-		"1ALk99MqTNc9ifW1DhbUa8g39FTiHuyr3L"
-		)
-
-	#hash160 = 0000a21b7e708c3816f18be8cfce5f6740f94c2b
-	testPubKey("  Leading zeroes are processed as required",
-		"04791ee6c09049ba1c7a3db01b563d0a3ad580a4e2ce232fa7eb017ea7384194"
-		"aecd156054a3186bd405363936715c6216e73980ff03f2c9eeec74ec132a32f7c4",
-		"111kzsNZ1w27kSGXwyov1ZvUGVLJMvLmJ"
-		)
 

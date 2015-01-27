@@ -31,8 +31,9 @@ import unittest
 
 import testenvironment
 
-from test_log import Test as test_log
+from test_base58 import Test as test_base58
 from test_crypto import Test as test_crypto
+from test_log import Test as test_log
 
 
 if __name__ == "__main__":
