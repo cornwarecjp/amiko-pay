@@ -35,6 +35,7 @@ from test_base58 import Test as test_base58
 from test_crypto import Test as test_crypto
 from test_log import Test as test_log
 from test_meetingpoint import Test as test_meetingpoint
+from test_transaction import Test as test_transaction
 
 
 if __name__ == "__main__":

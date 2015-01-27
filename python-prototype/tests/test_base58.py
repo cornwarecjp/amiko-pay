@@ -111,7 +111,7 @@ class Test(unittest.TestCase):
 		original = '\0'*4
 		encoded = base58.encodeBase58(original)
 		decoded = base58.decodeBase58(encoded)
-		print repr(original), repr(encoded), repr(decoded)
+		#print repr(original), repr(encoded), repr(decoded)
 		self.assertEqual(original, decoded)
 
 
