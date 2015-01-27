@@ -39,6 +39,16 @@ base58Chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
 
 def encodeBase58(data):
+	"""
+	Base58-encodes the given data, without checksum or version number.
+
+	Arguments:
+	data: str; the to-be-encoded data.
+
+	Return value:
+	str; the encoded data.
+	"""
+
 	# Convert big endian data to bignum
 	bignum = int('00' + data.encode("hex"), 16) #00 is necessary in case of empty string
 
@@ -60,6 +70,19 @@ def encodeBase58(data):
 
 
 def decodeBase58(data):
+	"""
+	Base58-decodes the given data, without checksum or version number.
+
+	Arguments:
+	data: str; the to-be-decoded data.
+
+	Return value:
+	str; the decoded data.
+
+	Exceptions:
+	ValueError: data contains an illegal character
+	"""
+
 	#Leading zeroes:
 	zeroes = ""
 	while len(data) > 0 and data[0] == base58Chars[0]:
@@ -88,12 +111,36 @@ def decodeBase58(data):
 
 
 def encodeBase58Check_noVersion(data):
+	"""
+	Base58-encodes the given data, with checksum but without version number.
+
+	Arguments:
+	data: str; the to-be-encoded data.
+
+	Return value:
+	str; the encoded data.
+	"""
+
 	# add 4-byte hash check to the end
 	checksum = SHA256(SHA256(data))[:4]
 	return encodeBase58(data + checksum)
 
 
 def decodeBase58Check_noVersion(data):
+	"""
+	Base58-decodes the given data, with checksum but without version number.
+
+	Arguments:
+	data: str; the to-be-decoded data.
+
+	Return value:
+	str; the decoded data.
+
+	Exceptions:
+	Exception: checksum failed
+	ValueError: data contains an illegal character
+	"""
+
 	decoded = decodeBase58(data)
 	checksum = decoded[-4:]
 	rest = decoded[:-4]
@@ -104,13 +151,20 @@ def decodeBase58Check_noVersion(data):
 
 def encodeBase58Check(data, version):
 	"""
-	version:
-	PUBKEY_ADDRESS = 0,
-	SCRIPT_ADDRESS = 5,
-	PUBKEY_ADDRESS_TEST = 111,
-	PRIVKEY = 128,
-	SCRIPT_ADDRESS_TEST = 196,
-	AMIKO = 23,
+	Base58-encodes the given data, with checksum and version number.
+
+	Arguments:
+	data: str; the to-be-encoded data.
+	version: int, the version number. Example values:
+	         PUBKEY_ADDRESS = 0
+	         SCRIPT_ADDRESS = 5
+	         PUBKEY_ADDRESS_TEST = 111
+	         PRIVKEY = 128
+	         SCRIPT_ADDRESS_TEST = 196
+	         AMIKO = 23 (not used anywhere)
+
+	Return value:
+	str; the encoded data.
 	"""
 
 	return encodeBase58Check_noVersion(
@@ -118,6 +172,27 @@ def encodeBase58Check(data, version):
 
 
 def decodeBase58Check(data, version):
+	"""
+	Base58-decodes the given data, with checksum and version number.
+
+	Arguments:
+	data: str; the to-be-decoded data.
+	version: int, the version number. Example values:
+	         PUBKEY_ADDRESS = 0
+	         SCRIPT_ADDRESS = 5
+	         PUBKEY_ADDRESS_TEST = 111
+	         PRIVKEY = 128
+	         SCRIPT_ADDRESS_TEST = 196
+	         AMIKO = 23 (not used anywhere)
+
+	Return value:
+	str; the decoded data.
+
+	Exceptions:
+	Exception: checksum failed, or version number mismatch
+	ValueError: data contains an illegal character
+	"""
+
 	decoded = decodeBase58Check_noVersion(data)
 	if version != struct.unpack('B', decoded[0])[0]:
 		raise Exception("Version mismatch")
