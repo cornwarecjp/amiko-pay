@@ -64,7 +64,7 @@ information is stored in the file "amikopay.dat" in the current working
 directory ("."); the name and location of this file is a setting.
 
 In case of a crash during the update of the state file, you may also find a file
-named <A>.new or <A>.old, where <A> is the state filename (e.g. amikopay.dat.new
+named _A_.new or _A_.old, where _A_ is the state filename (e.g. amikopay.dat.new
 or amikopay.dat.old). In that case, you may need to inspect the files to
 determine which is the best file to start a recovery.
 
