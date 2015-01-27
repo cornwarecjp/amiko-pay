@@ -54,6 +54,17 @@ can hold those bitcoins hostage by refusing to reach consensus with his
 neighbor.
 
 
+Transaction malleability
+------------------------
+The validity of the "T2" transaction of a microtransaction channel depends on
+the transaction ID of the "T1" transaction. Between the moment of publishing T1
+and the inclusion of T1 into the block chain, it is possible for attackers to
+change the transaction ID of T1, due to Bitcoin transaction malleability. As a
+result, the direct neighbor in a link can hold the deposited bitcoins hostage
+by refusing to re-sign a modified T2 transaction which contains the new
+transaction ID.
+
+
 No payment channel token check
 ------------------------------
 A payer does not yet check the validity of the token received by the payee on
