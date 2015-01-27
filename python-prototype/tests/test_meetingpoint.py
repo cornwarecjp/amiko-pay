@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    all.py
+#    test_meetingpoint.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -31,10 +31,31 @@ import unittest
 
 import testenvironment
 
-from test_base58 import Test as test_base58
-from test_crypto import Test as test_crypto
-from test_log import Test as test_log
-from test_meetingpoint import Test as test_meetingpoint
+import meetingpoint
+
+
+
+class Test(unittest.TestCase):
+	def setUp(self):
+		self.mp = meetingpoint.MeetingPoint("foobar")
+
+
+	def test_initialState(self):
+		"Test the initial state of a meeting point"
+
+		self.assertEqual(self.mp.ID, "foobar")
+		self.assertEqual(self.mp.getState(),
+			{
+			"ID": "foobar",
+			"openTransactions": []
+			}
+			)
+
+
+	def test_makeRoute_payerFirst(self):
+		"Test msg_makeRoute (payer message arrives first)"
+		pass #TODO
+		#self.mp.msg_makeRoute(transaction)
 
 
 if __name__ == "__main__":
