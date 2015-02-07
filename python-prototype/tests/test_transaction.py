@@ -46,6 +46,7 @@ class Tracer:
 
 		return generic_method
 
+
 	def __eq__(self, x):
 		#Exception: this doesn't get through __getattr__
 		return id(x) == id(self)
@@ -57,8 +58,13 @@ class DummyLink(Tracer):
 		Tracer.__init__(self)
 		self.localID = ID
 
+
 	def __str__(self):
 		return "DummyLink:" + self.localID
+
+
+	def __repr__(self):
+		return self.__str__()
 
 
 
@@ -74,7 +80,7 @@ class DummyMeetingPoint(Tracer):
 
 class DummyRoutingContext:
 	def __init__(self):
-		self.links = [DummyLink("link1"), DummyLink("link2")]
+		self.links = [DummyLink("link1"), DummyLink("link2"), DummyLink("link3")]
 		self.meetingPoints = []
 
 
@@ -165,6 +171,10 @@ class Test(unittest.TestCase):
 			self.routingContext.links[1].trace = []
 			self.assertEqual(sourceLink.trace, [])
 
+			#Remove the last link:
+			lastlink = self.routingContext.links[-1]
+			del self.routingContext.links[-1]
+
 			#No more route:
 			self.transaction.msg_makeRoute()
 			self.assertEqual(self.routingContext.links[0].trace, [])
@@ -174,6 +184,132 @@ class Test(unittest.TestCase):
 				('msg_cancel', (self.transaction,), {})
 				]
 				)
+
+			#Place the last Link back:
+			self.routingContext.links.append(lastlink)
+
+
+	def test_haveRoute(self):
+		"Test the msg_haveRoute method"
+
+		sourceLink = Tracer()
+		destLink = Tracer()
+		self.makeNewTransaction(payerLink=sourceLink, payeeLink=None)
+		self.transaction.msg_haveRoute(destLink)
+		self.assertEqual(self.transaction.payerLink, sourceLink)
+		self.assertEqual(self.transaction.payeeLink, destLink)
+		self.assertEqual(sourceLink.trace,
+			[("msg_haveRoute", (self.transaction,), {})]
+			)
+		self.assertEqual(destLink.trace, [])
+
+		sourceLink = Tracer()
+		destLink = Tracer()
+		self.makeNewTransaction(payerLink=None, payeeLink=sourceLink)
+		self.transaction.msg_haveRoute(destLink)
+		self.assertEqual(self.transaction.payerLink, destLink)
+		self.assertEqual(self.transaction.payeeLink, sourceLink)
+		self.assertEqual(sourceLink.trace,
+			[("msg_haveRoute", (self.transaction,), {})]
+			)
+		self.assertEqual(destLink.trace, [])
+
+		link1 = Tracer()
+		link2 = Tracer()
+		destLink = Tracer()
+		self.makeNewTransaction(payerLink=link1, payeeLink=link2)
+		self.assertRaises(Exception, self.transaction.msg_haveRoute, destLink)
+		self.assertEqual(self.transaction.payerLink, link1)
+		self.assertEqual(self.transaction.payeeLink, link2)
+		self.assertEqual(link1.trace, [])
+		self.assertEqual(link2.trace, [])
+		self.assertEqual(destLink.trace, [])
+
+
+	def test_cancelRoute(self):
+		"Test the msg_cancelRoute method"
+
+		sourceLink = Tracer()
+		self.makeNewTransaction(payerLink=sourceLink, payeeLink=None)
+
+		#First try the first route:
+		self.transaction.msg_makeRoute()
+		self.assertEqual(self.routingContext.links[0].trace,
+			[('msg_makeRoute', (self.transaction,), {})]
+			)
+		self.assertEqual(self.routingContext.links[1].trace, [])
+		self.assertEqual(sourceLink.trace, [])
+
+		self.routingContext.links[0].trace = []
+
+		#Then cancel it, which should automatically try the next route:
+		self.transaction.msg_cancelRoute()
+		self.assertEqual(self.routingContext.links[0].trace, [])
+		self.assertEqual(self.routingContext.links[1].trace,
+			[('msg_makeRoute', (self.transaction,), {})]
+			)
+		self.assertEqual(sourceLink.trace, [])
+
+
+	def test_endRoute(self):
+		"Test the msg_endRoute method"
+
+		sourceLink = Tracer()
+
+		for payerLink, payeeLink in ((None, sourceLink), (sourceLink, None)):
+			self.makeNewTransaction(payerLink=payerLink, payeeLink=payeeLink)
+
+			#First try a route:
+			self.transaction.msg_makeRoute()
+
+			#Then end it:
+			self.routingContext.links[0].trace = []
+			self.routingContext.links[1].trace = []
+			sourceLink.trace = []
+			self.transaction.msg_endRoute()
+			self.assertEqual(self.routingContext.links[0].trace,
+				[('msg_endRoute', (self.transaction,), {})]
+				)
+			self.assertEqual(self.routingContext.links[1].trace, [])
+			self.assertEqual(sourceLink.trace, [])
+
+
+	def test_lock(self):
+		"Test the msg_lock method"
+
+		payerLink = Tracer()
+		payeeLink = Tracer()
+		self.makeNewTransaction(payerLink=payerLink, payeeLink=None)
+		self.transaction.msg_haveRoute(payeeLink)
+
+		payerLink.trace = []
+		payeeLink.trace = []
+		self.transaction.msg_lock()
+		self.assertEqual(payerLink.trace, [])
+		self.assertEqual(payeeLink.trace,
+			[('msg_lock', (self.transaction,), {})]
+			)
+
+
+	def test_commit(self):
+		"Test the msg_commit method"
+
+		payerLink = Tracer()
+		payeeLink = Tracer()
+		self.makeNewTransaction(payerLink=payerLink, payeeLink=None)
+		self.transaction.msg_haveRoute(payeeLink)
+
+		payerLink.trace = []
+		payeeLink.trace = []
+
+		payerLink.trace = []
+		payeeLink.trace = []
+		self.transaction.msg_commit("token")
+		self.assertEqual(self.transaction.token, "token")
+		self.assertEqual(payerLink.trace, [])
+		self.assertEqual(payeeLink.trace,
+			[('msg_commit', (self.transaction,), {})]
+			)
 
 
 
