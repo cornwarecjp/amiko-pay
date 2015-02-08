@@ -19,11 +19,12 @@
 
 pages = \
 [
-	#Name in menu, filename base, URL in menu
-	("Home"      , "index"      , "."),
-	("Download"  , "download"   , "download.html"),
-	("News"      , "news"       , "news.html"),
-	("Contact"   , "contact"    , "contact.html"),
+	#Name in menu , filename base, URL in menu
+	("Home"       , "index"      , "."),
+	("Download"   , "download"   , "download.html"),
+	("Resources"  , "resources"  , "resources.html"),
+	("News"       , "news"       , "news.html"),
+	("Contact"    , "contact"    , "contact.html"),
 ]
 
 
