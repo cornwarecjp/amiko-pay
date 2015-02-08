@@ -278,6 +278,13 @@ class Test(unittest.TestCase):
 			self.assertEqual(self.routingContext.links[1].trace, [])
 			self.assertEqual(sourceLink.trace, [])
 
+			#Then end it again (should be a NOP):
+			self.routingContext.links[0].trace = []
+			self.transaction.msg_endRoute()
+			self.assertEqual(self.routingContext.links[0].trace, [])
+			self.assertEqual(self.routingContext.links[1].trace, [])
+			self.assertEqual(sourceLink.trace, [])
+
 
 	def test_lock(self):
 		"Test the msg_lock method"
