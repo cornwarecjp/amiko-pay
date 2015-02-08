@@ -1,4 +1,38 @@
-<!DOCTYPE html>
+#!/usr/bin/env python
+# make.py
+# Copyright (C) 2015 by CJP
+#
+# This file is part of Amiko Pay.
+#
+# Amiko Pay is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Amiko Pay is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Amiko Pay. If not, see <http://www.gnu.org/licenses/>.
+
+pages = \
+[
+	#Name in menu, filename base, URL in menu
+	("Home"      , "index"      , "."),
+	("Download"  , "download"   , "download.html"),
+	("News"      , "news"       , "news.html"),
+	("Contact"   , "contact"    , "contact.html"),
+]
+
+
+for menuName, filenameBase, URL in pages:
+	with open(filenameBase + ".src.html", "rb") as f:
+		body = f.read()
+
+	with open(filenameBase + ".html", "wb") as f:
+		f.write("""<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -38,11 +72,17 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li><a href=".">Home</a></li>
-            <li><a href="download.html">Download</a></li>
-            <li class="active"><a href="news.html">News</a></li>
-            <li><a href="contact.html">Contact</a></li>
-          </ul>
+""")
+
+		for menuName2, filenameBase2, URL2 in pages:
+			if menuName2 == menuName:
+				f.write('            <li class="active"><a href="%s">%s</a></li>\n' % \
+					(URL2, menuName2))
+			else:
+				f.write('            <li><a href="%s">%s</a></li>\n' % \
+					(URL2, menuName2))
+
+		f.write("""          </ul>
         </div><!--/.nav-collapse -->
       </div>
     </nav>
@@ -50,10 +90,12 @@
     <div class="container">
 
       <div class="amikobody">
-<h1>News</h1>
-Empty page (to be filled in later)
+""")
 
-      </div>
+		f.write(body)
+
+
+		f.write("""      </div>
     </div><!-- /.container -->
 
 
@@ -63,4 +105,5 @@ Empty page (to be filled in later)
     <script src="jquery.min.js"></script>
     <script src="dist/js/bootstrap.min.js"></script>
   </body>
-</html>
+</html>""")
+
