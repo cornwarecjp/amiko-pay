@@ -123,3 +123,11 @@ communication of unfinished transactions is not resumed properly. As a result,
 ongoing transactions can hang forever, potentially as a result of a deliberate
 action of an attacker.
 
+
+Meeting point ID spoofing
+-------------------------
+There is no method for guaranteeing meeting point ID uniqueness; when two nodes
+use the same meeting point ID on the same network, transactions which route
+towards that ID can fail to find a route. As a result, an attacker can make
+transaction routing on the Amiko network unreliable.
+
