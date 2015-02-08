@@ -52,6 +52,11 @@ class Tracer:
 		return id(x) == id(self)
 
 
+	def __ne__(self, x):
+		#Exception: this doesn't get through __getattr__
+		return id(x) != id(self)
+
+
 
 class DummyLink(Tracer):
 	def __init__(self, ID):

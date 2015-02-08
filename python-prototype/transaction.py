@@ -1,5 +1,5 @@
 #    transaction.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -31,9 +31,34 @@ import log
 
 
 class Transaction:
+	"""
+	A Transaction object performs the passing of the messages of a single
+	transaction between	links, paylinks and routing contexts. The routing
+	algorithm is implemented in this class.
+	"""
+
 	def __init__(self, context, routingContext,
 		amount, hash, meetingPoint,
 		payerLink=None, payeeLink=None):
+		"""
+		Constructor.
+		All arguments are stored as attributes with the same name.
+		In addition, the attribute "token" is initialized as None.
+		A list of to-be-tried routes is initialized, based on routingContext.
+
+		Arguments:
+		context: Context; event context
+		routingContext: RoutingContext; routing context
+		amount: int; the amount (in Satoshi) to be sent from payer to payee
+		hash: the SHA256 hash of the commit token
+		meetingPoint: str; the ID of the meeting point
+		payerLink: Link/Payer/MeetingPoint; the payer-side link (default: None)
+		payeeLink: Link/Payee/MeetingPoint; the payee-side link (default: None)
+
+		Note: before msg_haveRoute is received, one of the two links is None,
+		and the other one is non-None. After msg_haveRoute is received, both are
+		non-None.
+		"""
 
 		self.context = context
 		self.routingContext = routingContext
@@ -53,6 +78,19 @@ class Transaction:
 
 
 	def isPayerSide(self):
+		"""
+		When called while we do not have a route yet, indicates whether we are
+		on the payer side (searching for a route towards the payee) or on the
+		payee side (searching for a route towards the payer).
+
+		Return value:
+		bool; indicates whether we are on the payer side (True) or not (False).
+
+		Exceptions:
+		Exception: function is called while we already have a route
+		           (both links are non-None).
+		"""
+
 		if self.payeeLink == None:
 			return True
 		if self.payerLink == None:
@@ -62,6 +100,20 @@ class Transaction:
 
 
 	def msg_makeRoute(self):
+		"""
+		This method is typically called by the already-existing link to
+		initiate the routing for the non-existing link.
+
+		Choose a link or a meeting point from the routing context, and call
+		msg_makeRoute to that link or meeting point.
+		If no suitable link or meeting point exists, call msg_cancel on the
+		already attached link (either payerLink or payeeLink, whichever is
+		non-None).
+
+		Exceptions:
+		Exception: function is called while we already have a route
+		           (both links are non-None).
+		"""
 
 		#If we are the meeting point, we're finished:
 		if self.__tryMeetingPoint():
@@ -74,41 +126,108 @@ class Transaction:
 
 
 	def msg_haveRoute(self, link):
+		"""
+		This method is typically called by a link that has previously received
+		a msg_makeRoute from this object; it passes itself as argument.
+
+		Replace the missing (None-valued) link (either payerLink or payeeLink)
+		with the given link object. Call msg_haveRoute on the link that was
+		already known.
+
+		Arguments:
+		link: Link/MeetingPoint; the link on which a route is found.
+
+		Exceptions:
+		Exception: function is called while we already have a route
+		           (both links are non-None).
+		"""
+
 		log.log("Transaction: haveRoute")
-		if self.payeeLink == None:
+		if self.isPayerSide():
 			self.payeeLink = link
 			self.payerLink.msg_haveRoute(self)
-		elif self.payerLink == None:
+		else:
 			self.payerLink = link
 			self.payeeLink.msg_haveRoute(self)
-		else:
-			raise Exception(
-				"msg_haveRoute should only be called when routing is unfinished")
 
 
 	def msg_cancelRoute(self):
+		"""
+		This method is typically called by a link that has previously received
+		a msg_makeRoute from this object.
+
+		Choose a new link from the routing context, and call msg_makeRoute to
+		that link.
+		If no suitable link exists, call msg_cancel on the already attached link
+		(either payerLink or payeeLink, whichever is non-None).
+
+		Exceptions:
+		Exception: function is called while we already have a route
+		           (both links are non-None).
+		"""
+
 		log.log("Transaction: cancelRoute")
 		#Immediately try next route, or send cancel back if there is none:
 		self.__tryNextRoute()
 
 
 	def msg_endRoute(self):
+		"""
+		This method is typically called by the already-existing link to
+		end the routing that was previously started with a msg_makeRoute call.
+
+		Call msg_endRoute to the link or meeting point to which the last
+		msg_makeRoute was sent. If no such routing attempt was made or if the
+		last routing attempt was already cancelled or ended, nothing is done.
+		"""
+
 		log.log("Transaction: endRoute")
-		self.__currentRoute.msg_endRoute(self)
+		if self.__currentRoute != None:
+			self.__currentRoute.msg_endRoute(self)
+			self.__currentRoute = None
 
 
 	def msg_lock(self):
+		"""
+		This method is typically called by the payer link.
+
+		Call msg_lock to the payee link.
+		"""
+
 		log.log("Transaction: lock")
 		self.payeeLink.msg_lock(self)
 
 
 	def msg_commit(self, token):
+		"""
+		This method is typically called by the payer link.
+
+		Set the attribute "token" to the given value. After that, call
+		msg_commit to the payee link.
+
+		Note: the token is NOT checked against the hash.
+
+		Arguments:
+		token: str; the commit token of the transaction.
+		"""
+
+		#TODO: split up into token distribution and commit, and make bi-directional
 		log.log("Transaction: commit")
 		self.token = token
 		self.payeeLink.msg_commit(self)
 
 
 	def __tryMeetingPoint(self):
+		"""
+		Check if one of our own meeting points matches the meeting point ID
+		of this transaction, and if that is the case, call msg_makeRoute to
+		that meeting point.
+
+		Return value:
+		bool; indicates whether a matching meeting point was found (True) or
+              not (False).
+		"""
+
 		for mp in self.routingContext.meetingPoints:
 			if mp.ID == self.meetingPoint:
 				self.__currentRoute = mp
@@ -119,6 +238,17 @@ class Transaction:
 
 
 	def __tryNextRoute(self):
+		"""
+		Choose a new link from the routing context, and call msg_makeRoute to
+		that link.
+		If no suitable link exists, call msg_cancel on the already attached link
+		(either payerLink or payeeLink, whichever is non-None).
+
+		Exceptions:
+		Exception: function is called while we already have a route
+		           (both links are non-None).
+		"""
+
 		while len(self.__remainingRoutes) > 0:
 			nextRoute = self.__remainingRoutes.pop(0)
 
