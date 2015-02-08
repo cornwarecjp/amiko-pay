@@ -29,7 +29,7 @@ pages = \
 
 
 for menuName, filenameBase, URL in pages:
-	with open(filenameBase + ".src.html", "rb") as f:
+	with open("src/" + filenameBase + ".html", "rb") as f:
 		body = f.read()
 
 	with open(filenameBase + ".html", "wb") as f:
