@@ -30,63 +30,9 @@
 import unittest
 
 import testenvironment
+from dummy_interfaces import Tracer, DummyRoutingContext, DummyMeetingPoint
 
 import transaction
-
-
-class Tracer:
-	def __init__(self):
-		self.trace = []
-
-
-	def __getattr__(self, name):
-		def generic_method(*args, **kwargs):
-			#print self, (name, args, kwargs)
-			self.trace.append((name, args, kwargs))
-
-		return generic_method
-
-
-	def __eq__(self, x):
-		#Exception: this doesn't get through __getattr__
-		return id(x) == id(self)
-
-
-	def __ne__(self, x):
-		#Exception: this doesn't get through __getattr__
-		return id(x) != id(self)
-
-
-
-class DummyLink(Tracer):
-	def __init__(self, ID):
-		Tracer.__init__(self)
-		self.localID = ID
-
-
-	def __str__(self):
-		return "DummyLink:" + self.localID
-
-
-	def __repr__(self):
-		return self.__str__()
-
-
-
-class DummyMeetingPoint(Tracer):
-	def __init__(self, ID):
-		Tracer.__init__(self)
-		self.ID = ID
-
-	def __str__(self):
-		return "DummyMeetingPoint:" + self.ID
-
-
-
-class DummyRoutingContext:
-	def __init__(self):
-		self.links = [DummyLink("link1"), DummyLink("link2"), DummyLink("link3")]
-		self.meetingPoints = []
 
 
 
