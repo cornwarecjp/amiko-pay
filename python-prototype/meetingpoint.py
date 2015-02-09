@@ -1,5 +1,5 @@
 #    meetingpoint.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -35,7 +35,7 @@ class MeetingPoint:
 		self.ID = ID
 
 		# Each element is a transaction list [payer, payee]
-		self.__transactionPairs = {}
+		self.transactionPairs = {}
 
 
 	def getState(self, forDisplay=False):
@@ -43,13 +43,13 @@ class MeetingPoint:
 		{
 		"ID": self.ID,
 		"openTransactions":
-			[k.encode("hex") for k in self.__transactionPairs.keys()]
+			[k.encode("hex") for k in self.transactionPairs.keys()]
 		}
 
 
 	def msg_makeRoute(self, transaction):
 		try:
-			pair = self.__transactionPairs[transaction.hash]
+			pair = self.transactionPairs[transaction.hash]
 
 			if transaction.isPayerSide() and pair[0] == None:
 				pair[0] = transaction
@@ -60,7 +60,7 @@ class MeetingPoint:
 
 			#TODO: check whether amount equals (IMPORTANT)
 
-			self.__transactionPairs[transaction.hash] = pair
+			self.transactionPairs[transaction.hash] = pair
 
 			log.log("Matched transactions: " + str(pair))
 
@@ -73,16 +73,16 @@ class MeetingPoint:
 			if transaction.isPayerSide():
 				pair = [transaction, None]
 
-			self.__transactionPairs[transaction.hash] = pair
+			self.transactionPairs[transaction.hash] = pair
 
 
 	def msg_endRoute(self, transaction):
 		log.log("Meeting point: endRoute")
 
-		pair = self.__transactionPairs[transaction.hash]
+		pair = self.transactionPairs[transaction.hash]
 
 		#We don't need this anymore:
-		del self.__transactionPairs[transaction.hash]
+		del self.transactionPairs[transaction.hash]
 
 		otherSide = pair[0]
 		if transaction.isPayerSide():
@@ -94,16 +94,16 @@ class MeetingPoint:
 
 	def msg_lock(self, transaction):
 		log.log("Meeting point: lock")
-		pair = self.__transactionPairs[transaction.hash]
+		pair = self.transactionPairs[transaction.hash]
 		pair[1].msg_lock()
 
 
 	def msg_commit(self, transaction):
 		log.log("Meeting point: commit")
-		pair = self.__transactionPairs[transaction.hash]
+		pair = self.transactionPairs[transaction.hash]
 		pair[1].msg_commit(transaction.token)
 
 		#We don't need this anymore:
-		del self.__transactionPairs[transaction.hash]
+		del self.transactionPairs[transaction.hash]
 
 

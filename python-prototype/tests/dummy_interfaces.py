@@ -82,3 +82,28 @@ class DummyRoutingContext:
 		self.links = [DummyLink("link1"), DummyLink("link2"), DummyLink("link3")]
 		self.meetingPoints = []
 
+
+
+class DummyTransaction(Tracer):
+	def __init__(self, amount, hash, meetingPoint, isPayerSide):
+		Tracer.__init__(self)
+		self.amount = amount
+		self.hash = hash
+		self.meetingPoint = meetingPoint
+		self.__isPayerSide = isPayerSide
+
+
+	def isPayerSide(self):
+		#Exception: this doesn't get through __getattr__
+		#But we DO want it traced:
+		self.trace.append(('isPayerSide', [], {}))
+		return self.__isPayerSide
+
+
+	def __str__(self):
+		return "DummyTransaction:" + self.hash
+
+
+	def __repr__(self):
+		return self.__str__()
+

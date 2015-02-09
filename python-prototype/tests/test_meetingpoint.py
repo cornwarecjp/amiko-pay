@@ -30,6 +30,7 @@
 import unittest
 
 import testenvironment
+from dummy_interfaces import DummyTransaction
 
 import meetingpoint
 
@@ -54,8 +55,53 @@ class Test(unittest.TestCase):
 
 	def test_makeRoute_payerFirst(self):
 		"Test msg_makeRoute (payer message arrives first)"
-		pass #TODO
-		#self.mp.msg_makeRoute(transaction)
+
+		t1 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=True)
+		self.mp.msg_makeRoute(t1)
+		self.assertEqual(self.mp.transactionPairs, {"hash": [t1, None]})
+		self.assertEqual(t1.trace, [
+			('isPayerSide', [], {})
+			])
+
+		t1.trace = []
+		t2 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=False)
+		self.mp.msg_makeRoute(t2)
+		self.assertEqual(self.mp.transactionPairs, {"hash": [t1, t2]})
+		self.assertEqual(t1.trace, [
+			('msg_haveRoute', (self.mp,), {})
+			])
+		self.assertEqual(t2.trace, [
+			('isPayerSide', [], {}),
+			('isPayerSide', [], {}),
+			('msg_haveRoute', (self.mp,), {})
+			])
+
+
+	def test_makeRoute_payeeFirst(self):
+		"Test msg_makeRoute (payee message arrives first)"
+
+		t1 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=False)
+		self.mp.msg_makeRoute(t1)
+		self.assertEqual(self.mp.transactionPairs, {"hash": [None, t1]})
+		self.assertEqual(t1.trace, [
+			('isPayerSide', [], {})
+			])
+
+		t1.trace = []
+		t2 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=True)
+		self.mp.msg_makeRoute(t2)
+		self.assertEqual(self.mp.transactionPairs, {"hash": [t2, t1]})
+		self.assertEqual(t1.trace, [
+			('msg_haveRoute', (self.mp,), {})
+			])
+		self.assertEqual(t2.trace, [
+			('isPayerSide', [], {}),
+			('msg_haveRoute', (self.mp,), {})
+			])
 
 
 if __name__ == "__main__":
