@@ -124,6 +124,8 @@ class MeetingPoint:
 
 
 	def msg_commit(self, transaction):
+
+		#TODO: split up into token distribution and commit, and make bi-directional
 		log.log("Meeting point: commit")
 		pair = self.transactionPairs[transaction.hash]
 		pair[1].msg_commit(transaction.token)

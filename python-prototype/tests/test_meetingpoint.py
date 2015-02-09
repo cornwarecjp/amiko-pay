@@ -184,6 +184,80 @@ class Test(unittest.TestCase):
 			])
 
 
+	def test_endRoute(self):
+		"Test msg_endRoute"
+
+		t1 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=True)
+		t2 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=False)
+		self.mp.transactionPairs = {"hash": [t1, t2]}
+		self.mp.msg_endRoute(t1)
+		self.assertEqual(self.mp.transactionPairs, {})
+		self.assertEqual(t1.trace, [
+			('isPayerSide', [], {})
+			])
+		self.assertEqual(t2.trace, [
+			('msg_cancelRoute', (), {})
+			])
+
+		t1 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=True)
+		t2 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=False)
+		self.mp.transactionPairs = {"hash": [t1, t2]}
+		self.mp.msg_endRoute(t2)
+		self.assertEqual(self.mp.transactionPairs, {})
+		self.assertEqual(t2.trace, [
+			('isPayerSide', [], {})
+			])
+		self.assertEqual(t1.trace, [
+			('msg_cancelRoute', (), {})
+			])
+
+		t1 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=True)
+		self.mp.transactionPairs = {"hash": [t1, None]}
+		self.mp.msg_endRoute(t1)
+		self.assertEqual(self.mp.transactionPairs, {})
+		self.assertEqual(t1.trace, [
+			('isPayerSide', [], {})
+			])
+
+
+	def test_lock(self):
+		"Test msg_lock"
+
+		t1 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=True)
+		t2 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=False)
+		self.mp.transactionPairs = {"hash": [t1, t2]}
+		self.mp.msg_lock(t1)
+		self.assertEqual(self.mp.transactionPairs, {"hash": [t1, t2]})
+		self.assertEqual(t1.trace, [])
+		self.assertEqual(t2.trace, [
+			('msg_lock', (), {})
+			])
+
+
+	def test_commit(self):
+		"Test msg_commit"
+
+		t1 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=True)
+		t1.token = "token"
+		t2 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=False)
+		self.mp.transactionPairs = {"hash": [t1, t2]}
+		self.mp.msg_commit(t1)
+		self.assertEqual(self.mp.transactionPairs, {})
+		self.assertEqual(t1.trace, [])
+		self.assertEqual(t2.trace, [
+			('msg_commit', ("token",), {})
+			])
+
+
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
 
