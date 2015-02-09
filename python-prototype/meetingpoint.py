@@ -56,7 +56,22 @@ class MeetingPoint:
 			elif not transaction.isPayerSide() and pair[1] == None:
 				pair[1] = transaction
 			else:
-				raise Exception("Bug in meeting point matching")
+				#Apparently, we received the transaction twice from the same
+				#side. This can be an outside error.
+				#For now, respond to it by sending msg_cancelRoute to both:
+				#TODO: send a message that won't confuse the routing algorithms
+				#of peers.
+				log.log("Received twice from the same side: " + str(pair))
+
+				#We don't need this anymore:
+				del self.transactionPairs[transaction.hash]
+
+				otherSide = pair[1]
+				if transaction.isPayerSide():
+					otherSide = pair[0]
+				transaction.msg_cancelRoute()
+				otherSide.msg_cancelRoute()
+				return
 
 			#TODO: check whether amount equals (IMPORTANT)
 
