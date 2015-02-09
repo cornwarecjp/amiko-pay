@@ -16,14 +16,6 @@ not-yet-implemented security features and to design issues.
 Loss of Bitcoins
 =================
 
-Meeting point amount mismatch
------------------------------
-Meeting points do not yet check whether the amount requested by a payee and the
-amount promised by a payer correspond. As a result, an attacker can steal
-bitcoins from a meeting point by performing a payment with non-matching amounts
-to himself, through the meeting point.
-
-
 No lock time
 ------------
 "Refund" transactions are not yet protected by a lock time, so they are always

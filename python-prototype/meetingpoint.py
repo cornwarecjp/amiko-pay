@@ -73,7 +73,17 @@ class MeetingPoint:
 				otherSide.msg_cancelRoute()
 				return
 
-			#TODO: check whether amount equals (IMPORTANT)
+			#Check whether transaction amounts match:
+			if pair[0].amount != pair[1].amount:
+				log.log("Transaction amounts don't match: %s; %d; %d" % \
+					(str(pair), pair[0].amount, pair[1].amount))
+				#For now, respond to it by sending msg_cancelRoute to both:
+				#TODO: send a message that won't confuse the routing algorithms
+				#of peers.
+				del self.transactionPairs[transaction.hash]
+				pair[0].msg_cancelRoute()
+				pair[1].msg_cancelRoute()
+				return
 
 			self.transactionPairs[transaction.hash] = pair
 

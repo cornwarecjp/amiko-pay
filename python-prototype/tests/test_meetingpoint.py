@@ -158,6 +158,32 @@ class Test(unittest.TestCase):
 			])
 
 
+	def test_makeRoute_amountMismatch(self):
+		"Test msg_makeRoute (payer message arrives first)"
+
+		t1 = DummyTransaction(
+			amount=100, hash="hash", meetingPoint="meetingpoint", isPayerSide=True)
+		self.mp.msg_makeRoute(t1)
+		self.assertEqual(self.mp.transactionPairs, {"hash": [t1, None]})
+		self.assertEqual(t1.trace, [
+			('isPayerSide', [], {})
+			])
+
+		t1.trace = []
+		t2 = DummyTransaction(
+			amount=101, hash="hash", meetingPoint="meetingpoint", isPayerSide=False)
+		self.mp.msg_makeRoute(t2)
+		self.assertEqual(self.mp.transactionPairs, {})
+		self.assertEqual(t1.trace, [
+			('msg_cancelRoute', (), {})
+			])
+		self.assertEqual(t2.trace, [
+			('isPayerSide', [], {}),
+			('isPayerSide', [], {}),
+			('msg_cancelRoute', (), {})
+			])
+
+
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
 
