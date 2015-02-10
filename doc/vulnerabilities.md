@@ -26,6 +26,8 @@ neighbor can then try to cancel the theft by publishing the most recent version
 of the refund transaction, but, assuming equal connectivity in the Bitcoin
 network, even then the theft has at least 50% probability of success.
 
+**solution**: implement the missing functionality.
+
 
 No transaction checks
 ---------------------
@@ -34,6 +36,8 @@ As a result, an attacker can steal bitcoins from a direct neighbor, for instance
 by performing an Amiko payment through their shared link, where the updated
 refund transaction is incorrect. It may even be a transaction which will be
 accepted by Bitcoin, but assigns too many bitcoins to the attacker.
+
+**solution**: implement the missing functionality.
 
 
 No protection during transaction
@@ -44,6 +48,13 @@ script, requiring consensus between both sides of the link about whether
 commit/rollback has occurred. An attacker who is one of the sides of such a link
 can hold those bitcoins hostage by refusing to reach consensus with his
 neighbor.
+
+**solution**: a 100% robust solution would be achieved if the Bitcoin scripting
+language is extended with op-codes that make it possible to implement the Amiko
+commit/rollback conditions instead of the 2-of-2 multisignature script.
+In the absence of such op-codes, there are a couple ways to reduce the problem,
+for instance using an escrow pary, adding collateral or, in extreme cases, by
+using the commit/rollback evidence in the legal system.
 
 
 Transaction malleability
@@ -56,6 +67,8 @@ result, the direct neighbor in a link can hold the deposited bitcoins hostage
 by refusing to re-sign a modified T2 transaction which contains the new
 transaction ID.
 
+**solution**: this has to be solved in the Bitcoin software.
+
 
 No payment channel token check
 ------------------------------
@@ -65,6 +78,8 @@ payment amount to the payer's first neighbor in the transaction route. If the
 token is used as proof of payment, the payer does not have a valid proof, so the
 payee can claim the transaction has failed, and refuse to transfer corresponding
 goods/services.
+
+**solution**: implement the missing functionality.
 
 
 Loss of privacy
@@ -80,6 +95,8 @@ has access to network traffic of all links in a transaction route can see which
 nodes send which transactions (including amounts) to which nodes. The receipt is
 also visible, since it's sent over the non-encrypted payment link between payer
 and payee.
+
+**solution**: implement the missing functionality.
 
 
 No link authentication
@@ -97,6 +114,8 @@ connect to both sides of the link, and position himself as a man-in-the-middle.
 This is even possible by an attacker who has no lower-level methods of
 re-routing traffic, such as influencing IP routing or changing DNS responses.
 
+**solution**: implement the missing functionality.
+
 
 Denial of Service
 =================
@@ -107,6 +126,8 @@ A lot of communication time-outs are missing. As a result, an attacker can stall
 a transaction forever, by never responding to a message, while a response is
 required by the protocol.
 
+**solution**: implement the missing functionality.
+
 
 Missing resume handling
 -----------------------
@@ -115,6 +136,8 @@ communication of unfinished transactions is not resumed properly. As a result,
 ongoing transactions can hang forever, potentially as a result of a deliberate
 action of an attacker.
 
+**solution**: implement the missing functionality.
+
 
 Meeting point ID spoofing
 -------------------------
@@ -122,4 +145,9 @@ There is no method for guaranteeing meeting point ID uniqueness; when two nodes
 use the same meeting point ID on the same network, transactions which route
 towards that ID can fail to find a route. As a result, an attacker can make
 transaction routing on the Amiko network unreliable.
+
+**solution**: ICANN-style assignment of meeting point IDs is considered
+unacceptable, since it introduces a central authority. IDs might be linked to
+identities through digital signatures. If a route requires meeting point
+signatures, then intermediate nodes can detect and work around routing problems.
 
