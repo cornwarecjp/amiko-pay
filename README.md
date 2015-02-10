@@ -1,7 +1,7 @@
 Amiko-pay
 =========
 
-Fast, scalable and decentralized payment network for Bitcoin, inspired by the Ripple.
+Fast, scalable and decentralized payment network for Bitcoin.
 
 The basic idea of Amiko-pay is that it forms a network of micro-transaction links:
 
@@ -18,11 +18,16 @@ the Bitcoin block chain. This has the following advantages:
 
 Links:
 
-https://bitcointalk.org/index.php?topic=94674.0
+Website:
+http://cornwarecjp.github.io/amiko-pay
 
+Source code:
+https://github.com/cornwarecjp/amiko-pay
+
+Forum threads:
+https://bitcointalk.org/index.php?topic=94674.0
 https://bitcointalk.org/index.php?topic=157437.0
 
-https://github.com/cornwarecjp/amiko-pay
 
 How to use
 ==========
