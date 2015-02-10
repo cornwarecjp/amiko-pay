@@ -53,7 +53,7 @@ neighbor.
 language is extended with op-codes that make it possible to implement the Amiko
 commit/rollback conditions instead of the 2-of-2 multisignature script.
 In the absence of such op-codes, there are a couple ways to reduce the problem,
-for instance using an escrow pary, adding collateral or, in extreme cases, by
+for instance using an escrow party, adding collateral or, in extreme cases, by
 using the commit/rollback evidence in the legal system.
 
 
