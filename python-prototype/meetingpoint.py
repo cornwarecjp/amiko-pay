@@ -31,7 +31,23 @@ import log
 
 
 class MeetingPoint:
+	"""
+	A meeting point object.
+
+	A transaction is routed from both payer and payee side towards a meeting
+	point. A meeting point has an ID which is supposed to be globally unique
+	in the Amiko network. A meeting point object represents a meeting point
+	which is operated by this node. It contains functionality like matching
+	routing attempts received from both sides.
+	"""
+
 	def __init__(self, ID):
+		"""
+		Constructor.
+
+		Arguments:
+		ID: str; the ID of the meeting point
+		"""
 		self.ID = ID
 
 		# Each element is a transaction list [payer, payee]
@@ -39,6 +55,21 @@ class MeetingPoint:
 
 
 	def getState(self, forDisplay=False):
+		"""
+		Return a data structure that contains state information of the meeting
+		point.
+
+		Arguments:
+		forDisplay: bool; indicates whether the returned state is for user
+		            interface display purposes (True) or for state saving
+		            purposes (False). For user interface display purposes, a
+		            summary may be returned instead of the complete state.
+
+		Return value:
+		A data structure, consisting of only standard Python types like dict,
+		list, str, bool, int.
+		"""
+
 		return \
 		{
 		"ID": self.ID,
@@ -48,6 +79,24 @@ class MeetingPoint:
 
 
 	def msg_makeRoute(self, transaction):
+		"""
+		This method is typically called by a transaction object to initiate the
+		routing to this meeting point.
+
+		If a matching msg_makeRoute was not yet received from the other
+		(payer/payee) side, remember the transaction.
+
+		If a matching msg_makeRoute was previously received from the other
+		(payer/payee) side, call msg_haveRoute on the transaction objects on
+		both sides. In case of a hash match but any other mismatch (e.g.
+		amount), call msg_cancelRoute on the transaction objects on both sides,
+		and forget the transaction.
+
+		Arguments:
+		transaction: Transaction; the transaction object that called this
+                     method.
+		"""
+
 		try:
 			pair = self.transactionPairs[transaction.hash]
 
@@ -102,6 +151,19 @@ class MeetingPoint:
 
 
 	def msg_endRoute(self, transaction):
+		"""
+		This method is typically called by a transaction object that has
+		previously called msg_makeRoute.
+
+		If the other side has already connected with msg_makeRoute, call
+		msg_cancelRoute on the transaction object on that side, and forget
+		the transaction.
+
+		Arguments:
+		transaction: Transaction; the transaction object that called this
+                     method.
+		"""
+
 		log.log("Meeting point: endRoute")
 
 		pair = self.transactionPairs[transaction.hash]
@@ -118,12 +180,32 @@ class MeetingPoint:
 
 
 	def msg_lock(self, transaction):
+		"""
+		This method is typically called by the payer side transaction.
+
+		Call msg_lock to the payee side transaction.
+
+		Arguments:
+		transaction: Transaction; the transaction object that called this
+                     method.
+		"""
+
 		log.log("Meeting point: lock")
 		pair = self.transactionPairs[transaction.hash]
 		pair[1].msg_lock()
 
 
 	def msg_commit(self, transaction):
+		"""
+		This method is typically called by the payer side transaction.
+
+		Call msg_commit to the payee side transaction, and forget the
+		transaction.
+
+		Arguments:
+		transaction: Transaction; the transaction object that called this
+                     method.
+		"""
 
 		#TODO: split up into token distribution and commit, and make bi-directional
 		log.log("Meeting point: commit")

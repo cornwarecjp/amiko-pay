@@ -32,9 +32,11 @@ import log
 
 class Transaction:
 	"""
-	A Transaction object performs the passing of the messages of a single
-	transaction between	links, paylinks and routing contexts. The routing
-	algorithm is implemented in this class.
+	A Transaction object.
+
+	Performs the passing of the messages of a single transaction between
+	links, paylinks and routing contexts. The routing algorithm is implemented
+	in this class.
 	"""
 
 	def __init__(self, context, routingContext,
