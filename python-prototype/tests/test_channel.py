@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    all.py
+#    test_channel.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -31,13 +31,13 @@ import unittest
 
 import testenvironment
 
-from test_base58 import Test as test_base58
-from test_channel import Test as test_channel
-from test_crypto import Test as test_crypto
-from test_log import Test as test_log
-from test_meetingpoint import Test as test_meetingpoint
-from test_messages import Test as test_messages
-from test_transaction import Test as test_transaction
+import channel
+
+
+
+class Test(unittest.TestCase):
+	pass #TODO
+
 
 
 if __name__ == "__main__":
