@@ -1,5 +1,5 @@
 #    messages.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -431,30 +431,4 @@ class Commit(ChannelMessage):
 	def __str__(self):
 		return "channelID: %d; token: %s" % \
 			(self.channelID, self.token.encode("hex"))
-
-
-
-if __name__ == "__main__":
-	for clss in [
-		String,
-		Link,
-		Pay,
-		Receipt,
-		Confirm,
-		MakeRoute,
-		HaveRoute,
-		Lock,
-		Cancel,
-		Commit,
-		MyURLs,
-		Deposit
-		]:
-
-			a = clss()
-			s1 = a.serialize()
-			b = deserialize(s1)
-			s2 = b.serialize()
-			print str(a)
-			print str(b)
-			print s1 == s2
 
