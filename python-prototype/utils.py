@@ -1,5 +1,5 @@
 #    utils.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -33,4 +33,10 @@ class Enum(set):
 			return name
 		raise AttributeError
 
+
+def inheritDocString(cls):
+	def docstring_inheriting_decorator(fn):
+		fn.__doc__ = getattr(cls,fn.__name__).__doc__
+		return fn
+	return docstring_inheriting_decorator
 
