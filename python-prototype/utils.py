@@ -28,6 +28,12 @@
 
 
 class Enum(set):
+	"""
+	An enumeration class.
+	It can be used as an iterable (in fact, it's derived from the set class),
+	and its elements can be accessed as attributes.
+	"""
+
 	def __getattr__(self, name):
 		if name in self:
 			return name
@@ -35,6 +41,11 @@ class Enum(set):
 
 
 def inheritDocString(cls):
+	"""
+	Function decorator which lets a method inherit its doc string from a method
+	with the same name in the given class.
+	"""
+
 	def docstring_inheriting_decorator(fn):
 		fn.__doc__ = getattr(cls,fn.__name__).__doc__
 		return fn
