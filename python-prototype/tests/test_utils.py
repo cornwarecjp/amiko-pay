@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    all.py
+#    test_utils.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -31,14 +31,41 @@ import unittest
 
 import testenvironment
 
-from test_base58 import Test as test_base58
-from test_channel import Test as test_channel
-from test_crypto import Test as test_crypto
-from test_log import Test as test_log
-from test_meetingpoint import Test as test_meetingpoint
-from test_messages import Test as test_messages
-from test_transaction import Test as test_transaction
-from test_utils import Test as test_utils
+import utils
+
+
+
+class Test(unittest.TestCase):
+	def test_inheritDocString(self):
+		"Test doc string inheritance function decorator"
+
+		class A:
+			def f(self):
+				"foo"
+				pass
+
+		class B(A):
+			@utils.inheritDocString(A)
+			def f(self):
+				pass
+
+		self.assertEqual(B.f.__doc__, "foo")
+
+
+	def test_inheritDocString(self):
+		"Test enum class"
+
+		enum = utils.Enum(["foo", "bar"])
+
+		elements = [e for e in enum]
+		elements.sort()
+		self.assertEqual(elements, ["bar", "foo"])
+
+		self.assertEqual(enum.foo, "foo")
+		self.assertEqual(enum.bar, "bar")
+		with self.assertRaises(AttributeError):
+			e = enum.foobar
+
 
 
 if __name__ == "__main__":
