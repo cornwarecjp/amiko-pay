@@ -261,6 +261,9 @@ class Link(event.Handler):
 			transaction.msg_cancelRoute()
 
 
+	#TODO: msg_cancelRoute handling
+
+
 	def msg_haveRoute(self, transaction):
 		log.log("Link: haveRoute")
 		#TODO: check whether we're still connected
