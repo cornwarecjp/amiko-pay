@@ -1,5 +1,5 @@
 #    channel.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -43,6 +43,14 @@ class Channel:
 	"""
 
 	def __init__(self, state):
+		"""
+		Constructor.
+
+		Arguments:
+		state: a data structure, consisting of only standard Python types like
+		dict, list, str, bool, int.
+		"""
+
 		self.ID = state["ID"]
 
 		#Current balances:
@@ -57,10 +65,32 @@ class Channel:
 
 
 	def getType(self):
+		"""
+		Return the type of channel.
+		This method should be overridden by Channel-derived classes.
+
+		Return value:
+		str; the type of channel.
+		"""
+
 		return "plain"
 
 
 	def getState(self, forDisplay=False):
+		"""
+		Return a data structure that contains state information of the channel.
+
+		Arguments:
+		forDisplay: bool; indicates whether the returned state is for user
+		            interface display purposes (True) or for state saving
+		            purposes (False). For user interface display purposes, a
+		            summary may be returned instead of the complete state.
+
+		Return value:
+		A data structure, consisting of only standard Python types like dict,
+		list, str, bool, int.
+		"""
+
 		return \
 		{
 		"ID"                    : self.ID,
@@ -80,6 +110,18 @@ class Channel:
 
 
 	def __encodeDict(self, d):
+		"""
+		Transforms a dictionary by rewriting the keys to a hexadecimal encoding.
+
+		Arguments:
+		d: dict; a dictionary with keys that are of type str and may contain
+		   arbitrary binary data.
+
+		Return value:
+		dict; a dictionary with keys that are hex-encoded versions of the keys
+		in d, and values equal to the corresponding values in d.
+		"""
+
 		ret = {}
 		for k,v in d.iteritems():
 			ret[k.encode("hex")] = v
@@ -87,6 +129,20 @@ class Channel:
 
 
 	def reserve(self, isPayerSide, hash, amount):
+		"""
+		Reserves the given amount of funds for an incoming or outgoing payment.
+
+		Arguments:
+		isPayerSide: bool; indicates whether we are on the payer side (True) or
+		             not (False). Note that the payer side corresponds to an
+		             outgoing transaction and payee side to an incoming one.
+		hash: str; the SHA256 hash of the commit token.
+		amount: int; the amount (in Satoshi) to be sent from payer to payee.
+
+		Exceptions:
+		CheckFail: A check has failed, and the reservation was not performed.
+		"""
+
 		if isPayerSide:
 			if self.amountLocal < amount:
 				raise CheckFail("Insufficient funds")
@@ -102,6 +158,17 @@ class Channel:
 
 
 	def lockIncoming(self, message):
+		"""
+		Lock previously reserved funds for an incoming transaction.
+
+		Arguments:
+		message: Lock; the lock message.
+
+		Exceptions:
+		KeyError: the hash in the message did not match any reserved funds.
+		CheckFail: A check has failed, and the locking was not performed.
+		"""
+
 		hash = message.hash
 		self.transactionsIncomingLocked[hash] = \
 			self.transactionsIncomingReserved[hash]
@@ -109,6 +176,19 @@ class Channel:
 
 
 	def lockOutgoing(self, hash):
+		"""
+		Lock previously reserved funds for an outgoing transaction.
+
+		Arguments:
+		hash: str; the SHA256 hash of the commit token.
+
+		Return value:
+		Lock; the lock message.
+
+		Exceptions:
+		KeyError: the hash did not match any reserved funds.
+		"""
+
 		self.transactionsOutgoingLocked[hash] = \
 			self.transactionsOutgoingReserved[hash]
 		del self.transactionsOutgoingReserved[hash]
@@ -116,11 +196,37 @@ class Channel:
 
 
 	def commitIncoming(self, hash, message):
+		"""
+		Commit previously locked funds for an incoming transaction.
+
+		Arguments:
+		hash: str; the SHA256 hash of the commit token.
+		message: Commit; the commit message.
+
+		Exceptions:
+		KeyError: the hash in the message did not match any locked funds.
+		CheckFail: A check has failed, and the committing was not performed.
+		"""
+
 		self.amountLocal += self.transactionsIncomingLocked[hash]
 		del self.transactionsIncomingLocked[hash]
 
 
 	def commitOutgoing(self, hash, token):
+		"""
+		Commit previously locked funds for an outgoing transaction.
+
+		Arguments:
+		hash: str; the SHA256 hash of the commit token.
+		token: str; the commit token.
+
+		Return value:
+		Commit; the commit message.
+
+		Exceptions:
+		KeyError: the hash did not match any locked funds.
+		"""
+
 		self.amountRemote += self.transactionsOutgoingLocked[hash]
 		del self.transactionsOutgoingLocked[hash]
 		return messages.Commit(self.ID, token=token)
