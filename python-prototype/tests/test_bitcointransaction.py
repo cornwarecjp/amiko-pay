@@ -33,7 +33,7 @@ import struct
 import testenvironment
 
 import bitcointransaction
-
+from bitcointransaction import OP
 
 
 class Test(unittest.TestCase):
@@ -73,7 +73,91 @@ class Test(unittest.TestCase):
 			self.assertRaises(Exception, bitcointransaction.unpackVarInt, '\x00')
 		finally:
 			struct.unpack = old_unpack
-			
+
+
+	def test_OPCodes(self):
+		"Test the OPCode values"
+
+		self.assertEqual(OP.ZERO, 0x00)
+		self.assertEqual(OP.TWO, 0x52)
+		self.assertEqual(OP.DUP, 0x76)
+		self.assertEqual(OP.EQUAL, 0x87)
+		self.assertEqual(OP.EQUALVERIFY, 0x88)
+		self.assertEqual(OP.SHA256, 0xa8)
+		self.assertEqual(OP.HASH160, 0xa9)
+		self.assertEqual(OP.CHECKSIG, 0xac)
+		self.assertEqual(OP.CHECKSIGVERIFY, 0xad)
+		self.assertEqual(OP.CHECKMULTISIG, 0xae)
+
+
+	def test_standardPubKey(self):
+		"Test the Script.standardPubKey method"
+
+		script = bitcointransaction.Script.standardPubKey("foo")
+		self.assertTrue(isinstance(script, bitcointransaction.Script))
+		self.assertEqual(script.elements,
+			(OP.DUP, OP.HASH160, "foo", OP.EQUALVERIFY, OP.CHECKSIG))
+
+
+	def test_multiSigPubKey(self):
+		"Test the Script.multiSigPubKey method"
+
+		script = bitcointransaction.Script.multiSigPubKey("foo", "bar")
+		self.assertTrue(isinstance(script, bitcointransaction.Script))
+		self.assertEqual(script.elements,
+			(OP.TWO, "foo", "bar", OP.TWO, OP.CHECKMULTISIG))
+
+
+	def test_secretPubKey(self):
+		"Test the Script.secretPubKey method"
+
+		script = bitcointransaction.Script.secretPubKey("foo", "bar")
+		self.assertTrue(isinstance(script, bitcointransaction.Script))
+		self.assertEqual(script.elements,
+			("foo", OP.CHECKSIGVERIFY, OP.SHA256, "bar", OP.EQUAL))
+
+
+	def test_script_deserialize(self):
+		"Test the Script.deserialize method"
+
+		script = bitcointransaction.Script.deserialize(
+			"\x00"
+			"\x03foo"
+			"\x4c\x50" + 0x50*'a' + \
+			"\x4d\x02\x01" + 0x0102*'a' + \
+			"\x4e\x04\x03\x02\x01" + 0x01020304*'a' + \
+			"\x76"
+			)
+		self.assertTrue(isinstance(script, bitcointransaction.Script))
+		self.assertEqual(script.elements,
+			["", "foo", 0x50*'a', 0x0102*'a', 0x01020304*'a', OP.DUP]
+			)
+
+
+	def test_script_constructor(self):
+		"Test the Script constructor"
+
+		script = bitcointransaction.Script(["foo", "bar"])
+		self.assertEqual(script.elements, ["foo", "bar"])
+
+
+	def test_script_serialize(self):
+		"Test the Script.serialize method"
+
+		script = bitcointransaction.Script(
+			["", "foo", 0x50*'a', 0x0102*'a', 0x01020304*'a', OP.DUP]
+			)
+		self.assertEqual(script.serialize(),
+			"\x00"
+			"\x03foo"
+			"\x4c\x50" + 0x50*'a' + \
+			"\x4d\x02\x01" + 0x0102*'a' + \
+			"\x4e\x04\x03\x02\x01" + 0x01020304*'a' + \
+			"\x76"
+			)
+
+		self.assertRaises(Exception, bitcointransaction.Script([None]).serialize)
+
 
 
 if __name__ == "__main__":
