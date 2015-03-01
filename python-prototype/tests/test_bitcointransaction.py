@@ -156,7 +156,14 @@ class Test(unittest.TestCase):
 			"\x76"
 			)
 
-		self.assertRaises(Exception, bitcointransaction.Script([None]).serialize)
+		self.assertRaises(Exception,
+			bitcointransaction.Script([None]).serialize)
+
+		class fakeLongString(str):
+			def __len__(self):
+				return 0x0100000000 #too long to be accepted
+		self.assertRaises(Exception,
+			bitcointransaction.Script([fakeLongString()]).serialize)
 
 
 

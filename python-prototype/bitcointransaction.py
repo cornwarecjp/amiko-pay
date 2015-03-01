@@ -1,5 +1,5 @@
 #    bitcointransaction.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -131,7 +131,7 @@ class Script:
 				elif opcode == 0x4d:
 					length = struct.unpack('<H', data[:2])[0]
 					data = data[2:]
-				elif opcode == 0x4e:
+				else:
 					length = struct.unpack('<I', data[:4])[0]
 					data = data[4:]
 				elements.append(data[:length])
@@ -151,7 +151,7 @@ class Script:
 
 
 	def __serializeElement(self, e):
-		if type(e) == str:
+		if isinstance(e, str):
 			if len(e) <= 0x4b:
 				return struct.pack('B', len(e)) + e
 			elif len(e)<= 0xff:
@@ -162,7 +162,7 @@ class Script:
 				return struct.pack('B', 0x4e) + struct.pack('<I', len(e)) + e
 			else:
 				raise Exception('Too long data for a script item')
-		elif type(e) == int:
+		elif isinstance(e, int):
 			return struct.pack('B', e)
 		else:
 			raise Exception('Unsupported element type in script')
