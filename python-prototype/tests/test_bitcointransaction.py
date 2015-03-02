@@ -174,7 +174,7 @@ class Test(unittest.TestCase):
 			"\x04\x03\x02\x01" #prev index
 			"\x04" #script length
 			"\x03foo" #script
-			"\xff\xff\xff\xff" #sequence number
+			"\x14\x13\x12\x11" #sequence number
 			"foobar" #extra, non-read bytes
 			)
 		self.assertTrue(isinstance(txin, bitcointransaction.TxIn))

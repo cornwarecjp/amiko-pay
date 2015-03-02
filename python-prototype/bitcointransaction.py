@@ -184,9 +184,9 @@ class TxIn:
 		scriptSig = Script.deserialize(data[:scriptSigLen])
 		data = data[scriptSigLen:]
 
+		#TODO: Store this. We need this for time locking:
+		#https://bitcointalk.org/index.php?topic=888124.0
 		sequenceNumber = struct.unpack('<I', data[:4])[0] #uint32_t
-		if sequenceNumber != 0xffffffff:
-			raise Exception("Deserialization failed: non-standard sequence number")
 
 		obj = TxIn(outputHash, outputIndex)
 		obj.scriptSig = scriptSig
@@ -207,6 +207,8 @@ class TxIn:
 		scriptSig = self.scriptSig.serialize()
 		ret += packVarInt(len(scriptSig))
 		ret += scriptSig
+		#TODO: support other sequence numbers. We need this for time locking:
+		#https://bitcointalk.org/index.php?topic=888124.0
 		ret += struct.pack('<I', 0xffffffff) #sequence number, uint32_t
 
 		return ret
