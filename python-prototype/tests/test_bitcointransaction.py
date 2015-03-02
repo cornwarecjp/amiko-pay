@@ -166,6 +166,87 @@ class Test(unittest.TestCase):
 			bitcointransaction.Script([fakeLongString()]).serialize)
 
 
+	def test_txin_deserialize(self):
+		"Test the TxIn.deserialize method"
+
+		txin, numBytes = bitcointransaction.TxIn.deserialize(
+			"abcdefghijklmnopqrstuvwxyz789012" #prev hash
+			"\x04\x03\x02\x01" #prev index
+			"\x04" #script length
+			"\x03foo" #script
+			"\xff\xff\xff\xff" #sequence number
+			"foobar" #extra, non-read bytes
+			)
+		self.assertTrue(isinstance(txin, bitcointransaction.TxIn))
+		self.assertEqual(txin.previousOutputHash, "abcdefghijklmnopqrstuvwxyz789012")
+		self.assertEqual(txin.previousOutputIndex, 0x01020304)
+		self.assertTrue(isinstance(txin.scriptSig, bitcointransaction.Script))
+		self.assertEqual(txin.scriptSig.elements, ["foo"])
+		self.assertEqual(numBytes, 32+4+1+4+4)
+
+
+	def test_txin_constructor(self):
+		"Test the TxIn constructor"
+
+		txin = bitcointransaction.TxIn("foo", 42)
+		self.assertEqual(txin.previousOutputHash, "foo")
+		self.assertEqual(txin.previousOutputIndex, 42)
+		self.assertTrue(isinstance(txin.scriptSig, bitcointransaction.Script))
+		self.assertEqual(txin.scriptSig.elements, tuple())
+
+
+	def test_txin_serialize(self):
+		"Test the TxIn.serialize method"
+
+		txin = bitcointransaction.TxIn(
+			"abcdefghijklmnopqrstuvwxyz789012", 0x01020304)
+		txin.scriptSig = bitcointransaction.Script(["foo"])
+		self.assertEqual(txin.serialize(),
+			"abcdefghijklmnopqrstuvwxyz789012" #prev hash
+			"\x04\x03\x02\x01" #prev index
+			"\x04" #script length
+			"\x03foo" #script
+			"\xff\xff\xff\xff" #sequence number
+			)
+
+
+	def test_txout_deserialize(self):
+		"Test the TxOut.deserialize method"
+
+		txout, numBytes = bitcointransaction.TxOut.deserialize(
+			"\x08\x07\x06\x05\x04\x03\x02\x01" #amount
+			"\x04" #script length
+			"\x03foo" #script
+			"foobar" #extra, non-read bytes
+			)
+		self.assertTrue(isinstance(txout, bitcointransaction.TxOut))
+		self.assertEqual(txout.amount, 0x0102030405060708)
+		self.assertTrue(isinstance(txout.scriptPubKey, bitcointransaction.Script))
+		self.assertEqual(txout.scriptPubKey.elements, ["foo"])
+		self.assertEqual(numBytes, 8+1+4)
+
+
+	def test_txout_constructor(self):
+		"Test the TxOut constructor"
+
+		txout = bitcointransaction.TxOut(42, bitcointransaction.Script(["foo"]))
+		self.assertEqual(txout.amount, 42)
+		self.assertTrue(isinstance(txout.scriptPubKey, bitcointransaction.Script))
+		self.assertEqual(txout.scriptPubKey.elements, ["foo"])
+
+
+	def test_txout_serialize(self):
+		"Test the TxOut.serialize method"
+
+		txout = bitcointransaction.TxOut(
+			0x0102030405060708, bitcointransaction.Script(["foo"]))
+		self.assertEqual(txout.serialize(),
+			"\x08\x07\x06\x05\x04\x03\x02\x01" #amount
+			"\x04" #script length
+			"\x03foo" #script
+			)
+
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
