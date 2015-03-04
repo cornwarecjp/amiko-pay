@@ -32,6 +32,8 @@ import struct
 
 import testenvironment
 
+import crypto
+
 import bitcointransaction
 from bitcointransaction import OP
 
@@ -245,6 +247,255 @@ class Test(unittest.TestCase):
 			"\x04" #script length
 			"\x03foo" #script
 			)
+
+
+	def test_transaction_deserialize(self):
+		"Test the Transaction.deserialize method"
+
+		tx = bitcointransaction.Transaction.deserialize(
+			#Example taken from https://en.bitcoin.it/wiki/Protocol_documentation#tx
+
+			#Transaction:
+			"\x01\x00\x00\x00"                                 #version
+
+			#Inputs:
+			"\x01"                                             #number of transaction inputs
+
+			#Input 1:
+			"\x6D\xBD\xDB\x08\x5B\x1D\x8A\xF7\x51\x84\xF0\xBC\x01\xFA\xD5\x8D" #previous output (outpoint)
+			"\x12\x66\xE9\xB6\x3B\x50\x88\x19\x90\xE4\xB4\x0D\x6A\xEE\x36\x29"
+			"\x00\x00\x00\x00"
+
+			"\x8B"                                             #script is 139 bytes long
+
+			"\x48\x30\x45\x02\x21\x00\xF3\x58\x1E\x19\x72\xAE\x8A\xC7\xC7\x36" #signature script (scriptSig)
+			"\x7A\x7A\x25\x3B\xC1\x13\x52\x23\xAD\xB9\xA4\x68\xBB\x3A\x59\x23"
+			"\x3F\x45\xBC\x57\x83\x80\x02\x20\x59\xAF\x01\xCA\x17\xD0\x0E\x41"
+			"\x83\x7A\x1D\x58\xE9\x7A\xA3\x1B\xAE\x58\x4E\xDE\xC2\x8D\x35\xBD"
+			"\x96\x92\x36\x90\x91\x3B\xAE\x9A\x01\x41\x04\x9C\x02\xBF\xC9\x7E"
+			"\xF2\x36\xCE\x6D\x8F\xE5\xD9\x40\x13\xC7\x21\xE9\x15\x98\x2A\xCD"
+			"\x2B\x12\xB6\x5D\x9B\x7D\x59\xE2\x0A\x84\x20\x05\xF8\xFC\x4E\x02"
+			"\x53\x2E\x87\x3D\x37\xB9\x6F\x09\xD6\xD4\x51\x1A\xDA\x8F\x14\x04"
+			"\x2F\x46\x61\x4A\x4C\x70\xC0\xF1\x4B\xEF\xF5"
+
+			"\xFF\xFF\xFF\xFF"                                 #sequence
+
+			#Outputs:
+			"\x02"                                             #2 Output Transactions
+
+			#Output 1:
+			"\x40\x4B\x4C\x00\x00\x00\x00\x00"                 #0.05 BTC (5000000)
+			"\x19"                                             #pk_script is 25 bytes long
+
+			"\x76\xA9\x14\x1A\xA0\xCD\x1C\xBE\xA6\xE7\x45\x8A\x7A\xBA\xD5\x12" #pk_script
+			"\xA9\xD9\xEA\x1A\xFB\x22\x5E\x88\xAC"
+
+			#Output 2:
+			"\x80\xFA\xE9\xC7\x00\x00\x00\x00"                 #33.54 BTC (3354000000)
+			"\x19"                                             #pk_script is 25 bytes long
+
+			"\x76\xA9\x14\x0E\xAB\x5B\xEA\x43\x6A\x04\x84\xCF\xAB\x12\x48\x5E" #pk_script
+			"\xFD\xA0\xB7\x8B\x4E\xCC\x52\x88\xAC"
+
+			#Locktime:
+			"\x00\x00\x00\x00"                                 #lock time
+			)
+		self.assertTrue(isinstance(tx, bitcointransaction.Transaction))
+		self.assertEqual(tx.lockTime, 0)
+		self.assertEqual(len(tx.tx_in), 1)
+		self.assertTrue(isinstance(tx.tx_in[0], bitcointransaction.TxIn))
+		self.assertEqual(len(tx.tx_out), 2)
+		self.assertTrue(isinstance(tx.tx_out[0], bitcointransaction.TxOut))
+		self.assertTrue(isinstance(tx.tx_out[1], bitcointransaction.TxOut))
+		self.assertEqual(tx.tx_in[0].previousOutputHash,
+			"\x6D\xBD\xDB\x08\x5B\x1D\x8A\xF7\x51\x84\xF0\xBC\x01\xFA\xD5\x8D"
+			"\x12\x66\xE9\xB6\x3B\x50\x88\x19\x90\xE4\xB4\x0D\x6A\xEE\x36\x29"
+			)
+		self.assertEqual(tx.tx_in[0].previousOutputIndex, 0)
+		self.assertEqual(tx.tx_in[0].scriptSig.elements,[
+			'0E\x02!\x00\xf3X\x1e\x19r\xae\x8a\xc7\xc76zz%;\xc1\x13R#\xad\xb9\xa4h\xbb:Y#?E\xbcW\x83\x80\x02 Y\xaf\x01\xca\x17\xd0\x0eA\x83z\x1dX\xe9z\xa3\x1b\xaeXN\xde\xc2\x8d5\xbd\x96\x926\x90\x91;\xae\x9a\x01',
+			'\x04\x9c\x02\xbf\xc9~\xf26\xcem\x8f\xe5\xd9@\x13\xc7!\xe9\x15\x98*\xcd+\x12\xb6]\x9b}Y\xe2\n\x84 \x05\xf8\xfcN\x02S.\x87=7\xb9o\t\xd6\xd4Q\x1a\xda\x8f\x14\x04/FaJLp\xc0\xf1K\xef\xf5'
+			])
+		self.assertEqual(tx.tx_out[0].amount, 5000000)
+		self.assertEqual(tx.tx_out[0].scriptPubKey.elements, [
+			OP.DUP, OP.HASH160,
+			'\x1a\xa0\xcd\x1c\xbe\xa6\xe7E\x8az\xba\xd5\x12\xa9\xd9\xea\x1a\xfb"^',
+			OP.EQUALVERIFY, OP.CHECKSIG
+			])
+		self.assertEqual(tx.tx_out[1].amount, 3354000000)
+		self.assertEqual(tx.tx_out[1].scriptPubKey.elements, [
+			OP.DUP, OP.HASH160,
+			'\x0e\xab[\xeaCj\x04\x84\xcf\xab\x12H^\xfd\xa0\xb7\x8bN\xccR',
+			OP.EQUALVERIFY, OP.CHECKSIG
+			])
+
+		self.assertRaises(Exception, bitcointransaction.Transaction.deserialize,
+			"\x02\x00\x00\x00"
+			)
+
+		self.assertRaises(Exception, bitcointransaction.Transaction.deserialize,
+			"\x01\x00\x00\x00"                                 #version
+
+			#Inputs:
+			"\x00"                                             #number of transaction inputs
+
+			#Outputs:
+			"\x00"                                             #2 Output Transactions
+
+			#Locktime:
+			"\x00\x00\x00\x00"                                 #lock time
+
+			#Unused data (triggers the exception):
+			"foobar"
+			)
+
+
+	def test_transaction_constructor(self):
+		"Test the Transaction constructor"
+
+		tx = bitcointransaction.Transaction("tx_in", "tx_out", 12345)
+		self.assertEqual(tx.tx_in, "tx_in")
+		self.assertEqual(tx.tx_out, "tx_out")
+		self.assertEqual(tx.lockTime, 12345)
+
+
+	def test_transaction_serialize(self):
+		"Test the Transaction.serialize method"
+
+		tx = bitcointransaction.Transaction(
+			[
+			bitcointransaction.TxIn(
+				"\x6D\xBD\xDB\x08\x5B\x1D\x8A\xF7\x51\x84\xF0\xBC\x01\xFA\xD5\x8D"
+				"\x12\x66\xE9\xB6\x3B\x50\x88\x19\x90\xE4\xB4\x0D\x6A\xEE\x36\x29",
+				0
+				)
+			],
+			[
+			bitcointransaction.TxOut(5000000, bitcointransaction.Script([
+				OP.DUP, OP.HASH160,
+				'\x1a\xa0\xcd\x1c\xbe\xa6\xe7E\x8az\xba\xd5\x12\xa9\xd9\xea\x1a\xfb"^',
+				OP.EQUALVERIFY, OP.CHECKSIG
+				])),
+			bitcointransaction.TxOut(3354000000, bitcointransaction.Script([
+				OP.DUP, OP.HASH160,
+				'\x0e\xab[\xeaCj\x04\x84\xcf\xab\x12H^\xfd\xa0\xb7\x8bN\xccR',
+				OP.EQUALVERIFY, OP.CHECKSIG
+				]))
+			],
+			0)
+		tx.tx_in[0].scriptSig = bitcointransaction.Script([
+			'0E\x02!\x00\xf3X\x1e\x19r\xae\x8a\xc7\xc76zz%;\xc1\x13R#\xad\xb9\xa4h\xbb:Y#?E\xbcW\x83\x80\x02 Y\xaf\x01\xca\x17\xd0\x0eA\x83z\x1dX\xe9z\xa3\x1b\xaeXN\xde\xc2\x8d5\xbd\x96\x926\x90\x91;\xae\x9a\x01',
+			'\x04\x9c\x02\xbf\xc9~\xf26\xcem\x8f\xe5\xd9@\x13\xc7!\xe9\x15\x98*\xcd+\x12\xb6]\x9b}Y\xe2\n\x84 \x05\xf8\xfcN\x02S.\x87=7\xb9o\t\xd6\xd4Q\x1a\xda\x8f\x14\x04/FaJLp\xc0\xf1K\xef\xf5'
+			])
+
+		self.assertEqual(tx.serialize(),
+			#Example taken from https://en.bitcoin.it/wiki/Protocol_documentation#tx
+
+			#Transaction:
+			"\x01\x00\x00\x00"                                 #version
+
+			#Inputs:
+			"\x01"                                             #number of transaction inputs
+
+			#Input 1:
+			"\x6D\xBD\xDB\x08\x5B\x1D\x8A\xF7\x51\x84\xF0\xBC\x01\xFA\xD5\x8D" #previous output (outpoint)
+			"\x12\x66\xE9\xB6\x3B\x50\x88\x19\x90\xE4\xB4\x0D\x6A\xEE\x36\x29"
+			"\x00\x00\x00\x00"
+
+			"\x8B"                                             #script is 139 bytes long
+
+			"\x48\x30\x45\x02\x21\x00\xF3\x58\x1E\x19\x72\xAE\x8A\xC7\xC7\x36" #signature script (scriptSig)
+			"\x7A\x7A\x25\x3B\xC1\x13\x52\x23\xAD\xB9\xA4\x68\xBB\x3A\x59\x23"
+			"\x3F\x45\xBC\x57\x83\x80\x02\x20\x59\xAF\x01\xCA\x17\xD0\x0E\x41"
+			"\x83\x7A\x1D\x58\xE9\x7A\xA3\x1B\xAE\x58\x4E\xDE\xC2\x8D\x35\xBD"
+			"\x96\x92\x36\x90\x91\x3B\xAE\x9A\x01\x41\x04\x9C\x02\xBF\xC9\x7E"
+			"\xF2\x36\xCE\x6D\x8F\xE5\xD9\x40\x13\xC7\x21\xE9\x15\x98\x2A\xCD"
+			"\x2B\x12\xB6\x5D\x9B\x7D\x59\xE2\x0A\x84\x20\x05\xF8\xFC\x4E\x02"
+			"\x53\x2E\x87\x3D\x37\xB9\x6F\x09\xD6\xD4\x51\x1A\xDA\x8F\x14\x04"
+			"\x2F\x46\x61\x4A\x4C\x70\xC0\xF1\x4B\xEF\xF5"
+
+			"\xFF\xFF\xFF\xFF"                                 #sequence
+
+			#Outputs:
+			"\x02"                                             #2 Output Transactions
+
+			#Output 1:
+			"\x40\x4B\x4C\x00\x00\x00\x00\x00"                 #0.05 BTC (5000000)
+			"\x19"                                             #pk_script is 25 bytes long
+
+			"\x76\xA9\x14\x1A\xA0\xCD\x1C\xBE\xA6\xE7\x45\x8A\x7A\xBA\xD5\x12" #pk_script
+			"\xA9\xD9\xEA\x1A\xFB\x22\x5E\x88\xAC"
+
+			#Output 2:
+			"\x80\xFA\xE9\xC7\x00\x00\x00\x00"                 #33.54 BTC (3354000000)
+			"\x19"                                             #pk_script is 25 bytes long
+
+			"\x76\xA9\x14\x0E\xAB\x5B\xEA\x43\x6A\x04\x84\xCF\xAB\x12\x48\x5E" #pk_script
+			"\xFD\xA0\xB7\x8B\x4E\xCC\x52\x88\xAC"
+
+			#Locktime:
+			"\x00\x00\x00\x00"                                 #lock time
+			)
+
+	def test_getSignatureBodyHash(self):
+		"Test the Transaction.getSignatureBodyHash method"
+
+		tx = bitcointransaction.Transaction(
+			[
+				bitcointransaction.TxIn("fooofooofooofooofooofooofooofooo", 1),
+				bitcointransaction.TxIn("barrbarrbarrbarrbarrbarrbarrbarr", 2)
+			],
+			[
+			bitcointransaction.TxOut(
+				5000000, bitcointransaction.Script(["a"])),
+			],
+			4)
+		tx.tx_in[0].scriptSig = bitcointransaction.Script(["b"])
+		tx.tx_in[1].scriptSig = bitcointransaction.Script(["c"])
+
+		bodyHash = tx.getSignatureBodyHash(
+			0, bitcointransaction.Script(["foobar"]), hashType=1)
+
+		self.assertEqual(bodyHash,
+			crypto.SHA256(crypto.SHA256(
+			#Transaction:
+			"\x01\x00\x00\x00"                 #version
+
+			#Inputs:
+			"\x02"                             #number of transaction inputs
+
+			#Input 1:
+			"fooofooofooofooofooofooofooofooo" #previous output (outpoint)
+			"\x01\x00\x00\x00"
+
+			"\x07"                             #script is 7 bytes long (replaced)
+			"\x06foobar"
+
+			"\xFF\xFF\xFF\xFF"                 #sequence
+
+			#Input 2:
+			"barrbarrbarrbarrbarrbarrbarrbarr" #previous output (outpoint)
+			"\x02\x00\x00\x00"
+
+			"\x00"                             #script is 0 bytes long (emptied)
+
+			"\xFF\xFF\xFF\xFF"                 #sequence
+
+			#Outputs:
+			"\x01"                             #1 Output Transaction
+
+			#Output 1:
+			"\x40\x4B\x4C\x00\x00\x00\x00\x00" #0.05 BTC (5000000)
+			"\x02"                             #pk_script is 2 bytes long
+
+			"\x01a"                            #pk_script
+
+			#Locktime:
+			"\x04\x00\x00\x00"                 #lock time
+
+			#Hash type:
+			"\x01\x00\x00\x00"
+			)))
 
 
 
