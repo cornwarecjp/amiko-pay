@@ -29,6 +29,17 @@ network, even then the theft has at least 50% probability of success.
 **solution**: implement the missing functionality.
 
 
+No agreement on commit conditions
+---------------------------------
+Commit condition information (such as the minimum+maximum block height for a
+"slow commit" hash publication) is not yet transmitted between peers. As a
+result, inconsistencies can occur between the commit decisions on different
+links. An attacker can possibly abuse this to steal bitcoins from other
+participants in the network.
+
+**solution**: implement the missing functionality.
+
+
 No transaction checks
 ---------------------
 A lot of checks on transactions exchanged by neighbors are not yet implemented.
