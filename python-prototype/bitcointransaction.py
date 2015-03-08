@@ -56,6 +56,19 @@ Time locking
 #see https://en.bitcoin.it/wiki/Script
 
 def packVarInt(i):
+	"""
+	Bitcoin variable length integer encoding
+
+	Arguments:
+	i: int; the to-be-encoded integer value (range 0 .. 2**64-1)
+
+	Return value:
+	str; the variable-length encoded value
+
+	Exceptions:
+	struct.error: integer out of range
+	"""
+
 	if i < 0xfd:
 		return struct.pack('B', i) #uint8_t
 	elif i <= 0xffff:
@@ -67,6 +80,19 @@ def packVarInt(i):
 
 
 def unpackVarInt(data):
+	"""
+	Bitcoin variable length integer decoding
+
+	Arguments:
+	str; the variable-length encoded value
+
+	Return value:
+	i: int; the decoded integer value
+
+	Exceptions:
+	struct.error: unexpected end of data
+	"""
+
 	firstByte = struct.unpack('B', data[0])[0] #uint8_t
 	if firstByte < 0xfd:
 		value = firstByte
@@ -86,6 +112,10 @@ def unpackVarInt(data):
 
 
 class OP:
+	"""
+	Bitcoin script op-codes
+	"""
+
 	ZERO = 0x00
 	TWO = 0x52
 	DUP = 0x76
@@ -100,23 +130,82 @@ class OP:
 
 
 class Script:
+	"""
+	A Bitcoin script.
+
+	Attributes:
+	elements: list or tuple of str and int; the elements are the
+	          op-codes (int) and data items (str) that form the script.
+	"""
+
 	@staticmethod
 	def standardPubKey(pubKeyHash):
+		"""
+		Creates a standard Bitcoin scriptPubKey ("send to Bitcoin address").
+		This is a static method: it can be called without having an instance,
+		as an alternative to calling the constructor directly.
+
+		Arguments:
+		pubKeyHash: str; the SHA256- and RIPEMD160-hashed public key
+		            (equivalent to the bitcoin address)
+
+		Return value:
+		Script; a scriptPubKey for sending funds to a standard Bitcoin address
+		output.
+		"""
 		return Script((OP.DUP, OP.HASH160, pubKeyHash, OP.EQUALVERIFY, OP.CHECKSIG))
 
 
 	@staticmethod
 	def multiSigPubKey(pubKey1, pubKey2):
+		"""
+		Creates a 2-of-2 multi-signature Bitcoin scriptPubKey.
+		This is a static method: it can be called without having an instance,
+		as an alternative to calling the constructor directly.
+
+		Arguments:
+		pubKey1: str; the first public key
+		pubKey2: str; the second public key
+
+		Return value:
+		Script; a scriptPubKey for sending funds to a 2-of-2 multi-signature
+		output.
+		"""
 		return Script((OP.TWO, pubKey1, pubKey2, OP.TWO, OP.CHECKMULTISIG))
 
 
 	@staticmethod
 	def secretPubKey(pubKey, secretHash):
+		"""
+		Creates a 2-of-2 multi-signature Bitcoin scriptPubKey.
+		This is a static method: it can be called without having an instance,
+		as an alternative to calling the constructor directly.
+
+		Arguments:
+		pubKey1: str; the first public key
+		pubKey2: str; the second public key
+
+		Return value:
+		Script; a scriptPubKey for sending funds to a 2-of-2 multi-signature
+		output.
+		"""
 		return Script((pubKey, OP.CHECKSIGVERIFY, OP.SHA256, secretHash, OP.EQUAL))
 
 
 	@staticmethod
 	def deserialize(data):
+		"""
+		De-serializes a Bitcoin script.
+		This is a static method: it can be called without having an instance,
+		as an alternative to calling the constructor directly.
+
+		Arguments:
+		data: str; the serialized script
+
+		Return value:
+		Script; the de-serialized script
+		"""
+
 		elements = []
 		while len(data) > 0:
 			opcode = struct.unpack('B', data[0])[0]
@@ -143,14 +232,37 @@ class Script:
 
 
 	def __init__(self, elements=tuple()):
+		"""
+		Constructor.
+
+		Arguments:
+		elements: list or tuple of str and int; the elements are the
+			      op-codes (int) and data items (str) that form the script.
+		"""
 		self.elements = elements
 
 
 	def serialize(self):
+		"""
+		Serializes the script.
+
+		Return value:
+		str; the serialized script
+		"""
 		return ''.join([self.__serializeElement(e) for e in self.elements])
 
 
 	def __serializeElement(self, e):
+		"""
+		Serializes a single script element.
+
+		Arguments:
+		e: str or int; the to-be-serialized element.
+
+		Return value:
+		str; the serialized element.
+		"""
+
 		if isinstance(e, str):
 			if len(e) <= 0x4b:
 				return struct.pack('B', len(e)) + e
@@ -170,8 +282,33 @@ class Script:
 
 
 class TxIn:
+	"""
+	A Bitcoin transaction input.
+
+	Attributes:
+	previousOutputHash: str; the transaction ID of the previous output transaction
+	previousOutputIndex: int; the index of the output in the previous output transaction
+	scriptSig: Script; the scriptSig
+	"""
+
 	@staticmethod
 	def deserialize(data):
+		"""
+		De-serializes a transaction input.
+		This is a static method: it can be called without having an instance,
+		as an alternative to calling the constructor directly.
+
+		Arguments:
+		data: str; the serialized transaction input.
+		      May contain trailing bytes that are not part of the serialized
+		      transaction input.
+
+		Return value:
+		Tuple, containing:
+		TxIn; the de-serialized transaction input
+		int; the number of bytes that has been read
+		"""
+
 		outputHash = data[:32]
 		data = data[32:]
 
@@ -196,12 +333,26 @@ class TxIn:
 
 
 	def __init__(self, outputHash, outputIndex):
+		"""
+		Constructor.
+
+		Arguments:
+		outputHash: str; the transaction ID of the previous output transaction
+		outputIndex: int; the index of the output in the previous output transaction
+		"""
 		self.previousOutputHash = outputHash
 		self.previousOutputIndex = outputIndex
 		self.scriptSig = Script() #Default: no signature (to be filled in later)
 
 
 	def serialize(self):
+		"""
+		Serializes the transaction input.
+
+		Return value:
+		str; the serialized transaction input
+		"""
+
 		ret = self.previousOutputHash
 		ret += struct.pack('<I', self.previousOutputIndex) #uint32_t
 		scriptSig = self.scriptSig.serialize()
@@ -214,9 +365,34 @@ class TxIn:
 		return ret
 
 
+
 class TxOut:
+	"""
+	A Bitcoin transaction output.
+
+	Attributes:
+	amount: int; the amount (in Satoshi)
+	scriptPubKey: Script; the scriptPubKey
+	"""
+
 	@staticmethod
 	def deserialize(data):
+		"""
+		De-serializes a transaction output.
+		This is a static method: it can be called without having an instance,
+		as an alternative to calling the constructor directly.
+
+		Arguments:
+		data: str; the serialized transaction output.
+		      May contain trailing bytes that are not part of the serialized
+		      transaction output.
+
+		Return value:
+		Tuple, containing:
+		TxOut; the de-serialized transaction output
+		int; the number of bytes that has been read
+		"""
+
 		amount = struct.unpack('<Q', data[:8])[0] #uint64_t
 		data = data[8:]
 
@@ -232,11 +408,25 @@ class TxOut:
 
 
 	def __init__(self, amount, scriptPubKey):
+		"""
+		Constructor.
+
+		Arguments:
+		amount: int; the amount (in Satoshi)
+		scriptPubKey: Script; the scriptPubKey
+		"""
 		self.amount = amount
 		self.scriptPubKey = scriptPubKey
 
 
 	def serialize(self):
+		"""
+		Serializes the transaction output.
+
+		Return value:
+		str; the serialized transaction output
+		"""
+
 		ret = struct.pack('<Q', self.amount) #uint64_t
 		scriptPubKey = self.scriptPubKey.serialize()
 		ret += packVarInt(len(scriptPubKey))
@@ -245,9 +435,31 @@ class TxOut:
 		return ret
 
 
+
 class Transaction:
+	"""
+	A Bitcoin transaction.
+
+	Attributes:
+	tx_in: list of TxIn; the transaction inputs
+	tx_out: list of TxOut; the transaction outputs
+	lockTime: int; the lock time
+	"""
+
 	@staticmethod
 	def deserialize(data):
+		"""
+		De-serializes a transaction.
+		This is a static method: it can be called without having an instance,
+		as an alternative to calling the constructor directly.
+
+		Arguments:
+		data: str; the serialized transaction.
+
+		Return value:
+		Transaction; the de-serialized transaction
+		"""
+
 		version = struct.unpack('<I', data[:4])[0] #version, uint32_t
 		data = data[4:]
 
@@ -284,12 +496,27 @@ class Transaction:
 
 
 	def __init__(self, tx_in, tx_out, lockTime=0):
+		"""
+		Constructor.
+
+		Arguments:
+		tx_in: list of TxIn; the transaction inputs
+		tx_out: list of TxOut; the transaction outputs
+		lockTime: int; the lock time
+		"""
 		self.tx_in = tx_in
 		self.tx_out = tx_out
 		self.lockTime = lockTime
 
 
 	def serialize(self):
+		"""
+		Serializes the transaction.
+
+		Return value:
+		str; the serialized transaction
+		"""
+
 		ret = struct.pack('<I', 1) #version, uint32_t
 		ret += packVarInt(len(self.tx_in))
 		for tx_in in self.tx_in:
@@ -302,6 +529,24 @@ class Transaction:
 
 
 	def getSignatureBodyHash(self, index, scriptPubKey, hashType=1):
+		"""
+		Calculates the hash of properly masked serialized data of this
+		transaction, for use in signing and in verification of signatures, e.g.
+		those used in in OP_CHECKSIG.
+
+		Arguments:
+		index: int; the index of the transaction input to which a signature
+		       applies
+		scriptPubKey: Script; the scriptPubKey of the output to which the
+		              signature applies
+		hashType: int; the hash type (default: SIGHASH_ALL = 1)
+
+		Return value:
+		str; the double-SHA256-hashed, masked, serialized transaction:
+		this is the data that must be signed in OP_CHECKSIG (and similar)
+		signatures.
+		"""
+
 		#https://en.bitcoin.it/wiki/OP_CHECKSIG
 
 		#1.	the public key and the signature are popped from the stack, in that
@@ -341,6 +586,19 @@ class Transaction:
 
 
 	def signInputWithSignatures(self, index, scriptSigTemplate, signatures):
+		"""
+		Signs an input with the given signatures.
+
+		Arguments:
+		index: int; the index of the transaction input to which the signatures
+		       apply
+		scriptSigTemplate: list of str, int and None: a template of the scriptSig
+		                   elements. Each occurrence of None will be replaced by
+		                   a signature.
+		signatures: list of str; the signatures. The number of signatures must
+		            be at least the number of occurrences of None in scriptSigTemplate.
+		"""
+
 		elements = scriptSigTemplate[:]
 		for sig in signatures:
 			i = elements.index(None)
@@ -350,6 +608,21 @@ class Transaction:
 
 
 	def signInput(self, index, scriptPubKey, scriptSigTemplate, privateKeys):
+		"""
+		Signs an input with the given private keys.
+
+		Arguments:
+		index: int; the index of the transaction input to which the signatures
+		       apply
+		scriptPubKey: Script; the scriptPubKey of the output to which the
+		              signature applies
+		scriptSigTemplate: list of str, int and None: a template of the scriptSig
+		                   elements. Each occurrence of None will be replaced by
+		                   a signature.
+		privateKeys: list of Key; the private keys. The number of keys must be
+		             at least the number of occurrences of None in scriptSigTemplate.
+		"""
+
 		hashType = 1 #SIGHASH_ALL
 		bodyHash = self.getSignatureBodyHash(index, scriptPubKey, hashType)
 
@@ -371,6 +644,13 @@ class Transaction:
 
 
 	def getTransactionID(self):
+		"""
+		Returns the transaction ID.
+
+		Return value:
+		str; the transaction ID. Note that the byte order is the reverse as
+		shown in Bitcoin.
+		"""
 		return SHA256(SHA256(self.serialize())) #Note: in Bitcoin, the tx hash is shown reversed!
 
 
