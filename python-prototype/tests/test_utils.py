@@ -52,7 +52,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(B.f.__doc__, "foo")
 
 
-	def test_inheritDocString(self):
+	def test_enum(self):
 		"Test enum class"
 
 		enum = utils.Enum(["foo", "bar"])
