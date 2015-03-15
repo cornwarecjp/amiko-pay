@@ -26,6 +26,8 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+import base58
+
 
 
 class Tracer:
@@ -106,4 +108,35 @@ class DummyTransaction(Tracer):
 
 	def __repr__(self):
 		return self.__str__()
+
+
+
+class DummyBitcoind(Tracer):
+	def listUnspent(self):
+		#Exception: this doesn't get through __getattr__
+		#But we DO want it traced:
+		self.trace.append(('listUnspent', [], {}))
+		return \
+		[
+			{
+				"amount": 10, "address": "foo",
+				"txid": "foo_tx", "vout": 3,
+				"scriptPubKey": "foo_pub"
+			},
+			{
+				"amount": 20, "address": "bar",
+				"txid": "bar_tx", "vout": 2,
+				"scriptPubKey": "bar_pub"
+			},
+			{
+				"amount": 50, "address": "foobar",
+				"txid": "foobar_tx", "vout": 1,
+				"scriptPubKey": "foobar_pub"
+			},
+			{"amount": 100}
+		]
+
+
+	def getPrivateKey(self, address):
+		return base58.encodeBase58Check(address, 128)
 
