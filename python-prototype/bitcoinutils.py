@@ -1,5 +1,5 @@
 #    bitcoinutils.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -37,14 +37,26 @@ from crypto import Key, SHA256
 
 def getInputsForAmount(bitcoind, amount):
 	"""
-	Return value:
-	total, [(txid, vout, scriptPubKey, privateKey), ...]
+	Returns information about unspent outputs, which are available to be used
+	as inputs for a new transaction, and have a total amount that is at least
+	the requested amount.
 
-	total: the total amount of all the inputs (>= amount)
-	txid: input transaction hash
-	vout: input transaction index
-	scriptPubKey: input transaction scriptPubKey (serialized)
-	privateKey: corresponding private key
+	Arguments:
+	bitcoind: Bitcoind; the bitcoin daemon from which to retrieve this information
+	amount: int; the minimum total amount (in Satoshi)
+
+	Return value:
+	tuple (total, inputs)
+	total: int; the actual total amount (in Satoshi); total >= amount
+	inputs: list of tuple (txid, vout, scriptPubKey, privateKey); the input information
+	txid: str; input transaction ID. Note that the byte order is the reverse as
+	      shown in Bitcoin.
+	vout: int; input transaction index
+	scriptPubKey: str; input transaction scriptPubKey (serialized)
+	privateKey: str; corresponding private key
+
+	Exceptions:
+	Exception: insufficient funds
 	"""
 
 	unspent = bitcoind.listUnspent()
@@ -89,6 +101,27 @@ def getInputsForAmount(bitcoind, amount):
 
 
 def sendToStandardPubKey(bitcoind, amount, toHash, changeHash, fee):
+	"""
+	Make a transaction to send funds from ourself to a standard Bitcoin
+	scriptPubKey ("send to Bitcoin address"). The transaction is returned, and
+	is NOT published on the Bitcoin network by this function.
+
+	Arguments:
+	bitcoind: Bitcoind; the bitcoin daemon from which to retrieve this information
+	amount: int; the amount to be sent, not including the fee (in Satoshi)
+	toHash: str; the SHA256- and RIPEMD160-hashed public key of the receiver
+	        (equivalent to the bitcoin address)
+	changeHash: str; the SHA256- and RIPEMD160-hashed public key to which any
+	            change should be sent (equivalent to the bitcoin address)
+	fee: int; the transaction fee (in Satoshi)
+
+	Return value:
+	Transaction; the transaction that sends funds as specified.
+
+	Exceptions:
+	Exception: insufficient funds
+	"""
+
 	totalIn, inputs = getInputsForAmount(bitcoind, amount+fee)
 	change = totalIn - fee - amount
 
@@ -115,6 +148,27 @@ def sendToStandardPubKey(bitcoind, amount, toHash, changeHash, fee):
 
 
 def sendToMultiSigPubKey(bitcoind, amount, toPubKey1, toPubKey2, changeHash, fee):
+	"""
+	Make a transaction to send funds from ourself to a 2-of-2 multi-signature
+	scriptPubKey. The transaction is returned, and is NOT published on the
+	Bitcoin network by this function.
+
+	Arguments:
+	bitcoind: Bitcoind; the bitcoin daemon from which to retrieve this information
+	amount: int; the amount to be sent, not including the fee (in Satoshi)
+	toPubKey1: str; the first public key
+	toPubKey2: str; the second public key
+	changeHash: str; the SHA256- and RIPEMD160-hashed public key to which any
+	            change should be sent (equivalent to the bitcoin address)
+	fee: int; the transaction fee (in Satoshi)
+
+	Return value:
+	Transaction; the transaction that sends funds as specified.
+
+	Exceptions:
+	Exception: insufficient funds
+	"""
+
 	totalIn, inputs = getInputsForAmount(bitcoind, amount+fee)
 	change = totalIn - fee - amount
 
@@ -141,6 +195,26 @@ def sendToMultiSigPubKey(bitcoind, amount, toPubKey1, toPubKey2, changeHash, fee
 
 
 def makeSpendMultiSigTransaction(outputHash, outputIndex, amount, toHash, fee):
+	"""
+	Make an (non-signed) transaction to send funds from a 2-of-2 multi-signature
+	output to a standard Bitcoin scriptPubKey ("send to Bitcoin address").
+	The transaction is returned, and is NOT published on the Bitcoin network by
+	this function.
+
+	Arguments:
+	outputHash: str; the transaction ID of the previous output transaction
+	            Note that the byte order is the reverse as shown in Bitcoin.
+	outputIndex: int; the index of the output in the previous output transaction
+	amount: int; the amount to be sent, including the fee (in Satoshi).
+	        This must be equal to the amount in the input.
+	toHash: str; the SHA256- and RIPEMD160-hashed public key of the receiver
+	        (equivalent to the bitcoin address)
+	fee: int; the transaction fee (in Satoshi)
+
+	Return value:
+	Transaction; the transaction that sends funds as specified.
+	"""
+
 	tx = Transaction(
 		tx_in = [TxIn(outputHash, outputIndex)],
 		tx_out = [TxOut(amount-fee, Script.standardPubKey(toHash))]
@@ -149,7 +223,25 @@ def makeSpendMultiSigTransaction(outputHash, outputIndex, amount, toHash, fee):
 	return tx
 
 
+#TODO: rename outputIndex to inputIndex
 def signMultiSigTransaction(tx, outputIndex, toPubKey1, toPubKey2, key):
+	"""
+	Create a signature for a transaction that spends a 2-of-2 multi-signature
+	output. The signature is returned, and is NOT inserted in the transaction.
+
+	Arguments:
+	tx: Transaction; the transaction
+	outputIndex: int; the index of the transaction input to which a signature
+	             applies
+	toPubKey1: str; the first public key
+	toPubKey2: str; the second public key
+	key: Key; the private key to be used for signing (should correspond to
+	     either toPubKey1 or toPubKey2)
+
+	Return value:
+	str; the signature, including the hash type
+	"""
+
 	hashType = 1 #SIGHASH_ALL
 	scriptPubKey = Script.multiSigPubKey(toPubKey1, toPubKey2)
 	bodyHash = tx.getSignatureBodyHash(outputIndex, scriptPubKey, hashType)
@@ -157,6 +249,27 @@ def signMultiSigTransaction(tx, outputIndex, toPubKey1, toPubKey2, key):
 
 
 def verifyMultiSigSignature(tx, outputIndex, toPubKey1, toPubKey2, key, signature):
+	"""
+	Verify a signature for a transaction that spends a 2-of-2 multi-signature
+	output.
+
+	Arguments:
+	tx: Transaction; the transaction
+	outputIndex: int; the index of the transaction input to which a signature
+	             applies
+	toPubKey1: str; the first public key
+	toPubKey2: str; the second public key
+	key: Key; the public key used for signing (should correspond to
+	     either toPubKey1 or toPubKey2)
+	signature: str; the signature, including the hash type
+
+	Return value:
+	bool; indicates whether the signature is correct (True) or not (False)
+
+	Exceptions:
+	Exception: signature verification failed
+	"""
+
 	hashType = struct.unpack('B', signature[-1])[0] #uint8_t
 	if hashType != 1: #SIGHASH_ALL
 		return False
@@ -167,6 +280,18 @@ def verifyMultiSigSignature(tx, outputIndex, toPubKey1, toPubKey2, key, signatur
 
 
 def applyMultiSigSignatures(tx, sig1, sig2):
+	"""
+	Apply signatures to a transaction that spends a 2-of-2 multi-signature
+	output.
+
+	Arguments:
+	tx: Transaction; the transaction. Note that the transaction will be changed
+	    by this function.
+	sig1: str; the signature, including the hash type, corresponding with the
+	      first public key
+	sig2: str; the signature, including the hash type, corresponding with the
+	      second public key
+	"""
 	tx.signInputWithSignatures(0, [OP.ZERO, None, None], [sig1, sig2])
 
 

@@ -286,7 +286,8 @@ class TxIn:
 	A Bitcoin transaction input.
 
 	Attributes:
-	previousOutputHash: str; the transaction ID of the previous output transaction
+	previousOutputHash: str; the transaction ID of the previous output transaction.
+	                    Note that the byte order is the reverse as shown in Bitcoin.
 	previousOutputIndex: int; the index of the output in the previous output transaction
 	scriptSig: Script; the scriptSig
 	"""
