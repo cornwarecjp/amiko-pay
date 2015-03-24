@@ -14,36 +14,31 @@ Transaction structure
 	            Alice
 
 
-Funding (F)
------------
+_Funding (F)_
 - in: from Alice
 - in: from Bob
 - out 0: 2-of-2 Alice+Bob
 
 
-Commit by Alice (CA1)
----------------------
+_Commit by Alice (CA1)_
 - in: F[0]
 - out 0: 2-of-2 Alice+Bob
 - out 1: Bob
 
 
-Commit by Bob (CB1)
--------------------
+_Commit by Bob (CB1)_
 - in: F[0]
 - out 0: 2-of-2 Alice+Bob
 - out 1: Alice
 
 
-Refund to Alice (RA1)
----------------------
+_Refund to Alice (RA1)_
 - in: CA1[0]
 - out: Alice
 - 40-day lock time
 
 
-Refund to Bob (RB1)
--------------------
+_Refund to Bob (RB1)_
 - in: CB1[0]
 - out: Bob
 - 40-day lock time
@@ -70,7 +65,7 @@ Scenario: Alice wishes to withdraw and close the channel.
 * Alice signs CA
 * Alice publishes CA
 * Alice waits 40 days
-* Alice signs RA1
+* Alice signs RA
 * Alice publishes RA
 (Equivalent scenario for Bob with CB, RB)
 
@@ -85,8 +80,7 @@ Transaction structure
 	       Bob
 
 
-Close Commit (CC)
------------------
+_Close Commit (CC)_
 - in: F[0]
 - out 0: Alice
 - out 1: Bob
@@ -117,85 +111,73 @@ Transaction structure
 	            Alice
 
 
-Commit by Alice (CA2)
----------------------
+_Commit by Alice (CA2)_
 - in: F[0]
 - out 0: 2-of-2 Alice+Bob (NEW KEYS!)
 - out 1: HTLC Alice+Bob (NEW KEYS!)
 - out 2: Bob (NEW KEY!)
 
 
-Commit by Bob (CB2)
----------------------
+_Commit by Bob (CB2)_
 - in: F[0]
 - out 0: 2-of-2 Alice+Bob (NEW KEYS!)
 - out 1: HTLC Alice+Bob (NEW KEYS!)
 - out 2: Alice (NEW KEY!)
 
 
-Refund to Alice (RA2)
---------------------
+_Refund to Alice (RA2)_
 - in: CA2[0]
 - out: Alice
 - 40-day lock time
 
 
-Refund to Bob (RB2)
-------------------
+_Refund to Bob (RB2)_
 - in: CB2[0]
 - out: Bob
 - 40-day lock time
 
 
-Timeout on Alice commit (TA2)
------------------------------
+_Timeout on Alice commit (TA2)_
 - in: CA2[1] (time-out)
 - out: 2-of-2 Alice+Bob
 - 3-day lock time
 
 
-Timeout on Bob commit (TB2)
----------------------------
+_Timeout on Bob commit (TB2)_
 - in: CB2[1] (time-out)
 - out: 2-of-2 Alice+Bob
 - 3-day lock time
 
 
-Timeout Refund on Alice commit (TRA2)
--------------------------------------
+_Timeout Refund on Alice commit (TRA2)_
 - in: TA2[0]
 - out: Alice
 - 40-day lock time
 
 
-Timeout Refund on Bob commit (TRB2)
------------------------------------
+_Timeout Refund on Bob commit (TRB2)_
 - in: TB2[0]
 - out: Alice
 - 40-day lock time
 
 
-Settlement on Alice commit (SA2)
---------------------------------
+_Settlement on Alice commit (SA2)_
 - in: CA2[1] (hash value)
 - out: 2-of-2 Alice+Bob
 
 
-Settlement on Bob commit (SB2)
-------------------------------
+_Settlement on Bob commit (SB2)_
 - in: CB2[1] (hash value)
 - out: 2-of-2 Alice+Bob
 
 
-Settlement Delivery on Alice commit (SDA2)
-------------------------------------------
+_Settlement Delivery on Alice commit (SDA2)_
 - in: SA2[0]
 - out: Bob
 - 40-day lock time
 
 
-Settlement Delivery on Bob commit (SDB2)
-----------------------------------------
+_Settlement Delivery on Bob commit (SDB2)_
 - in: SB2[0]
 - out: Bob
 - 40-day lock time
