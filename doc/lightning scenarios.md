@@ -16,37 +16,37 @@ Transaction structure
 
 Funding (F)
 -----------
-in: from Alice
-in: from Bob
-out 0: 2-of-2 Alice+Bob
+- in: from Alice
+- in: from Bob
+- out 0: 2-of-2 Alice+Bob
 
 
 Commit by Alice (CA1)
 ---------------------
-in: F[0]
-out 0: 2-of-2 Alice+Bob
-out 1: Bob
+- in: F[0]
+- out 0: 2-of-2 Alice+Bob
+- out 1: Bob
 
 
 Commit by Bob (CB1)
 -------------------
-in: F[0]
-out 0: 2-of-2 Alice+Bob
-out 1: Alice
+- in: F[0]
+- out 0: 2-of-2 Alice+Bob
+- out 1: Alice
 
 
 Refund to Alice (RA1)
 ---------------------
-in: CA1[0]
-out: Alice
-40-day lock time
+- in: CA1[0]
+- out: Alice
+- 40-day lock time
 
 
 Refund to Bob (RB1)
 -------------------
-in: CB1[0]
-out: Bob
-40-day lock time
+- in: CB1[0]
+- out: Bob
+- 40-day lock time
 
 
 Depositing
@@ -75,9 +75,8 @@ Scenario: Alice wishes to withdraw and close the channel.
 (Equivalent scenario for Bob with CB, RB)
 
 
-Assisted withdrawing
-====================
-Scenario: Alice, Bob or both wish to withdraw and close the channel.
+Transaction structure
+=====================
 
 	       Alice
 	      /
@@ -88,10 +87,14 @@ Scenario: Alice, Bob or both wish to withdraw and close the channel.
 
 Close Commit (CC)
 -----------------
-in: F[0]
-out 0: Alice
-out 1: Bob
+- in: F[0]
+- out 0: Alice
+- out 1: Bob
 
+
+Assisted withdrawing
+====================
+Scenario: Alice, Bob or both wish to withdraw and close the channel.
 
 * Alice and Bob make CC (without signing)
 * Alice signs CC; sent to Bob
@@ -99,10 +102,8 @@ out 1: Bob
 * Alice + Bob publish CC
 
 
-Locking funds for a payment
-===========================
-Scenario: locking for a payment from Alice to Bob
-
+Transaction structure
+=====================
 	           RA2 - Alice
 	          /             |- TA2 - TRA2 - Alice
 	    |- CA2 -------------|
@@ -118,86 +119,91 @@ Scenario: locking for a payment from Alice to Bob
 
 Commit by Alice (CA2)
 ---------------------
-in: F[0]
-out 0: 2-of-2 Alice+Bob (NEW KEYS!)
-out 1: HTLC Alice+Bob (NEW KEYS!)
-out 2: Bob (NEW KEY!)
+- in: F[0]
+- out 0: 2-of-2 Alice+Bob (NEW KEYS!)
+- out 1: HTLC Alice+Bob (NEW KEYS!)
+- out 2: Bob (NEW KEY!)
 
 
 Commit by Bob (CB2)
 ---------------------
-in: F[0]
-out 0: 2-of-2 Alice+Bob (NEW KEYS!)
-out 1: HTLC Alice+Bob (NEW KEYS!)
-out 2: Alice (NEW KEY!)
+- in: F[0]
+- out 0: 2-of-2 Alice+Bob (NEW KEYS!)
+- out 1: HTLC Alice+Bob (NEW KEYS!)
+- out 2: Alice (NEW KEY!)
 
 
 Refund to Alice (RA2)
 --------------------
-in: CA2[0]
-out: Alice
-40-day lock time
+- in: CA2[0]
+- out: Alice
+- 40-day lock time
 
 
 Refund to Bob (RB2)
 ------------------
-in: CB2[0]
-out: Bob
-40-day lock time
+- in: CB2[0]
+- out: Bob
+- 40-day lock time
 
 
 Timeout on Alice commit (TA2)
 -----------------------------
-in: CA2[1] (time-out)
-out: 2-of-2 Alice+Bob
-3-day lock time
+- in: CA2[1] (time-out)
+- out: 2-of-2 Alice+Bob
+- 3-day lock time
 
 
 Timeout on Bob commit (TB2)
 ---------------------------
-in: CB2[1] (time-out)
-out: 2-of-2 Alice+Bob
-3-day lock time
+- in: CB2[1] (time-out)
+- out: 2-of-2 Alice+Bob
+- 3-day lock time
 
 
 Timeout Refund on Alice commit (TRA2)
 -------------------------------------
-in: TA2[0]
-out: Alice
-40-day lock time
+- in: TA2[0]
+- out: Alice
+- 40-day lock time
 
 
 Timeout Refund on Bob commit (TRB2)
 -----------------------------------
-in: TB2[0]
-out: Alice
-40-day lock time
+- in: TB2[0]
+- out: Alice
+- 40-day lock time
 
 
 Settlement on Alice commit (SA2)
 --------------------------------
-in: CA2[1] (hash value)
-out: 2-of-2 Alice+Bob
+- in: CA2[1] (hash value)
+- out: 2-of-2 Alice+Bob
 
 
 Settlement on Bob commit (SB2)
 ------------------------------
-in: CB2[1] (hash value)
-out: 2-of-2 Alice+Bob
+- in: CB2[1] (hash value)
+- out: 2-of-2 Alice+Bob
 
 
 Settlement Delivery on Alice commit (SDA2)
 ------------------------------------------
-in: SA2[0]
-out: Bob
-40-day lock time
+- in: SA2[0]
+- out: Bob
+- 40-day lock time
 
 
 Settlement Delivery on Bob commit (SDB2)
 ----------------------------------------
-in: SB2[0]
-out: Bob
-40-day lock time
+- in: SB2[0]
+- out: Bob
+- 40-day lock time
+
+
+Locking funds for a payment
+===========================
+Scenario: locking for a payment from Alice to Bob
 
 * Alice and Bob make + exchange all new transactions (without signing)
 * Alice signs CRB2, SA2, SB2, SDA2, SDB2; sent to Bob.
