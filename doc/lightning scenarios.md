@@ -130,10 +130,12 @@ _Commit by Bob (CB2)_
 
 
 _Refund to Alice (RA2)_
+
 like RA1
 
 
 _Refund to Bob (RB2)_
+
 like RB1
 
 
@@ -198,14 +200,16 @@ At this point, Alice is able to broadcast CA2 or CA1.
 At this point Bob is able to broadcast CB2 or CB1.
 
 * Alice sends Bob the private key for CA1[1]
+
 MAKES NO SENSE (that is Bob's key). Maybe should be:
-* Alice sends Bob the *private key* for CA1[0] (refund to Alice)
+
+* Alice sends Bob the *private key* for CA1[0]: refund to Alice
 
 By giving her private key for CA1, Alice repudiates transaction CA1, assuring
 Bob that she will not broadcast it.
 
 
-* Bob sends Alice the *private key* for (assumed) CB1[0] (refund to Bob)
+* Bob sends Alice the *private key* for (assumed) CB1[0]: refund to Bob
 
 
 Unassisted withdrawing with payment rollback
@@ -231,7 +235,7 @@ from Alice to Bob is locked.
 * TB2 gets confirmed by the block chain
 * Alice and Bob wait 40 days
 * Alice signs and publishes TRB2
-(* Bob signs and publishes RB2)
+* (Bob signs and publishes RB2)
 
 
 Unassisted withdrawing with payment commit
@@ -244,7 +248,7 @@ from Alice to Bob is locked.
 * CA2 and SA2 get confirmed by the block chain
 * Alice and Bob wait 40 days
 * Alice signs and publishes RA2
-(* Bob signs and publishes SDA2)
+* (Bob signs and publishes SDA2)
 
 Scenario: Bob wishes to withdraw and close the channel, while a payment
 from Alice to Bob is locked.
@@ -273,20 +277,22 @@ Transaction structure
 
 
 _Commit by Alice (CA3)_
-like CA1
-(NEW KEYS!)
+
+like CA1 (NEW KEYS!)
 
 
 _Commit by Bob (CB3)_
-like CB1
-(NEW KEYS!)
+
+like CB1 (NEW KEYS!)
 
 
 _Refund to Alice (RA3)_
+
 like RA1
 
 
 _Refund to Bob (RB3)_
+
 like RB1
 
 
@@ -304,11 +310,11 @@ At this point, Alice is able to broadcast CA3 or CA2.
 
 At this point Bob is able to broadcast CB3 or CB2.
 
-* Alice sends Bob the *private key* for (assumed) CA2[0] (refund to Alice)
+* Alice sends Bob the *private key* for (assumed) CA2[0]: refund to Alice
 
 By giving her private key for CA2, Alice repudiates transaction CA2, assuring
 Bob that she will not broadcast it.
 
-* Bob sends Alice the *private key* for (assumed) CB2[0] (refund to Bob)
+* Bob sends Alice the *private key* for (assumed) CB2[0]: refund to Bob
 
 
