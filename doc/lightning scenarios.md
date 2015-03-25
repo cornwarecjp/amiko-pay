@@ -140,13 +140,13 @@ like RB1
 
 
 _Timeout on Alice commit (TA2)_
-- in: CA2[1] (time-out)
+- in: CA2[1]: time-out
 - out: 2-of-2 Alice+Bob
 - 3-day lock time
 
 
 _Timeout on Bob commit (TB2)_
-- in: CB2[1] (time-out)
+- in: CB2[1]: time-out
 - out: 2-of-2 Alice+Bob
 - 3-day lock time
 
@@ -164,12 +164,12 @@ _Timeout Refund on Bob commit (TRB2)_
 
 
 _Settlement on Alice commit (SA2)_
-- in: CA2[1] (hash value)
+- in: CA2[1]: hash value
 - out: 2-of-2 Alice+Bob
 
 
 _Settlement on Bob commit (SB2)_
-- in: CB2[1] (hash value)
+- in: CB2[1]: hash value
 - out: 2-of-2 Alice+Bob
 
 
