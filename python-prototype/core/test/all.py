@@ -39,7 +39,6 @@ from test_crypto import Test as test_crypto
 from test_log import Test as test_log
 from test_meetingpoint import Test as test_meetingpoint
 from test_messages import Test as test_messages
-from test_multisigchannel import Test as test_multisigchannel
 from test_transaction import Test as test_transaction
 from test_utils import Test as test_utils
 
