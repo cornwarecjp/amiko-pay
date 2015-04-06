@@ -32,11 +32,7 @@ import sys
 import pprint
 from decimal import Decimal
 
-import amiko
-import event
-import network
-import messages
-import crypto
+from core import amiko, event, network, messages, crypto
 
 
 def formatBitcoinAmount(value):
