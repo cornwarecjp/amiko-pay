@@ -32,8 +32,8 @@ import sys
 import pprint
 from decimal import Decimal
 
-from amiko.core import amiko, event, network, messages, crypto
-
+from amiko.core import event, network, messages, crypto
+from amiko import node
 
 def formatBitcoinAmount(value):
 	return str(Decimal(value) / 100000) + " mBTC"
@@ -208,14 +208,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 		print "Unknown command. Enter \"help\" for a list of commands."
 
 
-a = amiko.Amiko()
+a = node.Node()
 a.start()
 
 print """
 Amiko Pay %s Copyright (C) 2013 - %s
 
 Enter "help" for a list of commands. Enter "license" for licensing information.
-""" % (amiko.version, amiko.lastCopyrightYear)
+""" % (node.version, node.lastCopyrightYear)
 
 while True:
 	cmd = raw_input('> ')

@@ -29,7 +29,6 @@
 import select
 import time
 
-import network
 import utils
 
 

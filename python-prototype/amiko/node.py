@@ -1,4 +1,4 @@
-#    amiko.py
+#    node.py
 #    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -32,17 +32,17 @@ import os
 import json
 from urlparse import urlparse
 
-import network
-import event
-import link
-import meetingpoint
-import paylink
-import settings
-import randomsource
-import log
-import paylog
-import bitcoind
-import watchdog
+from core import network
+from core import event
+from core import link
+from core import meetingpoint
+from core import paylink
+from core import settings
+from core import randomsource
+from core import log
+from core import paylog
+from core import bitcoind
+from core import watchdog
 
 #Somehow it is hard to replace the above copyright information with a more
 #sensible doc string...
@@ -54,10 +54,6 @@ version = "0.1.0 (unstable,development)"
 lastCopyrightYear = "2015"
 
 
-minProtocolVersion = 1
-maxProtocolVersion = 1
-
-
 
 class RoutingContext:
 	"""
@@ -65,7 +61,7 @@ class RoutingContext:
 
 	Contains all objects relevant to routing, such as links and meeting points.
 
-	Intended for internal use by Amiko.
+	Intended for internal use by Node.
 	Not intended to be part of the API.
 	"""
 
@@ -84,13 +80,13 @@ class RoutingContext:
 		}
 
 
-def runInAmikoThread(implementationFunc):
+def runInNodeThread(implementationFunc):
 	"""
-	Function decorator, which can be used by Amiko methods to have them
+	Function decorator, which can be used by Node methods to have them
 	called by an external thread, but have them run inside the internal thread
-	of the Amiko object.
+	of the Node object.
 
-	Intended for internal use by Amiko.
+	Intended for internal use by Node.
 	Not intended to be part of the API.
 	"""
 
@@ -110,7 +106,7 @@ def runInAmikoThread(implementationFunc):
 
 
 
-class Amiko(threading.Thread):
+class Node(threading.Thread):
 	"""
 	A single Amiko node.
 
@@ -172,16 +168,16 @@ class Amiko(threading.Thread):
 
 	def stop(self):
 		"""
-		Stops the Amiko object.
+		Stops the Node object.
 
-		This method blocks until the Amiko object is stopped completely.
+		This method blocks until the Node object is stopped completely.
 		"""
 
 		self.__stop = True
 		self.join()
 
 
-	@runInAmikoThread
+	@runInNodeThread
 	def request(self, amount, receipt):
 		"""
 		Request a payment.
@@ -224,12 +220,12 @@ class Amiko(threading.Thread):
 			receipt: A receipt for the payment
 		"""
 
-		newPayer = self.__pay(URL, linkname) #implemented in Amiko thread
+		newPayer = self.__pay(URL, linkname) #implemented in Node thread
 		newPayer.waitForReceipt() #Must be done in this thread
 		return newPayer
 
 
-	@runInAmikoThread
+	@runInNodeThread
 	def __pay(self, URL, linkname=None):
 		rc = self.routingContext
 		if linkname != None:
@@ -252,17 +248,17 @@ class Amiko(threading.Thread):
 		payerAgrees: Boolean, indicating whether or not the user agrees to pay
 		"""
 
-		self.__confirmPayment(payer, payerAgrees) #implemented in Amiko thread
+		self.__confirmPayment(payer, payerAgrees) #implemented in Node thread
 		payer.waitForFinished() #Must be done in this thread
 		self.payLog.writePayer(payer)
 
 
-	@runInAmikoThread
+	@runInNodeThread
 	def __confirmPayment(self, payer, payerAgrees):
 		payer.confirmPayment(payerAgrees)
 
 
-	@runInAmikoThread
+	@runInNodeThread
 	def list(self):
 		"""
 		Return value:
@@ -273,7 +269,7 @@ class Amiko(threading.Thread):
 		return self.__getState(forDisplay=True)
 
 
-	@runInAmikoThread
+	@runInNodeThread
 	def getBalance(self):
 		"""
 		Return value:
@@ -297,7 +293,7 @@ class Amiko(threading.Thread):
 		return ret
 
 
-	@runInAmikoThread
+	@runInNodeThread
 	def makeLink(self, localName, remoteURL=""):
 		remoteID = ""
 		if remoteURL != "":
@@ -321,7 +317,7 @@ class Amiko(threading.Thread):
 		return newLink.localURL
 
 
-	@runInAmikoThread
+	@runInNodeThread
 	def deposit(self, linkname, amount):
 		"""
 		Deposit into a link.
@@ -338,7 +334,7 @@ class Amiko(threading.Thread):
 		links[0].deposit(amount)
 
 
-	@runInAmikoThread
+	@runInNodeThread
 	def withdraw(self, linkname, channelID):
 		"""
 		Withdraw from a link.
@@ -359,7 +355,7 @@ class Amiko(threading.Thread):
 		"""
 		The thread function.
 
-		Intended for internal use by Amiko.
+		Intended for internal use by Node.
 		Not intended to be part of the API.
 		"""
 
@@ -403,7 +399,7 @@ class Amiko(threading.Thread):
 		#This closes all network connections etc.
 		self.context.sendSignal(None, event.signals.quit)
 
-		log.log("Amiko thread terminated\n\n")
+		log.log("Node thread terminated\n\n")
 
 
 	def __loadState(self):

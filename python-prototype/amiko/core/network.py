@@ -31,9 +31,13 @@ import struct
 import traceback
 
 import event
-import amiko
 import messages
 import log
+
+
+
+minProtocolVersion = 1
+maxProtocolVersion = 1
 
 
 
@@ -202,7 +206,7 @@ class Connection(event.Handler):
 
 	def __sendProtocolVersion(self):
 		self.__send("AMIKOPAY/%d/%d\n" % \
-			(amiko.minProtocolVersion, amiko.maxProtocolVersion))
+			(minProtocolVersion, maxProtocolVersion))
 
 
 	def __tryReadProtocolVersion(self):
@@ -228,11 +232,11 @@ class Connection(event.Handler):
 		minv = int(versions[:pos])
 		maxv = int(versions[pos+1:])
 
-		if minv > amiko.maxProtocolVersion or maxv < amiko.minProtocolVersion:
+		if minv > maxProtocolVersion or maxv < minProtocolVersion:
 			raise Exception("No matching protocol version")
 
 		# Use highest version supported by both sides:
-		self.protocolVersion = min(maxv, amiko.maxProtocolVersion)
+		self.protocolVersion = min(maxv, maxProtocolVersion)
 
 		log.log("Using protocol version " + str(self.protocolVersion))
 
