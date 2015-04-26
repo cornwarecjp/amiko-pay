@@ -30,11 +30,11 @@ import binascii
 import struct
 import copy
 
-from core import channel, bitcointransaction, crypto, messages, base58
+from ..core import channel, bitcointransaction, crypto, messages, base58
 
-from core.bitcoinutils import sendToMultiSigPubKey
-from core.bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction
-from core.bitcoinutils import verifyMultiSigSignature, applyMultiSigSignatures
+from ..core.bitcoinutils import sendToMultiSigPubKey
+from ..core.bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction
+from ..core.bitcoinutils import verifyMultiSigSignature, applyMultiSigSignatures
 
 
 """

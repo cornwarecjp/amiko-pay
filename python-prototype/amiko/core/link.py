@@ -36,7 +36,7 @@ import settings
 import log
 import transaction
 import channel
-from channels import multisigchannel
+from ..channels import multisigchannel
 
 
 
