@@ -30,7 +30,7 @@ import sys
 sys.path.append('../..')
 
 
-from amiko.core import base58
+from amiko.utils import base58
 
 
 

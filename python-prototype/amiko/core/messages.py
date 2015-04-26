@@ -28,7 +28,7 @@
 
 import struct
 
-from utils import inheritDocString
+from ..utils.utils import inheritDocString
 
 
 

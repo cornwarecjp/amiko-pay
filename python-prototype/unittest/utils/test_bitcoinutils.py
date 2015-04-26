@@ -30,15 +30,16 @@
 import unittest
 import sys
 sys.path.append('../..')
+sys.path.append('..')
 
 import testenvironment
 import dummy_interfaces
 
-from amiko.core import bitcointransaction
-from amiko.core.bitcointransaction import OP
-from amiko.core import crypto
+from amiko.utils import bitcointransaction
+from amiko.utils.bitcointransaction import OP
+from amiko.utils import crypto
 
-from amiko.core import bitcoinutils
+from amiko.utils import bitcoinutils
 
 
 

@@ -31,10 +31,11 @@ import unittest
 import binascii
 import sys
 sys.path.append('../..')
+sys.path.append('..')
 
 import testenvironment
 
-from amiko.core import base58
+from amiko.utils import base58
 
 
 

@@ -1,5 +1,5 @@
 #    bitcoind_dummy.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -31,8 +31,8 @@ import random
 
 import log
 
-from crypto import *
-import base58
+from ..utils.crypto import *
+from ..utils import base58
 
 
 

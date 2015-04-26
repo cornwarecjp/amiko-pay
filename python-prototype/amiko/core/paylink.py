@@ -1,5 +1,5 @@
 #    paylink.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -29,11 +29,12 @@
 from urlparse import urlparse
 import threading
 
+from ..utils import utils
+
 import network
 import transaction
 import messages
 import event
-import utils
 import settings
 import log
 
