@@ -7,6 +7,6 @@ test:
 	python-coverage report -m
 
 clean:
-	rm -f *.log *.dat
+	rm -f *.log *.dat *.pyc
 	rm -rf .coverage coverage-html
 
