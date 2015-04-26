@@ -29,10 +29,12 @@
 
 import unittest
 import binascii
+import sys
+sys.path.append('../..')
 
 import testenvironment
 
-import crypto
+from amiko.core import crypto
 
 
 

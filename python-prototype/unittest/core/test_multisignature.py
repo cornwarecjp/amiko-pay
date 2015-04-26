@@ -27,18 +27,17 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-import sys
 import binascii
+import sys
+sys.path.append('../..')
 
-sys.path.append("..")
-
-import settings
-import bitcoind
-import base58
-from crypto import Key, RIPEMD160, SHA256
-import bitcointransaction
-from bitcoinutils import sendToMultiSigPubKey
-from bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction, applyMultiSigSignatures
+from amiko.core import settings
+from amiko.core import bitcoind
+from amiko.core import base58
+from amiko.core.crypto import Key, RIPEMD160, SHA256
+from amiko.core import bitcointransaction
+from amiko.core.bitcoinutils import sendToMultiSigPubKey
+from amiko.core.bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction, applyMultiSigSignatures
 
 
 

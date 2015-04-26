@@ -26,7 +26,11 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-import base58
+import sys
+sys.path.append('../..')
+
+
+from amiko.core import base58
 
 
 

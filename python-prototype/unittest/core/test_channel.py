@@ -29,12 +29,14 @@
 
 import unittest
 import binascii
+import sys
+sys.path.append('../..')
 
 import testenvironment
 
-import messages
+from amiko.core import messages
 
-import channel
+from amiko.core import channel
 
 
 

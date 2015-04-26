@@ -28,15 +28,17 @@
 #    OpenSSL library used as well as that of the covered work.
 
 import unittest
+import sys
+sys.path.append('../..')
 
 import testenvironment
 import dummy_interfaces
 
-import bitcointransaction
-from bitcointransaction import OP
-import crypto
+from amiko.core import bitcointransaction
+from amiko.core.bitcointransaction import OP
+from amiko.core import crypto
 
-import bitcoinutils
+from amiko.core import bitcoinutils
 
 
 

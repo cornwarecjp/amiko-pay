@@ -29,13 +29,15 @@
 
 import unittest
 import struct
+import sys
+sys.path.append('../..')
 
 import testenvironment
 
-import crypto
+from amiko.core import crypto
 
-import bitcointransaction
-from bitcointransaction import OP
+from amiko.core import bitcointransaction
+from amiko.core.bitcointransaction import OP
 
 
 class Test(unittest.TestCase):
