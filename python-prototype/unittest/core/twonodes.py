@@ -29,12 +29,12 @@
 
 import time
 import pprint
+import sys
+sys.path.append('../..')
+sys.path.append('..')
 
-import testenvironment
-
-import amiko
-import event
-import settings
+from amiko import node
+from amiko.core import event, settings
 
 settings1 = settings.Settings()
 settings1.RPCURL = "dummy"
@@ -73,7 +73,7 @@ with open(settings1.stateFile, "wb") as f:
 		"payees": []
 		}
 		""")
-node1 = amiko.Amiko(settings1)
+node1 = node.Node(settings1)
 node1.start()
 
 settings2 = settings.Settings()
@@ -118,7 +118,7 @@ with open(settings2.stateFile, "wb") as f:
 		"payees": []
 		}
 		""")
-node2 = amiko.Amiko(settings2)
+node2 = node.Node(settings2)
 node2.start()
 
 #Allow links to connect
