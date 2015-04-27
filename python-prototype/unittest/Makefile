@@ -14,5 +14,6 @@ clean:
 	make -C core clean
 	make -C utils clean
 	make -C channels clean
-	rm -rf .coverage coverage-html
+	rm -rf .coverage* coverage-html
+	rm -rf *.pyc
 
