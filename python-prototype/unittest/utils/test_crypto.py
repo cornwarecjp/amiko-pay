@@ -29,9 +29,6 @@
 
 import unittest
 import binascii
-import sys
-sys.path.append('../..')
-sys.path.append('..')
 
 import testenvironment
 

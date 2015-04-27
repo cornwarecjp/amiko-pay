@@ -31,7 +31,6 @@ import time
 import pprint
 import sys
 sys.path.append('../..')
-sys.path.append('..')
 
 from amiko import node
 from amiko.core import event, settings

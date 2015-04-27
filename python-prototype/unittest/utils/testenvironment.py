@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    test_utils.py
+#    testenvironment.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -27,47 +27,9 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-import unittest
+import sys
 
-import testenvironment
+sys.path.append("..")
+sys.path.append("../..")
 
-from amiko.utils import utils
-
-
-
-class Test(unittest.TestCase):
-	def test_inheritDocString(self):
-		"Test doc string inheritance function decorator"
-
-		class A:
-			def f(self):
-				"foo"
-				pass
-
-		class B(A):
-			@utils.inheritDocString(A)
-			def f(self):
-				pass
-
-		self.assertEqual(B.f.__doc__, "foo")
-
-
-	def test_enum(self):
-		"Test enum class"
-
-		enum = utils.Enum(["foo", "bar"])
-
-		elements = [e for e in enum]
-		elements.sort()
-		self.assertEqual(elements, ["bar", "foo"])
-
-		self.assertEqual(enum.foo, "foo")
-		self.assertEqual(enum.bar, "bar")
-		with self.assertRaises(AttributeError):
-			e = enum.foobar
-
-
-
-if __name__ == "__main__":
-	unittest.main(verbosity=2)
 

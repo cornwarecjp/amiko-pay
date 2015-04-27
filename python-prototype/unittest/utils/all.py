@@ -28,8 +28,6 @@
 #    OpenSSL library used as well as that of the covered work.
 
 import unittest
-import sys
-sys.path.append('..')
 
 import testenvironment
 
