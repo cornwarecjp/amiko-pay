@@ -6,4 +6,5 @@
 
 #Coverage output
 .coverage
+coverage-html
 

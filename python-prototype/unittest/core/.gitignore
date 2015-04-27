@@ -1,9 +1,0 @@
-# Precompiled Python
-*.pyc
-
-# Program output
-*.log
-
-# Test output
-coverage-html
-
