@@ -170,7 +170,7 @@ class Test(unittest.TestCase):
 			self.assertEqual(tx_out.trace[0][1][0], 40)
 			script = tx_out.trace[0][1][1]
 			self.assertEqual(script.elements,
-				(OP.TWO, "toPK1", "toPK2", OP.TWO, OP.CHECKMULTISIG))
+				[OP.TWO, "toPK1", "toPK2", OP.TWO, OP.CHECKMULTISIG])
 
 			tx_out = tx.trace[0][2]["tx_out"][1]
 			self.assertEqual(len(tx_out.trace), 1)
@@ -246,7 +246,7 @@ class Test(unittest.TestCase):
 		script = tx.trace[0][1][1]
 		self.assertEqual(tx.trace[0][1][2], 1)
 		self.assertEqual(script.elements,
-			(OP.TWO, "toPubKey1", "toPubKey2", OP.TWO, OP.CHECKMULTISIG))
+			[OP.TWO, "toPubKey1", "toPubKey2", OP.TWO, OP.CHECKMULTISIG])
 
 		self.assertEqual(signature[-1], "\x01")
 		signature = signature[:-1]

@@ -40,13 +40,12 @@ Bitcoin standard:
 	ScriptPubKey: DUP HASH160 <pubKeyHash> EQUALVERIFY CHECKSIG
 	ScriptSig:    <sig> <pubKey>
 
-2-of-2 multisig:
-	ScriptPubKey: 2 <pubKey1> <pubKey2> 2 CHECKMULTISIG
+2-of-N multisig:
+	ScriptPubKey: 2 <pubKey1> <pubKey2> ... N CHECKMULTISIG
 	ScriptSig:    <sig1> <sig2>
 
-Signature and secret:
-	ScriptPubKey: <pubKey> CHECKSIGVERIFY SHA256 <secretHash> EQUAL
-	ScriptSig:    <secret> <sig>
+Data output:
+	TODO (RETURN)
 
 Time locking
 """
@@ -157,39 +156,33 @@ class Script:
 
 
 	@staticmethod
-	def multiSigPubKey(pubKey1, pubKey2):
+	def multiSigPubKey(pubKeys):
 		"""
-		Creates a 2-of-2 multi-signature Bitcoin scriptPubKey.
+		Creates a 2-of-N multi-signature Bitcoin scriptPubKey.
 		This is a static method: it can be called without having an instance,
 		as an alternative to calling the constructor directly.
 
 		Arguments:
-		pubKey1: str; the first public key
-		pubKey2: str; the second public key
+		pubKeys: sequence of str; the public keys
+		         2 <= len(pubKeys) <= 16
 
 		Return value:
-		Script; a scriptPubKey for sending funds to a 2-of-2 multi-signature
+		Script; a scriptPubKey for sending funds to a 2-of-N multi-signature
 		output.
+
+		Exceptions:
+		Exception: construction failed (e.g. too many / too few public keys given)
 		"""
-		return Script((OP.TWO, pubKey1, pubKey2, OP.TWO, OP.CHECKMULTISIG))
 
+		N = len(pubKeys)
+		if N > 16:
+			raise Exception("Mult-sig with more than 16 public keys is not supported")
+		if N < 2:
+			raise Exception("Mult-sig with less than two keys is not supported")
+		OP_N = OP.TWO + (N-2)
 
-	@staticmethod
-	def secretPubKey(pubKey, secretHash):
-		"""
-		Creates a 2-of-2 multi-signature Bitcoin scriptPubKey.
-		This is a static method: it can be called without having an instance,
-		as an alternative to calling the constructor directly.
+		return Script([OP.TWO] + pubKeys + [OP_N, OP.CHECKMULTISIG])
 
-		Arguments:
-		pubKey1: str; the first public key
-		pubKey2: str; the second public key
-
-		Return value:
-		Script; a scriptPubKey for sending funds to a 2-of-2 multi-signature
-		output.
-		"""
-		return Script((pubKey, OP.CHECKSIGVERIFY, OP.SHA256, secretHash, OP.EQUAL))
 
 
 	@staticmethod
@@ -248,6 +241,9 @@ class Script:
 
 		Return value:
 		str; the serialized script
+
+		Exceptions:
+		Exception: serialization failed
 		"""
 		return ''.join([self.__serializeElement(e) for e in self.elements])
 
@@ -261,6 +257,9 @@ class Script:
 
 		Return value:
 		str; the serialized element.
+
+		Exceptions:
+		Exception: serialization failed
 		"""
 
 		if isinstance(e, str):
@@ -459,6 +458,9 @@ class Transaction:
 
 		Return value:
 		Transaction; the de-serialized transaction
+
+		Exceptions:
+		Exception: deserialization failed
 		"""
 
 		version = struct.unpack('<I', data[:4])[0] #version, uint32_t

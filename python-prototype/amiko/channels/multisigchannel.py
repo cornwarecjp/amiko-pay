@@ -375,7 +375,7 @@ class MultiSigChannel(channel.Channel):
 		if amountLocked > 0:
 			self.T2_latest.tx_out.append(bitcointransaction.TxOut(
 				amountLocked,
-				bitcointransaction.Script.multiSigPubKey(ownPubKey, peerPubKey))
+				bitcointransaction.Script.multiSigPubKey([ownPubKey, peerPubKey]))
 				)
 
 

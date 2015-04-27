@@ -180,7 +180,7 @@ def sendToMultiSigPubKey(bitcoind, amount, toPubKey1, toPubKey2, changeHash, fee
 			for x in inputs
 			],
 		tx_out = [
-			TxOut(amount, Script.multiSigPubKey(toPubKey1, toPubKey2)),
+			TxOut(amount, Script.multiSigPubKey([toPubKey1, toPubKey2])),
 			TxOut(change, Script.standardPubKey(changeHash))
 			]
 		)
@@ -243,7 +243,7 @@ def signMultiSigTransaction(tx, outputIndex, toPubKey1, toPubKey2, key):
 	"""
 
 	hashType = 1 #SIGHASH_ALL
-	scriptPubKey = Script.multiSigPubKey(toPubKey1, toPubKey2)
+	scriptPubKey = Script.multiSigPubKey([toPubKey1, toPubKey2])
 	bodyHash = tx.getSignatureBodyHash(outputIndex, scriptPubKey, hashType)
 	return key.sign(bodyHash) + struct.pack('B', hashType) #uint8_t
 
@@ -274,7 +274,7 @@ def verifyMultiSigSignature(tx, outputIndex, toPubKey1, toPubKey2, key, signatur
 	if hashType != 1: #SIGHASH_ALL
 		return False
 	signature = signature[:-1]
-	scriptPubKey = Script.multiSigPubKey(toPubKey1, toPubKey2)
+	scriptPubKey = Script.multiSigPubKey([toPubKey1, toPubKey2])
 	bodyHash = tx.getSignatureBodyHash(outputIndex, scriptPubKey, hashType)
 	return key.verify(bodyHash, signature)
 

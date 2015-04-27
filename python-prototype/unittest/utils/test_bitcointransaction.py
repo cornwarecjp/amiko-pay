@@ -107,19 +107,21 @@ class Test(unittest.TestCase):
 	def test_multiSigPubKey(self):
 		"Test the Script.multiSigPubKey method"
 
-		script = bitcointransaction.Script.multiSigPubKey("foo", "bar")
+		script = bitcointransaction.Script.multiSigPubKey(["foo", "bar"])
 		self.assertTrue(isinstance(script, bitcointransaction.Script))
 		self.assertEqual(script.elements,
-			(OP.TWO, "foo", "bar", OP.TWO, OP.CHECKMULTISIG))
+			[OP.TWO, "foo", "bar", OP.TWO, OP.CHECKMULTISIG])
 
-
-	def test_secretPubKey(self):
-		"Test the Script.secretPubKey method"
-
-		script = bitcointransaction.Script.secretPubKey("foo", "bar")
+		script = bitcointransaction.Script.multiSigPubKey(["foo", "bar", "baz"])
 		self.assertTrue(isinstance(script, bitcointransaction.Script))
 		self.assertEqual(script.elements,
-			("foo", OP.CHECKSIGVERIFY, OP.SHA256, "bar", OP.EQUAL))
+			[OP.TWO, "foo", "bar", "baz", OP.TWO+1, OP.CHECKMULTISIG])
+
+		self.assertRaises(Exception, bitcointransaction.Script.multiSigPubKey,
+			["foo"]*17)
+
+		self.assertRaises(Exception, bitcointransaction.Script.multiSigPubKey,
+			["foo"])
 
 
 	def test_script_deserialize(self):
