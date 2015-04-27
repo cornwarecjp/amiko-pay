@@ -33,15 +33,15 @@ sys.path.append('../..')
 
 from amiko.core import settings
 from amiko.core import bitcoind
-from amiko.core import base58
-from amiko.core.crypto import Key, RIPEMD160, SHA256
-from amiko.core import bitcointransaction
-from amiko.core.bitcoinutils import sendToMultiSigPubKey
-from amiko.core.bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction, applyMultiSigSignatures
+from amiko.utils import base58
+from amiko.utils.crypto import Key, RIPEMD160, SHA256
+from amiko.utils import bitcointransaction
+from amiko.utils.bitcoinutils import sendToMultiSigPubKey
+from amiko.utils.bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction, applyMultiSigSignatures
 
 
 
-s = settings.Settings("../amikopay.conf")
+s = settings.Settings("../../amikopay.conf")
 d = bitcoind.Bitcoind(s)
 
 #(these addresses are mine - thanks for donating :-P)
