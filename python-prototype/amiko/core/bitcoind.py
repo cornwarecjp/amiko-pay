@@ -144,6 +144,8 @@ class Bitcoind_Real:
 				txid [only for non-coinbase transactions]:
 					str, hexadecimal, Bitcoin hash byte order
 					hash of input transaction
+			hex: str, hexadecimal, serialization of the transaction
+			confirmations: int, number of confirmations
 
 		Returns information about the transaction indicated by the given hash.
 		"""
