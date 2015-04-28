@@ -32,7 +32,7 @@ import struct
 
 class TCD:
 	"""
-	A Transaction Conditions Document structure, for Lightning emulation
+	A Transaction Conditions Document structure, for Lightning HTLC emulation
 
 	Attributes:
 	startTime: int; start of the time range when the transaction token must
@@ -62,7 +62,28 @@ class TCD:
 		Exceptions:
 		Exception: deserialization failed
 		"""
-		pass #TODO
+		if len(data) != TCD.getSerializedSize():
+			raise Exception("TCD de-serialization failed: incorrect data length")
+		startTime = struct.unpack('!Q', data[:8])[0] #uint64_t
+		endTime = struct.unpack('!Q', data[8:16])[0] #uint64_t
+		data = data[16:]
+		tokenHash = data[:20]
+		commitAddress = data[20:40]
+		rollbackAddress = data[40:60]
+		return TCD(startTime, endTime, tokenHash, commitAddress, rollbackAddress)
+
+
+	@staticmethod
+	def getSerializedSize():
+		"""
+		Returns the size of the serialized data of this class.
+		This is a static method: it can be called without having an instance,
+		as an alternative to calling the constructor directly.
+
+		Return value:
+		int; the size
+		"""
+		return 16 + 60
 
 
 	def __init__(self, startTime, endTime, tokenHash, commitAddress, rollbackAddress):
@@ -94,7 +115,10 @@ class TCD:
 		Return value:
 		str; the serialized Transaction Conditions Document
 		"""
-		pass #TODO
+		startTime = struct.pack('!Q', self.startTime) #uint64_t
+		endTime = struct.pack('!Q', self.endTime) #uint64_t
+		return startTime + endTime + \
+			self.tokenHash + self.commitAddress + self.rollbackAddress
 
 
 
@@ -108,7 +132,7 @@ def serializeList(TCDlist):
 		Return value:
 		str; the serialized list
 		"""
-		pass #TODO
+		return ''.join([TCD.serialize() for TCD in TCDlist])
 
 
 def deserializeList(data):
@@ -124,5 +148,12 @@ def deserializeList(data):
 		Exceptions:
 		Exception: deserialization failed
 		"""
-		pass #TODO
+
+		s = TCD.getSerializedSize()
+		length = len(data) / s
+		if length*s != len(data):
+			raise Exception(
+				"List de-serialization failed: data length is not a multiple of the TCD data size")
+
+		return [TCD.deserialize(data[s*i:s*(i+1)]) for i in range(length)]
 
