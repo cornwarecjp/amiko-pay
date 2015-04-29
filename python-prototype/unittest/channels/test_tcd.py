@@ -41,12 +41,13 @@ class Test(unittest.TestCase):
 	def test_TCD(self):
 		"Test the TCD class and its serialization"
 
-		doc = tcd.TCD(0x0123456789abcdef, 0xfedcba9876543210,
+		doc = tcd.TCD(0x0123456789abcdef, 0xfedcba9876543210, 0x4041424344454647,
 			'20-character string.',
 			'other 20-len string.',
 			'Twenty bytes length.')
 		self.assertEqual(doc.startTime, 0x0123456789abcdef)
 		self.assertEqual(doc.endTime, 0xfedcba9876543210)
+		self.assertEqual(doc.amount, 0x4041424344454647)
 		self.assertEqual(doc.tokenHash, '20-character string.')
 		self.assertEqual(doc.commitAddress, 'other 20-len string.')
 		self.assertEqual(doc.rollbackAddress, 'Twenty bytes length.')
@@ -55,6 +56,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(data,
 			'\x01\x23\x45\x67\x89\xab\xcd\xef'
 			'\xfe\xdc\xba\x98\x76\x54\x32\x10'
+			'\x40\x41\x42\x43\x44\x45\x46\x47'
 			'20-character string.'
 			'other 20-len string.'
 			'Twenty bytes length.')
@@ -62,6 +64,7 @@ class Test(unittest.TestCase):
 		doc2 = tcd.TCD.deserialize(data)
 		self.assertEqual(doc2.startTime, 0x0123456789abcdef)
 		self.assertEqual(doc2.endTime, 0xfedcba9876543210)
+		self.assertEqual(doc2.amount, 0x4041424344454647)
 		self.assertEqual(doc2.tokenHash, '20-character string.')
 		self.assertEqual(doc2.commitAddress, 'other 20-len string.')
 		self.assertEqual(doc2.rollbackAddress, 'Twenty bytes length.')
@@ -75,9 +78,9 @@ class Test(unittest.TestCase):
 
 		TCDlist = \
 		[
-		tcd.TCD(1, 2, 'a'*20, 'b'*20, 'c'*20),
-		tcd.TCD(3, 4, 'd'*20, 'e'*20, 'f'*20),
-		tcd.TCD(5, 6, 'g'*20, 'h'*20, 'i'*20)
+		tcd.TCD(1, 2, 7, 'a'*20, 'b'*20, 'c'*20),
+		tcd.TCD(3, 4, 8, 'd'*20, 'e'*20, 'f'*20),
+		tcd.TCD(5, 6, 9, 'g'*20, 'h'*20, 'i'*20)
 		]
 
 		data = tcd.serializeList(TCDlist)
@@ -92,6 +95,7 @@ class Test(unittest.TestCase):
 		for i in range(3):
 			self.assertEqual(TCDlist2[i].startTime, TCDlist[i].startTime)
 			self.assertEqual(TCDlist2[i].endTime, TCDlist[i].endTime)
+			self.assertEqual(TCDlist2[i].amount, TCDlist[i].amount)
 			self.assertEqual(TCDlist2[i].tokenHash, TCDlist[i].tokenHash)
 			self.assertEqual(TCDlist2[i].commitAddress, TCDlist[i].commitAddress)
 			self.assertEqual(TCDlist2[i].rollbackAddress, TCDlist[i].rollbackAddress)

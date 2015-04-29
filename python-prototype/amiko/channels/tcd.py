@@ -39,6 +39,7 @@ class TCD:
 	           be published (UNIX time)
 	endTime: int; end of the time range when the transaction token must
 	         be published (UNIX time)
+	amount: int; the amount (in Satoshi) locked for the transaction
 	tokenHash: str; the SHA256- and RIPEMD160-hashed commit token
 	commitAddress: str; the SHA256- and RIPEMD160-hashed public key of the
 		           destination in case of commit
@@ -66,11 +67,13 @@ class TCD:
 			raise Exception("TCD de-serialization failed: incorrect data length")
 		startTime = struct.unpack('!Q', data[:8])[0] #uint64_t
 		endTime = struct.unpack('!Q', data[8:16])[0] #uint64_t
-		data = data[16:]
+		amount = struct.unpack('!Q', data[16:24])[0] #uint64_t
+		data = data[24:]
 		tokenHash = data[:20]
 		commitAddress = data[20:40]
 		rollbackAddress = data[40:60]
-		return TCD(startTime, endTime, tokenHash, commitAddress, rollbackAddress)
+		return TCD(startTime, endTime, amount,
+			tokenHash, commitAddress, rollbackAddress)
 
 
 	@staticmethod
@@ -83,10 +86,11 @@ class TCD:
 		Return value:
 		int; the size
 		"""
-		return 16 + 60
+		return 24 + 60
 
 
-	def __init__(self, startTime, endTime, tokenHash, commitAddress, rollbackAddress):
+	def __init__(self, startTime, endTime, amount,
+		tokenHash, commitAddress, rollbackAddress):
 		"""
 		Constructor.
 
@@ -95,6 +99,7 @@ class TCD:
 		           be published (UNIX time)
 		endTime: int; end of the time range when the transaction token must
 		         be published (UNIX time)
+		amount: int; the amount (in Satoshi) locked for the transaction
 		tokenHash: str; the SHA256- and RIPEMD160-hashed commit token
 		commitAddress: str; the SHA256- and RIPEMD160-hashed public key of the
 			           destination in case of commit
@@ -103,6 +108,7 @@ class TCD:
 		"""
 		self.startTime = startTime
 		self.endTime = endTime
+		self.amount = amount
 		self.tokenHash = tokenHash
 		self.commitAddress = commitAddress
 		self.rollbackAddress = rollbackAddress
@@ -117,7 +123,8 @@ class TCD:
 		"""
 		startTime = struct.pack('!Q', self.startTime) #uint64_t
 		endTime = struct.pack('!Q', self.endTime) #uint64_t
-		return startTime + endTime + \
+		amount = struct.pack('!Q', self.amount) #uint64_t
+		return startTime + endTime + amount + \
 			self.tokenHash + self.commitAddress + self.rollbackAddress
 
 
