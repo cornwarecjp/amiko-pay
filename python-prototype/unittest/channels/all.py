@@ -32,6 +32,7 @@ import unittest
 import testenvironment
 
 from test_multisigchannel import Test as test_multisigchannel
+from test_multisigtransaction import Test as test_multisigtransaction
 from test_tcd import Test as test_tcd
 
 
