@@ -223,8 +223,7 @@ def makeSpendMultiSigTransaction(outputHash, outputIndex, amount, toHash, fee):
 	return tx
 
 
-#TODO: rename outputIndex to inputIndex
-def signMultiSigTransaction(tx, outputIndex, toPubKey1, toPubKey2, key):
+def signMultiSigTransaction(tx, inputIndex, pubKeys, key):
 	"""
 	Create a signature for a transaction that spends a 2-of-2 multi-signature
 	output. The signature is returned, and is NOT inserted in the transaction.
@@ -233,34 +232,34 @@ def signMultiSigTransaction(tx, outputIndex, toPubKey1, toPubKey2, key):
 	tx: Transaction; the transaction
 	outputIndex: int; the index of the transaction input to which a signature
 	             applies
-	toPubKey1: str; the first public key
-	toPubKey2: str; the second public key
-	key: Key; the private key to be used for signing (should correspond to
-	     either toPubKey1 or toPubKey2)
+	pubKeys: sequence of str; the public keys
+	         2 <= len(pubKeys) <= 16
+	key: Key; the private key to be used for signing (should correspond to one
+	     of the keys in pubKeys)
 
 	Return value:
 	str; the signature, including the hash type
 	"""
 
 	hashType = 1 #SIGHASH_ALL
-	scriptPubKey = Script.multiSigPubKey([toPubKey1, toPubKey2])
-	bodyHash = tx.getSignatureBodyHash(outputIndex, scriptPubKey, hashType)
+	scriptPubKey = Script.multiSigPubKey(pubKeys)
+	bodyHash = tx.getSignatureBodyHash(inputIndex, scriptPubKey, hashType)
 	return key.sign(bodyHash) + struct.pack('B', hashType) #uint8_t
 
 
-def verifyMultiSigSignature(tx, outputIndex, toPubKey1, toPubKey2, key, signature):
+def verifyMultiSigSignature(tx, inputIndex, pubKeys, key, signature):
 	"""
 	Verify a signature for a transaction that spends a 2-of-2 multi-signature
 	output.
 
 	Arguments:
 	tx: Transaction; the transaction
-	outputIndex: int; the index of the transaction input to which a signature
-	             applies
-	toPubKey1: str; the first public key
-	toPubKey2: str; the second public key
-	key: Key; the public key used for signing (should correspond to
-	     either toPubKey1 or toPubKey2)
+	inputIndex: int; the index of the transaction input to which a signature
+	            applies
+	pubKeys: sequence of str; the public keys
+	         2 <= len(pubKeys) <= 16
+	key: Key; the public key used for signing (should correspond to one of the
+	     keys in pubKeys)
 	signature: str; the signature, including the hash type
 
 	Return value:
@@ -274,8 +273,8 @@ def verifyMultiSigSignature(tx, outputIndex, toPubKey1, toPubKey2, key, signatur
 	if hashType != 1: #SIGHASH_ALL
 		return False
 	signature = signature[:-1]
-	scriptPubKey = Script.multiSigPubKey([toPubKey1, toPubKey2])
-	bodyHash = tx.getSignatureBodyHash(outputIndex, scriptPubKey, hashType)
+	scriptPubKey = Script.multiSigPubKey(pubKeys)
+	bodyHash = tx.getSignatureBodyHash(inputIndex, scriptPubKey, hashType)
 	return key.verify(bodyHash, signature)
 
 

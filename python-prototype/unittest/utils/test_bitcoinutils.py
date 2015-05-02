@@ -236,7 +236,7 @@ class Test(unittest.TestCase):
 		key.makeNewKey()
 
 		signature = bitcoinutils.signMultiSigTransaction(
-			tx, 3, "toPubKey1", "toPubKey2", key)
+			tx, 3, ["toPubKey1", "toPubKey2"], key)
 		
 		self.assertEqual(len(tx.trace), 1)
 		self.assertEqual(tx.trace[0][0], "getSignatureBodyHash")
@@ -264,20 +264,20 @@ class Test(unittest.TestCase):
 		key.makeNewKey()
 
 		signature = bitcoinutils.signMultiSigTransaction(
-			tx, 3, "toPubKey1", "toPubKey2", key)
+			tx, 3, ["toPubKey1", "toPubKey2"], key)
 
 		self.assertTrue(bitcoinutils.verifyMultiSigSignature(
-			tx, 3, "toPubKey1", "toPubKey2", key, signature)
+			tx, 3, ["toPubKey1", "toPubKey2"], key, signature)
 			)
 
 		key2 = crypto.Key()
 		key2.makeNewKey()
 		self.assertFalse(bitcoinutils.verifyMultiSigSignature(
-			tx, 3, "toPubKey1", "toPubKey2", key2, signature)
+			tx, 3, ["toPubKey1", "toPubKey2"], key2, signature)
 			)
 
 		self.assertFalse(bitcoinutils.verifyMultiSigSignature(
-			tx, 3, "toPubKey1", "toPubKey2", key, signature[:-1] + "\x02")
+			tx, 3, ["toPubKey1", "toPubKey2"], key, signature[:-1] + "\x02")
 			)
 
 

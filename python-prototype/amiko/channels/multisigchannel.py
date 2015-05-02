@@ -388,7 +388,7 @@ class MultiSigChannel(channel.Channel):
 			assert not self.hasFirstPublicKey
 			signature = signMultiSigTransaction(
 				self.T2_latest.transaction, 0,
-				self.peerKey.getPublicKey(), self.ownKey.getPublicKey(),
+				[self.peerKey.getPublicKey(), self.ownKey.getPublicKey()],
 				self.ownKey)
 			self.stage = stages["PeerDeposit_SendingSignature"]
 			return messages.Deposit(
@@ -401,7 +401,7 @@ class MultiSigChannel(channel.Channel):
 			assert self.hasFirstPublicKey
 			if not verifyMultiSigSignature(
 				self.T2_latest.transaction, 0,
-				self.ownKey.getPublicKey(), self.peerKey.getPublicKey(),
+				[self.ownKey.getPublicKey(), self.peerKey.getPublicKey()],
 				self.peerKey, signature):
 					raise Exception("Signature failure!") #TODO: what to do now?
 			self.peerSignature = signature
@@ -481,11 +481,11 @@ class MultiSigChannel(channel.Channel):
 			pubKey1, pubKey2 = self.getPublicKeyPair()
 			if not verifyMultiSigSignature(
 				self.T2_latest.transaction, 0,
-				pubKey1, pubKey2, self.peerKey, peerSignature):
+				[pubKey1, pubKey2], self.peerKey, peerSignature):
 					raise Exception("Signature failure!") #TODO: what to do now?
 
 			ownSignature = signMultiSigTransaction(
-				self.T2_latest.transaction, 0, pubKey1, pubKey2, self.ownKey)
+				self.T2_latest.transaction, 0, [pubKey1, pubKey2], self.ownKey)
 
 			if self.hasFirstPublicKey:
 				applyMultiSigSignatures(self.T2_latest.transaction, ownSignature, peerSignature)
@@ -559,9 +559,9 @@ class MultiSigChannel(channel.Channel):
 
 	def makeTransactionPayload(self):
 		pubKey1, pubKey2 = self.getPublicKeyPair()
-		#TODO: fix signMultiSigTransaction
+		#TODO: add escrow key
 		ownSignature = signMultiSigTransaction(
-			self.T2_latest.transaction, 0, pubKey1, pubKey2, self.ownKey)
+			self.T2_latest.transaction, 0, [pubKey1, pubKey2], self.ownKey)
 
 		# 4-byte unsigned int in network byte order:
 		sigLen = struct.pack("!I", len(ownSignature))
@@ -576,9 +576,10 @@ class MultiSigChannel(channel.Channel):
 		peerSignature = s[:sigLen]
 		T2 = MultiSigTransaction.deserialize(s[sigLen:])
 
+		#TODO: add escrow key
 		pubKey1, pubKey2 = self.getPublicKeyPair()
 		if not verifyMultiSigSignature(
-			T2.transaction, 0, pubKey1, pubKey2, self.peerKey, peerSignature):
+			T2.transaction, 0, [pubKey1, pubKey2], self.peerKey, peerSignature):
 				raise Exception("Signature failure!") #TODO: what to do now?
 
 		#TODO: lots of checks on T2 (IMPORTANT!)

@@ -84,8 +84,10 @@ else:
 
 	tx = makeSpendMultiSigTransaction(outputHash, outputIndex, amount, keyHash1, fee)
 
-	sig1 = signMultiSigTransaction(tx, outputIndex, key1.getPublicKey(), key2.getPublicKey(), key1)
-	sig2 = signMultiSigTransaction(tx, outputIndex, key1.getPublicKey(), key2.getPublicKey(), key2)
+	sig1 = signMultiSigTransaction(
+		tx, outputIndex, [key1.getPublicKey(), key2.getPublicKey()], key1)
+	sig2 = signMultiSigTransaction(
+		tx, outputIndex, [key1.getPublicKey(), key2.getPublicKey()], key2)
 
 	applyMultiSigSignatures(tx, sig1, sig2)
 
