@@ -32,9 +32,10 @@ import sys
 import pprint
 from decimal import Decimal
 
-from amiko.core import event, network, messages
 from amiko.utils import crypto
 from amiko import node
+
+
 
 def formatBitcoinAmount(value):
 	return str(Decimal(value) / 100000) + " mBTC"
