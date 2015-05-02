@@ -469,7 +469,7 @@ class MultiSigChannel(channel.Channel):
 			#TODO: lots of checks on T2 (IMPORTANT!)
 			pubKey1, pubKey2 = self.getPublicKeyPair()
 			signature = signMultiSigTransaction(
-				self.T2_latest.transaction, 0, pubKey1, pubKey2, self.ownKey)
+				self.T2_latest.transaction, 0, [pubKey1, pubKey2], self.ownKey)
 			self.stage = stages["PeerWithdraw_SendingSignature"]
 			return messages.Withdraw(
 				self.ID, stage=self.stage, payload=signature)
