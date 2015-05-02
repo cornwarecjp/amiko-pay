@@ -52,7 +52,7 @@ class Transaction:
 		context: Context; event context
 		routingContext: RoutingContext; routing context
 		amount: int; the amount (in Satoshi) to be sent from payer to payee
-		hash: the SHA256 hash of the commit token
+		hash: str; the SHA256- and RIPEMD160-hashed commit token
 		meetingPoint: str; the ID of the meeting point
 		payerLink: Link/Payer/MeetingPoint; the payer-side link (default: None)
 		payeeLink: Link/Payee/MeetingPoint; the payee-side link (default: None)

@@ -136,7 +136,7 @@ class Channel:
 		isPayerSide: bool; indicates whether we are on the payer side (True) or
 		             not (False). Note that the payer side corresponds to an
 		             outgoing transaction and payee side to an incoming one.
-		hash: str; the SHA256 hash of the commit token.
+		hash: str; the SHA256- and RIPEMD160-hashed commit token.
 		amount: int; the amount (in Satoshi) to be sent from payer to payee.
 
 		Exceptions:
@@ -180,7 +180,7 @@ class Channel:
 		Lock previously reserved funds for an outgoing transaction.
 
 		Arguments:
-		hash: str; the SHA256 hash of the commit token.
+		hash: str; the SHA256- and RIPEMD160-hashed commit token.
 
 		Return value:
 		Lock; the lock message.
@@ -200,7 +200,7 @@ class Channel:
 		Commit previously locked funds for an incoming transaction.
 
 		Arguments:
-		hash: str; the SHA256 hash of the commit token.
+		hash: str; the SHA256- and RIPEMD160-hashed commit token.
 		message: Commit; the commit message.
 
 		Exceptions:
@@ -217,7 +217,7 @@ class Channel:
 		Commit previously locked funds for an outgoing transaction.
 
 		Arguments:
-		hash: str; the SHA256 hash of the commit token.
+		hash: str; the SHA256- and RIPEMD160-hashed commit token.
 		token: str; the commit token.
 
 		Return value:
