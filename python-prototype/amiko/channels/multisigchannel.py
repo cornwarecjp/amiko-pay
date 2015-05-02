@@ -37,6 +37,8 @@ from ..utils.bitcoinutils import sendToMultiSigPubKey
 from ..utils.bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTransaction
 from ..utils.bitcoinutils import verifyMultiSigSignature, applyMultiSigSignatures
 
+from multisigtransaction import MultiSigTransaction
+
 
 """
 We use a variation of the following. The variation basically consists of having
@@ -243,13 +245,11 @@ class MultiSigChannel(channel.Channel):
 				binascii.unhexlify(state["T1"])
 				)
 		if "T2_peerSigned" in state:
-			self.T2_peerSigned = bitcointransaction.Transaction.deserialize(
-				binascii.unhexlify(state["T2_peerSigned"])
-				)
+			self.T2_peerSigned = MultiSigTransaction.makeFromState(
+				state["T2_peerSigned"])
 		if "T2_latest" in state:
-			self.T2_latest = bitcointransaction.Transaction.deserialize(
-				binascii.unhexlify(state["T2_latest"])
-				)
+			self.T2_latest = MultiSigTransaction.makeFromState(
+				state["T2_latest"])
 		if "peerSignature" in state:
 			self.peerSignature = binascii.unhexlify(state["peerSignature"])
 
@@ -280,15 +280,9 @@ class MultiSigChannel(channel.Channel):
 			else:
 				ret["T1"] = self.T1.serialize().encode("hex")
 		if self.T2_peerSigned != None:
-			if forDisplay:
-				ret["T2_peerSigned"] = self.T2_peerSigned.getTransactionID()[::-1].encode("hex")
-			else:
-				ret["T2_peerSigned"] = self.T2_peerSigned.serialize().encode("hex")
+			ret["T2_peerSigned"] = self.T2_peerSigned.getState(forDisplay)
 		if self.T2_latest != None:
-			if forDisplay:
-				ret["T2_latest"] = self.T2_latest.getTransactionID()[::-1].encode("hex")
-			else:
-				ret["T2_latest"] = self.T2_latest.serialize().encode("hex")
+			ret["T2_latest"] = self.T2_latest.getState(forDisplay)
 		if self.peerSignature != None:
 			ret["peerSignature"] = self.peerSignature.encode("hex")
 		return ret
@@ -316,10 +310,11 @@ class MultiSigChannel(channel.Channel):
 		T1_ID = self.T1.getTransactionID() #opposite endianness as in Bitcoind
 
 		#TODO: set lock time!!!
+		lockTime = 0
 		#The amount argument is the amount in the INPUT of T2, so it's again
 		#with an added fee, to make the OUTPUT equal to self.amountLocal.
-		self.T2_latest = makeSpendMultiSigTransaction(
-			T1_ID, 0, self.amountLocal + fee, returnKeyHash, fee)
+		self.T2_latest = MultiSigTransaction.makeNew(
+			self.ownKey, T1_ID, self.amountLocal + fee, fee, lockTime)
 
 
 	def checkT1(self):
@@ -341,42 +336,7 @@ class MultiSigChannel(channel.Channel):
 
 
 	def makeWithdrawT2(self):
-		self.T2_latest.lockTime = 0
-
-
-	def makeTransactionT2(self):
-		amountLocal = \
-			self.amountLocal + \
-			sum(self.transactionsOutgoingReserved.values())
-		amountRemote = \
-			self.amountRemote + \
-			sum(self.transactionsIncomingReserved.values())
-		amountLocked = \
-			sum(self.transactionsOutgoingLocked.values()) + \
-			sum(self.transactionsIncomingLocked.values())
-		#TODO: check that the sum of the above equals T1's output minus fee
-
-		ownPubKey = self.ownKey.getPublicKey()
-		peerPubKey = self.peerKey.getPublicKey()
-		ownKeyHash = crypto.RIPEMD160(crypto.SHA256(ownPubKey))
-		peerKeyHash = crypto.RIPEMD160(crypto.SHA256(peerPubKey))
-
-		self.T2_latest.tx_out = []
-		if amountLocal > 0:
-			self.T2_latest.tx_out.append(bitcointransaction.TxOut(
-				amountLocal,
-				bitcointransaction.Script.standardPubKey(ownKeyHash))
-				)
-		if amountRemote > 0:
-			self.T2_latest.tx_out.append(bitcointransaction.TxOut(
-				amountRemote,
-				bitcointransaction.Script.standardPubKey(peerKeyHash))
-				)
-		if amountLocked > 0:
-			self.T2_latest.tx_out.append(bitcointransaction.TxOut(
-				amountLocked,
-				bitcointransaction.Script.multiSigPubKey([ownPubKey, peerPubKey]))
-				)
+		self.T2_latest.transaction.lockTime = 0
 
 
 	def getPublicKeyPair(self):
@@ -422,12 +382,13 @@ class MultiSigChannel(channel.Channel):
 			message.stage == stages["OwnDeposit_SendingT2"]:
 
 			#Received T2
-			self.T2_latest = bitcointransaction.Transaction.deserialize(message.payload)
+			self.T2_latest = MultiSigTransaction.deserialize(message.payload)
 			#TODO: maybe re-serialize to check consistency
-			self.amountRemote = sum(tx.amount for tx in self.T2_latest.tx_out)
+			self.amountRemote = sum(tx.amount for tx in self.T2_latest.transaction.tx_out)
 			assert not self.hasFirstPublicKey
 			signature = signMultiSigTransaction(
-				self.T2_latest, 0, self.peerKey.getPublicKey(), self.ownKey.getPublicKey(),
+				self.T2_latest.transaction, 0,
+				self.peerKey.getPublicKey(), self.ownKey.getPublicKey(),
 				self.ownKey)
 			self.stage = stages["PeerDeposit_SendingSignature"]
 			return messages.Deposit(
@@ -439,7 +400,8 @@ class MultiSigChannel(channel.Channel):
 			signature = message.payload
 			assert self.hasFirstPublicKey
 			if not verifyMultiSigSignature(
-				self.T2_latest, 0, self.ownKey.getPublicKey(), self.peerKey.getPublicKey(),
+				self.T2_latest.transaction, 0,
+				self.ownKey.getPublicKey(), self.peerKey.getPublicKey(),
 				self.peerKey, signature):
 					raise Exception("Signature failure!") #TODO: what to do now?
 			self.peerSignature = signature
@@ -502,12 +464,12 @@ class MultiSigChannel(channel.Channel):
 			message.stage == stages["OwnWithdraw_SendingT2"]:
 
 			#Received T2
-			self.T2_latest = bitcointransaction.Transaction.deserialize(message.payload)
+			self.T2_latest = MultiSigTransaction.deserialize(message.payload)
 			#TODO: maybe re-serialize to check consistency
 			#TODO: lots of checks on T2 (IMPORTANT!)
 			pubKey1, pubKey2 = self.getPublicKeyPair()
 			signature = signMultiSigTransaction(
-				self.T2_latest, 0, pubKey1, pubKey2, self.ownKey)
+				self.T2_latest.transaction, 0, pubKey1, pubKey2, self.ownKey)
 			self.stage = stages["PeerWithdraw_SendingSignature"]
 			return messages.Withdraw(
 				self.ID, stage=self.stage, payload=signature)
@@ -518,23 +480,24 @@ class MultiSigChannel(channel.Channel):
 			peerSignature = message.payload
 			pubKey1, pubKey2 = self.getPublicKeyPair()
 			if not verifyMultiSigSignature(
-				self.T2_latest, 0, pubKey1, pubKey2, self.peerKey, peerSignature):
+				self.T2_latest.transaction, 0,
+				pubKey1, pubKey2, self.peerKey, peerSignature):
 					raise Exception("Signature failure!") #TODO: what to do now?
 
 			ownSignature = signMultiSigTransaction(
-				self.T2_latest, 0, pubKey1, pubKey2, self.ownKey)
+				self.T2_latest.transaction, 0, pubKey1, pubKey2, self.ownKey)
 
 			if self.hasFirstPublicKey:
-				applyMultiSigSignatures(self.T2_latest, ownSignature, peerSignature)
+				applyMultiSigSignatures(self.T2_latest.transaction, ownSignature, peerSignature)
 			else:
-				applyMultiSigSignatures(self.T2_latest, peerSignature, ownSignature)
+				applyMultiSigSignatures(self.T2_latest.transaction, peerSignature, ownSignature)
 
 			self.peerSignature = peerSignature
 			self.T2_peerSigned = copy.deepcopy(self.T2_latest)
 			self.stage = stages["Closed"]
 
 			#Publish T2 in Bitcoind
-			T2_serialized = self.T2_latest.serialize()
+			T2_serialized = self.T2_latest.transaction.serialize()
 			self.bitcoind.sendRawTransaction(T2_serialized)
 
 			return messages.Withdraw(
@@ -547,9 +510,10 @@ class MultiSigChannel(channel.Channel):
 			#TODO: maybe re-serialize to check consistency
 			#TODO: lots of checks on T2 (IMPORTANT!)
 
-			self.T2_latest = T2
+			#TODO:
+			#self.T2_latest = T2
 			#self.peerSignature = TODO
-			self.T2_peerSigned = copy.deepcopy(T2)
+			#self.T2_peerSigned = copy.deepcopy(T2)
 			self.stage = stages["Closed"]
 
 			#Publish T2 in Bitcoind
@@ -575,11 +539,29 @@ class MultiSigChannel(channel.Channel):
 		channel.Channel.reserve(self, isPayerSide, hash, amount)
 
 
+	def makeTransactionT2(self):
+		amountLocal = \
+			self.amountLocal + \
+			sum(self.transactionsOutgoingReserved.values())
+		amountRemote = \
+			self.amountRemote + \
+			sum(self.transactionsIncomingReserved.values())
+
+		ownPubKey = self.ownKey.getPublicKey()
+		peerPubKey = self.peerKey.getPublicKey()
+		escrowPubKey = ownPubKey #TODO!!!
+
+		self.T2_latest.setOutputs(ownPubKey, peerPubKey, escrowPubKey,
+			amountLocal, amountRemote)
+
+		#TODO: check that the sum of T2's outputs equals T1's output minus fee
+
+
 	def makeTransactionPayload(self):
-		self.makeTransactionT2()
 		pubKey1, pubKey2 = self.getPublicKeyPair()
+		#TODO: fix signMultiSigTransaction
 		ownSignature = signMultiSigTransaction(
-			self.T2_latest, 0, pubKey1, pubKey2, self.ownKey)
+			self.T2_latest.transaction, 0, pubKey1, pubKey2, self.ownKey)
 
 		# 4-byte unsigned int in network byte order:
 		sigLen = struct.pack("!I", len(ownSignature))
@@ -592,11 +574,11 @@ class MultiSigChannel(channel.Channel):
 		sigLen = struct.unpack("!I", s[:4])[0]
 		s = s[4:]
 		peerSignature = s[:sigLen]
-		T2 = bitcointransaction.Transaction.deserialize(s[sigLen:])
+		T2 = MultiSigTransaction.deserialize(s[sigLen:])
 
 		pubKey1, pubKey2 = self.getPublicKeyPair()
 		if not verifyMultiSigSignature(
-			T2, 0, pubKey1, pubKey2, self.peerKey, peerSignature):
+			T2.transaction, 0, pubKey1, pubKey2, self.peerKey, peerSignature):
 				raise Exception("Signature failure!") #TODO: what to do now?
 
 		#TODO: lots of checks on T2 (IMPORTANT!)
@@ -608,6 +590,8 @@ class MultiSigChannel(channel.Channel):
 
 	def lockOutgoing(self, hash):
 		message = channel.Channel.lockOutgoing(self, hash)
+		#TODO: add TCD to self.T2_latest
+		self.makeTransactionT2()
 		message.payload = self.makeTransactionPayload()
 		return message
 
@@ -619,6 +603,8 @@ class MultiSigChannel(channel.Channel):
 
 	def commitOutgoing(self, hash, token):
 		message = channel.Channel.commitOutgoing(self, hash, token)
+		#TODO: remove TCD from self.T2_latest
+		self.makeTransactionT2()
 		message.payload = self.makeTransactionPayload()
 		return message
 
