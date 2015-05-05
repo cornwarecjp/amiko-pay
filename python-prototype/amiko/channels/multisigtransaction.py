@@ -185,6 +185,62 @@ class MultiSigTransaction:
 		return ret
 
 
+	def TCDExists(self, tokenHash):
+		"""
+		Checks whether a TCD with a given token hash exists in self.TCDlist
+
+		Arguments:
+		tokenHash: str; the SHA256- and RIPEMD160-hashed commit token.
+
+		Return value:
+		bool; indicates whether a TCD with a given token hash exists (True)
+		or not (False).
+		"""
+
+		hashes = [tcd.tokenHash for tcd in self.TCDlist]
+		return tokenHash in hashes
+
+
+	def addTCD(self, tcd):
+		"""
+		Add a Transaction Conditions Documents (TCD) to the list if TCDs.
+
+		Arguments:
+		tcd: TCD; the to-be-added TCD.
+
+		Exceptions:
+		Exception: another TCD with the same token hash already exists.
+
+		Note that a *reference* to tcd will be added: any future change in the
+		tcd object will also be visible inside this object.
+		"""
+
+		#Note: the reason this is not supported is that otherwise the behavior
+		#of removeTCD would become ambiguous.
+		if self.TCDExists(tcd.tokenHash):
+			raise Exception("Can not process multiple payments with the same token hash")
+
+		self.TCDlist.append(tcd)
+
+
+	def removeTCD(self, tokenHash):
+		"""
+		Remove a Transaction Conditions Documents (TCD) from the list if TCDs.
+
+		Arguments:
+		tokenHash: str; the SHA256- and RIPEMD160-hashed commit token, as
+		           listed in the to-be-removed TCD.
+
+		Exceptions:
+		Exception: There is no TCD with the given token hash.
+		"""
+
+		if not self.TCDExists(tokenHash):
+			raise Exception("Can not remove TCD: the token hash is unknown")
+
+		self.TCDlist = [tcd for tcd in self.TCDlist if tcd.tokenHash != tokenHash]
+
+
 	def setOutputs(self, ownPubKey, peerPubKey, escrowPubKey,
 		ownAmount, peerAmount):
 		"""

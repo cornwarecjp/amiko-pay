@@ -38,6 +38,7 @@ from ..utils.bitcoinutils import makeSpendMultiSigTransaction, signMultiSigTrans
 from ..utils.bitcoinutils import verifyMultiSigSignature, applyMultiSigSignatures
 
 from multisigtransaction import MultiSigTransaction
+from tcd import TCD
 
 
 """
@@ -591,8 +592,16 @@ class MultiSigChannel(channel.Channel):
 
 	def lockOutgoing(self, hash):
 		message = channel.Channel.lockOutgoing(self, hash)
-		#TODO: add TCD to self.T2_latest
+
+		ownKeyHash = crypto.RIPEMD160(crypto.SHA256(self.ownKey.getPublicKey()))
+		peerKeyHash = crypto.RIPEMD160(crypto.SHA256(self.peerKey.getPublicKey()))
+		self.T2_latest.addTCD(TCD(
+			startTime=0, endTime=0, #TODO!!!
+			amount=self.transactionsOutgoingLocked[hash], tokenHash=hash,
+			commitAddress=peerKeyHash, rollbackAddress=ownKeyHash
+			))
 		self.makeTransactionT2()
+
 		message.payload = self.makeTransactionPayload()
 		return message
 
@@ -604,8 +613,10 @@ class MultiSigChannel(channel.Channel):
 
 	def commitOutgoing(self, hash, token):
 		message = channel.Channel.commitOutgoing(self, hash, token)
-		#TODO: remove TCD from self.T2_latest
+
+		self.T2_latest.removeTCD(hash)
 		self.makeTransactionT2()
+
 		message.payload = self.makeTransactionPayload()
 		return message
 

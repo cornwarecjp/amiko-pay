@@ -125,6 +125,51 @@ class Test(unittest.TestCase):
 			)
 
 
+	def test_TCDExists(self):
+		"Test TCDExists method"
+
+		tx = multisigtransaction.MultiSigTransaction("tx",
+			[
+			tcd.TCD(0, 0, 0, "foo", "", ""),
+			tcd.TCD(0, 0, 0, "bar", "", "")
+			])
+		self.assertTrue(tx.TCDExists("foo"))
+		self.assertTrue(tx.TCDExists("bar"))
+		self.assertFalse(tx.TCDExists("foobar"))
+
+
+	def test_addTCD(self):
+		"Test addTCD method"
+
+		TCD1 = tcd.TCD(0, 0, 0, "foo", "", "")
+		TCD2 = tcd.TCD(0, 0, 0, "bar", "", "")
+		TCD3 = tcd.TCD(0, 0, 0, "foobar", "", "")
+
+		tx = multisigtransaction.MultiSigTransaction("tx", [TCD1, TCD2])
+		tx.addTCD(TCD3)
+		self.assertEqual(tx.TCDlist, [TCD1, TCD2, TCD3])
+
+		TCD4 = tcd.TCD(1, 1, 1, "foobar", "x", "y") #same hash as TCD3
+		self.assertRaises(Exception, tx.addTCD, TCD4)
+		self.assertEqual(tx.TCDlist, [TCD1, TCD2, TCD3]) #it's not added
+
+
+	def test_removeTCD(self):
+		"Test removeTCD method"
+
+		TCD1 = tcd.TCD(0, 0, 0, "foo", "", "")
+		TCD2 = tcd.TCD(0, 0, 0, "bar", "", "")
+		TCD3 = tcd.TCD(0, 0, 0, "foobar", "", "")
+
+		tx = multisigtransaction.MultiSigTransaction("tx", [TCD1, TCD2, TCD3])
+
+		tx.removeTCD("bar")
+		self.assertEqual(tx.TCDlist, [TCD1, TCD3])
+
+		self.assertRaises(Exception, tx.removeTCD, "bar") #it doesn't exist anymore
+		self.assertEqual(tx.TCDlist, [TCD1, TCD3]) #no effect
+
+
 	def test_setOutputs(self):
 		"Test setOutputs method"
 
