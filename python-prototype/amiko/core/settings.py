@@ -27,8 +27,10 @@
 #    OpenSSL library used as well as that of the covered work.
 
 import ConfigParser
+import binascii
 
 from ..utils import crypto
+
 
 
 #Design settings (changing these creates an incompatibility):
@@ -68,6 +70,18 @@ class Settings:
 			"files", "statefile", "amikopay.dat")
 		self.payLogFile = self.__get(
 			"files", "paylogfile", "payments.log")
+
+		#escrow services
+		self.acceptedEscrowKeys = self.__get(
+			"escrow", "acceptedKeys", "")
+		#de-code the keys:
+		self.acceptedEscrowKeys = self.acceptedEscrowKeys.split(",")
+		self.acceptedEscrowKeys = \
+			[s.strip() for s in self.acceptedEscrowKeys]
+		if self.acceptedEscrowKeys[-1] == '':
+			self.acceptedEscrowKeys = self.acceptedEscrowKeys[:-1] #remove empty
+		self.acceptedEscrowKeys = \
+			[binascii.unhexlify(s) for s in self.acceptedEscrowKeys]
 
 		#bitcoin RPC
 		self.bitcoinRPCURL = self.__get(
