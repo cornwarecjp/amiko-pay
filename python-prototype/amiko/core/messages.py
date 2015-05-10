@@ -49,6 +49,47 @@ ID_WITHDRAW    = 13
 
 
 
+def serializeBinList(binList):
+	"""
+	Serializes a list of binary strings.
+
+	Arguments:
+	binList: list of str; the to-be-serialized data.
+
+	Return value:
+	str; the serialized data.
+	"""
+	return "".join([
+		#length: 4-byte unsigned int in network byte order:
+		struct.pack("!I", len(s)) + s
+
+		for s in binList
+		])
+
+
+def deserializeBinList(data):
+	"""
+	Deserializes a list of binary strings.
+
+	Arguments:
+	data: str; the to-be-deserialized data.
+
+	Return value:
+	list of str; the deserialized data.
+	"""
+	ret = []
+	while len(data) > 0:
+		#length: 4-byte unsigned int in network byte order:
+		length = struct.unpack("!I", data[:4])[0]
+		if length+4 > len(data):
+			raise Exception("Binlist deserialization error")
+		ret.append(data[4:4+length])
+		data = data[4+length:]
+
+	return ret
+
+
+
 class Message:
 	"""
 	Message base class.

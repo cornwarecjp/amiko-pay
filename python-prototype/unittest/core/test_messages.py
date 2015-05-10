@@ -54,6 +54,25 @@ class Test(unittest.TestCase):
 		self.assertEqual(messages.ID_WITHDRAW    , 13)
 
 
+	def test_BinListSerialization(self):
+		"Test BinList serialization and de-serialization"
+
+		testCases = \
+		{
+		"": [],
+		"\x00\x00\x00\x00": [""],
+		"\x00\x00\x00\x06Foobar": ["Foobar"],
+		"\x00\x00\x00\x06Foobar\x00\x00\x00\x03fuz": ["Foobar", "fuz"]
+		}
+
+		for data, binList in testCases.iteritems():
+			self.assertEqual(data   , messages.serializeBinList(binList))
+			self.assertEqual(binList, messages.deserializeBinList(data))
+
+		self.assertRaises(Exception, messages.deserializeBinList, "\x00")
+		self.assertRaises(Exception, messages.deserializeBinList, "Hello")
+
+
 	def test_Message(self):
 		"Test Message base class"
 
