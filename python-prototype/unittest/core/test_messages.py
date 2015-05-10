@@ -173,15 +173,15 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.serialize(),
 			("\x00\x00\x00%c" % messages.ID_MAKEROUTE) + \
 			"\x00\x07\x75\xf0\x5a\x07\x40\x00"
-			"\x00\x00\x00\x03Foo"
 			"\x01"
-			"Bar"
+			"\x00\x00\x00\x03Foo"
+			"\x00\x00\x00\x03Bar"
 			)
 		msg.deserializeAttributes(
 			"\x00\x00\x00\x00\x12\x34\x56\x78"
-			"\x00\x00\x00\x06Foobar"
 			"\x00"
-			"FOO"
+			"\x00\x00\x00\x06Foobar"
+			"\x00\x00\x00\x03FOO"
 			)
 		self.assertEqual(msg.amount, 0x12345678)
 		self.assertEqual(msg.isPayerSide, False)
@@ -208,16 +208,14 @@ class Test(unittest.TestCase):
 			"\x00\x07\x75\xf0\x5a\x07\x40\x00"
 			"\x00\x00\x00\x03Foo"
 			"\x00\x00\x00\x06Foobar"
-			"\x00\x00\x00\x03"
-				"\x00\x00\x00\x03ABC"
-				"\x00\x00\x00\x01D"
-				"\x00\x00\x00\x05EFGHI"
+			"\x00\x00\x00\x03ABC"
+			"\x00\x00\x00\x01D"
+			"\x00\x00\x00\x05EFGHI"
 			)
 		msg.deserializeAttributes(
 			"\x00\x00\x00\x00\x12\x34\x56\x78"
 			"\x00\x00\x00\x03FOO"
 			"\x00\x00\x00\x03Bar"
-			"\x00\x00\x00\x00"
 			)
 		self.assertEqual(msg.amount, 0x12345678)
 		self.assertEqual(msg.receipt, "FOO")
@@ -227,9 +225,8 @@ class Test(unittest.TestCase):
 			"\x00\x00\x00\x00\x12\x34\x56\x78"
 			"\x00\x00\x00\x03FOO"
 			"\x00\x00\x00\x03Bar"
-			"\x00\x00\x00\x02"
-				"\x00\x00\x00\x01A"
-				"\x00\x00\x00\x03BCD"
+			"\x00\x00\x00\x01A"
+			"\x00\x00\x00\x03BCD"
 			)
 		self.assertEqual(msg.meetingPoints, ["A", "BCD"])
 		self.assertTrue(str(0x12345678) in str(msg))

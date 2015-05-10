@@ -428,14 +428,11 @@ class MakeRoute(Message):
 		# 8-byte unsigned int in network byte order:
 		ret = struct.pack("!Q", self.amount)
 
-		# 4-byte unsigned int in network byte order:
-		hashLen = struct.pack("!I", len(self.hash))
-		ret += hashLen + self.hash
-
 		# 1-byte bool:
 		ret += struct.pack("!?", self.isPayerSide)
 
-		ret += self.meetingPoint
+		#Variable-length data:
+		ret += serializeBinList([self.hash, self.meetingPoint])
 
 		return ret
 
@@ -446,16 +443,11 @@ class MakeRoute(Message):
 		self.amount = struct.unpack("!Q", s[:8])[0]
 		s = s[8:]
 
-		# 4-byte unsigned int in network byte order:
-		hashLen = struct.unpack("!I", s[:4])[0]
-		self.hash = s[4:4+hashLen]
-		s = s[4+hashLen:]
-
 		# 1-byte bool:
 		self.isPayerSide = struct.unpack("!?", s[0])[0]
 		s = s[1:]
 
-		self.meetingPoint = s
+		self.hash, self.meetingPoint = deserializeBinList(s)
 
 
 	@inheritDocString(Message)
@@ -499,21 +491,10 @@ class Receipt(Message):
 		# 8-byte unsigned int in network byte order:
 		ret = struct.pack("!Q", self.amount)
 
-		# 4-byte unsigned int in network byte order:
-		receiptLen = struct.pack("!I", len(self.receipt))
-		ret += receiptLen + self.receipt
-
-		# 4-byte unsigned int in network byte order:
-		hashLen = struct.pack("!I", len(self.hash))
-		ret += hashLen + self.hash
-
-		# 4-byte unsigned int in network byte order:
-		ret += struct.pack("!I", len(self.meetingPoints))
-
-		for mp in self.meetingPoints:
-			# 4-byte unsigned int in network byte order:
-			mpLen = struct.pack("!I", len(mp))
-			ret += mpLen + mp
+		#Variable-length data:
+		ret += serializeBinList(
+			[self.receipt, self.hash] + self.meetingPoints
+			)
 
 		return ret
 
@@ -524,26 +505,10 @@ class Receipt(Message):
 		self.amount = struct.unpack("!Q", s[:8])[0]
 		s = s[8:]
 
-		# 4-byte unsigned int in network byte order:
-		receiptLen = struct.unpack("!I", s[:4])[0]
-		self.receipt = s[4:4+receiptLen]
-		s = s[4+receiptLen:]
-
-		# 4-byte unsigned int in network byte order:
-		hashLen = struct.unpack("!I", s[:4])[0]
-		self.hash = s[4:4+hashLen]
-		s = s[4+hashLen:]
-
-		# 4-byte unsigned int in network byte order:
-		numMPs = struct.unpack("!I", s[:4])[0]
-		s = s[4:]
-
-		self.meetingPoints = []
-		for i in range(numMPs):
-			# 4-byte unsigned int in network byte order:
-			mpLen = struct.unpack("!I", s[:4])[0]
-			self.meetingPoints.append(s[4:4+mpLen])
-			s = s[4+mpLen:]
+		binList = deserializeBinList(s)
+		self.receipt = binList[0]
+		self.hash = binList[1]
+		self.meetingPoints = binList[2:]
 
 
 	@inheritDocString(Message)
