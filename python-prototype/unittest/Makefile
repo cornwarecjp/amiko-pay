@@ -1,4 +1,5 @@
 test:
+	-rm -rf coverage-html
 	python-coverage erase
 	make -C core test
 	make -C utils test
