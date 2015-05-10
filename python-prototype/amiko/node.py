@@ -327,11 +327,19 @@ class Node(threading.Thread):
 		amount: the amount (integer, Satoshi) to be deposited
 		"""
 
+		#Always default to the first escrow key. TODO: allow the user to
+		#choose a different one.
+		if len(self.settings.acceptedEscrowKeys) == 0:
+			raise Exception("There are no escrow provider keys defined. "
+				"Please edit your settings first.")
+		escrowKey = self.settings.acceptedEscrowKeys[0]
+
 		links = \
 			[lnk for lnk in self.routingContext.links if lnk.name == linkname]
 		if len(links) == 0:
 			raise Exception("There is no link with that name")
-		links[0].deposit(amount)
+
+		links[0].deposit(amount, escrowKey)
 
 
 	@runInNodeThread

@@ -46,6 +46,8 @@ class Link(event.Handler):
 		self.routingContext = routingContext
 		self.bitcoind = bitcoind
 
+		self.acceptedEscrowKeys = settingsArg.acceptedEscrowKeys
+
 		self.name  = str(state["name"])
 		self.localID  = str(state["localID"])
 		self.remoteID = str(state["remoteID"])
@@ -104,7 +106,7 @@ class Link(event.Handler):
 		}
 
 
-	def deposit(self, amount):
+	def deposit(self, amount, escrowKey):
 		if not self.isConnected():
 			raise Exception("Not connected")
 
@@ -113,7 +115,8 @@ class Link(event.Handler):
 		except ValueError:
 			newID = 0
 
-		newChannel = multisigchannel.constructFromDeposit(self.bitcoind, newID, amount)
+		newChannel = multisigchannel.constructFromDeposit(
+			self.bitcoind, newID, amount, escrowKey)
 		self.channels.append(newChannel)
 		self.connection.sendMessage(newChannel.makeDepositMessage(None))
 		self.context.sendSignal(None, event.signals.save)

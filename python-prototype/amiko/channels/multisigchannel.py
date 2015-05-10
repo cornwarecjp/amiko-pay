@@ -627,7 +627,7 @@ class MultiSigChannel(channel.Channel):
 
 
 
-def constructFromDeposit(bitcoind, channelID, amount):
+def constructFromDeposit(bitcoind, channelID, amount, escrowKey):
 	ownAddress = bitcoind.getNewAddress()
 	state = \
 	{
@@ -641,6 +641,7 @@ def constructFromDeposit(bitcoind, channelID, amount):
 		"transactionsOutgoingReserved": {},
 
 		"ownAddress": ownAddress,
+		"escrowPublicKey": escrowKey,
 		"hasFirstPublicKey": 1
 	}
 	return MultiSigChannel(bitcoind, state)
