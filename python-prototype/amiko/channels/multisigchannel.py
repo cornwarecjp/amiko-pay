@@ -235,6 +235,13 @@ class MultiSigChannel(channel.Channel):
 				binascii.unhexlify(state["peerPublicKey"])
 				)
 
+		self.escrowKey = None
+		if "escrowPublicKey" in state:
+			self.escrowKey = crypto.Key()
+			self.escrowKey.setPublicKey(
+				binascii.unhexlify(state["escrowPublicKey"])
+				)
+
 		self.hasFirstPublicKey = bool(state["hasFirstPublicKey"])
 
 		self.T1 = None
@@ -273,6 +280,10 @@ class MultiSigChannel(channel.Channel):
 				ret["peerAddress"] = base58.encodeBase58Check(
 					crypto.RIPEMD160(crypto.SHA256(pubKey)),
 					0)
+		if self.escrowKey != None:
+			pubKey = self.escrowKey.getPublicKey()
+			ret["escrowPublicKey"] = pubKey.encode("hex")
+
 		ret["hasFirstPublicKey"] = int(self.hasFirstPublicKey)
 
 		if self.T1 != None:
@@ -641,7 +652,7 @@ def constructFromDeposit(bitcoind, channelID, amount, escrowKey):
 		"transactionsOutgoingReserved": {},
 
 		"ownAddress": ownAddress,
-		"escrowPublicKey": escrowKey,
+		"escrowPublicKey": escrowKey.encode("hex"),
 		"hasFirstPublicKey": 1
 	}
 	return MultiSigChannel(bitcoind, state)
