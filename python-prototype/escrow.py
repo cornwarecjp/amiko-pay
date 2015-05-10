@@ -32,6 +32,7 @@ import binascii
 
 from amiko.core import bitcoind, settings
 from amiko.utils import base58, bitcoinutils, bitcointransaction, crypto
+from amiko.channels import tcd
 
 
 if len(sys.argv) != 2:
@@ -53,6 +54,8 @@ key.setPrivateKey(privateKey)
 
 print "done"
 
+print "Our public key is: ", key.getPublicKey().encode("hex")
+
 print "Reading the settings file...",
 settings = settings.Settings("amikopay.conf")
 bitcoind = bitcoind.Bitcoind(settings)
@@ -67,12 +70,19 @@ if W["confirmations"] < 6:
 	sys.exit()
 
 W = binascii.unhexlify(W["hex"])
+W = bitcointransaction.Transaction.deserialize(W)
 
-
-#TODO:
+#print "Reconstructed ID:", W.getTransactionID()[::-1].encode("hex")
 
 #Ask for serialized list of TCDs (maybe get this from a file)
+TCDlist_serialized = raw_input("Enter the serialized TCD list: ")
+TCDlist = tcd.deserializeList(TCDlist_serialized)
+
 #Check presence of list hash in W
+listHash = crypto.RIPEMD160(crypto.SHA256(TCDlist_serialized))
+#TODO
+
+#TODO:
 #Ask for index to be resolved
 #Check whether W's output has our public key on it
 
