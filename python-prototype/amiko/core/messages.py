@@ -76,6 +76,9 @@ def deserializeBinList(data):
 
 	Return value:
 	list of str; the deserialized data.
+
+	Exceptions:
+	Exception: the serialized data did not conform to the expected format.
 	"""
 	ret = []
 	while len(data) > 0:
