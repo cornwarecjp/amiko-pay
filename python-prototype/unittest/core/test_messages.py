@@ -240,19 +240,24 @@ class Test(unittest.TestCase):
 		"Test ChannelMessage base class"
 
 		msg = messages.ChannelMessage(
-			typeID=0x42, channelID=0x02, stage=0x03, payload="Foo")
+			typeID=0x42, channelID=0x02, stage=0x03, payload=["Foo", "Bar"])
 		self.assertEqual(msg.channelID, 0x02)
 		self.assertEqual(msg.stage, 0x03)
-		self.assertEqual(msg.payload, "Foo")
+		self.assertEqual(msg.payload, ["Foo", "Bar"])
 		self.assertEqual(msg.serialize(),
-			"\x00\x00\x00\x42\x00\x00\x00\x02\x03Foo"
+			"\x00\x00\x00\x42"
+			"\x00\x00\x00\x02"
+			"\x03"
+			"\x00\x00\x00\x03Foo\x00\x00\x00\x03Bar"
 			)
 		msg.deserializeAttributes(
-			"\x00\x00\x00\x12\x34Bar"
+			"\x00\x00\x00\x12"
+			"\x34"
+			"\x00\x00\x00\x06Foobar"
 			)
 		self.assertEqual(msg.channelID, 0x12)
 		self.assertEqual(msg.stage, 0x34)
-		self.assertEqual(msg.payload, "Bar")
+		self.assertEqual(msg.payload, ["Foobar"])
 		self.assertTrue(str(0x12) in str(msg))
 		self.assertTrue(str(0x34) in str(msg))
 
@@ -262,32 +267,32 @@ class Test(unittest.TestCase):
 
 		msg = messages.Deposit(
 			channelID=0x02, type="Foo", isInitial=False, stage=0x03,
-			payload="Bar")
+			payload=["Bar"])
 		self.assertEqual(msg.channelID, 0x02)
 		self.assertEqual(msg.type, "Foo")
 		self.assertEqual(msg.isInitial, False)
 		self.assertEqual(msg.stage, 0x03)
-		self.assertEqual(msg.payload, "Bar")
+		self.assertEqual(msg.payload, ["Bar"])
 		self.assertEqual(msg.serialize(),
 			("\x00\x00\x00%c" % messages.ID_DEPOSIT) + \
 			"\x00\x00\x00\x03Foo"
 			"\x00"
 			"\x00\x00\x00\x02"
 			"\x03"
-			"Bar"
+			"\x00\x00\x00\x03Bar"
 			)
 		msg.deserializeAttributes(
 			"\x00\x00\x00\x06Foobar"
 			"\x01"
 			"\x00\x00\x00\x12"
 			"\x34"
-			"FOO"
+			"\x00\x00\x00\x03FOO"
 			)
 		self.assertEqual(msg.channelID, 0x12)
 		self.assertEqual(msg.type, "Foobar")
 		self.assertEqual(msg.isInitial, True)
 		self.assertEqual(msg.stage, 0x34)
-		self.assertEqual(msg.payload, "FOO")
+		self.assertEqual(msg.payload, ["FOO"])
 		self.assertTrue(str(0x12) in str(msg))
 		self.assertTrue("Foobar" in str(msg))
 		self.assertTrue(str(True) in str(msg))
@@ -298,12 +303,15 @@ class Test(unittest.TestCase):
 		"Test Withdraw message class"
 
 		msg = messages.Withdraw(
-			channelID=0x02, stage=0x03, payload="Foo")
+			channelID=0x02, stage=0x03, payload=["Foo", "Foobar"])
 		self.assertEqual(msg.channelID, 0x02)
 		self.assertEqual(msg.stage, 0x03)
-		self.assertEqual(msg.payload, "Foo")
+		self.assertEqual(msg.payload, ["Foo", "Foobar"])
 		self.assertEqual(msg.serialize(),
-			"\x00\x00\x00%c\x00\x00\x00\x02\x03Foo" % messages.ID_WITHDRAW
+			"\x00\x00\x00%c" % messages.ID_WITHDRAW + \
+			"\x00\x00\x00\x02"
+			"\x03"
+			"\x00\x00\x00\x03Foo\x00\x00\x00\x06Foobar"
 			)
 
 
@@ -311,24 +319,28 @@ class Test(unittest.TestCase):
 		"Test Lock message class"
 
 		msg = messages.Lock(
-			channelID=0x02, hash="Foo", payload="Bar")
+			channelID=0x02, hash="Foo", payload=["Bar"])
 		self.assertEqual(msg.channelID, 0x02)
 		self.assertEqual(msg.stage, 0)
 		self.assertEqual(msg.hash, "Foo")
-		self.assertEqual(msg.payload, "Bar")
+		self.assertEqual(msg.payload, ["Bar"])
 		self.assertEqual(msg.serialize(),
 			("\x00\x00\x00%c" % messages.ID_LOCK) + \
 			"\x00\x00\x00\x03Foo"
-			"\x00\x00\x00\x02\x00Bar"
+			"\x00\x00\x00\x02"
+			"\x00"
+			"\x00\x00\x00\x03Bar"
 			)
 		msg.deserializeAttributes(
 			"\x00\x00\x00\x06Foobar"
-			"\x00\x00\x00\x03\x00FOO"
+			"\x00\x00\x00\x03"
+			"\x00"
+			"\x00\x00\x00\x03FOO"
 			)
 		self.assertEqual(msg.channelID, 0x03)
 		self.assertEqual(msg.stage, 0)
 		self.assertEqual(msg.hash, "Foobar")
-		self.assertEqual(msg.payload, "FOO")
+		self.assertEqual(msg.payload, ["FOO"])
 		self.assertTrue(str(0x03) in str(msg))
 		self.assertTrue("Foobar".encode("hex") in str(msg))
 
@@ -337,24 +349,28 @@ class Test(unittest.TestCase):
 		"Test Commit message class"
 
 		msg = messages.Commit(
-			channelID=0x02, token="Foo", payload="Bar")
+			channelID=0x02, token="Foo", payload=["Bar"])
 		self.assertEqual(msg.channelID, 0x02)
 		self.assertEqual(msg.stage, 0)
 		self.assertEqual(msg.token, "Foo")
-		self.assertEqual(msg.payload, "Bar")
+		self.assertEqual(msg.payload, ["Bar"])
 		self.assertEqual(msg.serialize(),
 			("\x00\x00\x00%c" % messages.ID_COMMIT) + \
 			"\x00\x00\x00\x03Foo"
-			"\x00\x00\x00\x02\x00Bar"
+			"\x00\x00\x00\x02"
+			"\x00"
+			"\x00\x00\x00\x03Bar"
 			)
 		msg.deserializeAttributes(
 			"\x00\x00\x00\x06Foobar"
-			"\x00\x00\x00\x03\x00FOO"
+			"\x00\x00\x00\x03"
+			"\x00"
+			"\x00\x00\x00\x03FOO"
 			)
 		self.assertEqual(msg.channelID, 0x03)
 		self.assertEqual(msg.stage, 0)
 		self.assertEqual(msg.token, "Foobar")
-		self.assertEqual(msg.payload, "FOO")
+		self.assertEqual(msg.payload, ["FOO"])
 		self.assertTrue(str(0x03) in str(msg))
 		self.assertTrue("Foobar".encode("hex") in str(msg))
 

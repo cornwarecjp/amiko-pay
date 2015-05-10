@@ -27,7 +27,6 @@
 #    OpenSSL library used as well as that of the covered work.
 
 import binascii
-import struct
 import copy
 
 from ..core import channel, messages
@@ -365,36 +364,36 @@ class MultiSigChannel(channel.Channel):
 			self.stage = stages["OwnDeposit_SendingPublicKey"]
 			return messages.Deposit(
 				self.ID, self.getType(), isInitial=True, stage=self.stage,
-				payload=self.ownKey.getPublicKey())
+				payload=[self.ownKey.getPublicKey()])
 
 		elif self.stage == stages["PeerDeposit_Initial"] and \
 			message.stage == stages["OwnDeposit_SendingPublicKey"]:
 
 			#Received deposit message with public key from peer
 			self.peerKey = crypto.Key()
-			self.peerKey.setPublicKey(message.payload)
+			self.peerKey.setPublicKey(message.payload[0])
 			self.stage = stages["PeerDeposit_SendingPublicKey"]
 			return messages.Deposit(
 				self.ID, self.getType(), stage=self.stage,
-				payload=self.ownKey.getPublicKey())
+				payload=[self.ownKey.getPublicKey()])
 
 		elif self.stage == stages["OwnDeposit_SendingPublicKey"] and \
 			message.stage == stages["PeerDeposit_SendingPublicKey"]:
 
 			#Received reply on own deposit message
 			self.peerKey = crypto.Key()
-			self.peerKey.setPublicKey(message.payload)
+			self.peerKey.setPublicKey(message.payload[0])
 			self.makeT1AndT2()
 			self.stage = stages["OwnDeposit_SendingT2"]
 			return messages.Deposit(
 				self.ID, self.getType(), stage=self.stage,
-				payload=self.T2_latest.serialize())
+				payload=[self.T2_latest.serialize()])
 
 		elif self.stage == stages["PeerDeposit_SendingPublicKey"] and \
 			message.stage == stages["OwnDeposit_SendingT2"]:
 
 			#Received T2
-			self.T2_latest = MultiSigTransaction.deserialize(message.payload)
+			self.T2_latest = MultiSigTransaction.deserialize(message.payload[0])
 			#TODO: maybe re-serialize to check consistency
 			self.amountRemote = sum(tx.amount for tx in self.T2_latest.transaction.tx_out)
 			assert not self.hasFirstPublicKey
@@ -404,12 +403,12 @@ class MultiSigChannel(channel.Channel):
 				self.ownKey)
 			self.stage = stages["PeerDeposit_SendingSignature"]
 			return messages.Deposit(
-				self.ID, self.getType(), stage=self.stage, payload=signature)
+				self.ID, self.getType(), stage=self.stage, payload=[signature])
 
 		elif self.stage == stages["OwnDeposit_SendingT2"] and \
 			message.stage == stages["PeerDeposit_SendingSignature"]:
 
-			signature = message.payload
+			signature = message.payload[0]
 			assert self.hasFirstPublicKey
 			if not verifyMultiSigSignature(
 				self.T2_latest.transaction, 0,
@@ -425,12 +424,12 @@ class MultiSigChannel(channel.Channel):
 			self.bitcoind.sendRawTransaction(T1_serialized)
 
 			return messages.Deposit(
-				self.ID, self.getType(), stage=self.stage, payload=T1_serialized)
+				self.ID, self.getType(), stage=self.stage, payload=[T1_serialized])
 
 		elif self.stage == stages["PeerDeposit_SendingSignature"] and \
 			message.stage == stages["WaitingForT1"]:
 
-			T1_serialized = message.payload
+			T1_serialized = message.payload[0]
 			self.T1 = bitcointransaction.Transaction.deserialize(T1_serialized)
 			#TODO: maybe re-serialize to check consistency
 			#TODO: check T1 (and that it matches T2)
@@ -470,13 +469,13 @@ class MultiSigChannel(channel.Channel):
 			self.makeWithdrawT2()
 			self.stage = stages["OwnWithdraw_SendingT2"]
 			return messages.Withdraw(
-				self.ID, stage=self.stage, payload=self.T2_latest.serialize())
+				self.ID, stage=self.stage, payload=[self.T2_latest.serialize()])
 
 		elif self.stage == stages["Stopped"] and \
 			message.stage == stages["OwnWithdraw_SendingT2"]:
 
 			#Received T2
-			self.T2_latest = MultiSigTransaction.deserialize(message.payload)
+			self.T2_latest = MultiSigTransaction.deserialize(message.payload[0])
 			#TODO: maybe re-serialize to check consistency
 			#TODO: lots of checks on T2 (IMPORTANT!)
 			pubKey1, pubKey2 = self.getPublicKeyPair()
@@ -484,12 +483,12 @@ class MultiSigChannel(channel.Channel):
 				self.T2_latest.transaction, 0, [pubKey1, pubKey2], self.ownKey)
 			self.stage = stages["PeerWithdraw_SendingSignature"]
 			return messages.Withdraw(
-				self.ID, stage=self.stage, payload=signature)
+				self.ID, stage=self.stage, payload=[signature])
 
 		elif self.stage == stages["OwnWithdraw_SendingT2"] and \
 			message.stage == stages["PeerWithdraw_SendingSignature"]:
 
-			peerSignature = message.payload
+			peerSignature = message.payload[0]
 			pubKey1, pubKey2 = self.getPublicKeyPair()
 			if not verifyMultiSigSignature(
 				self.T2_latest.transaction, 0,
@@ -513,12 +512,12 @@ class MultiSigChannel(channel.Channel):
 			self.bitcoind.sendRawTransaction(T2_serialized)
 
 			return messages.Withdraw(
-				self.ID, stage=self.stage, payload=T2_serialized)
+				self.ID, stage=self.stage, payload=[T2_serialized])
 
 		elif self.stage == stages["PeerWithdraw_SendingSignature"] and \
 			message.stage == stages["Closed"]:
 
-			T2 = bitcointransaction.Transaction.deserialize(message.payload)
+			T2 = bitcointransaction.Transaction.deserialize(message.payload[0])
 			#TODO: maybe re-serialize to check consistency
 			#TODO: lots of checks on T2 (IMPORTANT!)
 
@@ -529,7 +528,7 @@ class MultiSigChannel(channel.Channel):
 			self.stage = stages["Closed"]
 
 			#Publish T2 in Bitcoind
-			T2_serialized = message.payload
+			T2_serialized = message.payload[0]
 			self.bitcoind.sendRawTransaction(T2_serialized)
 
 			print "DONE"
@@ -575,18 +574,12 @@ class MultiSigChannel(channel.Channel):
 		ownSignature = signMultiSigTransaction(
 			self.T2_latest.transaction, 0, [pubKey1, pubKey2], self.ownKey)
 
-		# 4-byte unsigned int in network byte order:
-		sigLen = struct.pack("!I", len(ownSignature))
-
-		return sigLen + ownSignature + self.T2_latest.serialize()
+		return [ownSignature, self.T2_latest.serialize()]
 
 
 	def processTransactionPayload(self, payload):
-		s = payload
-		sigLen = struct.unpack("!I", s[:4])[0]
-		s = s[4:]
-		peerSignature = s[:sigLen]
-		T2 = MultiSigTransaction.deserialize(s[sigLen:])
+		peerSignature = payload[0]
+		T2 = MultiSigTransaction.deserialize(payload[1])
 
 		#TODO: add escrow key
 		pubKey1, pubKey2 = self.getPublicKeyPair()

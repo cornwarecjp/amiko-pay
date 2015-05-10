@@ -525,10 +525,10 @@ class ChannelMessage(Message):
 	Attributes:
 	channelID: int; the ID of the channel
 	stage: int; the stage (only used for interactions that have multiple stages)
-	payload: str; meaning depends on channel type, message type and stage
+	payload: list of str; meaning depends on channel type, message type and stage
 	"""
 
-	def __init__(self, typeID, channelID=0, stage=0, payload=""):
+	def __init__(self, typeID, channelID=0, stage=0, payload=[]):
 		"""
 		Constructor.
 
@@ -536,13 +536,13 @@ class ChannelMessage(Message):
 		typeID: int; the type ID of the message (one of the ID_* constants)
 		channelID: int; the ID of the channel
 		stage: int; the stage (only used for interactions that have multiple stages)
-		payload: str; meaning depends on channel type, message type and stage
+		payload: list of str; meaning depends on channel type, message type and stage
 		"""
 
 		Message.__init__(self, typeID)
 		self.channelID = channelID
 		self.stage = stage
-		self.payload = payload #serialized link-type dependent data
+		self.payload = payload #channel-type dependent data
 
 
 	@inheritDocString(Message)
@@ -553,7 +553,7 @@ class ChannelMessage(Message):
 		# 1-byte unsigned int:
 		ret += struct.pack("!B", self.stage)
 
-		ret += self.payload
+		ret += serializeBinList(self.payload)
 
 		return ret
 
@@ -568,7 +568,7 @@ class ChannelMessage(Message):
 		self.stage = struct.unpack("!B", s[0])[0]
 		s = s[1:]
 
-		self.payload = s
+		self.payload = deserializeBinList(s)
 
 
 	@inheritDocString(Message)
@@ -584,13 +584,13 @@ class Deposit(ChannelMessage):
 	Attributes:
 	channelID: int; the ID of the channel
 	stage: int; the stage (only used for interactions that have multiple stages)
-	payload: str; meaning depends on channel type and stage
+	payload: list of str; meaning depends on channel type, message type and stage
 	type: str; the type of channel to be created by the deposit
 	isInitial: bool; indicates whether this is the first message in the deposit
 	           sequence (True) or not (False)
 	"""
 
-	def __init__(self, channelID=0, type="", isInitial=False, stage=0, payload=""):
+	def __init__(self, channelID=0, type="", isInitial=False, stage=0, payload=[]):
 		"""
 		Constructor.
 
@@ -600,7 +600,7 @@ class Deposit(ChannelMessage):
 		isInitial: bool; indicates whether this is the first message in the deposit
 			       sequence (True) or not (False)
 		stage: int; the stage (only used for interactions that have multiple stages)
-		payload: str; meaning depends on channel type and stage
+		payload: list of str; meaning depends on channel type, message type and stage
 		"""
 		ChannelMessage.__init__(self, ID_DEPOSIT, channelID, stage, payload)
 		self.type = type
@@ -648,17 +648,17 @@ class Withdraw(ChannelMessage):
 	Attributes:
 	channelID: int; the ID of the channel
 	stage: int; the stage (only used for interactions that have multiple stages)
-	payload: str; meaning depends on channel type and stage
+	payload: list of str; meaning depends on channel type, message type and stage
 	"""
 
-	def __init__(self, channelID=0, stage=0, payload=""):
+	def __init__(self, channelID=0, stage=0, payload=[]):
 		"""
 		Constructor.
 
 		Arguments:
 		channelID: int; the ID of the channel
 		stage: int; the stage (only used for interactions that have multiple stages)
-		payload: str; meaning depends on channel type and stage
+		payload: list of str; meaning depends on channel type, message type and stage
 		"""
 		ChannelMessage.__init__(self, ID_WITHDRAW, channelID, stage, payload)
 
@@ -671,18 +671,18 @@ class Lock(ChannelMessage):
 	Attributes:
 	channelID: int; the ID of the channel
 	stage: int; the stage (unused: always zero)
-	payload: str; meaning depends on channel type
+	payload: list of str; meaning depends on channel type, message type and stage
 	hash: str; the transaction hash
 	"""
 
-	def __init__(self, channelID=0, hash="", payload=""):
+	def __init__(self, channelID=0, hash="", payload=[]):
 		"""
 		Constructor.
 
 		Arguments:
 		channelID: int; the ID of the channel
 		hash: str; the transaction hash
-		payload: str; meaning depends on channel type
+		payload: list of str; meaning depends on channel type, message type and stage
 		"""
 
 		ChannelMessage.__init__(self, ID_LOCK, channelID, payload=payload)
@@ -723,18 +723,18 @@ class Commit(ChannelMessage):
 	Attributes:
 	channelID: int; the ID of the channel
 	stage: int; the stage (unused: always zero)
-	payload: str; meaning depends on channel type
+	payload: list of str; meaning depends on channel type, message type and stage
 	token: str; the transaction token
 	"""
 
-	def __init__(self, channelID=0, token="", payload=""):
+	def __init__(self, channelID=0, token="", payload=[]):
 		"""
 		Constructor.
 
 		Arguments:
 		channelID: int; the ID of the channel
 		token: str; the transaction token
-		payload: str; meaning depends on channel type
+		payload: list of str; meaning depends on channel type, message type and stage
 		"""
 
 		ChannelMessage.__init__(self, ID_COMMIT, channelID, payload=payload)
