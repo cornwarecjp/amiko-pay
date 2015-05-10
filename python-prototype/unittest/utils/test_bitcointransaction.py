@@ -82,6 +82,7 @@ class Test(unittest.TestCase):
 
 		self.assertEqual(OP.ZERO, 0x00)
 		self.assertEqual(OP.TWO, 0x52)
+		self.assertEqual(OP.RETURN, 0x6a)
 		self.assertEqual(OP.DUP, 0x76)
 		self.assertEqual(OP.EQUAL, 0x87)
 		self.assertEqual(OP.EQUALVERIFY, 0x88)
@@ -119,6 +120,15 @@ class Test(unittest.TestCase):
 
 		self.assertRaises(Exception, bitcointransaction.Script.multiSigPubKey,
 			["foo"])
+
+
+	def test_dataPubKey(self):
+		"Test the Script.dataPubKey method"
+
+		script = bitcointransaction.Script.dataPubKey("foobar")
+		self.assertTrue(isinstance(script, bitcointransaction.Script))
+		self.assertEqual(script.elements,
+			(OP.RETURN, "foobar"))
 
 
 	def test_script_deserialize(self):

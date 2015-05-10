@@ -45,7 +45,8 @@ Bitcoin standard:
 	ScriptSig:    <sig1> <sig2>
 
 Data output:
-	TODO (RETURN)
+	ScriptPubKey: RETURN <data>
+	ScriptSig:    N/A
 
 Time locking
 """
@@ -117,6 +118,7 @@ class OP:
 
 	ZERO = 0x00
 	TWO = 0x52
+	RETURN = 0x6a
 	DUP = 0x76
 	EQUAL  = 0x87
 	EQUALVERIFY = 0x88
@@ -183,6 +185,21 @@ class Script:
 
 		return Script([OP.TWO] + pubKeys + [OP_N, OP.CHECKMULTISIG])
 
+
+	@staticmethod
+	def dataPubKey(data):
+		"""
+		Creates a data publishing scriptPubKey.
+		This is a static method: it can be called without having an instance,
+		as an alternative to calling the constructor directly.
+
+		Arguments:
+		data: str; the data to be included in the scriptPubKey (max. 40 bytes)
+
+		Return value:
+		Script; a scriptPubKey for including data in a transaction.
+		"""
+		return Script((OP.RETURN, data))
 
 
 	@staticmethod
