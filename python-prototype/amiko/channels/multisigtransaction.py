@@ -263,24 +263,29 @@ class MultiSigTransaction:
 		self.transaction.tx_out = []
 
 		if len(self.TCDlist) > 0:
-			pass #TODO: add OP_RETURN output
+			serializedList = tcd.serializeList(self.TCDlist)
+			hashValue = RIPEMD160(SHA256(serializedList))
+			self.transaction.tx_out.append(bitcointransaction.TxOut(
+				0, #Don't send any funds here: they're unspendable.
+				bitcointransaction.Script.dataPubKey(hashValue)
+				))
 
 		if ownAmount > 0:
 			self.transaction.tx_out.append(bitcointransaction.TxOut(
 				ownAmount,
-				bitcointransaction.Script.standardPubKey(ownKeyHash))
-				)
+				bitcointransaction.Script.standardPubKey(ownKeyHash)
+				))
 
 		if peerAmount > 0:
 			self.transaction.tx_out.append(bitcointransaction.TxOut(
 				peerAmount,
-				bitcointransaction.Script.standardPubKey(peerKeyHash))
-				)
+				bitcointransaction.Script.standardPubKey(peerKeyHash)
+				))
 
 		if lockedAmount > 0:
 			self.transaction.tx_out.append(bitcointransaction.TxOut(
 				lockedAmount,
 				bitcointransaction.Script.multiSigPubKey(
-					[ownPubKey, peerPubKey, escrowPubKey]))
-					)
+					[ownPubKey, peerPubKey, escrowPubKey])
+				))
 

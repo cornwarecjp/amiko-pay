@@ -182,37 +182,43 @@ class Test(unittest.TestCase):
 			tcd.TCD(1, 2, 3, 'a'*20, 'b'*20, 'c'*20),
 			tcd.TCD(4, 5, 6, 'd'*20, 'e'*20, 'f'*20)
 			]
+		serializedList = tcd.serializeList(txn.TCDlist)
 
 		txn.setOutputs(
 			"ownPubKey", "peerPubKey", "escrowPubKey",
 			1234, 5678)
 
 		tx = txn.transaction
-		self.assertEqual(len(tx.tx_in), 1)
-		self.assertEqual(len(tx.tx_out), 3) #TODO: 4
 
+		self.assertEqual(len(tx.tx_in), 1)
 		tx_in = tx.tx_in[0]
 		self.assertEqual(tx_in.previousOutputHash, "x"*32)
 		self.assertEqual(tx_in.previousOutputIndex, 0)
 		self.assertEqual(tx_in.scriptSig.elements, tuple())
 
+		def testTCDOutput(tx_out):
+			self.assertEqual(tx_out.amount, 0)
+			self.assertEqual(tx_out.scriptPubKey.elements,
+				(OP.RETURN, crypto.RIPEMD160(crypto.SHA256(serializedList))))
 		def testOwnOutput(tx_out):
-			self.assertEqual(tx_out[0].amount, 1234)
-			self.assertEqual(tx_out[0].scriptPubKey.elements,
+			self.assertEqual(tx_out.amount, 1234)
+			self.assertEqual(tx_out.scriptPubKey.elements,
 				(OP.DUP, OP.HASH160, crypto.RIPEMD160(crypto.SHA256("ownPubKey")), OP.EQUALVERIFY, OP.CHECKSIG))
 		def testPeerOutput(tx_out):
-			self.assertEqual(tx_out[1].amount, 5678)
-			self.assertEqual(tx_out[1].scriptPubKey.elements,
+			self.assertEqual(tx_out.amount, 5678)
+			self.assertEqual(tx_out.scriptPubKey.elements,
 				(OP.DUP, OP.HASH160, crypto.RIPEMD160(crypto.SHA256("peerPubKey")), OP.EQUALVERIFY, OP.CHECKSIG))
 		def testLockOutput(tx_out):
-			self.assertEqual(tx_out[2].amount, 9)
-			self.assertEqual(tx_out[2].scriptPubKey.elements,
+			self.assertEqual(tx_out.amount, 9)
+			self.assertEqual(tx_out.scriptPubKey.elements,
 				[OP.TWO, "ownPubKey", "peerPubKey", "escrowPubKey", OP.TWO+1, OP.CHECKMULTISIG])
 
 		tx_out = tx.tx_out
-		testOwnOutput(tx_out)
-		testPeerOutput(tx_out)
-		testLockOutput(tx_out)
+		self.assertEqual(len(tx_out), 4)
+		testTCDOutput(tx_out[0])
+		testOwnOutput(tx_out[1])
+		testPeerOutput(tx_out[2])
+		testLockOutput(tx_out[3])
 
 
 		txn.TCDlist = []
@@ -220,18 +226,18 @@ class Test(unittest.TestCase):
 			"ownPubKey", "peerPubKey", "escrowPubKey",
 			1234, 5678)
 		tx = txn.transaction
-		self.assertEqual(len(tx.tx_out), 2)
 		tx_out = tx.tx_out
-		testOwnOutput(tx_out)
-		testPeerOutput(tx_out)
+		self.assertEqual(len(tx_out), 2)
+		testOwnOutput(tx_out[0])
+		testPeerOutput(tx_out[1])
 
 		txn.setOutputs(
 			"ownPubKey", "peerPubKey", "escrowPubKey",
 			1234, 0)
 		tx = txn.transaction
-		self.assertEqual(len(tx.tx_out), 1)
 		tx_out = tx.tx_out
-		testOwnOutput(tx_out)
+		self.assertEqual(len(tx_out), 1)
+		testOwnOutput(tx_out[0])
 
 		txn.setOutputs(
 			"ownPubKey", "peerPubKey", "escrowPubKey",
