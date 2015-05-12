@@ -364,7 +364,7 @@ class MultiSigChannel(channel.Channel):
 			self.stage = stages["OwnDeposit_SendingPublicKey"]
 			return messages.Deposit(
 				self.ID, self.getType(), isInitial=True, stage=self.stage,
-				payload=[self.ownKey.getPublicKey()])
+				payload=[self.ownKey.getPublicKey(), self.escrowKey.getPublicKey()])
 
 		elif self.stage == stages["PeerDeposit_Initial"] and \
 			message.stage == stages["OwnDeposit_SendingPublicKey"]:
@@ -372,6 +372,9 @@ class MultiSigChannel(channel.Channel):
 			#Received deposit message with public key from peer
 			self.peerKey = crypto.Key()
 			self.peerKey.setPublicKey(message.payload[0])
+			self.escrowKey = crypto.Key()
+			self.escrowKey.setPublicKey(message.payload[1])
+			#TODO: check whether the escrow key is accepted
 			self.stage = stages["PeerDeposit_SendingPublicKey"]
 			return messages.Deposit(
 				self.ID, self.getType(), stage=self.stage,
