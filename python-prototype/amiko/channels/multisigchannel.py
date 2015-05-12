@@ -563,7 +563,7 @@ class MultiSigChannel(channel.Channel):
 
 		ownPubKey = self.ownKey.getPublicKey()
 		peerPubKey = self.peerKey.getPublicKey()
-		escrowPubKey = ownPubKey #TODO!!!
+		escrowPubKey = self.escrowKey.getPublicKey()
 
 		self.T2_latest.setOutputs(ownPubKey, peerPubKey, escrowPubKey,
 			amountLocal, amountRemote)
@@ -573,7 +573,6 @@ class MultiSigChannel(channel.Channel):
 
 	def makeTransactionPayload(self):
 		pubKey1, pubKey2 = self.getPublicKeyPair()
-		#TODO: add escrow key
 		ownSignature = signMultiSigTransaction(
 			self.T2_latest.transaction, 0, [pubKey1, pubKey2], self.ownKey)
 
@@ -584,7 +583,6 @@ class MultiSigChannel(channel.Channel):
 		peerSignature = payload[0]
 		T2 = MultiSigTransaction.deserialize(payload[1])
 
-		#TODO: add escrow key
 		pubKey1, pubKey2 = self.getPublicKeyPair()
 		if not verifyMultiSigSignature(
 			T2.transaction, 0, [pubKey1, pubKey2], self.peerKey, peerSignature):
