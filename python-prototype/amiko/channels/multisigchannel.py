@@ -556,10 +556,10 @@ class MultiSigChannel(channel.Channel):
 	def makeTransactionT2(self):
 		amountLocal = \
 			self.amountLocal + \
-			sum(self.transactionsOutgoingReserved.values())
+			sum([tx.amount for tx in self.transactionsOutgoingReserved.values()])
 		amountRemote = \
 			self.amountRemote + \
-			sum(self.transactionsIncomingReserved.values())
+			sum([tx.amount for tx in self.transactionsIncomingReserved.values()])
 
 		ownPubKey = self.ownKey.getPublicKey()
 		peerPubKey = self.peerKey.getPublicKey()
@@ -600,9 +600,10 @@ class MultiSigChannel(channel.Channel):
 
 		ownKeyHash = crypto.RIPEMD160(crypto.SHA256(self.ownKey.getPublicKey()))
 		peerKeyHash = crypto.RIPEMD160(crypto.SHA256(self.peerKey.getPublicKey()))
+		tx = self.transactionsOutgoingLocked[hash]
 		self.T2_latest.addTCD(TCD(
-			startTime=0, endTime=0, #TODO!!!
-			amount=self.transactionsOutgoingLocked[hash], tokenHash=hash,
+			startTime=tx.startTime, endTime=tx.endTime,	amount=tx.amount,
+			tokenHash=hash,
 			commitAddress=peerKeyHash, rollbackAddress=ownKeyHash
 			))
 		self.makeTransactionT2()

@@ -55,6 +55,24 @@ class Test(unittest.TestCase):
 		self.channel = channel.Channel(s)
 
 
+	def test_Transaction(self):
+		"Test Transaction class"
+
+		tx = channel.Transaction(1, 2, 3)
+		self.assertEqual(tx.startTime, 1)
+		self.assertEqual(tx.endTime, 2)
+		self.assertEqual(tx.amount, 3)
+
+		s = tx.getState()
+		self.assertEqual(s, {"startTime": 1, "endTime": 2, "amount": 3})
+
+		tx = channel.Transaction.makeFromState(
+			{"startTime": 4, "endTime": 5, "amount": 6})
+		self.assertEqual(tx.startTime, 4)
+		self.assertEqual(tx.endTime, 5)
+		self.assertEqual(tx.amount, 6)
+
+
 	def test_constructor(self):
 		"Test channel constructor"
 
@@ -93,22 +111,40 @@ class Test(unittest.TestCase):
 			self.assertEqual(s["transactionsOutgoingLocked"], {})
 
 		self.channel.transactionsIncomingReserved = \
-			{binascii.unhexlify("abcd"): 12, binascii.unhexlify("1234"): 34}
+		{
+			binascii.unhexlify("abcd"): channel.Transaction(1, 2, 12),
+			binascii.unhexlify("1234"): channel.Transaction(3, 4, 34)
+		}
 		self.channel.transactionsOutgoingReserved = \
-			{binascii.unhexlify("0000"): 56}
+		{
+			binascii.unhexlify("0000"): channel.Transaction(5, 6, 56)
+		}
 		self.channel.transactionsIncomingLocked = \
-			{binascii.unhexlify("12"): 78}
+		{
+			binascii.unhexlify("12"): channel.Transaction(7, 8, 78)
+		}
 		self.channel.transactionsOutgoingLocked = \
-			{binascii.unhexlify("f000"): 90}
+		{
+			binascii.unhexlify("f000"): channel.Transaction(9, 0, 90)
+		}
 		s = self.channel.getState()
 		self.assertEqual(s["transactionsIncomingReserved"],
-			{"abcd": 12, "1234": 34})
+			{
+				"abcd": {"startTime": 1, "endTime": 2, "amount": 12},
+				"1234": {"startTime": 3, "endTime": 4, "amount": 34}
+			})
 		self.assertEqual(s["transactionsOutgoingReserved"],
-			{"0000": 56})
+			{
+				"0000": {"startTime": 5, "endTime": 6, "amount": 56}
+			})
 		self.assertEqual(s["transactionsIncomingLocked"],
-			{"12": 78})
+			{
+				"12": {"startTime": 7, "endTime": 8, "amount": 78}
+			})
 		self.assertEqual(s["transactionsOutgoingLocked"],
-			{"f000": 90})
+			{
+				"f000": {"startTime": 9, "endTime": 0, "amount": 90}
+			})
 
 
 	def test_reserve(self):
@@ -132,7 +168,9 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.channel.amountLocal, 75)
 		self.assertEqual(self.channel.amountRemote, 200)
 		self.assertEqual(self.channel.transactionsIncomingReserved, {})
-		self.assertEqual(self.channel.transactionsOutgoingReserved, {"foo": 25})
+		self.assertEqual(self.channel.transactionsOutgoingReserved.keys(), ["foo"])
+		#TODO: startTime, endTime
+		self.assertEqual(self.channel.transactionsOutgoingReserved["foo"].amount, 25)
 		self.assertEqual(self.channel.transactionsIncomingLocked, {})
 		self.assertEqual(self.channel.transactionsOutgoingLocked, {})
 
@@ -142,7 +180,9 @@ class Test(unittest.TestCase):
 		self.channel.reserve(False, "foo", 25)
 		self.assertEqual(self.channel.amountLocal, 100)
 		self.assertEqual(self.channel.amountRemote, 175)
-		self.assertEqual(self.channel.transactionsIncomingReserved, {"foo": 25})
+		self.assertEqual(self.channel.transactionsIncomingReserved.keys(), ["foo"])
+		#TODO: startTime, endTime
+		self.assertEqual(self.channel.transactionsIncomingReserved["foo"].amount, 25)
 		self.assertEqual(self.channel.transactionsOutgoingReserved, {})
 		self.assertEqual(self.channel.transactionsIncomingLocked, {})
 		self.assertEqual(self.channel.transactionsOutgoingLocked, {})
@@ -153,23 +193,29 @@ class Test(unittest.TestCase):
 
 		message = Dummy()
 		message.hash = "foo"
-		self.channel.transactionsIncomingReserved = {"foo": 25}
+		self.channel.transactionsIncomingReserved = \
+			{"foo": channel.Transaction(0, 0, 25)}
 		self.channel.lockIncoming(message)
 		self.assertEqual(self.channel.transactionsIncomingReserved, {})
 		self.assertEqual(self.channel.transactionsOutgoingReserved, {})
-		self.assertEqual(self.channel.transactionsIncomingLocked, {"foo": 25})
+		self.assertEqual(self.channel.transactionsIncomingLocked.keys(), ["foo"])
+		#TODO: startTime, endTime
+		self.assertEqual(self.channel.transactionsIncomingLocked["foo"].amount, 25)
 		self.assertEqual(self.channel.transactionsOutgoingLocked, {})
 
 
 	def test_lockOutgoing(self):
 		"Test the lockOutgoing method"
 
-		self.channel.transactionsOutgoingReserved = {"foo": 25}
+		self.channel.transactionsOutgoingReserved = \
+			{"foo": channel.Transaction(0, 0, 25)}
 		message = self.channel.lockOutgoing("foo")
 		self.assertEqual(self.channel.transactionsIncomingReserved, {})
 		self.assertEqual(self.channel.transactionsOutgoingReserved, {})
 		self.assertEqual(self.channel.transactionsIncomingLocked, {})
-		self.assertEqual(self.channel.transactionsOutgoingLocked, {"foo": 25})
+		self.assertEqual(self.channel.transactionsOutgoingLocked.keys(), ["foo"])
+		#TODO: startTime, endTime
+		self.assertEqual(self.channel.transactionsOutgoingLocked["foo"].amount, 25)
 
 		self.assertTrue(isinstance(message, messages.Lock))
 		self.assertEqual(message.channelID, 3)
@@ -180,7 +226,8 @@ class Test(unittest.TestCase):
 		"Test the commitIncoming method"
 
 		message = Dummy()
-		self.channel.transactionsIncomingLocked = {"foo": 25}
+		self.channel.transactionsIncomingLocked = \
+			{"foo": channel.Transaction(0, 0, 25)}
 		self.channel.amountLocal = 100
 		self.channel.commitIncoming("foo", message)
 		self.assertEqual(self.channel.amountLocal, 125)
@@ -193,7 +240,8 @@ class Test(unittest.TestCase):
 	def test_commitOutgoing(self):
 		"Test the commitOutgoing method"
 
-		self.channel.transactionsOutgoingLocked = {"foo": 25}
+		self.channel.transactionsOutgoingLocked = \
+			{"foo": channel.Transaction(0, 0, 25)}
 		self.channel.amountRemote = 100
 		message = self.channel.commitOutgoing("foo", "bar")
 		self.assertEqual(self.channel.amountRemote, 125)

@@ -35,6 +35,78 @@ class CheckFail(Exception):
 
 
 
+class Transaction:
+	"""
+	Information about a micro-transaction in a payment channel.
+
+	Attributes:
+	startTime: int; start of the time range when the transaction token must
+	           be published (UNIX time)
+	endTime: int; end of the time range when the transaction token must
+	         be published (UNIX time)
+	amount: int; the amount (in Satoshi) locked for the transaction
+	"""
+
+	@staticmethod
+	def makeFromState(state):
+		"""
+		Make a Transaction, based on the given state object.
+		This is a static method: it can be called without having an instance,
+		as an alternative to calling the constructor directly.
+
+		Arguments:
+		state: A data structure, consisting of only standard Python types like
+		       dict, list, str, bool, int.
+
+		Return value:
+		Transaction; the created transaction structure.
+
+		Exceptions:
+		Exception: loading from the state object failed
+		"""
+		return Transaction(state["startTime"], state["endTime"], state["amount"])
+
+
+	def __init__(self, startTime, endTime, amount):
+		"""
+		Constructor.
+
+		Arguments:
+		startTime: int; start of the time range when the transaction token must
+		           be published (UNIX time)
+		endTime: int; end of the time range when the transaction token must
+		         be published (UNIX time)
+		amount: int; the amount (in Satoshi) locked for the transaction
+		"""
+		self.startTime = startTime
+		self.endTime = endTime
+		self.amount = amount
+
+
+	def getState(self, forDisplay=False):
+		"""
+		Return a data structure that contains state information of the transaction.
+
+		Arguments:
+		forDisplay: bool; indicates whether the returned state is for user
+		            interface display purposes (True) or for state saving
+		            purposes (False). For user interface display purposes, a
+		            summary may be returned instead of the complete state.
+
+		Return value:
+		A data structure, consisting of only standard Python types like dict,
+		list, str, bool, int.
+		"""
+
+		return \
+		{
+			"startTime": self.startTime,
+			"endTime": self.endTime,
+			"amount": self.amount
+		}
+
+
+
 class Channel:
 	"""
 	Payment channel without any protection.
@@ -99,32 +171,33 @@ class Channel:
 		"amountRemote"          : self.amountRemote,
 
 		"transactionsIncomingReserved":
-			self.__encodeDict(self.transactionsIncomingReserved),
-		"transactionsOutgoingReserved": 
-			self.__encodeDict(self.transactionsOutgoingReserved),
-		"transactionsIncomingLocked"  : 
-			self.__encodeDict(self.transactionsIncomingLocked),
-		"transactionsOutgoingLocked"  : 
-			self.__encodeDict(self.transactionsOutgoingLocked)
+			self.__encodeTxes(self.transactionsIncomingReserved),
+		"transactionsOutgoingReserved":
+			self.__encodeTxes(self.transactionsOutgoingReserved),
+		"transactionsIncomingLocked"  :
+			self.__encodeTxes(self.transactionsIncomingLocked),
+		"transactionsOutgoingLocked"  :
+			self.__encodeTxes(self.transactionsOutgoingLocked)
 		}
 
 
-	def __encodeDict(self, d):
+	def __encodeTxes(self, txes):
 		"""
-		Transforms a dictionary by rewriting the keys to a hexadecimal encoding.
+		Returns the state object for a dict of transactions.
+		The dict keys are transformed to a hex encoding; the getState method
+		of each value is called to determine its state.
 
 		Arguments:
-		d: dict; a dictionary with keys that are of type str and may contain
-		   arbitrary binary data.
+		txes: dict of (str, Transaction); the dict of transactions
 
 		Return value:
-		dict; a dictionary with keys that are hex-encoded versions of the keys
-		in d, and values equal to the corresponding values in d.
+		A data structure, consisting of only standard Python types like dict,
+		list, str, bool, int.
 		"""
 
 		ret = {}
-		for k,v in d.iteritems():
-			ret[k.encode("hex")] = v
+		for k,v in txes.iteritems():
+			ret[k.encode("hex")] = v.getState()
 		return ret
 
 
@@ -148,13 +221,15 @@ class Channel:
 				raise CheckFail("Insufficient funds")
 
 			self.amountLocal -= amount
-			self.transactionsOutgoingReserved[hash] = amount
+			self.transactionsOutgoingReserved[hash] = \
+				Transaction(0, 0, amount) #TODO: times
 		else:
 			if self.amountRemote < amount:
 				raise CheckFail("Insufficient funds")
 
 			self.amountRemote -= amount
-			self.transactionsIncomingReserved[hash] = amount
+			self.transactionsIncomingReserved[hash] = \
+				Transaction(0, 0, amount) #TODO: times
 
 
 	def lockIncoming(self, message):
@@ -208,7 +283,7 @@ class Channel:
 		CheckFail: A check has failed, and the committing was not performed.
 		"""
 
-		self.amountLocal += self.transactionsIncomingLocked[hash]
+		self.amountLocal += self.transactionsIncomingLocked[hash].amount
 		del self.transactionsIncomingLocked[hash]
 
 
@@ -227,7 +302,7 @@ class Channel:
 		KeyError: the hash did not match any locked funds.
 		"""
 
-		self.amountRemote += self.transactionsOutgoingLocked[hash]
+		self.amountRemote += self.transactionsOutgoingLocked[hash].amount
 		del self.transactionsOutgoingLocked[hash]
 		return messages.Commit(self.ID, token=token)
 
