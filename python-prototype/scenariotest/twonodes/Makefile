@@ -2,5 +2,5 @@ test:
 	python twonodes.py
 
 clean:
-	rm *.dat *.log
+	-rm *.dat *.log
 

@@ -2,5 +2,5 @@ test:
 	python largenetwork.py
 
 clean:
-	rm *.dat *.log
+	-rm *.dat *.log
 
