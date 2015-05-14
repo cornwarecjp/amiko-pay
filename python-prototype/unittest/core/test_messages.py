@@ -46,12 +46,13 @@ class Test(unittest.TestCase):
 		self.assertEqual(messages.ID_CONFIRM     , 5)
 		self.assertEqual(messages.ID_MAKEROUTE   , 6)
 		self.assertEqual(messages.ID_HAVEROUTE   , 7)
-		self.assertEqual(messages.ID_LOCK        , 8)
-		self.assertEqual(messages.ID_CANCEL      , 9)
-		self.assertEqual(messages.ID_COMMIT      , 10)
-		self.assertEqual(messages.ID_MYURLS      , 11)
-		self.assertEqual(messages.ID_DEPOSIT     , 12)
-		self.assertEqual(messages.ID_WITHDRAW    , 13)
+		self.assertEqual(messages.ID_HAVENOROUTE , 8)
+		self.assertEqual(messages.ID_LOCK        , 9)
+		self.assertEqual(messages.ID_CANCEL      , 10)
+		self.assertEqual(messages.ID_COMMIT      , 11)
+		self.assertEqual(messages.ID_MYURLS      , 12)
+		self.assertEqual(messages.ID_DEPOSIT     , 13)
+		self.assertEqual(messages.ID_WITHDRAW    , 14)
 
 
 	def test_BinListSerialization(self):
@@ -121,6 +122,16 @@ class Test(unittest.TestCase):
 		msg = messages.HaveRoute("Foo")
 		self.assertEqual(msg.serialize(), "\x00\x00\x00%cFoo" % \
 			messages.ID_HAVEROUTE)
+		msg.deserializeAttributes("Bar")
+		self.assertEqual(msg.value, "Bar")
+
+
+	def test_HaveNoRoute(self):
+		"Test HaveNoRoute message class"
+
+		msg = messages.HaveNoRoute("Foo")
+		self.assertEqual(msg.serialize(), "\x00\x00\x00%cFoo" % \
+			messages.ID_HAVENOROUTE)
 		msg.deserializeAttributes("Bar")
 		self.assertEqual(msg.value, "Bar")
 

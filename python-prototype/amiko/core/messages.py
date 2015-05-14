@@ -40,12 +40,13 @@ ID_RECEIPT     = 4
 ID_CONFIRM     = 5
 ID_MAKEROUTE   = 6
 ID_HAVEROUTE   = 7
-ID_LOCK        = 8
-ID_CANCEL      = 9
-ID_COMMIT      = 10
-ID_MYURLS      = 11
-ID_DEPOSIT     = 12
-ID_WITHDRAW    = 13
+ID_HAVENOROUTE = 8
+ID_LOCK        = 9
+ID_CANCEL      = 10
+ID_COMMIT      = 11
+ID_MYURLS      = 12
+ID_DEPOSIT     = 13
+ID_WITHDRAW    = 14
 
 
 
@@ -191,6 +192,7 @@ def deserialize(s):
 		ID_CONFIRM: Confirm,
 		ID_MAKEROUTE: MakeRoute,
 		ID_HAVEROUTE: HaveRoute,
+		ID_HAVENOROUTE: HaveNoRoute,
 		ID_LOCK: Lock,
 		ID_CANCEL: Cancel,
 		ID_COMMIT: Commit,
@@ -303,6 +305,25 @@ class HaveRoute(String):
 		value: str; the transaction hash
 		"""
 		String.__init__(self, value, ID_HAVEROUTE)
+
+
+
+class HaveNoRoute(String):
+	"""
+	Have no route message (sent from meeting point side to payer/payee side)
+
+	Attributes:
+	value: str; the transaction hash
+	"""
+
+	def __init__(self, value=""):
+		"""
+		Constructor.
+
+		Arguments:
+		value: str; the transaction hash
+		"""
+		String.__init__(self, value, ID_HAVENOROUTE)
 
 
 
