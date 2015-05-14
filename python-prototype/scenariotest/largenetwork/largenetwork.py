@@ -141,8 +141,8 @@ for i in range(len(nodes)):
 	pprint.pprint(nodes[i].list())
 
 
-#Pay from 0 to 5:
-URL = nodes[5].request(123, "receipt")
+#Pay from 0 to 6:
+URL = nodes[6].request(123, "receipt")
 print "Payment URL:", URL
 
 payer = nodes[0].pay(URL)
