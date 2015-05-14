@@ -232,34 +232,26 @@ class Channel:
 				Transaction(0, 0, amount) #TODO: times
 
 
-	def unreserveIncoming(self, hash):
+	def unreserve(self, isPayerSide, hash):
 		"""
-		Un-reserves the funds for an incoming payment.
+		Un-reserves the funds for an incoming or outgoing payment.
 
 		Arguments:
+		isPayerSide: bool; indicates whether we are on the payer side (True) or
+		             not (False). Note that the payer side corresponds to an
+		             outgoing transaction and payee side to an incoming one.
 		hash: str; the SHA256- and RIPEMD160-hashed commit token.
 
 		Exceptions:
-		Exception: the hash does not correspond to any reserved incoming funds.
+		Exception: the hash does not correspond to any reserved funds.
 		"""
 
-		self.amountRemote += self.transactionsIncomingReserved[hash].amount
-		del self.transactionsIncomingReserved[hash]
-
-
-	def unreserveOutgoing(self, hash):
-		"""
-		Un-reserves the funds for an outgoing payment.
-
-		Arguments:
-		hash: str; the SHA256- and RIPEMD160-hashed commit token.
-
-		Exceptions:
-		Exception: the hash does not correspond to any reserved outgoing funds.
-		"""
-
-		self.amountLocal += self.transactionsOutgoingReserved[hash].amount
-		del self.transactionsOutgoingReserved[hash]
+		if isPayerSide:
+			self.amountLocal += self.transactionsOutgoingReserved[hash].amount
+			del self.transactionsOutgoingReserved[hash]
+		else:
+			self.amountRemote += self.transactionsIncomingReserved[hash].amount
+			del self.transactionsIncomingReserved[hash]
 
 
 	def lockIncoming(self, message):
