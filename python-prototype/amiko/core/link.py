@@ -231,7 +231,7 @@ class Link(event.Handler):
 
 
 	def msg_makeRoute(self, transaction):
-		log.log("Link: makeRoute")
+		log.log("Link %s: makeRoute" % self.name)
 
 		try:
 
@@ -260,17 +260,23 @@ class Link(event.Handler):
 		except channel.CheckFail as f:
 			log.log("Route refused by link: " + str(f))
 
-			#Send back a cancel immediately
-			transaction.msg_cancelRoute()
+			#Send back a have no route immediately
+			transaction.msg_haveNoRoute()
 
 
-	#TODO: msg_cancelRoute handling
+	def msg_haveNoRoute(self, transaction):
+		log.log("Link %s: have no route" % self.name)
+		#TODO: check whether we're still connected
+		self.connection.sendMessage(messages.HaveNoRoute(transaction.hash))
 
 
 	def msg_haveRoute(self, transaction):
-		log.log("Link: haveRoute")
+		log.log("Link %s: haveRoute" % self.name)
 		#TODO: check whether we're still connected
 		self.connection.sendMessage(messages.HaveRoute(transaction.hash))
+
+
+	#TODO: msg_cancelRoute handling
 
 
 	def msg_lock(self, transaction):
@@ -317,7 +323,7 @@ class Link(event.Handler):
 				self.context.sendSignal(None, event.signals.save)
 
 		elif message.__class__ == messages.MakeRoute:
-			log.log("Link received MakeRoute")
+			log.log("Link %s: received MakeRoute" % self.name)
 
 			try:
 				#TODO: do all sorts of checks to see if it makes sense to perform
@@ -336,7 +342,7 @@ class Link(event.Handler):
 			except channel.CheckFail as f:
 				log.log("Route refused by link: " + str(f))
 
-				#Send back a cancel immediately
+				#Send back a have no route immediately
 				#TODO
 
 				return
@@ -353,10 +359,15 @@ class Link(event.Handler):
 					payeeLink=self)
 
 			#This will start the transaction routing
-			self.openTransactions[message.hash].msg_makeRoute()
+			#Give it our own ID, to prevent routing back to this link.
+			self.openTransactions[message.hash].msg_makeRoute(self.localID)
+
+		elif message.__class__ == messages.HaveNoRoute:
+			log.log("Link %s: received have no route" % self.name)
+			self.openTransactions[message.value].msg_haveNoRoute()
 
 		elif message.__class__ == messages.HaveRoute:
-			log.log("Link received HaveRoute")
+			log.log("Link %s: received HaveRoute" % self.name)
 			self.openTransactions[message.value].msg_haveRoute(self)
 
 		elif message.__class__ == messages.Lock:
