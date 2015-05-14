@@ -81,7 +81,13 @@ class DummyMeetingPoint(Tracer):
 
 class DummyRoutingContext:
 	def __init__(self):
-		self.links = [DummyLink("link1"), DummyLink("link2"), DummyLink("link3")]
+		self.links = \
+		[
+			DummyLink("link1"),
+			DummyLink("link2"),
+			DummyLink("link3"),
+			DummyLink("link4")
+		]
 		self.meetingPoints = []
 
 

@@ -101,7 +101,7 @@ class Transaction:
 			"isPayerSide should only be called when routing is unfinished")
 
 
-	def msg_makeRoute(self):
+	def msg_makeRoute(self, sourceLinkID=None):
 		"""
 		This method is typically called by the already-existing link to
 		initiate the routing for the non-existing link.
@@ -112,6 +112,10 @@ class Transaction:
 		already attached link (either payerLink or payeeLink, whichever is
 		non-None).
 
+		Arguments:
+		sourceLinkID: str; the ID of the source link (if any).
+		              This ID will be skipped in routing attempts.
+
 		Exceptions:
 		Exception: function is called while we already have a route
 		           (both links are non-None).
@@ -120,6 +124,10 @@ class Transaction:
 		#If we are the meeting point, we're finished:
 		if self.__tryMeetingPoint():
 			return #found -> finished
+
+		#Remove sourceLinkID from the to-be-tried routes:
+		while sourceLinkID in self.__remainingRoutes:
+			self.__remainingRoutes.remove(sourceLinkID)
 
 		#Note: this will just try the first route.
 		#However, if that fails we'll be notified about it, and then

@@ -113,15 +113,16 @@ class Test(unittest.TestCase):
 
 			self.routingContext.links[0].trace = []
 
-			#Routed to second link:
-			self.transaction.msg_makeRoute()
+			#Skip route to second link:
+			self.transaction.msg_makeRoute(sourceLinkID="link2")
 			self.assertEqual(self.routingContext.links[0].trace, [])
-			self.assertEqual(self.routingContext.links[1].trace,
+			self.assertEqual(self.routingContext.links[1].trace, [])
+			self.assertEqual(self.routingContext.links[2].trace,
 				[('msg_makeRoute', (self.transaction,), {})]
 				)
-
-			self.routingContext.links[1].trace = []
 			self.assertEqual(sourceLink.trace, [])
+
+			self.routingContext.links[2].trace = []
 
 			#Remove the last link:
 			lastlink = self.routingContext.links[-1]
