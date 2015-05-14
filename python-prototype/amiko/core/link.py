@@ -267,6 +267,11 @@ class Link(event.Handler):
 	def msg_haveNoRoute(self, transaction):
 		log.log("Link %s: have no route" % self.name)
 		#TODO: check whether we're still connected
+
+		#Note: isPayerSide is inverted: on the payer side, we have to cancel an
+		#INCOMING transaction.
+		#TODO: use multiple channels
+		self.channels[0].unreserve(not transaction.isPayerSide(), transaction.hash)
 		self.connection.sendMessage(messages.HaveNoRoute(transaction.hash))
 
 
@@ -364,7 +369,10 @@ class Link(event.Handler):
 
 		elif message.__class__ == messages.HaveNoRoute:
 			log.log("Link %s: received have no route" % self.name)
-			self.openTransactions[message.value].msg_haveNoRoute()
+			#TODO: use multiple channels
+			tx = self.openTransactions[message.value]
+			self.channels[0].unreserve(tx.isPayerSide(), tx.hash)
+			tx.msg_haveNoRoute()
 
 		elif message.__class__ == messages.HaveRoute:
 			log.log("Link %s: received HaveRoute" % self.name)
