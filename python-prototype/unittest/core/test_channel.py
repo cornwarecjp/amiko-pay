@@ -188,6 +188,40 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.channel.transactionsOutgoingLocked, {})
 
 
+	def test_unreserveIncoming(self):
+		"Test the unreserveIncoming method"
+
+		self.channel.amountLocal = 100
+		self.channel.amountRemote = 200
+		self.channel.transactionsIncomingReserved = {"foo": channel.Transaction(25, 0, 0)}
+
+		self.channel.unreserveIncoming("foo")
+
+		self.channel.amountLocal = 100
+		self.channel.amountRemote = 225
+		self.assertEqual(self.channel.transactionsIncomingReserved, {})
+		self.assertEqual(self.channel.transactionsOutgoingReserved, {})
+		self.assertEqual(self.channel.transactionsIncomingLocked, {})
+		self.assertEqual(self.channel.transactionsOutgoingLocked, {})
+
+
+	def test_unreserveOutgoing(self):
+		"Test the unreserveOutgoing method"
+
+		self.channel.amountLocal = 100
+		self.channel.amountRemote = 200
+		self.channel.transactionsOutgoingReserved = {"foo": channel.Transaction(25, 0, 0)}
+
+		self.channel.unreserveOutgoing("foo")
+
+		self.channel.amountLocal = 125
+		self.channel.amountRemote = 200
+		self.assertEqual(self.channel.transactionsIncomingReserved, {})
+		self.assertEqual(self.channel.transactionsOutgoingReserved, {})
+		self.assertEqual(self.channel.transactionsIncomingLocked, {})
+		self.assertEqual(self.channel.transactionsOutgoingLocked, {})
+
+
 	def test_lockIncoming(self):
 		"Test the lockIncoming method"
 

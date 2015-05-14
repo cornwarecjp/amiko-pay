@@ -232,6 +232,36 @@ class Channel:
 				Transaction(0, 0, amount) #TODO: times
 
 
+	def unreserveIncoming(self, hash):
+		"""
+		Un-reserves the funds for an incoming payment.
+
+		Arguments:
+		hash: str; the SHA256- and RIPEMD160-hashed commit token.
+
+		Exceptions:
+		Exception: the hash does not correspond to any reserved incoming funds.
+		"""
+
+		self.amountRemote += self.transactionsIncomingReserved[hash].amount
+		del self.transactionsIncomingReserved[hash]
+
+
+	def unreserveOutgoing(self, hash):
+		"""
+		Un-reserves the funds for an outgoing payment.
+
+		Arguments:
+		hash: str; the SHA256- and RIPEMD160-hashed commit token.
+
+		Exceptions:
+		Exception: the hash does not correspond to any reserved outgoing funds.
+		"""
+
+		self.amountLocal += self.transactionsOutgoingReserved[hash].amount
+		del self.transactionsOutgoingReserved[hash]
+
+
 	def lockIncoming(self, message):
 		"""
 		Lock previously reserved funds for an incoming transaction.
