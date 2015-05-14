@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    twonodes.py
+#    largenetwork.py
 #    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -29,30 +29,68 @@
 
 import time
 import pprint
+import json
 import sys
 sys.path.append('../..')
 
 from amiko import node
 from amiko.core import event, settings
 
-settings1 = settings.Settings()
-settings1.RPCURL = "dummy"
-settings1.listenHost = "localhost"
-settings1.listenPort = 4322
-settings1.advertizedHost = settings1.listenHost
-settings1.advertizedPort = settings1.listenPort
-settings1.stateFile = "twonodes_1.dat"
-settings1.payLogFile = "payments1.log"
-with open(settings1.stateFile, "wb") as f:
-	f.write("""
-		{
-		"links":
-		[
+
+
+"""
+The network has the following shape:
+
+            (4)
+             |
+            (3)
+             |
+(0) - (1) - (2) - (5) - (6)
+             |
+            (7)
+             |
+            (8)
+
+Payment is between 0 and 6
+"""
+
+linkDefinitions = \
+[
+	[1],          #0
+	[0, 2],       #1
+	[1, 3, 5, 7], #2
+	[2, 4],       #3
+	[3],          #4
+	[2, 6],       #5
+	[5],          #6
+	[2, 8],       #7
+	[7]           #8
+]
+
+ports = [4321+i for i in range(len(linkDefinitions))]
+
+nodes = []
+for i in range(len(linkDefinitions)):
+	links = linkDefinitions[i]
+	s = settings.Settings()
+	s.RPCURL = "dummy"
+	s.listenHost = "localhost"
+	s.listenPort = ports[i]
+	s.advertizedHost = s.listenHost
+	s.advertizedPort = s.listenPort
+	s.stateFile = "state_%d.dat" % i
+	s.payLogFile = "payments_%d.log" % i
+
+	linkStates = []
+	for link in links:
+		localID = "link_to_%d" % link
+		remoteID = "link_to_%d" % i
+		linkStates.append(
 			{
-			"name": "node1",
-			"localID": "node1",
-			"remoteID": "node2",
-			"remoteURL": "amikolink://localhost:4323/node2",
+			"name": localID,
+			"localID": localID,
+			"remoteID": remoteID,
+			"remoteURL": "amikolink://localhost:%d/%s" % (ports[link], remoteID),
 			"channels":
 			[{
 				"ID": 0,
@@ -65,87 +103,65 @@ with open(settings1.stateFile, "wb") as f:
 				"type": "plain"
 			}]
 			}
-		],
+			)
 
-		"meetingPoints": [],
+	state = \
+	{
+	"links": linkStates,
 
-		"payees": []
-		}
-		""")
-node1 = node.Node(settings1)
-node1.start()
-
-settings2 = settings.Settings()
-settings2.RPCURL = "dummy"
-settings2.listenHost = "localhost"
-settings2.listenPort = 4323
-settings2.advertizedHost = settings2.listenHost
-settings2.advertizedPort = settings2.listenPort
-settings2.stateFile = "twonodes_2.dat"
-settings2.payLogFile = "payments2.log"
-with open(settings2.stateFile, "wb") as f:
-	f.write("""
+	"meetingPoints":
+	[
 		{
-		"links":
-		[
-			{
-			"name": "node2",
-			"localID": "node2",
-			"remoteID": "node1",
-			"remoteURL": "",
-			"channels":
-			[{
-				"ID": 0,
-				"amountLocal"           : 1000,
-				"amountRemote"          : 1000,
-				"transactionsIncomingReserved": {},
-				"transactionsOutgoingReserved": {},
-				"transactionsIncomingLocked"  : {},
-				"transactionsOutgoingLocked"  : {},
-				"type": "plain"
-			}]
-			}
-		],
-
-		"meetingPoints":
-		[
-			{
-			"ID": "node2"
-			}
-		],
-
-		"payees": []
+		"ID": "meetingPoint_%d" % i
 		}
-		""")
-node2 = node.Node(settings2)
-node2.start()
+	],
+
+	"payees": []
+	}
+
+	state = json.dumps(state, sort_keys=True, ensure_ascii=True,
+		indent=4, separators=(',', ': '))
+
+	with open(s.stateFile, "wb") as f:
+		f.write(state)
+
+	newNode = node.Node(s)
+	newNode.start()
+	nodes.append(newNode)
 
 #Allow links to connect
 time.sleep(3)
 
-print "Node 1:"
-pprint.pprint(node1.list())
+print "Before payment:"
+for i in range(len(nodes)):
+	print
+	print "==========================="
+	print "Node %d:" % i
+	print "==========================="
+	pprint.pprint(nodes[i].list())
 
-print "Node 2:"
-pprint.pprint(node2.list())
 
-URL = node2.request(123, "receipt")
+#Pay from 0 to 5:
+URL = nodes[5].request(123, "receipt")
 print "Payment URL:", URL
 
-payer = node1.pay(URL)
-node1.confirmPayment(payer, True)
+payer = nodes[0].pay(URL)
+nodes[0].confirmPayment(payer, True)
 print "Payment is ", payer.state
 
 #Allow paylink to disconnect
 time.sleep(0.5)
 
-print "Node 1:"
-pprint.pprint(node1.list())
 
-print "Node 2:"
-pprint.pprint(node2.list())
+print "After payment:"
+for i in range(len(nodes)):
+	print
+	print "==========================="
+	print "Node %d:" % i
+	print "==========================="
+	pprint.pprint(nodes[i].list())
 
-node1.stop()
-node2.stop()
 
+for n in nodes:
+	n.stop()
 
