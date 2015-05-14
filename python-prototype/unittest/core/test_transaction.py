@@ -133,7 +133,7 @@ class Test(unittest.TestCase):
 			self.assertEqual(self.routingContext.links[1].trace, [])
 			self.assertEqual(sourceLink.trace,
 				[
-				('msg_cancel', (self.transaction,), {})
+				('msg_haveNoRoute', (self.transaction,), {})
 				]
 				)
 
@@ -178,8 +178,8 @@ class Test(unittest.TestCase):
 		self.assertEqual(destLink.trace, [])
 
 
-	def test_cancelRoute(self):
-		"Test the msg_cancelRoute method"
+	def test_haveNoRoute(self):
+		"Test the msg_haveNoRoute method"
 
 		sourceLink = Tracer()
 		self.makeNewTransaction(payerLink=sourceLink, payeeLink=None)
@@ -194,8 +194,8 @@ class Test(unittest.TestCase):
 
 		self.routingContext.links[0].trace = []
 
-		#Then cancel it, which should automatically try the next route:
-		self.transaction.msg_cancelRoute()
+		#Then report 'no route', which should automatically try the next route:
+		self.transaction.msg_haveNoRoute()
 		self.assertEqual(self.routingContext.links[0].trace, [])
 		self.assertEqual(self.routingContext.links[1].trace,
 			[('msg_makeRoute', (self.transaction,), {})]

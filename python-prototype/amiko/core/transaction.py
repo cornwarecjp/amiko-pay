@@ -108,7 +108,7 @@ class Transaction:
 
 		Choose a link or a meeting point from the routing context, and call
 		msg_makeRoute to that link or meeting point.
-		If no suitable link or meeting point exists, call msg_cancel on the
+		If no suitable link or meeting point exists, call msg_haveNoRoute on the
 		already attached link (either payerLink or payeeLink, whichever is
 		non-None).
 
@@ -153,14 +153,14 @@ class Transaction:
 			self.payeeLink.msg_haveRoute(self)
 
 
-	def msg_cancelRoute(self):
+	def msg_haveNoRoute(self):
 		"""
 		This method is typically called by a link that has previously received
 		a msg_makeRoute from this object.
 
 		Choose a new link from the routing context, and call msg_makeRoute to
 		that link.
-		If no suitable link exists, call msg_cancel on the already attached link
+		If no suitable link exists, call msg_haveNoRoute on the already attached link
 		(either payerLink or payeeLink, whichever is non-None).
 
 		Exceptions:
@@ -168,9 +168,12 @@ class Transaction:
 		           (both links are non-None).
 		"""
 
-		log.log("Transaction: cancelRoute")
+		log.log("Transaction: haveNoRoute")
 		#Immediately try next route, or send cancel back if there is none:
 		self.__tryNextRoute()
+
+
+	#TODO: msg_cancelRoute
 
 
 	def msg_endRoute(self):
@@ -243,7 +246,7 @@ class Transaction:
 		"""
 		Choose a new link from the routing context, and call msg_makeRoute to
 		that link.
-		If no suitable link exists, call msg_cancel on the already attached link
+		If no suitable link exists, call msg_haveNoRoute on the already attached link
 		(either payerLink or payeeLink, whichever is non-None).
 
 		Exceptions:
@@ -266,9 +269,9 @@ class Transaction:
 		self.__currentRoute = None
 		del self.__remainingRoutes
 		if self.isPayerSide():
-			self.payerLink.msg_cancel(self)
+			self.payerLink.msg_haveNoRoute(self)
 		else:
-			self.payeeLink.msg_cancel(self)
+			self.payeeLink.msg_haveNoRoute(self)
 
 
 
