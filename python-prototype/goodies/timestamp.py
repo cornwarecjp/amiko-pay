@@ -35,7 +35,7 @@ sys.path.append("..")
 
 from amiko.core import bitcoind as bd
 from amiko.core import settings
-from amiko.utils import bitcoinutils, crypto, base58
+from amiko.utils import bitcoinutils, crypto, base58, bitcointransaction
 
 
 
@@ -182,12 +182,98 @@ def make(args):
 		f.write("#The timestamp:\n")
 		f.write("timestamp = %s\n" % timeText)
 
+
 def verify(args):
 	if len(args) != 2:
 		help(["verify"])
 		sys.exit(1)
 
-	print "Not Yet Implemented" #TODO
+	with open(args[0], "rb") as f:
+		data = f.read()
+
+	dataHash = crypto.SHA256(crypto.SHA256(data))
+
+	with open(args[1], "rb") as f:
+		certificate = f.read()
+	certificate = certificate.split("\n")
+
+	certificateValues = {}
+	for line in certificate:
+		hashPos = line.find("#")
+		if hashPos >= 0:
+			line = line[:hashPos]
+
+		try:
+			isPos = line.index("=")
+		except ValueError:
+			continue # "=" not found
+
+		name = line[:isPos].strip()
+		value = line[isPos+1:].strip()
+		certificateValues[name] = value
+
+	connect()
+
+	def test(text, value):
+		print "Check: %s: %s" % (text, "OK" if value else "FAIL")
+		if not value:
+			print "Certificate is INVALID."
+			sys.exit(3)
+
+	test("data hash is the same",
+		certificateValues["dataHash"] == dataHash.encode("hex"))
+
+	tx = bitcointransaction.Transaction.deserialize(
+		binascii.unhexlify(certificateValues["transaction"]))
+
+	test("Transaction contains data hash",
+		tx.tx_out[0].scriptPubKey.elements[1] == dataHash)
+
+	test("Transaction hash is the same",
+		certificateValues["transactionHash"] == tx.getTransactionID().encode("hex"))
+
+	merkleBranch = []
+	while True:
+		try:
+			value = certificateValues["merkle_%d" % len(merkleBranch)]
+		except KeyError:
+			break
+		left, right = value.split(",")
+		merkleBranch.append((
+			binascii.unhexlify(left.strip()),
+			binascii.unhexlify(right.strip())
+			))
+
+	test("Merkle tree starts with the transaction hash",
+		tx.getTransactionID() in merkleBranch[0])
+
+	merkleSums = [crypto.SHA256(crypto.SHA256(m[0] + m[1])) for m in merkleBranch]
+
+	for i in range(len(merkleBranch)-1):
+		test("Merkle tree consistency between levels %d and %d" % (i, i+1),
+			merkleSums[i] in merkleBranch[i+1])
+
+	test("Merkle tree ends up in Merkle root",
+		merkleSums[-1].encode("hex") == certificateValues["merkleRoot"])
+
+	blockInfo = bitcoind.getBlockInfoByBlockHeight(int(certificateValues["blockHeight"]))
+
+	test("Merkle root is as reported by Bitcoin",
+		merkleSums[-1][::-1].encode("hex") == blockInfo["merkleroot"])
+
+	test("Block hash is as reported by Bitcoin",
+		certificateValues["blockHash"] == blockInfo["hash"])
+
+	test("Block time is as reported by Bitcoin",
+		certificateValues["blockTime"] == str(blockInfo["time"]))
+
+	dt = datetime.utcfromtimestamp(blockInfo["time"])
+	timeText = dt.strftime("%A %B %d %I:%m:%S %p %Y (UTC)")
+
+	test("Block time corresponds with timestamp",
+		certificateValues["timestamp"] == timeText)
+
+	print "Certificate is valid."
 
 
 funcs = \
