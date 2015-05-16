@@ -147,6 +147,52 @@ def sendToStandardPubKey(bitcoind, amount, toHash, changeHash, fee):
 	return tx
 
 
+def sendToDataPubKey(bitcoind, data, changeHash, fee):
+	"""
+	Make a transaction to publish data on the block chain with an OP_RETURN
+	output. No funds are sent to the OP_RETURN output: everything goes to fee
+	and to the change address. The transaction is returned, and
+	is NOT published on the Bitcoin network by this function.
+
+	Arguments:
+	bitcoind: Bitcoind; the bitcoin daemon from which to retrieve this information
+	data: str; the data to be included in the scriptPubKey (max. 40 bytes)
+	changeHash: str; the SHA256- and RIPEMD160-hashed public key to which any
+	            change should be sent (equivalent to the bitcoin address)
+	fee: int; the transaction fee (in Satoshi)
+
+	Return value:
+	Transaction; the transaction that sends funds as specified.
+
+	Exceptions:
+	Exception: insufficient funds
+	"""
+
+	totalIn, inputs = getInputsForAmount(bitcoind, fee)
+	change = totalIn - fee
+
+	print "%d -> %d, %d" % (totalIn, change, fee)
+
+	tx = Transaction(
+		tx_in = [
+			TxIn(x[0], x[1])
+			for x in inputs
+			],
+		tx_out = [
+			TxOut(0, Script.dataPubKey(data)),
+			TxOut(change, Script.standardPubKey(changeHash))
+			]
+		)
+
+	for i in range(len(inputs)):
+		scriptPubKey = Script.deserialize(inputs[i][2])
+		key = Key()
+		key.setPrivateKey(inputs[i][3])
+		tx.signInput(i, scriptPubKey, [None, key.getPublicKey()], [key])
+
+	return tx
+
+
 def sendToMultiSigPubKey(bitcoind, amount, toPubKey1, toPubKey2, changeHash, fee):
 	"""
 	Make a transaction to send funds from ourself to a 2-of-2 multi-signature

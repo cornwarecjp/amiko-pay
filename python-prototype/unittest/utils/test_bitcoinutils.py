@@ -141,6 +141,58 @@ class Test(unittest.TestCase):
 			self.assertEqual(tx.trace[1][1][3][0].getPrivateKey(), key.getPrivateKey())
 
 
+	def test_sendToDataPubKey(self):
+		"Test the sendToDataPubKey function"
+
+		with DummyTransaction():
+			tx = bitcoinutils.sendToDataPubKey(
+				self.bitcoind, "Hello", "changeHash", 3)
+
+			self.assertEqual(len(tx.trace), 2)
+
+			#Constructor, with tx_in and tx_out:
+			self.assertEqual(tx.trace[0][0], "__init__")
+			self.assertEqual(tx.trace[0][1], tuple())
+			self.assertEqual(len(tx.trace[0][2]), 2)
+			self.assertEqual(len(tx.trace[0][2]["tx_in"]), 1)
+			self.assertEqual(len(tx.trace[0][2]["tx_out"]), 2)
+
+			tx_in = tx.trace[0][2]["tx_in"][0]
+			self.assertEqual(tx_in.trace,
+				[('__init__', ('foo_tx', 3), {})])
+
+			tx_out = tx.trace[0][2]["tx_out"][0]
+			self.assertEqual(len(tx_out.trace), 1)
+			self.assertEqual(tx_out.trace[0][0], "__init__")
+			self.assertEqual(len(tx_out.trace[0][1]), 2)
+			self.assertEqual(tx_out.trace[0][1][0], 0)
+			script = tx_out.trace[0][1][1]
+			self.assertEqual(script.elements,
+				(OP.RETURN, "Hello"))
+
+			tx_out = tx.trace[0][2]["tx_out"][1]
+			self.assertEqual(len(tx_out.trace), 1)
+			self.assertEqual(tx_out.trace[0][0], "__init__")
+			self.assertEqual(len(tx_out.trace[0][1]), 2)
+			self.assertEqual(tx_out.trace[0][1][0], 7)
+			script = tx_out.trace[0][1][1]
+			self.assertEqual(script.elements,
+				(OP.DUP, OP.HASH160, "changeHash", OP.EQUALVERIFY, OP.CHECKSIG))
+
+			#Transaction signing:
+			self.assertEqual(tx.trace[1][0], "signInput")
+			self.assertEqual(len(tx.trace[1][1]), 4)
+			self.assertEqual(tx.trace[1][1][0], 0)
+			scriptPubKey = tx.trace[1][1][1]
+			self.assertEqual(scriptPubKey.serialize(), "foo_pub")
+
+			key = crypto.Key()
+			key.setPrivateKey("foo")
+			self.assertEqual(tx.trace[1][1][2], [None, key.getPublicKey()])
+			self.assertEqual(len(tx.trace[1][1][3]), 1)
+			self.assertEqual(tx.trace[1][1][3][0].getPrivateKey(), key.getPrivateKey())
+
+
 	def test_sendToMultiSigPubKey(self):
 		"Test the sendToMultiSigPubKey function"
 
