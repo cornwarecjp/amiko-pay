@@ -45,6 +45,7 @@ class Bitcoind_Dummy:
 		self.random = random.Random()
 		self.random.seed(42)
 		self.keys = []
+		self.numConfirmations = {}
 
 
 	def isConnected(self):
@@ -79,7 +80,12 @@ class Bitcoind_Dummy:
 
 
 	def getTransaction(self, thash):
-		raise Exception("Not yet implemented")
+		#This is a partial, unfinished implementation
+		if thash in self.numConfirmations.keys():
+			self.numConfirmations[thash] += 1
+		else:
+			self.numConfirmations[thash] = 0
+		return {"confirmations": self.numConfirmations[thash]}
 
 
 	def listUnspent(self):
