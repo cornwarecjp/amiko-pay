@@ -76,7 +76,7 @@ class Bitcoind_Dummy:
 
 
 	def getTransactionHashesByBlockHeight(self, height):
-		raise Exception("Not yet implemented")
+		return self.numConfirmations.keys()
 
 
 	def getTransaction(self, thash):
