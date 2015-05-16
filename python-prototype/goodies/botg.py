@@ -39,20 +39,33 @@ from amiko.utils import base58
 def makekey(args):
 	k = Key()
 	k.makeNewKey(compressed=True)
+
 	privateKey = k.getPrivateKey()
 	privateKey = base58.encodeBase58Check(privateKey, 128) #PRIVKEY = 128
-	print privateKey
+
+	publicKeyHash = RIPEMD160(SHA256(k.getPublicKey()))
+	address = base58.encodeBase58Check(publicKeyHash, 0) #PUBKEY_ADDRESS = 0
+
+	with open(address, "wb") as f:
+		f.write(privateKey + "\n")
+	print "Saved as ", address
 
 
 def getinfo(args):
-	privateKey = raw_input()
-	privateKey = base58.decodeBase58Check(privateKey, 128) #PRIVKEY = 128
-	k = Key()
-	k.setPrivateKey(privateKey)
-	publicKey = k.getPublicKey()
-	publicKeyHash = RIPEMD160(SHA256(publicKey))
-	print "Public key: ", publicKey.encode("hex")
-	print "Address: ", base58.encodeBase58Check(publicKeyHash, 0) #PUBKEY_ADDRESS = 0
+	for filename in args:
+		print "----------------"
+		print "Filename: ", filename
+		with open(filename, "rb") as f:
+			privateKey = f.read()
+		privateKey = privateKey.split("\n")[0] #first line
+		privateKey = privateKey.strip() #ignore whitespace
+		privateKey = base58.decodeBase58Check(privateKey, 128) #PRIVKEY = 128
+		k = Key()
+		k.setPrivateKey(privateKey)
+		publicKey = k.getPublicKey()
+		publicKeyHash = RIPEMD160(SHA256(publicKey))
+		print "Public key: ", publicKey.encode("hex")
+		print "Address: ", base58.encodeBase58Check(publicKeyHash, 0) #PUBKEY_ADDRESS = 0
 
 
 
