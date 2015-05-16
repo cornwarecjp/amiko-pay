@@ -116,6 +116,30 @@ class Bitcoind_Real:
 		return self.access.dumpprivkey(address)
 
 
+	def getBlockInfoByBlockHeight(self, height):
+		"""
+		Arguments:
+		height: int
+
+		Return value:
+		dict; containing:
+			hash: str; the block hash (hexadecimal)
+			merkleroot: str; the block Merkle root (hexadecimal, Bitcoin hash byte order)
+			time: int; the block timestamp (UNIX time)
+
+		Returns information about the block (in the main chain) at the
+		given height.
+		"""
+		bhash = self.access.getblockhash(height)
+		binfo = self.access.getblock(bhash)
+		return \
+		{
+		"hash": binfo["hash"],
+		"merkleroot": binfo["merkleroot"],
+		"time": binfo["time"]
+		}
+
+
 	def getTransactionHashesByBlockHeight(self, height):
 		"""
 		Arguments:
