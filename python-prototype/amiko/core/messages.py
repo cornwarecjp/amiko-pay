@@ -423,10 +423,14 @@ class MakeRoute(Message):
 	isPayerSide: bool; indicates whether we are on the payer side (True) or not
 	             (False).
 	hash: str; the transaction hash
+	startTime: int; start of the time range when the transaction token must
+	           be published (UNIX time)
+	endTime: int; end of the time range when the transaction token must
+	         be published (UNIX time)
 	meetingPoint: str; the ID of the meeting point
 	"""
 
-	def __init__(self, amount=0, isPayerSide=True, hash="", meetingPoint=""):
+	def __init__(self, amount=0, isPayerSide=True, hash="", startTime=0, endTime=0, meetingPoint=""):
 		"""
 		Constructor.
 
@@ -435,12 +439,18 @@ class MakeRoute(Message):
 		isPayerSide: bool; indicates whether we are on the payer side (True) or
 		             not (False).
 		hash: str; the transaction hash
+		startTime: int; start of the time range when the transaction token must
+		           be published (UNIX time)
+		endTime: int; end of the time range when the transaction token must
+		         be published (UNIX time)
 		meetingPoint: str; the ID of the meeting point
 		"""
 		Message.__init__(self, ID_MAKEROUTE)
 		self.amount = amount
 		self.isPayerSide = isPayerSide
 		self.hash=hash
+		self.startTime = startTime
+		self.endTime = endTime
 		self.meetingPoint = meetingPoint
 
 
@@ -451,6 +461,10 @@ class MakeRoute(Message):
 
 		# 1-byte bool:
 		ret += struct.pack("!?", self.isPayerSide)
+
+		# 8-byte unsigned int in network byte order:
+		ret += struct.pack("!Q", self.startTime)
+		ret += struct.pack("!Q", self.endTime)
 
 		#Variable-length data:
 		ret += serializeBinList([self.hash, self.meetingPoint])
@@ -468,13 +482,23 @@ class MakeRoute(Message):
 		self.isPayerSide = struct.unpack("!?", s[0])[0]
 		s = s[1:]
 
+		# 8-byte unsigned int in network byte order:
+		self.startTime = struct.unpack("!Q", s[:8])[0]
+		s = s[8:]
+		self.endTime = struct.unpack("!Q", s[:8])[0]
+		s = s[8:]
+
 		self.hash, self.meetingPoint = deserializeBinList(s)
 
 
 	@inheritDocString(Message)
 	def __str__(self):
-		return "amount: %d; payerSide: %s; hash: %s; meeting point: %s" % \
-			(self.amount, str(self.isPayerSide), repr(self.hash), str(self.meetingPoint))
+		return "amount: %d; payerSide: %s; hash: %s; startTime: %d; endTime: %d; meeting point: %s" % \
+			(
+			self.amount, str(self.isPayerSide),
+			repr(self.hash), self.startTime, self.endTime,
+			str(self.meetingPoint)
+			)
 
 
 

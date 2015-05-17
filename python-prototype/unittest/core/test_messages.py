@@ -176,27 +176,37 @@ class Test(unittest.TestCase):
 		"Test MakeRoute message class"
 
 		msg = messages.MakeRoute(
-			amount=0x0775f05a074000, isPayerSide=True, hash="Foo", meetingPoint="Bar")
+			amount=0x0775f05a074000, isPayerSide=True,
+			hash="Foo", startTime=0x1800, endTime=0x1900,
+			meetingPoint="Bar")
 		self.assertEqual(msg.amount, 0x0775f05a074000)
 		self.assertEqual(msg.isPayerSide, True)
 		self.assertEqual(msg.hash, "Foo")
+		self.assertEqual(msg.startTime, 0x1800)
+		self.assertEqual(msg.endTime, 0x1900)
 		self.assertEqual(msg.meetingPoint, "Bar")
 		self.assertEqual(msg.serialize(),
 			("\x00\x00\x00%c" % messages.ID_MAKEROUTE) + \
 			"\x00\x07\x75\xf0\x5a\x07\x40\x00"
 			"\x01"
+			"\x00\x00\x00\x00\x00\x00\x18\x00"
+			"\x00\x00\x00\x00\x00\x00\x19\x00"
 			"\x00\x00\x00\x03Foo"
 			"\x00\x00\x00\x03Bar"
 			)
 		msg.deserializeAttributes(
 			"\x00\x00\x00\x00\x12\x34\x56\x78"
 			"\x00"
+			"\x16\x00\x00\x00\x00\x00\x00\x00"
+			"\x17\x00\x00\x00\x00\x00\x00\x00"
 			"\x00\x00\x00\x06Foobar"
 			"\x00\x00\x00\x03FOO"
 			)
 		self.assertEqual(msg.amount, 0x12345678)
 		self.assertEqual(msg.isPayerSide, False)
 		self.assertEqual(msg.hash, "Foobar")
+		self.assertEqual(msg.startTime, 0x1600000000000000)
+		self.assertEqual(msg.endTime, 0x1700000000000000)
 		self.assertEqual(msg.meetingPoint, "FOO")
 		self.assertTrue(str(0x12345678) in str(msg))
 		self.assertTrue(str(False) in str(msg))
