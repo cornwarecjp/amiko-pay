@@ -244,8 +244,9 @@ class Link(event.Handler):
 
 			#This will check whether enough funds are availbale
 			#TODO: use multiple channels
+			#TODO: timestamp values
 			self.channels[0].reserve(
-				transaction.isPayerSide(), transaction.hash, transaction.amount)
+				transaction.isPayerSide(), transaction.hash, 0, 0, transaction.amount)
 
 			#Remember link to transaction object:
 			self.openTransactions[transaction.hash] = transaction
@@ -339,8 +340,9 @@ class Link(event.Handler):
 				#Note: if we're on the PAYER side of the meeting point,
 				#then we're on the PAYEE side of this link, for this transaction.
 				#TODO: use multiple channels
+				#TODO: timestamp values
 				self.channels[0].reserve(
-					not message.isPayerSide, message.hash, message.amount)
+					not message.isPayerSide, message.hash, 0, 0, message.amount)
 
 				#TODO: exception handling for the above
 

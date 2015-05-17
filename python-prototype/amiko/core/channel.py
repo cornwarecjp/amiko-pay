@@ -201,7 +201,7 @@ class Channel:
 		return ret
 
 
-	def reserve(self, isPayerSide, hash, amount):
+	def reserve(self, isPayerSide, hash, startTime, endTime, amount):
 		"""
 		Reserves the given amount of funds for an incoming or outgoing payment.
 
@@ -210,6 +210,10 @@ class Channel:
 		             not (False). Note that the payer side corresponds to an
 		             outgoing transaction and payee side to an incoming one.
 		hash: str; the SHA256- and RIPEMD160-hashed commit token.
+		startTime: int; start of the time range when the transaction token must
+		           be published (UNIX time)
+		endTime: int; end of the time range when the transaction token must
+		         be published (UNIX time)
 		amount: int; the amount (in Satoshi) to be sent from payer to payee.
 
 		Exceptions:
@@ -222,14 +226,14 @@ class Channel:
 
 			self.amountLocal -= amount
 			self.transactionsOutgoingReserved[hash] = \
-				Transaction(0, 0, amount) #TODO: times
+				Transaction(startTime, endTime, amount)
 		else:
 			if self.amountRemote < amount:
 				raise CheckFail("Insufficient funds")
 
 			self.amountRemote -= amount
 			self.transactionsIncomingReserved[hash] = \
-				Transaction(0, 0, amount) #TODO: times
+				Transaction(startTime, endTime, amount)
 
 
 	def unreserve(self, isPayerSide, hash):

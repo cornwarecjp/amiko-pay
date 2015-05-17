@@ -153,23 +153,24 @@ class Test(unittest.TestCase):
 		self.channel.amountLocal = 100
 		self.channel.amountRemote = 102
 		self.assertRaises(channel.CheckFail, self.channel.reserve,
-			True, "foo", 101
+			True, "foo", 1800, 1900, 101
 			)
 
 		self.channel.amountLocal = 102
 		self.channel.amountRemote = 100
 		self.assertRaises(channel.CheckFail, self.channel.reserve,
-			False, "foo", 101
+			False, "foo", 1800, 1900, 101
 			)
 
 		self.channel.amountLocal = 100
 		self.channel.amountRemote = 200
-		self.channel.reserve(True, "foo", 25)
+		self.channel.reserve(True, "foo", 1800, 1900, 25)
 		self.assertEqual(self.channel.amountLocal, 75)
 		self.assertEqual(self.channel.amountRemote, 200)
 		self.assertEqual(self.channel.transactionsIncomingReserved, {})
 		self.assertEqual(self.channel.transactionsOutgoingReserved.keys(), ["foo"])
-		#TODO: startTime, endTime
+		self.assertEqual(self.channel.transactionsOutgoingReserved["foo"].startTime, 1800)
+		self.assertEqual(self.channel.transactionsOutgoingReserved["foo"].endTime, 1900)
 		self.assertEqual(self.channel.transactionsOutgoingReserved["foo"].amount, 25)
 		self.assertEqual(self.channel.transactionsIncomingLocked, {})
 		self.assertEqual(self.channel.transactionsOutgoingLocked, {})
@@ -177,11 +178,12 @@ class Test(unittest.TestCase):
 		self.channel.transactionsOutgoingReserved = {}
 		self.channel.amountLocal = 100
 		self.channel.amountRemote = 200
-		self.channel.reserve(False, "foo", 25)
+		self.channel.reserve(False, "foo", 1800, 1900, 25)
 		self.assertEqual(self.channel.amountLocal, 100)
 		self.assertEqual(self.channel.amountRemote, 175)
 		self.assertEqual(self.channel.transactionsIncomingReserved.keys(), ["foo"])
-		#TODO: startTime, endTime
+		self.assertEqual(self.channel.transactionsIncomingReserved["foo"].startTime, 1800)
+		self.assertEqual(self.channel.transactionsIncomingReserved["foo"].endTime, 1900)
 		self.assertEqual(self.channel.transactionsIncomingReserved["foo"].amount, 25)
 		self.assertEqual(self.channel.transactionsOutgoingReserved, {})
 		self.assertEqual(self.channel.transactionsIncomingLocked, {})

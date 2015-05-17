@@ -542,7 +542,7 @@ class MultiSigChannel(channel.Channel):
 		return None
 
 
-	def reserve(self, isPayerSide, hash, amount):
+	def reserve(self, isPayerSide, hash, startTime, endTime, amount):
 		self.checkT1()
 
 		if self.stage != stages["Ready"]:
@@ -550,7 +550,7 @@ class MultiSigChannel(channel.Channel):
 				"Can not reserve: channel must be Ready, but is " + \
 				stageNames[self.stage])
 
-		channel.Channel.reserve(self, isPayerSide, hash, amount)
+		channel.Channel.reserve(self, isPayerSide, hash, startTime, endTime, amount)
 
 
 	def makeTransactionT2(self):
