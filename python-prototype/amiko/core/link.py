@@ -252,10 +252,11 @@ class Link(event.Handler):
 			self.openTransactions[transaction.hash] = transaction
 
 			#Send message:
+			#TODO: timestamp values
 			self.connection.sendMessage(messages.MakeRoute(
 				transaction.amount,
 				transaction.isPayerSide(),
-				transaction.hash,
+				transaction.hash, 0, 0,
 				transaction.meetingPoint))
 
 		except channel.CheckFail as f:
@@ -340,9 +341,10 @@ class Link(event.Handler):
 				#Note: if we're on the PAYER side of the meeting point,
 				#then we're on the PAYEE side of this link, for this transaction.
 				#TODO: use multiple channels
-				#TODO: timestamp values
 				self.channels[0].reserve(
-					not message.isPayerSide, message.hash, 0, 0, message.amount)
+					not message.isPayerSide,
+					message.hash, message.startTime, message.endTime,
+					message.amount)
 
 				#TODO: exception handling for the above
 
@@ -355,11 +357,13 @@ class Link(event.Handler):
 				return
 
 			if message.isPayerSide:
+				#TODO: timestamp values
 				self.openTransactions[message.hash] = transaction.Transaction(
 					self.context, self.routingContext,
 					message.amount, message.hash, message.meetingPoint,
 					payerLink=self)
 			else:
+				#TODO: timestamp values
 				self.openTransactions[message.hash] = transaction.Transaction(
 					self.context, self.routingContext,
 					message.amount, message.hash, message.meetingPoint,
