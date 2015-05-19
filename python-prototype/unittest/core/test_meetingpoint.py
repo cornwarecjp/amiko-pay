@@ -71,12 +71,12 @@ class Test(unittest.TestCase):
 		self.mp.msg_makeRoute(t2)
 		self.assertEqual(self.mp.transactionPairs, {"hash": [t1, t2]})
 		self.assertEqual(t1.trace, [
-			('msg_haveRoute', (self.mp,), {})
+			('msg_haveRoute', (self.mp, 12, 34), {})
 			])
 		self.assertEqual(t2.trace, [
 			('isPayerSide', [], {}),
 			('isPayerSide', [], {}),
-			('msg_haveRoute', (self.mp,), {})
+			('msg_haveRoute', (self.mp, 12, 34), {})
 			])
 
 
@@ -97,11 +97,11 @@ class Test(unittest.TestCase):
 		self.mp.msg_makeRoute(t2)
 		self.assertEqual(self.mp.transactionPairs, {"hash": [t2, t1]})
 		self.assertEqual(t1.trace, [
-			('msg_haveRoute', (self.mp,), {})
+			('msg_haveRoute', (self.mp, 12, 34), {})
 			])
 		self.assertEqual(t2.trace, [
 			('isPayerSide', [], {}),
-			('msg_haveRoute', (self.mp,), {})
+			('msg_haveRoute', (self.mp, 12, 34), {})
 			])
 
 

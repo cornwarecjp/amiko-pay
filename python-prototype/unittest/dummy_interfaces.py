@@ -97,6 +97,8 @@ class DummyTransaction(Tracer):
 		Tracer.__init__(self)
 		self.amount = amount
 		self.hash = hash
+		self.startTime = 12
+		self.endTime = 34
 		self.meetingPoint = meetingPoint
 		self.__isPayerSide = isPayerSide
 

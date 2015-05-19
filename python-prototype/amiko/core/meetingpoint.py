@@ -138,8 +138,12 @@ class MeetingPoint:
 
 			log.log("Matched transactions: " + str(pair))
 
-			pair[0].msg_haveRoute(self)
-			pair[1].msg_haveRoute(self)
+			#Get time info from payee side:
+			startTime = pair[1].startTime
+			endTime   = pair[1].endTime
+
+			pair[0].msg_haveRoute(self, startTime, endTime)
+			pair[1].msg_haveRoute(self, startTime, endTime)
 
 		except KeyError as e:
 

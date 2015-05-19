@@ -390,7 +390,8 @@ class Link(event.Handler):
 
 		elif message.__class__ == messages.HaveRoute:
 			log.log("Link %s: received HaveRoute" % self.name)
-			self.openTransactions[message.value].msg_haveRoute(self)
+			#TODO: timestamp values
+			self.openTransactions[message.value].msg_haveRoute(self, 0, 0)
 
 		elif message.__class__ == messages.Lock:
 			log.log("Link received Lock")

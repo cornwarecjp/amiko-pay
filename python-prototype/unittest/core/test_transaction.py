@@ -168,7 +168,9 @@ class Test(unittest.TestCase):
 		sourceLink = Tracer()
 		destLink = Tracer()
 		self.makeNewTransaction(payerLink=sourceLink, payeeLink=None)
-		self.transaction.msg_haveRoute(destLink)
+		self.transaction.msg_haveRoute(destLink, 1000, 2000)
+		self.assertEqual(self.transaction.startTime, 1000)
+		self.assertEqual(self.transaction.endTime, 2000)
 		self.assertEqual(self.transaction.payerLink, sourceLink)
 		self.assertEqual(self.transaction.payeeLink, destLink)
 		self.assertEqual(sourceLink.trace,
@@ -179,7 +181,9 @@ class Test(unittest.TestCase):
 		sourceLink = Tracer()
 		destLink = Tracer()
 		self.makeNewTransaction(payerLink=None, payeeLink=sourceLink)
-		self.transaction.msg_haveRoute(destLink)
+		self.transaction.msg_haveRoute(destLink, 1000, 2000)
+		self.assertEqual(self.transaction.startTime, 1000)
+		self.assertEqual(self.transaction.endTime, 2000)
 		self.assertEqual(self.transaction.payerLink, destLink)
 		self.assertEqual(self.transaction.payeeLink, sourceLink)
 		self.assertEqual(sourceLink.trace,
@@ -191,7 +195,9 @@ class Test(unittest.TestCase):
 		link2 = Tracer()
 		destLink = Tracer()
 		self.makeNewTransaction(payerLink=link1, payeeLink=link2)
-		self.assertRaises(Exception, self.transaction.msg_haveRoute, destLink)
+		self.assertRaises(Exception, self.transaction.msg_haveRoute, destLink, 1000, 2000)
+		self.assertEqual(self.transaction.startTime, 1000)
+		self.assertEqual(self.transaction.endTime, 2000)
 		self.assertEqual(self.transaction.payerLink, link1)
 		self.assertEqual(self.transaction.payeeLink, link2)
 		self.assertEqual(link1.trace, [])
@@ -260,7 +266,7 @@ class Test(unittest.TestCase):
 		payerLink = Tracer()
 		payeeLink = Tracer()
 		self.makeNewTransaction(payerLink=payerLink, payeeLink=None)
-		self.transaction.msg_haveRoute(payeeLink)
+		self.transaction.msg_haveRoute(payeeLink, 123, 456)
 
 		payerLink.trace = []
 		payeeLink.trace = []
@@ -277,7 +283,7 @@ class Test(unittest.TestCase):
 		payerLink = Tracer()
 		payeeLink = Tracer()
 		self.makeNewTransaction(payerLink=payerLink, payeeLink=None)
-		self.transaction.msg_haveRoute(payeeLink)
+		self.transaction.msg_haveRoute(payeeLink, 123, 456)
 
 		payerLink.trace = []
 		payeeLink.trace = []

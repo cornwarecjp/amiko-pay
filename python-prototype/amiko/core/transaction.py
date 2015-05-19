@@ -37,6 +37,15 @@ class Transaction:
 	Performs the passing of the messages of a single transaction between
 	links, paylinks and routing contexts. The routing algorithm is implemented
 	in this class.
+
+	Attributes:
+	meetingPoint: str; the ID of the meeting point
+	amount: int; the amount (in Satoshi) to be sent from payer to payee
+	hash: str; the SHA256- and RIPEMD160-hashed commit token
+	startTime: int; start of the time range when the transaction token must
+		       be published (UNIX time) (default: None)
+	endTime: int; end of the time range when the transaction token must
+		     be published (UNIX time) (default: None)
 	"""
 
 	def __init__(self, context, routingContext, meetingPoint,
@@ -141,7 +150,7 @@ class Transaction:
 		self.__tryNextRoute()
 
 
-	def msg_haveRoute(self, link):
+	def msg_haveRoute(self, link, startTime, endTime):
 		"""
 		This method is typically called by a link that has previously received
 		a msg_makeRoute from this object; it passes itself as argument.
@@ -152,6 +161,10 @@ class Transaction:
 
 		Arguments:
 		link: Link/MeetingPoint; the link on which a route is found.
+		startTime: int; start of the time range when the transaction token must
+			       be published (UNIX time)
+		endTime: int; end of the time range when the transaction token must
+			     be published (UNIX time)
 
 		Exceptions:
 		Exception: function is called while we already have a route
@@ -159,6 +172,14 @@ class Transaction:
 		"""
 
 		log.log("Transaction: haveRoute")
+
+		#On the payee side, this should overwrite values with the same values.
+		#On the payer side, this should overwrite zero with the actual values.
+		#It's important to do this BEFORE calling msg_haveRoute on the other end,
+		#since that other end will read these attributes.
+		self.startTime = startTime
+		self.endTime = endTime
+
 		if self.isPayerSide():
 			self.payeeLink = link
 			self.payerLink.msg_haveRoute(self)
