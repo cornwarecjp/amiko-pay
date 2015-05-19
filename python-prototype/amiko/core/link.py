@@ -238,25 +238,33 @@ class Link(event.Handler):
 			if not self.isConnected():
 				raise channel.CheckFail("Not connected")
 
+			startTime = transaction.startTime
+			endTime = transaction.endTime
+			#End time is incremented on the outward link, but only on the payee
+			#side. On the payer side, end time will be determined in msg_haveRoute.
+			if not transaction.isPayerSide():
+				#TODO: check for potential integer overflow
+				endTime += 86400 #one day in seconds; TODO: make configurable
+
 			#TODO: do all sorts of checks to see if it makes sense to perform
 			#the transaction over this link.
 			#For instance, check the responsiveness of the other side, etc. etc.
 
 			#This will check whether enough funds are availbale
 			#TODO: use multiple channels
-			#TODO: timestamp values
 			self.channels[0].reserve(
-				transaction.isPayerSide(), transaction.hash, 0, 0, transaction.amount)
+				transaction.isPayerSide(),
+				transaction.hash, startTime, endTime,
+				transaction.amount)
 
 			#Remember link to transaction object:
 			self.openTransactions[transaction.hash] = transaction
 
 			#Send message:
-			#TODO: timestamp values
 			self.connection.sendMessage(messages.MakeRoute(
 				transaction.amount,
 				transaction.isPayerSide(),
-				transaction.hash, 0, 0,
+				transaction.hash, startTime, endTime,
 				transaction.meetingPoint))
 
 		except channel.CheckFail as f:
