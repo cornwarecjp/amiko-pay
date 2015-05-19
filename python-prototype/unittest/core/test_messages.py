@@ -116,16 +116,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.value, "Bar")
 
 
-	def test_HaveRoute(self):
-		"Test HaveRoute message class"
-
-		msg = messages.HaveRoute("Foo")
-		self.assertEqual(msg.serialize(), "\x00\x00\x00%cFoo" % \
-			messages.ID_HAVEROUTE)
-		msg.deserializeAttributes("Bar")
-		self.assertEqual(msg.value, "Bar")
-
-
 	def test_HaveNoRoute(self):
 		"Test HaveNoRoute message class"
 
@@ -212,6 +202,32 @@ class Test(unittest.TestCase):
 		self.assertTrue(str(False) in str(msg))
 		self.assertTrue("Foobar" in str(msg))
 		self.assertTrue("FOO" in str(msg))
+
+
+	def test_HaveRoute(self):
+		"Test HaveRoute message class"
+
+		msg = messages.HaveRoute("Foo", 0x12, 0x34)
+		self.assertEqual(msg.hash, "Foo")
+		self.assertEqual(msg.startTime, 0x12)
+		self.assertEqual(msg.endTime, 0x34)
+		self.assertEqual(msg.serialize(),
+			("\x00\x00\x00%c" % messages.ID_HAVEROUTE) + \
+			"\x00\x00\x00\x00\x00\x00\x00\x12"
+			"\x00\x00\x00\x00\x00\x00\x00\x34"
+			"Foo"
+			)
+		msg.deserializeAttributes(
+			"\x16\x00\x00\x00\x00\x00\x00\x00"
+			"\x17\x00\x00\x00\x00\x00\x00\x00"
+			"Bar"
+			)
+		self.assertEqual(msg.hash, "Bar")
+		self.assertEqual(msg.startTime, 0x1600000000000000)
+		self.assertEqual(msg.endTime, 0x1700000000000000)
+		self.assertTrue("Bar" in str(msg))
+		self.assertTrue(str(0x1600000000000000) in str(msg))
+		self.assertTrue(str(0x1700000000000000) in str(msg))
 
 
 	def test_Receipt(self):

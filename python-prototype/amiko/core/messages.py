@@ -289,25 +289,6 @@ class Confirm(String):
 
 
 
-class HaveRoute(String):
-	"""
-	Have route message (sent from meeting point side to payer/payee side)
-
-	Attributes:
-	value: str; the transaction hash
-	"""
-
-	def __init__(self, value=""):
-		"""
-		Constructor.
-
-		Arguments:
-		value: str; the transaction hash
-		"""
-		String.__init__(self, value, ID_HAVEROUTE)
-
-
-
 class HaveNoRoute(String):
 	"""
 	Have no route message (sent from meeting point side to payer/payee side)
@@ -498,6 +479,67 @@ class MakeRoute(Message):
 			self.amount, str(self.isPayerSide),
 			repr(self.hash), self.startTime, self.endTime,
 			str(self.meetingPoint)
+			)
+
+
+
+class HaveRoute(Message):
+	"""
+	Have route message (sent from meeting point side to payer/payee side)
+
+	Attributes:
+	hash: str; the transaction hash
+	startTime: int; start of the time range when the transaction token must
+	           be published (UNIX time)
+	endTime: int; end of the time range when the transaction token must
+	         be published (UNIX time)
+	"""
+
+	def __init__(self, hash="", startTime=0, endTime=0):
+		"""
+		Constructor.
+
+		Arguments:
+		hash: str; the transaction hash
+		startTime: int; start of the time range when the transaction token must
+		           be published (UNIX time)
+		endTime: int; end of the time range when the transaction token must
+		         be published (UNIX time)
+		"""
+		Message.__init__(self, ID_HAVEROUTE)
+		self.hash=hash
+		self.startTime = startTime
+		self.endTime = endTime
+
+
+	@inheritDocString(Message)
+	def serializeAttributes(self):
+		# 8-byte unsigned int in network byte order:
+		ret = struct.pack("!Q", self.startTime)
+		ret += struct.pack("!Q", self.endTime)
+
+		#Variable-length data:
+		ret += self.hash
+
+		return ret
+
+
+	@inheritDocString(Message)
+	def deserializeAttributes(self, s):
+		# 8-byte unsigned int in network byte order:
+		self.startTime = struct.unpack("!Q", s[:8])[0]
+		s = s[8:]
+		self.endTime = struct.unpack("!Q", s[:8])[0]
+		s = s[8:]
+
+		self.hash = s
+
+
+	@inheritDocString(Message)
+	def __str__(self):
+		return "hash: %s; startTime: %d; endTime: %d" % \
+			(
+			repr(self.hash), self.startTime, self.endTime
 			)
 
 

@@ -288,7 +288,9 @@ class Link(event.Handler):
 	def msg_haveRoute(self, transaction):
 		log.log("Link %s: haveRoute" % self.name)
 		#TODO: check whether we're still connected
-		self.connection.sendMessage(messages.HaveRoute(transaction.hash))
+		#TODO: increment endTime if we're on the payer side
+		self.connection.sendMessage(messages.HaveRoute(
+			transaction.hash, transaction.startTime, transaction.endTime))
 
 
 	#TODO: msg_cancelRoute handling
@@ -390,8 +392,9 @@ class Link(event.Handler):
 
 		elif message.__class__ == messages.HaveRoute:
 			log.log("Link %s: received HaveRoute" % self.name)
-			#TODO: timestamp values
-			self.openTransactions[message.value].msg_haveRoute(self, 0, 0)
+			#TODO: on payee side, check equality of timestamp values
+			self.openTransactions[message.hash].msg_haveRoute(
+				self, message.startTime, message.endTime)
 
 		elif message.__class__ == messages.Lock:
 			log.log("Link received Lock")
