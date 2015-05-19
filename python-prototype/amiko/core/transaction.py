@@ -39,8 +39,8 @@ class Transaction:
 	in this class.
 	"""
 
-	def __init__(self, context, routingContext,
-		amount, hash, meetingPoint,
+	def __init__(self, context, routingContext, meetingPoint,
+		amount, hash, startTime=0, endTime=0,
 		payerLink=None, payeeLink=None):
 		"""
 		Constructor.
@@ -51,9 +51,13 @@ class Transaction:
 		Arguments:
 		context: Context; event context
 		routingContext: RoutingContext; routing context
+		meetingPoint: str; the ID of the meeting point
 		amount: int; the amount (in Satoshi) to be sent from payer to payee
 		hash: str; the SHA256- and RIPEMD160-hashed commit token
-		meetingPoint: str; the ID of the meeting point
+		startTime: int; start of the time range when the transaction token must
+			       be published (UNIX time) (default: None)
+		endTime: int; end of the time range when the transaction token must
+			     be published (UNIX time) (default: None)
 		payerLink: Link/Payer/MeetingPoint; the payer-side link (default: None)
 		payeeLink: Link/Payee/MeetingPoint; the payee-side link (default: None)
 
@@ -66,6 +70,8 @@ class Transaction:
 		self.routingContext = routingContext
 		self.amount = amount
 		self.hash = hash
+		self.startTime = startTime
+		self.endTime = endTime
 		self.token = None #unknown
 		self.meetingPoint = meetingPoint
 		self.payerLink = payerLink

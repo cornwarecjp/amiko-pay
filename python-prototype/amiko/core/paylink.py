@@ -132,9 +132,11 @@ class Payer(event.Handler):
 				messages.Confirm(self.__meetingPoint))
 
 			#3: internal messaging
+			#Note: we don't fill in timestamp values - they will be received
+			#from the payee side.
 			self.__transaction = transaction.Transaction(
-				self.context, self.routingContext,
-				self.amount, self.hash, self.__meetingPoint,
+				self.context, self.routingContext, self.__meetingPoint,
+				self.amount, self.hash,
 				payerLink=self)
 
 			#This will start the transaction routing
@@ -345,9 +347,10 @@ class Payee(event.Handler):
 			self.state = self.states.confirmed
 
 			#3: internal messaging
+			#TODO: timestamp values
 			self.__transaction = transaction.Transaction(
-				self.context, self.routingContext,
-				self.amount, self.hash, self.__meetingPoint,
+				self.context, self.routingContext, self.__meetingPoint,
+				self.amount, self.hash, 0, 0,
 				payeeLink=self)
 
 			#This will start the transaction routing

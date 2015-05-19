@@ -357,16 +357,16 @@ class Link(event.Handler):
 				return
 
 			if message.isPayerSide:
-				#TODO: timestamp values
 				self.openTransactions[message.hash] = transaction.Transaction(
-					self.context, self.routingContext,
-					message.amount, message.hash, message.meetingPoint,
+					self.context, self.routingContext, message.meetingPoint,
+					message.amount,
+					message.hash, message.startTime, message.endTime,
 					payerLink=self)
 			else:
-				#TODO: timestamp values
 				self.openTransactions[message.hash] = transaction.Transaction(
-					self.context, self.routingContext,
-					message.amount, message.hash, message.meetingPoint,
+					self.context, self.routingContext, message.meetingPoint,
+					message.amount,
+					message.hash, message.startTime, message.endTime,
 					payeeLink=self)
 
 			#This will start the transaction routing

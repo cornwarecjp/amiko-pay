@@ -46,7 +46,8 @@ class Test(unittest.TestCase):
 	def makeNewTransaction(self, payerLink="payerLink", payeeLink="payeeLink"):
 		self.transaction = transaction.Transaction(
 			context="context", routingContext=self.routingContext,
-			amount=42, hash="hash", meetingPoint="meetingPoint",
+			meetingPoint="meetingPoint",
+			amount=42, hash="hash", startTime =123, endTime=456,
 			payerLink=payerLink, payeeLink=payeeLink)
 
 
@@ -54,11 +55,30 @@ class Test(unittest.TestCase):
 		"Test the initial state of a transaction"
 		self.assertEqual(self.transaction.context, "context")
 		self.assertEqual(self.transaction.routingContext, self.routingContext)
+		self.assertEqual(self.transaction.meetingPoint, "meetingPoint")
 		self.assertEqual(self.transaction.amount, 42)
 		self.assertEqual(self.transaction.hash, "hash")
-		self.assertEqual(self.transaction.meetingPoint, "meetingPoint")
+		self.assertEqual(self.transaction.startTime, 123)
+		self.assertEqual(self.transaction.endTime, 456)
 		self.assertEqual(self.transaction.payerLink, "payerLink")
 		self.assertEqual(self.transaction.payeeLink, "payeeLink")
+
+
+	def test_constructorDefaultArguments(self):
+		"Test the default arguments of the constructor"
+		self.transaction = transaction.Transaction(
+			"context", self.routingContext,
+			"meetingPoint",
+			42, "hash")
+		self.assertEqual(self.transaction.context, "context")
+		self.assertEqual(self.transaction.routingContext, self.routingContext)
+		self.assertEqual(self.transaction.meetingPoint, "meetingPoint")
+		self.assertEqual(self.transaction.amount, 42)
+		self.assertEqual(self.transaction.hash, "hash")
+		self.assertEqual(self.transaction.startTime, 0)
+		self.assertEqual(self.transaction.endTime, 0)
+		self.assertEqual(self.transaction.payerLink, None)
+		self.assertEqual(self.transaction.payeeLink, None)
 
 
 	def test_isPayerSide(self):
