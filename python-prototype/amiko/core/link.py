@@ -242,7 +242,7 @@ class Link(event.Handler):
 			endTime = transaction.endTime
 			#End time is incremented on the outward link, but only on the payee
 			#side. On the payer side, end time will be determined in msg_haveRoute.
-			if not transaction.isPayerSide():
+			if not transaction.isPayerSide:
 				#TODO: check for potential integer overflow
 				endTime += 86400 #one day in seconds; TODO: make configurable
 
@@ -253,7 +253,7 @@ class Link(event.Handler):
 			#This will check whether enough funds are availbale
 			#TODO: use multiple channels
 			self.channels[0].reserve(
-				transaction.isPayerSide(),
+				transaction.isPayerSide,
 				transaction.hash, startTime, endTime,
 				transaction.amount)
 
@@ -263,7 +263,7 @@ class Link(event.Handler):
 			#Send message:
 			self.connection.sendMessage(messages.MakeRoute(
 				transaction.amount,
-				transaction.isPayerSide(),
+				transaction.isPayerSide,
 				transaction.hash, startTime, endTime,
 				transaction.meetingPoint))
 
@@ -281,7 +281,7 @@ class Link(event.Handler):
 		#Note: isPayerSide is inverted: on the payer side, we have to cancel an
 		#INCOMING transaction.
 		#TODO: use multiple channels
-		self.channels[0].unreserve(not transaction.isPayerSide(), transaction.hash)
+		self.channels[0].unreserve(not transaction.isPayerSide, transaction.hash)
 		self.connection.sendMessage(messages.HaveNoRoute(transaction.hash))
 
 
@@ -387,7 +387,7 @@ class Link(event.Handler):
 			log.log("Link %s: received have no route" % self.name)
 			#TODO: use multiple channels
 			tx = self.openTransactions[message.value]
-			self.channels[0].unreserve(tx.isPayerSide(), tx.hash)
+			self.channels[0].unreserve(tx.isPayerSide, tx.hash)
 			tx.msg_haveNoRoute()
 
 		elif message.__class__ == messages.HaveRoute:

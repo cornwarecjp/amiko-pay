@@ -61,9 +61,7 @@ class Test(unittest.TestCase):
 			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=True)
 		self.mp.msg_makeRoute(t1)
 		self.assertEqual(self.mp.transactionPairs, {"hash": [t1, None]})
-		self.assertEqual(t1.trace, [
-			('isPayerSide', [], {})
-			])
+		self.assertEqual(t1.trace, [])
 
 		t1.trace = []
 		t2 = DummyTransaction(
@@ -74,8 +72,6 @@ class Test(unittest.TestCase):
 			('msg_haveRoute', (self.mp, 12, 34), {})
 			])
 		self.assertEqual(t2.trace, [
-			('isPayerSide', [], {}),
-			('isPayerSide', [], {}),
 			('msg_haveRoute', (self.mp, 12, 34), {})
 			])
 
@@ -87,9 +83,7 @@ class Test(unittest.TestCase):
 			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=False)
 		self.mp.msg_makeRoute(t1)
 		self.assertEqual(self.mp.transactionPairs, {"hash": [None, t1]})
-		self.assertEqual(t1.trace, [
-			('isPayerSide', [], {})
-			])
+		self.assertEqual(t1.trace, [])
 
 		t1.trace = []
 		t2 = DummyTransaction(
@@ -100,7 +94,6 @@ class Test(unittest.TestCase):
 			('msg_haveRoute', (self.mp, 12, 34), {})
 			])
 		self.assertEqual(t2.trace, [
-			('isPayerSide', [], {}),
 			('msg_haveRoute', (self.mp, 12, 34), {})
 			])
 
@@ -112,9 +105,7 @@ class Test(unittest.TestCase):
 			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=True)
 		self.mp.msg_makeRoute(t1)
 		self.assertEqual(self.mp.transactionPairs, {"hash": [t1, None]})
-		self.assertEqual(t1.trace, [
-			('isPayerSide', [], {})
-			])
+		self.assertEqual(t1.trace, [])
 
 		t1.trace = []
 		t2 = DummyTransaction(
@@ -125,9 +116,6 @@ class Test(unittest.TestCase):
 			('msg_cancelRoute', (), {})
 			])
 		self.assertEqual(t2.trace, [
-			('isPayerSide', [], {}),
-			('isPayerSide', [], {}),
-			('isPayerSide', [], {}),
 			('msg_cancelRoute', (), {})
 			])
 
@@ -139,9 +127,7 @@ class Test(unittest.TestCase):
 			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=False)
 		self.mp.msg_makeRoute(t1)
 		self.assertEqual(self.mp.transactionPairs, {"hash": [None, t1]})
-		self.assertEqual(t1.trace, [
-			('isPayerSide', [], {})
-			])
+		self.assertEqual(t1.trace, [])
 
 		t1.trace = []
 		t2 = DummyTransaction(
@@ -152,9 +138,6 @@ class Test(unittest.TestCase):
 			('msg_cancelRoute', (), {})
 			])
 		self.assertEqual(t2.trace, [
-			('isPayerSide', [], {}),
-			('isPayerSide', [], {}),
-			('isPayerSide', [], {}),
 			('msg_cancelRoute', (), {})
 			])
 
@@ -166,9 +149,7 @@ class Test(unittest.TestCase):
 			amount=100, hash="hash", meetingPoint="meetingpoint", isPayerSide=True)
 		self.mp.msg_makeRoute(t1)
 		self.assertEqual(self.mp.transactionPairs, {"hash": [t1, None]})
-		self.assertEqual(t1.trace, [
-			('isPayerSide', [], {})
-			])
+		self.assertEqual(t1.trace, [])
 
 		t1.trace = []
 		t2 = DummyTransaction(
@@ -179,8 +160,6 @@ class Test(unittest.TestCase):
 			('msg_cancelRoute', (), {})
 			])
 		self.assertEqual(t2.trace, [
-			('isPayerSide', [], {}),
-			('isPayerSide', [], {}),
 			('msg_cancelRoute', (), {})
 			])
 
@@ -195,9 +174,7 @@ class Test(unittest.TestCase):
 		self.mp.transactionPairs = {"hash": [t1, t2]}
 		self.mp.msg_endRoute(t1)
 		self.assertEqual(self.mp.transactionPairs, {})
-		self.assertEqual(t1.trace, [
-			('isPayerSide', [], {})
-			])
+		self.assertEqual(t1.trace, [])
 		self.assertEqual(t2.trace, [
 			('msg_cancelRoute', (), {})
 			])
@@ -209,9 +186,7 @@ class Test(unittest.TestCase):
 		self.mp.transactionPairs = {"hash": [t1, t2]}
 		self.mp.msg_endRoute(t2)
 		self.assertEqual(self.mp.transactionPairs, {})
-		self.assertEqual(t2.trace, [
-			('isPayerSide', [], {})
-			])
+		self.assertEqual(t2.trace, [])
 		self.assertEqual(t1.trace, [
 			('msg_cancelRoute', (), {})
 			])
@@ -221,9 +196,7 @@ class Test(unittest.TestCase):
 		self.mp.transactionPairs = {"hash": [t1, None]}
 		self.mp.msg_endRoute(t1)
 		self.assertEqual(self.mp.transactionPairs, {})
-		self.assertEqual(t1.trace, [
-			('isPayerSide', [], {})
-			])
+		self.assertEqual(t1.trace, [])
 
 
 	def test_lock(self):

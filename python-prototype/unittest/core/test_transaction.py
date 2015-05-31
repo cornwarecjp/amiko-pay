@@ -40,10 +40,10 @@ from amiko.core import transaction
 class Test(unittest.TestCase):
 	def setUp(self):
 		self.routingContext = DummyRoutingContext()
-		self.makeNewTransaction()
+		self.makeNewTransaction(payerLink="payerLink")
 
 
-	def makeNewTransaction(self, payerLink="payerLink", payeeLink="payeeLink"):
+	def makeNewTransaction(self, payerLink=None, payeeLink=None):
 		self.transaction = transaction.Transaction(
 			context="context", routingContext=self.routingContext,
 			meetingPoint="meetingPoint",
@@ -61,6 +61,10 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.transaction.startTime, 123)
 		self.assertEqual(self.transaction.endTime, 456)
 		self.assertEqual(self.transaction.payerLink, "payerLink")
+		self.assertEqual(self.transaction.payeeLink, None)
+
+		self.makeNewTransaction(payeeLink="payeeLink")
+		self.assertEqual(self.transaction.payerLink, None)
 		self.assertEqual(self.transaction.payeeLink, "payeeLink")
 
 
@@ -69,7 +73,7 @@ class Test(unittest.TestCase):
 		self.transaction = transaction.Transaction(
 			"context", self.routingContext,
 			"meetingPoint",
-			42, "hash")
+			42, "hash", payerLink="payerLink")
 		self.assertEqual(self.transaction.context, "context")
 		self.assertEqual(self.transaction.routingContext, self.routingContext)
 		self.assertEqual(self.transaction.meetingPoint, "meetingPoint")
@@ -77,23 +81,25 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.transaction.hash, "hash")
 		self.assertEqual(self.transaction.startTime, 0)
 		self.assertEqual(self.transaction.endTime, 0)
-		self.assertEqual(self.transaction.payerLink, None)
+		self.assertEqual(self.transaction.payerLink, "payerLink")
 		self.assertEqual(self.transaction.payeeLink, None)
 
+		self.transaction = transaction.Transaction(
+			"context", self.routingContext,
+			"meetingPoint",
+			42, "hash", payeeLink="payeeLink")
+		self.assertEqual(self.transaction.payerLink, None)
+		self.assertEqual(self.transaction.payeeLink, "payeeLink")
 
-	def test_isPayerSide(self):
-		"Test the isPayerSide method"
-		self.transaction.payerLink = None
-		self.transaction.payeeLink = "payeeLink"
-		self.assertFalse(self.transaction.isPayerSide())
 
-		self.transaction.payerLink = "payerLink"
-		self.transaction.payeeLink = None
-		self.assertTrue(self.transaction.isPayerSide())
-
-		self.transaction.payerLink = "payerLink"
-		self.transaction.payeeLink = "payeeLink"
-		self.assertRaises(Exception, self.transaction.isPayerSide)
+	def test_constructorExceptions(self):
+		#The constructor checks whether exactly one of the links is None
+		self.assertRaises(KeyError, self.makeNewTransaction,
+			None, None
+			)
+		self.assertRaises(KeyError, self.makeNewTransaction,
+			"payerLink", "payeeLink"
+			)
 
 
 	def test_makeRoute(self):
@@ -189,19 +195,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(sourceLink.trace,
 			[("msg_haveRoute", (self.transaction,), {})]
 			)
-		self.assertEqual(destLink.trace, [])
-
-		link1 = Tracer()
-		link2 = Tracer()
-		destLink = Tracer()
-		self.makeNewTransaction(payerLink=link1, payeeLink=link2)
-		self.assertRaises(Exception, self.transaction.msg_haveRoute, destLink, 1000, 2000)
-		self.assertEqual(self.transaction.startTime, 1000)
-		self.assertEqual(self.transaction.endTime, 2000)
-		self.assertEqual(self.transaction.payerLink, link1)
-		self.assertEqual(self.transaction.payeeLink, link2)
-		self.assertEqual(link1.trace, [])
-		self.assertEqual(link2.trace, [])
 		self.assertEqual(destLink.trace, [])
 
 

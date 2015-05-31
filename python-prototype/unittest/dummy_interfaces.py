@@ -100,14 +100,7 @@ class DummyTransaction(Tracer):
 		self.startTime = 12
 		self.endTime = 34
 		self.meetingPoint = meetingPoint
-		self.__isPayerSide = isPayerSide
-
-
-	def isPayerSide(self):
-		#Exception: this doesn't get through __getattr__
-		#But we DO want it traced:
-		self.trace.append(('isPayerSide', [], {}))
-		return self.__isPayerSide
+		self.isPayerSide = isPayerSide
 
 
 	def __str__(self):

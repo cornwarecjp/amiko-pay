@@ -46,6 +46,8 @@ class Transaction:
 		       be published (UNIX time) (default: None)
 	endTime: int; end of the time range when the transaction token must
 		     be published (UNIX time) (default: None)
+	isPayerSide: bool; indicates whether we are on the payer side (True) or
+	             not (False).
 	"""
 
 	def __init__(self, context, routingContext, meetingPoint,
@@ -70,9 +72,10 @@ class Transaction:
 		payerLink: Link/Payer/MeetingPoint; the payer-side link (default: None)
 		payeeLink: Link/Payee/MeetingPoint; the payee-side link (default: None)
 
-		Note: before msg_haveRoute is received, one of the two links is None,
-		and the other one is non-None. After msg_haveRoute is received, both are
-		non-None.
+		Note: exactly one of the two links must be None.
+
+		Exceptions:
+		KeyError: Either both links are None, or neither link is.
 		"""
 
 		self.context = context
@@ -93,27 +96,13 @@ class Transaction:
 			[lnk.localID for lnk in self.routingContext.links]
 		self.__currentRoute = None
 
-
-	def isPayerSide(self):
-		"""
-		When called while we do not have a route yet, indicates whether we are
-		on the payer side (searching for a route towards the payee) or on the
-		payee side (searching for a route towards the payer).
-
-		Return value:
-		bool; indicates whether we are on the payer side (True) or not (False).
-
-		Exceptions:
-		Exception: function is called while we already have a route
-		           (both links are non-None).
-		"""
-
-		if self.payeeLink == None:
-			return True
-		if self.payerLink == None:
-			return False
-		raise Exception(
-			"isPayerSide should only be called when routing is unfinished")
+		#Note: this will give an exception if both payer and payee link are None,
+		#or if neither is None.
+		self.isPayerSide = \
+		{
+		(True, False): True, #payee link is None -> payer side
+		(False, True): False #payer link is None -> payee side
+		} [(payeeLink == None, payerLink == None)]
 
 
 	def msg_makeRoute(self, sourceLinkID=None):
@@ -130,10 +119,6 @@ class Transaction:
 		Arguments:
 		sourceLinkID: str; the ID of the source link (if any).
 		              This ID will be skipped in routing attempts.
-
-		Exceptions:
-		Exception: function is called while we already have a route
-		           (both links are non-None).
 		"""
 
 		#If we are the meeting point, we're finished:
@@ -165,10 +150,6 @@ class Transaction:
 			       be published (UNIX time)
 		endTime: int; end of the time range when the transaction token must
 			     be published (UNIX time)
-
-		Exceptions:
-		Exception: function is called while we already have a route
-		           (both links are non-None).
 		"""
 
 		log.log("Transaction: haveRoute")
@@ -180,7 +161,7 @@ class Transaction:
 		self.startTime = startTime
 		self.endTime = endTime
 
-		if self.isPayerSide():
+		if self.isPayerSide:
 			self.payeeLink = link
 			self.payerLink.msg_haveRoute(self)
 		else:
@@ -197,10 +178,6 @@ class Transaction:
 		that link.
 		If no suitable link exists, call msg_haveNoRoute on the already attached link
 		(either payerLink or payeeLink, whichever is non-None).
-
-		Exceptions:
-		Exception: function is called while we already have a route
-		           (both links are non-None).
 		"""
 
 		log.log("Transaction: haveNoRoute")
@@ -283,10 +260,6 @@ class Transaction:
 		that link.
 		If no suitable link exists, call msg_haveNoRoute on the already attached link
 		(either payerLink or payeeLink, whichever is non-None).
-
-		Exceptions:
-		Exception: function is called while we already have a route
-		           (both links are non-None).
 		"""
 
 		while len(self.__remainingRoutes) > 0:
@@ -303,7 +276,7 @@ class Transaction:
 		#No more route: send cancel back to source
 		self.__currentRoute = None
 		del self.__remainingRoutes
-		if self.isPayerSide():
+		if self.isPayerSide:
 			self.payerLink.msg_haveNoRoute(self)
 		else:
 			self.payeeLink.msg_haveNoRoute(self)

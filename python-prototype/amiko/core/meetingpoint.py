@@ -100,9 +100,9 @@ class MeetingPoint:
 		try:
 			pair = self.transactionPairs[transaction.hash]
 
-			if transaction.isPayerSide() and pair[0] == None:
+			if transaction.isPayerSide and pair[0] == None:
 				pair[0] = transaction
-			elif not transaction.isPayerSide() and pair[1] == None:
+			elif not transaction.isPayerSide and pair[1] == None:
 				pair[1] = transaction
 			else:
 				#Apparently, we received the transaction twice from the same
@@ -116,7 +116,7 @@ class MeetingPoint:
 				del self.transactionPairs[transaction.hash]
 
 				otherSide = pair[1]
-				if transaction.isPayerSide():
+				if transaction.isPayerSide:
 					otherSide = pair[0]
 				transaction.msg_cancelRoute()
 				otherSide.msg_cancelRoute()
@@ -148,7 +148,7 @@ class MeetingPoint:
 		except KeyError as e:
 
 			pair = [None, transaction]
-			if transaction.isPayerSide():
+			if transaction.isPayerSide:
 				pair = [transaction, None]
 
 			self.transactionPairs[transaction.hash] = pair
@@ -176,7 +176,7 @@ class MeetingPoint:
 		del self.transactionPairs[transaction.hash]
 
 		otherSide = pair[0]
-		if transaction.isPayerSide():
+		if transaction.isPayerSide:
 			otherSide = pair[1]
 
 		if otherSide != None:
