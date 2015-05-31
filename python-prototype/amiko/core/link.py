@@ -288,9 +288,19 @@ class Link(event.Handler):
 	def msg_haveRoute(self, transaction):
 		log.log("Link %s: haveRoute" % self.name)
 		#TODO: check whether we're still connected
-		#TODO: increment endTime if we're on the payer side
+
+		startTime = transaction.startTime
+		endTime = transaction.endTime
+		#End time is incremented on the outward link, but only on the payer
+		#side. On the payee side, end time will be determined in msg_makeRoute.
+		if transaction.isPayerSide:
+			#TODO: check for potential integer overflow
+			endTime += 86400 #one day in seconds; TODO: make configurable
+
+		#TODO: set startTime and endTime in the channel
+
 		self.connection.sendMessage(messages.HaveRoute(
-			transaction.hash, transaction.startTime, transaction.endTime))
+			transaction.hash, startTime, endTime))
 
 
 	#TODO: msg_cancelRoute handling
