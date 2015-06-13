@@ -351,8 +351,6 @@ class Link(event.Handler):
 				self.context.sendSignal(None, event.signals.save)
 
 		elif message.__class__ == messages.MakeRoute:
-			log.log("Link %s: received MakeRoute" % self.name)
-
 			try:
 				#TODO: do all sorts of checks to see if it makes sense to perform
 				#the transaction over this link.
@@ -395,14 +393,12 @@ class Link(event.Handler):
 			self.openTransactions[message.hash].msg_makeRoute(self.localID)
 
 		elif message.__class__ == messages.HaveNoRoute:
-			log.log("Link %s: received have no route" % self.name)
 			#TODO: use multiple channels
 			tx = self.openTransactions[message.value]
 			self.channels[0].unreserve(tx.isPayerSide, tx.hash)
 			tx.msg_haveNoRoute()
 
 		elif message.__class__ == messages.HaveRoute:
-			log.log("Link %s: received HaveRoute" % self.name)
 			tx = self.openTransactions[message.hash]
 
 			startTime, endTime = message.startTime, message.endTime
@@ -418,8 +414,6 @@ class Link(event.Handler):
 			tx.msg_haveRoute(self, startTime, endTime)
 
 		elif message.__class__ == messages.Lock:
-			log.log("Link received Lock")
-
 			#TODO: use multiple channels
 			self.channels[0].lockIncoming(message)
 			#TODO: exception handling for the above
@@ -429,7 +423,6 @@ class Link(event.Handler):
 			self.openTransactions[message.hash].msg_lock()
 
 		elif message.__class__ == messages.Commit:
-			log.log("Link received Commit")
 			token = message.token
 			hash = settings.hashAlgorithm(token)
 
@@ -445,8 +438,6 @@ class Link(event.Handler):
 			del self.openTransactions[hash]
 
 		elif message.__class__ == messages.Deposit:
-			log.log("Link received Deposit")
-
 			existingIDs = [c.ID for c in self.channels]
 
 			if message.isInitial:
@@ -476,8 +467,6 @@ class Link(event.Handler):
 					#TODO: send refusal reply?
 
 		elif message.__class__ == messages.Withdraw:
-			log.log("Link received Withdraw")
-
 			existingIDs = [c.ID for c in self.channels]
 
 			try:
@@ -491,6 +480,6 @@ class Link(event.Handler):
 				#TODO: send refusal reply?
 
 		else:
-			log.log("Link received unsupported message: %s" % str(message))
+			log.log("Link: message type is not supported; message ignored.")
 
 
