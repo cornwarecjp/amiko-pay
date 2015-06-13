@@ -332,7 +332,7 @@ class Link(event.Handler):
 
 
 	def __handleMessage(self, message):
-		log.log("Link received message (%s -> %s: %s" % \
+		log.log("Link received message (%s -> %s): %s" % \
 			(str(self.remoteID), str(self.localID), str(message) ))
 
 		if message.__class__ == messages.MyURLs:
