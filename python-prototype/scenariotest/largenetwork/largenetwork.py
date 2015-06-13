@@ -129,17 +129,33 @@ for i in range(len(linkDefinitions)):
 	newNode.start()
 	nodes.append(newNode)
 
+
+
+def printNodeInfo():
+	for i in range(len(nodes)):
+		print
+		print "==========================="
+		print "Node %d:" % i
+		print "==========================="
+		data = nodes[i].list()
+		data['links'] = \
+			{
+			lnk['localURL'] :
+			{
+				'amountLocal' : sum([chn['amountLocal'] for chn in lnk['channels']]),
+				'amountRemote': sum([chn['amountRemote'] for chn in lnk['channels']]),
+			}
+			for lnk in data['links']
+			}
+		pprint.pprint(data)
+
+
+
 #Allow links to connect
 time.sleep(3)
 
 print "Before payment:"
-for i in range(len(nodes)):
-	print
-	print "==========================="
-	print "Node %d:" % i
-	print "==========================="
-	pprint.pprint(nodes[i].list())
-
+printNodeInfo()
 
 #Pay from 0 to 7:
 URL = nodes[7].request(123, "receipt")
@@ -154,12 +170,7 @@ time.sleep(0.5)
 
 
 print "After payment:"
-for i in range(len(nodes)):
-	print
-	print "==========================="
-	print "Node %d:" % i
-	print "==========================="
-	pprint.pprint(nodes[i].list())
+printNodeInfo()
 
 
 for n in nodes:
