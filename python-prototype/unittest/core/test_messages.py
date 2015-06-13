@@ -382,6 +382,13 @@ class Test(unittest.TestCase):
 		self.assertTrue("Foobar".encode("hex") in str(msg))
 
 
+	def test_RequestCommit(self):
+		"Test RequestCommit message class"
+
+		msg = messages.RequestCommit("Foo")
+		self.assertEqual(msg.value, "Foo")
+
+
 	def test_Commit(self):
 		"Test Commit message class"
 

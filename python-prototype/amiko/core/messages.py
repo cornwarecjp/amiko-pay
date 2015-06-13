@@ -33,20 +33,21 @@ from ..utils.utils import inheritDocString
 
 
 #Message type IDs
-ID_STRING      = 1
-ID_LINK        = 2
-ID_PAY         = 3
-ID_RECEIPT     = 4
-ID_CONFIRM     = 5
-ID_MAKEROUTE   = 6
-ID_HAVEROUTE   = 7
-ID_HAVENOROUTE = 8
-ID_LOCK        = 9
-ID_CANCEL      = 10
-ID_COMMIT      = 11
-ID_MYURLS      = 12
-ID_DEPOSIT     = 13
-ID_WITHDRAW    = 14
+ID_STRING        = 1
+ID_LINK          = 2
+ID_PAY           = 3
+ID_RECEIPT       = 4
+ID_CONFIRM       = 5
+ID_MAKEROUTE     = 6
+ID_HAVEROUTE     = 7
+ID_HAVENOROUTE   = 8
+ID_LOCK          = 9
+ID_CANCEL        = 10
+ID_COMMIT        = 11
+ID_MYURLS        = 12
+ID_DEPOSIT       = 13
+ID_WITHDRAW      = 14
+ID_REQUESTCOMMIT = 15
 
 
 
@@ -198,7 +199,8 @@ def deserialize(s):
 		ID_COMMIT: Commit,
 		ID_MYURLS: MyURLs,
 		ID_DEPOSIT: Deposit,
-		ID_WITHDRAW: Withdraw
+		ID_WITHDRAW: Withdraw,
+		ID_REQUESTCOMMIT: RequestCommit
 		}[ID]
 	except KeyError:
 		raise Exception("Deserialize failed: unknown type ID")
@@ -801,6 +803,25 @@ class Lock(ChannelMessage):
 	def __str__(self):
 		return "[Lock] channelID: %d; hash: %s" % \
 			(self.channelID, self.hash.encode("hex"))
+
+
+
+class RequestCommit(String):
+	"""
+	Request Commit message (sent between peers on link)
+
+	Attributes:
+	value: str; the commit token
+	"""
+
+	def __init__(self, value=""):
+		"""
+		Constructor.
+
+		Arguments:
+		value: str; the commit token
+		"""
+		String.__init__(self, value, ID_REQUESTCOMMIT)
 
 
 
