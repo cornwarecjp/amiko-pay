@@ -157,6 +157,7 @@ time.sleep(3)
 print "Before payment:"
 printNodeInfo()
 
+t0 = time.time()
 #Pay from 0 to 7:
 URL = nodes[7].request(123, "receipt")
 print "Payment URL:", URL
@@ -164,6 +165,9 @@ print "Payment URL:", URL
 payer = nodes[0].pay(URL)
 nodes[0].confirmPayment(payer, True)
 print "Payment is ", payer.state
+t1 = time.time()
+
+print "Payment took %f seconds" % (t1-t0)
 
 #Allow paylink to disconnect
 time.sleep(0.5)
