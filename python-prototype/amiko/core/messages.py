@@ -161,7 +161,7 @@ class Message:
 		Return value:
 		str; a human-readable description of the message.
 		"""
-		return "Type: %d" % self.__typeID
+		return "[%s] Type: %d" % (self.__class__.__name__, self.__typeID)
 
 
 
@@ -247,7 +247,7 @@ class String(Message):
 
 	@inheritDocString(Message)
 	def __str__(self):
-		return repr(self.value)
+		return "[%s] %s" % (self.__class__.__name__, repr(self.value))
 
 
 
@@ -391,7 +391,7 @@ class Link(Message):
 
 	@inheritDocString(Message)
 	def __str__(self):
-		return "dice: %d; ID: %s" % (self.dice, self.ID)
+		return "[Link] dice: %d; ID: %s" % (self.dice, self.ID)
 
 
 
@@ -474,7 +474,7 @@ class MakeRoute(Message):
 
 	@inheritDocString(Message)
 	def __str__(self):
-		return "amount: %d; payerSide: %s; hash: %s; startTime: %d; endTime: %d; meeting point: %s" % \
+		return "[MakeRoute] amount: %d; payerSide: %s; hash: %s; startTime: %d; endTime: %d; meeting point: %s" % \
 			(
 			self.amount, str(self.isPayerSide),
 			repr(self.hash), self.startTime, self.endTime,
@@ -537,7 +537,7 @@ class HaveRoute(Message):
 
 	@inheritDocString(Message)
 	def __str__(self):
-		return "hash: %s; startTime: %d; endTime: %d" % \
+		return "[HaveRoute] hash: %s; startTime: %d; endTime: %d" % \
 			(
 			repr(self.hash), self.startTime, self.endTime
 			)
@@ -600,7 +600,7 @@ class Receipt(Message):
 
 	@inheritDocString(Message)
 	def __str__(self):
-		return "amount: %d; receipt: \"%s\"; hash: %s; meeting points: %s" % \
+		return "[Receipt] amount: %d; receipt: \"%s\"; hash: %s; meeting points: %s" % \
 			(self.amount, self.receipt, repr(self.hash), str(self.meetingPoints))
 
 
@@ -660,7 +660,8 @@ class ChannelMessage(Message):
 
 	@inheritDocString(Message)
 	def __str__(self):
-		return "channelID: %d; stage: %d" % (self.channelID, self.stage)
+		return "[%s] channelID: %d; stage: %d" % \
+			(self.__class__.__name__, self.channelID, self.stage)
 
 
 
@@ -723,7 +724,7 @@ class Deposit(ChannelMessage):
 
 	@inheritDocString(Message)
 	def __str__(self):
-		return "channelID: %d; type: %s; isInitial: %s; stage: %d" % \
+		return "[Deposit] channelID: %d; type: %s; isInitial: %s; stage: %d" % \
 			(self.channelID, self.type, str(self.isInitial), self.stage)
 
 
@@ -798,7 +799,7 @@ class Lock(ChannelMessage):
 
 	@inheritDocString(Message)
 	def __str__(self):
-		return "channelID: %d; hash: %s" % \
+		return "[Lock] channelID: %d; hash: %s" % \
 			(self.channelID, self.hash.encode("hex"))
 
 
@@ -850,6 +851,6 @@ class Commit(ChannelMessage):
 
 	@inheritDocString(Message)
 	def __str__(self):
-		return "channelID: %d; token: %s" % \
+		return "[Commit] channelID: %d; token: %s" % \
 			(self.channelID, self.token.encode("hex"))
 

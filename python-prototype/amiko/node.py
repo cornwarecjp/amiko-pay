@@ -518,7 +518,7 @@ class Node(threading.Thread):
 
 
 	def __postHandleMessageSignal(self, message):
-		log.log("Message post-handler called: " + str(message))
+		#log.log("Message post-handler called: " + str(message))
 
 		if self.__doSave:
 			self.__saveState()
