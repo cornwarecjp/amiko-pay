@@ -403,9 +403,19 @@ class Link(event.Handler):
 
 		elif message.__class__ == messages.HaveRoute:
 			log.log("Link %s: received HaveRoute" % self.name)
-			#TODO: on payee side, check equality of timestamp values
-			self.openTransactions[message.hash].msg_haveRoute(
-				self, message.startTime, message.endTime)
+			tx = self.openTransactions[message.hash]
+
+			startTime, endTime = message.startTime, message.endTime
+			if not tx.isPayerSide:
+				#TODO: on payee side, check equality of timestamp values
+
+				#On the payee side, don't overwrite the values that are
+				#already in the transaction.
+				#Note that these are different from the ones received in the
+				#message.
+				startTime, endTime = tx.startTime, tx.endTime
+
+			tx.msg_haveRoute(self, startTime, endTime)
 
 		elif message.__class__ == messages.Lock:
 			log.log("Link received Lock")
