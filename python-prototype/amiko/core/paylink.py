@@ -169,6 +169,14 @@ class Payer(event.Handler):
 		self.__finished.set()
 
 
+	def msg_requestCommit(self, transaction):
+		log.log("Payer: requestCommit")
+
+		#TODO: maybe check validity of payment token
+		#TODO: do we need to do anything else here?
+		self.token = transaction.token
+
+
 	def __handleMessage(self, message):
 		situation = (self.state, message.__class__)
 
@@ -322,6 +330,8 @@ class Payee(event.Handler):
 		self.state = self.states.sentCommit
 		#2: network traffic
 		self.connection.sendMessage(messages.Commit(token=self.token))
+		#3: internal messaging
+		transaction.msg_requestCommit(self.token)
 
 
 	def msg_commit(self, transaction):

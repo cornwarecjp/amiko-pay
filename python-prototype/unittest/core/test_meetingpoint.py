@@ -215,6 +215,23 @@ class Test(unittest.TestCase):
 			])
 
 
+	def test_requestCommit(self):
+		"Test msg_requestCommit"
+
+		t1 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=True)
+		t2 = DummyTransaction(
+			amount=0, hash="hash", meetingPoint="meetingpoint", isPayerSide=False)
+		t2.token = "token"
+		self.mp.transactionPairs = {"hash": [t1, t2]}
+		self.mp.msg_requestCommit(t2)
+		self.assertEqual(self.mp.transactionPairs, {"hash": [t1, t2]})
+		self.assertEqual(t1.trace, [
+			('msg_requestCommit', ("token",), {})
+			])
+		self.assertEqual(t2.trace, [])
+
+
 	def test_commit(self):
 		"Test msg_commit"
 

@@ -270,8 +270,8 @@ class Test(unittest.TestCase):
 			)
 
 
-	def test_commit(self):
-		"Test the msg_commit method"
+	def test_requestCommit(self):
+		"Test the msg_requestCommit method"
 
 		payerLink = Tracer()
 		payeeLink = Tracer()
@@ -280,6 +280,21 @@ class Test(unittest.TestCase):
 
 		payerLink.trace = []
 		payeeLink.trace = []
+		self.transaction.msg_requestCommit("token")
+		self.assertEqual(self.transaction.token, "token")
+		self.assertEqual(payeeLink.trace, [])
+		self.assertEqual(payerLink.trace,
+			[('msg_requestCommit', (self.transaction,), {})]
+			)
+
+
+	def test_commit(self):
+		"Test the msg_commit method"
+
+		payerLink = Tracer()
+		payeeLink = Tracer()
+		self.makeNewTransaction(payerLink=payerLink, payeeLink=None)
+		self.transaction.msg_haveRoute(payeeLink, 123, 456)
 
 		payerLink.trace = []
 		payeeLink.trace = []

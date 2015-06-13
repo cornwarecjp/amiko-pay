@@ -199,6 +199,22 @@ class MeetingPoint:
 		pair[1].msg_lock()
 
 
+	def msg_requestCommit(self, transaction):
+		"""
+		This method is typically called by the payee link.
+
+		Call msg_commit to the payer side transaction.
+
+		Arguments:
+		transaction: Transaction; the transaction object that called this
+                     method.
+		"""
+
+		log.log("Meeting point: requestCommit")
+		pair = self.transactionPairs[transaction.hash]
+		pair[0].msg_requestCommit(transaction.token)
+
+
 	def msg_commit(self, transaction):
 		"""
 		This method is typically called by the payer side transaction.
@@ -211,7 +227,6 @@ class MeetingPoint:
                      method.
 		"""
 
-		#TODO: split up into token distribution and commit, and make bi-directional
 		log.log("Meeting point: commit")
 		pair = self.transactionPairs[transaction.hash]
 		pair[1].msg_commit(transaction.token)

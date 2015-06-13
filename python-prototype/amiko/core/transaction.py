@@ -215,6 +215,24 @@ class Transaction:
 		self.payeeLink.msg_lock(self)
 
 
+	def msg_requestCommit(self, token):
+		"""
+		This method is typically called by the payee link.
+
+		Set the attribute "token" to the given value. After that, call
+		msg_requestCommit to the payer link.
+
+		Note: the token is NOT checked against the hash.
+
+		Arguments:
+		token: str; the commit token of the transaction.
+		"""
+
+		log.log("Transaction: requestCommit")
+		self.token = token
+		self.payerLink.msg_requestCommit(self)
+
+
 	def msg_commit(self, token):
 		"""
 		This method is typically called by the payer link.
@@ -228,7 +246,6 @@ class Transaction:
 		token: str; the commit token of the transaction.
 		"""
 
-		#TODO: split up into token distribution and commit, and make bi-directional
 		log.log("Transaction: commit")
 		self.token = token
 		self.payeeLink.msg_commit(self)

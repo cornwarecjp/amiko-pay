@@ -317,6 +317,12 @@ class Link(event.Handler):
 		self.connection.sendMessage(message)
 
 
+	def msg_requestCommit(self, transaction):
+		log.log("Link: requestCommit")
+
+		#TODO: implement
+
+
 	def msg_commit(self, transaction):
 		log.log("Link: commit")
 		#TODO: check whether we're still connected
