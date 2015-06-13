@@ -197,8 +197,13 @@ class Node(threading.Thread):
 		#Token must be secure random
 		token = randomsource.getSecureRandom(32)
 
+		suggestedMeetingPoints = \
+			[mp.ID for mp in self.routingContext.meetingPoints] + \
+			self.settings.externalMeetingPoints
+
 		newPayee = paylink.Payee(
-			self.context, self.routingContext, ID, amount, receipt, token)
+			self.context, self.routingContext, ID, amount, receipt, token,
+			suggestedMeetingPoints)
 		self.payees.append(newPayee)
 
 		return "amikopay://%s/%s" % \

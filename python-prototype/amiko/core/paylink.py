@@ -221,7 +221,7 @@ class Payee(event.Handler):
 		"initial", "confirmed", "hasRoutes", "sentCommit", "cancelled", "committed"
 		])
 
-	def __init__(self, context, routingContext, ID, amount, receipt, token):
+	def __init__(self, context, routingContext, ID, amount, receipt, token, suggestedMeetingPoints):
 		event.Handler.__init__(self, context)
 		self.routingContext = routingContext
 
@@ -230,6 +230,7 @@ class Payee(event.Handler):
 		self.receipt = receipt
 		self.token = token
 		self.hash = settings.hashAlgorithm(self.token)
+		self.suggestedMeetingPoints = suggestedMeetingPoints
 
 		self.__meetingPoint = None #unknown
 		self.__transaction = None
@@ -298,12 +299,9 @@ class Payee(event.Handler):
 			self.close)
 
 		#2: network traffic
-		meetingPoints = [mp.ID for mp in self.routingContext.meetingPoints]
-		#TODO: add accepted external meeting points
-
 		# Send amount, receipt and meeting points to payer:
 		connection.sendMessage(messages.Receipt(
-			self.amount, self.receipt, self.hash, meetingPoints))
+			self.amount, self.receipt, self.hash, self.suggestedMeetingPoints))
 
 
 	def isConnected(self):
