@@ -73,7 +73,7 @@ class Settings:
 
 		#escrow services
 		self.acceptedEscrowKeys = self.__get(
-			"escrow", "acceptedKeys", "")
+			"providers", "escrowKeys", "")
 		#de-code the keys:
 		self.acceptedEscrowKeys = self.acceptedEscrowKeys.split(",")
 		self.acceptedEscrowKeys = \
@@ -82,6 +82,15 @@ class Settings:
 			self.acceptedEscrowKeys = self.acceptedEscrowKeys[:-1] #remove empty
 		self.acceptedEscrowKeys = \
 			[binascii.unhexlify(s) for s in self.acceptedEscrowKeys]
+
+		#external meeting points
+		self.externalMeetingPoints = self.__get(
+			"providers", "externalMeetingPoints", "")
+		self.externalMeetingPoints = self.externalMeetingPoints.split(",")
+		self.externalMeetingPoints = \
+			[s.strip() for s in self.externalMeetingPoints]
+		if self.externalMeetingPoints[-1] == '':
+			self.externalMeetingPoints = self.externalMeetingPoints[:-1] #remove empty
 
 		#bitcoin RPC
 		self.bitcoinRPCURL = self.__get(
