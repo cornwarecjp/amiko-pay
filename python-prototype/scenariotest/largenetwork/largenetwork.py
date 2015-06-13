@@ -41,30 +41,32 @@ from amiko.core import event, settings
 """
 The network has the following shape:
 
-            (4)
-             |
-            (3)
-             |
-(0) - (1) - (2) - (5) - (6)
-             |
-            (7)
-             |
-            (8)
+            (3)         (6)
+             |           |
+(0) - (1) - (2) - (4) - (5) - (7)
+             |           |
+            (8)         (10)
+             |           |
+            (9)         (11)
 
-Payment is between 0 and 6
+Payment is between 0 and 7
+Meeting point is 4
 """
 
 linkDefinitions = \
 [
 	[1],          #0
 	[0, 2],       #1
-	[1, 3, 5, 7], #2
-	[2, 4],       #3
-	[3],          #4
-	[2, 6],       #5
+	[1, 3, 4, 8], #2
+	[2],          #3
+	[2, 5],       #4
+	[4, 6, 7, 10],#5
 	[5],          #6
-	[2, 8],       #7
-	[7]           #8
+	[5],          #7
+	[2, 9],       #8
+	[8],          #9
+	[5, 11],     #10
+	[10]         #11
 ]
 
 ports = [4321+i for i in range(len(linkDefinitions))]
@@ -80,6 +82,11 @@ for i in range(len(linkDefinitions)):
 	s.advertizedPort = s.listenPort
 	s.stateFile = "state_%d.dat" % i
 	s.payLogFile = "payments_%d.log" % i
+	s.externalMeetingPoints = ["Node4"]
+
+	meetingPoints = []
+	if i == 4:
+		meetingPoints.append({"ID": "Node4"})
 
 	linkStates = []
 	for link in links:
@@ -108,14 +115,7 @@ for i in range(len(linkDefinitions)):
 	state = \
 	{
 	"links": linkStates,
-
-	"meetingPoints":
-	[
-		{
-		"ID": "meetingPoint_%d" % i
-		}
-	],
-
+	"meetingPoints": meetingPoints,
 	"payees": []
 	}
 
@@ -141,8 +141,8 @@ for i in range(len(nodes)):
 	pprint.pprint(nodes[i].list())
 
 
-#Pay from 0 to 6:
-URL = nodes[6].request(123, "receipt")
+#Pay from 0 to 7:
+URL = nodes[7].request(123, "receipt")
 print "Payment URL:", URL
 
 payer = nodes[0].pay(URL)
