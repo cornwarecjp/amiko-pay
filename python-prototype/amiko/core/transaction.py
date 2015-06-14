@@ -237,8 +237,8 @@ class Transaction:
 		"""
 		This method is typically called by the payer link.
 
-		Set the attribute "token" to the given value. After that, call
-		msg_commit to the payee link.
+		If the token was not already known (self.token is None), set the
+		attribute "token" to the given value, and call msg_commit to the payee link.
 
 		Note: the token is NOT checked against the hash.
 
@@ -247,8 +247,12 @@ class Transaction:
 		"""
 
 		log.log("Transaction: commit")
-		self.token = token
-		self.payeeLink.msg_commit(self)
+		if self.token is None:
+			self.token = token
+			self.payeeLink.msg_commit(self)
+		else:
+			#TODO: maybe check whether both tokens are the same
+			log.log("Transaction: token was already known; not transmitting the commit")
 
 
 	def __tryMeetingPoint(self):

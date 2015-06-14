@@ -319,8 +319,12 @@ class Link(event.Handler):
 
 	def msg_requestCommit(self, transaction):
 		log.log("Link: requestCommit")
+		#TODO: check whether we're still connected
 
-		#TODO: implement
+		#TODO: give token to channel?
+
+		self.connection.sendMessage(messages.RequestCommit(
+			transaction.token))
 
 
 	def msg_commit(self, transaction):
@@ -420,6 +424,8 @@ class Link(event.Handler):
 			tx.msg_haveRoute(self, startTime, endTime)
 
 		elif message.__class__ == messages.Lock:
+			#TODO: check that we're the payee side
+
 			#TODO: use multiple channels
 			self.channels[0].lockIncoming(message)
 			#TODO: exception handling for the above
@@ -428,9 +434,37 @@ class Link(event.Handler):
 
 			self.openTransactions[message.hash].msg_lock()
 
+
+		elif message.__class__ == messages.RequestCommit:
+			token = message.value
+			hash = settings.hashAlgorithm(token)
+
+			#If hash is not in openTransactions, then either the commit token
+			#was wrong, or e.g. we already removed the transaction because
+			#we received the token from the payer side.
+			if hash in self.openTransactions:
+				#TODO: check time-out
+				#TODO: check that we're the payer side
+
+				#TODO: use multiple channels
+				message = self.channels[0].commitOutgoing(hash, token)
+
+				self.context.sendSignal(None, event.signals.save)
+
+				self.connection.sendMessage(message)
+
+				#Now also request a commit on our upstream payer side
+				self.openTransactions[hash].msg_requestCommit(token)
+
+				#We don't need this anymore:
+				del self.openTransactions[hash]
+
+
 		elif message.__class__ == messages.Commit:
 			token = message.token
 			hash = settings.hashAlgorithm(token)
+
+			#TODO: check that we're the payee side
 
 			#TODO: use multiple channels
 			self.channels[0].commitIncoming(hash, message)
@@ -438,10 +472,15 @@ class Link(event.Handler):
 
 			self.context.sendSignal(None, event.signals.save)
 
-			self.openTransactions[hash].msg_commit(token)
+			#If hash is not in openTransactions, then either the commit token
+			#was wrong, or e.g. we already removed the transaction because
+			#we received the token from the payee side.
+			if hash in self.openTransactions:
+				self.openTransactions[hash].msg_commit(token)
 
-			#We don't need this anymore:
-			del self.openTransactions[hash]
+				#We don't need this anymore:
+				del self.openTransactions[hash]
+
 
 		elif message.__class__ == messages.Deposit:
 			existingIDs = [c.ID for c in self.channels]

@@ -305,6 +305,13 @@ class Test(unittest.TestCase):
 			[('msg_commit', (self.transaction,), {})]
 			)
 
+		payerLink.trace = []
+		payeeLink.trace = []
+		self.transaction.msg_commit("token2")
+		self.assertEqual(self.transaction.token, "token")
+		self.assertEqual(payerLink.trace, [])
+		self.assertEqual(payeeLink.trace, [])
+
 
 
 if __name__ == "__main__":
