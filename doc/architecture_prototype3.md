@@ -1,3 +1,6 @@
+Introduction
+============
+
 Prototype 3 is the third major design iteration of Amiko Pay.
 
 The first prototype had a massive multi-threading architecture, where every
@@ -56,6 +59,10 @@ The architecture of prototype 3 is based on the following observations:
   However, there are no infinite loops, and each initiating event can be fully
   processed in a limited number of steps.
 
+
+State machine design
+====================
+
 Because of the focus on state data, prototype 3 is inspired by the concept of a
 state machine. The number of states of an Amiko node is so high that it would be
 undoable to fully write down all states and all state transitions, but the core
@@ -76,6 +83,9 @@ the original event. Therefore, the composed object needs to make sure all
 inter-module messaging is finished, before it can combine all module states into
 the new composed state.
 
+Serialization and objects
+=========================
+
 The Python json library makes serialization easy, especially when the state
 data is composed of only basic Python data types like strings, integers,
 booleans, dictionaries and lists. The json library supports escaping of
@@ -92,6 +102,10 @@ To get the best of both worlds, a common base class will be used for all
 serializable objects, to assist (de)serialization of custom classes with an
 absolute minimum of per-class boilerplate code.
 
+
+Messages
+========
+
 A message contains
 
 * the message type
@@ -106,6 +120,10 @@ node state:
 
 * messages to be sent over a network connection that is currently down
 * messages to be sent back to ourselves in the future as time-out events.
+
+
+Node state structure
+====================
 
 This is a (likely incomplete) summary of the state structure and the type of
 objects in the state of an Amiko node:
