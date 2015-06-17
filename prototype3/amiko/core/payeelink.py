@@ -29,6 +29,8 @@
 
 from ..utils import utils
 
+import settings
+
 import serializable
 
 
@@ -44,6 +46,13 @@ class PayeeLink(serializable.Serializable):
 		'receipt': None,
 		'token': None
 	}
+
+	def __init__(self, **kwargs):
+		serializable.Serializable.__init__(self, **kwargs)
+
+		#This will fail if token is not set (is None).
+		#So, token must always be set for successful construction.
+		self.transactionID = settings.hashAlgorithm(self.token)
 
 serializable.registerClass(PayeeLink)
 

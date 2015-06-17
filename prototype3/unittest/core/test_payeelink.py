@@ -31,13 +31,15 @@ import unittest
 
 import testenvironment
 
+from amiko.utils.crypto import RIPEMD160, SHA256
+
 from amiko.core import payeelink
 
 
 
 class Test(unittest.TestCase):
 	def setUp(self):
-		self.payeeLink = payeelink.PayeeLink()
+		self.payeeLink = payeelink.PayeeLink(token="foo")
 
 
 	def test_defaultAttributes(self):
@@ -45,7 +47,8 @@ class Test(unittest.TestCase):
 
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.initial)
 		self.assertEqual(self.payeeLink.receipt, None)
-		self.assertEqual(self.payeeLink.token, None)
+		self.assertEqual(self.payeeLink.token, "foo")
+		self.assertEqual(self.payeeLink.transactionID, RIPEMD160(SHA256("foo")))
 
 
 
