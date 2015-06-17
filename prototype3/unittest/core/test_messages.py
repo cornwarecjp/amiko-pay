@@ -1,4 +1,5 @@
-#    messages.py
+#!/usr/bin/env python
+#    test_messages.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -26,33 +27,43 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-import copy
+import unittest
 
-import serializable
+import testenvironment
 
-
-
-class Message(serializable.Serializable):
-	serializableAttributes = {'destinationType': None, 'destinationID':None}
-serializable.registerClass(Message)
+from amiko.core import messages
 
 
 
-class Request(Message):
-	serializableAttributes = copy.deepcopy(Message.serializableAttributes)
-	serializableAttributes.update({'amount':0, 'receipt':''})
-serializable.registerClass(Request)
+class Test(unittest.TestCase):
+	def test_Message(self):
+		"Test Message"
+
+		message = messages.Message()
+		self.assertEqual(message.destinationType, None)
+		self.assertEqual(message.destinationID, None)
+
+
+	def test_Request(self):
+		"Test Request"
+
+		message = messages.Request()
+		self.assertEqual(message.destinationType, None)
+		self.assertEqual(message.destinationID, None)
+		self.assertEqual(message.amount, 0)
+		self.assertEqual(message.receipt, '')
+
+
+	def test_Pay(self):
+		"Test Pay"
+
+		message = messages.Pay()
+		self.assertEqual(message.destinationType, None)
+		self.assertEqual(message.destinationID, None)
+		self.assertEqual(message.requestID, None)
 
 
 
-class Pay(Message):
-	"""
-	Pay message (sent from payer to payee on pay link)
-
-	Attributes:
-	requestID: str; the payee link ID
-	"""
-	serializableAttributes = copy.deepcopy(Message.serializableAttributes)
-	serializableAttributes.update({'requestID':None})
-serializable.registerClass(Pay)
+if __name__ == "__main__":
+	unittest.main(verbosity=2)
 
