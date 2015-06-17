@@ -45,6 +45,9 @@ class Test(unittest.TestCase):
 
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.initial)
 		self.assertEqual(self.payeeLink.transactionID, None)
+		self.assertEqual(self.payeeLink.receipt, None)
+		self.assertEqual(self.payeeLink.token, None)
+
 
 
 if __name__ == "__main__":

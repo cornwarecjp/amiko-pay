@@ -38,6 +38,13 @@ class PayeeLink(serializable.Serializable):
 		"initial", "confirmed", "hasRoutes", "sentCommit", "cancelled", "committed"
 		])
 
-	serializableAttributes = {'state':states.initial, 'transactionID':None}
+	serializableAttributes = \
+	{
+		'state': states.initial,
+		'transactionID': None,
+		'receipt': None,
+		'token': None
+	}
+
 serializable.registerClass(PayeeLink)
 
