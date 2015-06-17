@@ -41,7 +41,6 @@ class PayeeLink(serializable.Serializable):
 	serializableAttributes = \
 	{
 		'state': states.initial,
-		'transactionID': None,
 		'receipt': None,
 		'token': None
 	}
