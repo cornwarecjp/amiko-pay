@@ -150,3 +150,10 @@ objects in the state of an Amiko node:
 	   |
 	   \- link IDs (including remaining links for unfinished routing)
 
+The not-yet-transmitted messages (network messages to be sent to a currently
+closed network connection, and time-out messages to be sent in the future)
+are not included in this diagram: they *should* be stored to disk, to be
+restored after shutdown / crash, but they are handled by the event dispatcher.
+Storing them here would imply external code changing the state object;
+this is avoided by storing them outside the node state.
+
