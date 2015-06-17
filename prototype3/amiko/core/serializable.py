@@ -26,10 +26,18 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+import copy
+
+
+
 registeredClasses = {}
 
-def registerClass(c, attributeNames):
-	registeredClasses[c.__name__] = (c, attributeNames)
+def registerClass(c, attributes):
+	"""
+	c: class
+	attributes: dict of name:defaultValue pairs
+	"""
+	registeredClasses[c.__name__] = (c, attributes)
 
 
 def state2Object(s):
@@ -44,11 +52,11 @@ def state2Object(s):
 
 	#Classes are indicated by the _class item:
 	if type(ret) == dict and "_class" in s.keys():
-		c, attributeNames = registeredClasses[s["_class"]]
-		attributes = {name: ret[name] for name in attributeNames}
+		c, attributes = registeredClasses[s["_class"]]
+		attributes = {name: ret[name] for name in attributes.keys()}
 		ret = c(**attributes)
 
-	return ret	
+	return ret
 
 
 def object2State(obj):
@@ -58,8 +66,8 @@ def object2State(obj):
 	#Classes are indicated by the _class item:
 	if isinstance(ret, Serializable):
 		className = ret.__class__.__name__
-		c, attributeNames = registeredClasses[className]
-		ret = {name: getattr(obj, name) for name in attributeNames}
+		c, attributes = registeredClasses[className]
+		ret = {name: getattr(obj, name) for name in attributes.keys()}
 		ret["_class"] = className
 
 	#For these iterables, process the items recursively:
@@ -73,23 +81,31 @@ def object2State(obj):
 
 
 class Serializable:
-	pass
+	def __init__(self, **kwargs):
+		c, attributes = registeredClasses[self.__class__.__name__]
+		for name in attributes.keys():
+			setattr(self, name, copy.deepcopy(
+					kwargs[name]
+				if name in kwargs else
+					attributes[name] #default value
+				))
+
 
 
 if __name__ == "__main__":
 
 	class A(Serializable):
-		def __init__(self, x, y):
-			self.x = x
-			self.y = y
+		def __init__(self, **kwargs):
+			Serializable.__init__(self, **kwargs)
+
 
 	class B(Serializable):
-		def __init__(self, a, b):
-			self.a = a
-			self.b = b
+		def __init__(self, **kwargs):
+			Serializable.__init__(self, **kwargs)
 
-	registerClass(A, ['x', 'y'])
-	registerClass(B, ['a', 'b'])
+
+	registerClass(A, {'x':None, 'y':None})
+	registerClass(B, {'a':None, 'b':None})
 
 	a1 = A(x=1, y={'key1': B(a=True, b=None), 'key2': [3,1,4,1]})
 	state = object2State(a1)
