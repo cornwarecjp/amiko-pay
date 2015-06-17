@@ -32,12 +32,11 @@ import copy
 
 registeredClasses = {}
 
-def registerClass(c, attributes):
+def registerClass(c):
 	"""
 	c: class
-	attributes: dict of name:defaultValue pairs
 	"""
-	registeredClasses[c.__name__] = (c, attributes)
+	registeredClasses[c.__name__] = c
 
 
 def state2Object(s):
@@ -52,9 +51,8 @@ def state2Object(s):
 
 	#Classes are indicated by the _class item:
 	if type(ret) == dict and "_class" in s.keys():
-		c, attributes = registeredClasses[s["_class"]]
-		attributes = {name: ret[name] for name in attributes.keys()}
-		ret = c(**attributes)
+		c = registeredClasses[s["_class"]]
+		ret = c(**ret)
 
 	return ret
 
@@ -66,7 +64,8 @@ def object2State(obj):
 	#Classes are indicated by the _class item:
 	if isinstance(ret, Serializable):
 		className = ret.__class__.__name__
-		c, attributes = registeredClasses[className]
+		c = registeredClasses[className]
+		attributes = c.serializableAttributes
 		ret = {name: getattr(obj, name) for name in attributes.keys()}
 		ret["_class"] = className
 
@@ -82,7 +81,8 @@ def object2State(obj):
 
 class Serializable:
 	def __init__(self, **kwargs):
-		c, attributes = registeredClasses[self.__class__.__name__]
+		c = registeredClasses[self.__class__.__name__]
+		attributes = c.serializableAttributes
 		for name in attributes.keys():
 			setattr(self, name, copy.deepcopy(
 					kwargs[name]
@@ -95,17 +95,15 @@ class Serializable:
 if __name__ == "__main__":
 
 	class A(Serializable):
-		def __init__(self, **kwargs):
-			Serializable.__init__(self, **kwargs)
+		serializableAttributes = {'x':None, 'y':None}
 
 
 	class B(Serializable):
-		def __init__(self, **kwargs):
-			Serializable.__init__(self, **kwargs)
+		serializableAttributes = {'a':None, 'b':None}
 
 
-	registerClass(A, {'x':None, 'y':None})
-	registerClass(B, {'a':None, 'b':None})
+	registerClass(A)
+	registerClass(B)
 
 	a1 = A(x=1, y={'key1': B(a=True, b=None), 'key2': [3,1,4,1]})
 	state = object2State(a1)
