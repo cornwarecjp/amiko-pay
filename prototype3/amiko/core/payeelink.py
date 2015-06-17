@@ -26,11 +26,18 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+
+from ..utils import utils
+
 import serializable
 
 
 
 class PayeeLink(serializable.Serializable):
-	serializableAttributes = {'transactionID':None}
+	states = utils.Enum([
+		"initial", "confirmed", "hasRoutes", "sentCommit", "cancelled", "committed"
+		])
+
+	serializableAttributes = {'state':states.initial, 'transactionID':None}
 serializable.registerClass(PayeeLink)
 

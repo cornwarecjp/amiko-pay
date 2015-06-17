@@ -90,25 +90,3 @@ class Serializable:
 					attributes[name] #default value
 				))
 
-
-
-if __name__ == "__main__":
-
-	class A(Serializable):
-		serializableAttributes = {'x':None, 'y':None}
-
-
-	class B(Serializable):
-		serializableAttributes = {'a':None, 'b':None}
-
-
-	registerClass(A)
-	registerClass(B)
-
-	a1 = A(x=1, y={'key1': B(a=True, b=None), 'key2': [3,1,4,1]})
-	state = object2State(a1)
-	print state
-	a2 = state2Object(state)
-	state = object2State(a2)
-	print state
-

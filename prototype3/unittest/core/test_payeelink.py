@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    all.py
+#    test_payeelink.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -31,9 +31,20 @@ import unittest
 
 import testenvironment
 
-from test_log import Test as test_log
-from test_payeelink import Test as test_payeelink
-from test_serializable import Test as test_serializable
+from amiko.core import payeelink
+
+
+
+class Test(unittest.TestCase):
+	def setUp(self):
+		self.payeeLink = payeelink.PayeeLink()
+
+
+	def test_defaultAttributes(self):
+		"Test default attributes"
+
+		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.initial)
+		self.assertEqual(self.payeeLink.transactionID, None)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,4 @@
+[run]
+include = ../../amiko/core/*.py
+omit = ./*.py
+

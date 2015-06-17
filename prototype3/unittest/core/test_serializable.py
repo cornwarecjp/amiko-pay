@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    all.py
+#    test_serializable.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -31,9 +31,62 @@ import unittest
 
 import testenvironment
 
-from test_log import Test as test_log
-from test_payeelink import Test as test_payeelink
-from test_serializable import Test as test_serializable
+from amiko.core import serializable
+
+
+class C(serializable.Serializable):
+	serializableAttributes = {'x':1, 'y':2}
+
+
+
+class Test(unittest.TestCase):
+	def setUp(self):
+		serializable.registeredClasses = {}
+		serializable.registerClass(C)
+
+
+	def test_registerAddress(self):
+		"Test registerAddress"
+
+		self.assertEqual(serializable.registeredClasses, {'C': C})
+
+
+	def test_object2State(self):
+		"Test object2State"
+
+		obj = C(x={'a':C(), 'b':3}, y=[C(), 4])
+		self.assertEqual(serializable.object2State(obj),
+			{'_class':'C',
+				'x': {'a':{'_class':'C', 'x':1, 'y':2}, 'b':3},
+				'y': [{'_class':'C', 'x':1, 'y':2}, 4]
+			}
+			)
+
+
+	def test_state2Object(self):
+		"Test state2Object"
+
+		obj = serializable.state2Object(
+			{'_class':'C',
+				'x': {'a':{'_class':'C'}, 'b':3},
+				'y': [{'_class':'C', 'x':5, 'y':6}, 4]
+			}
+			)
+
+		self.assertEqual(obj.__class__, C)
+		self.assertEqual(len(obj.x), 2)
+		self.assertEqual(len(obj.y), 2)
+		self.assertEqual(type(obj.x), dict)
+		self.assertEqual(type(obj.y), list)
+		self.assertEqual(obj.x['a'].__class__, C)
+		self.assertEqual(obj.x['a'].x, 1)
+		self.assertEqual(obj.x['a'].y, 2)
+		self.assertEqual(obj.x['b'], 3)
+		self.assertEqual(obj.y[0].__class__, C)
+		self.assertEqual(obj.y[0].x, 5)
+		self.assertEqual(obj.y[0].y, 6)
+		self.assertEqual(obj.y[1], 4)
+
 
 
 if __name__ == "__main__":
