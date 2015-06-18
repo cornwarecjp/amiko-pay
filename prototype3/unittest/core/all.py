@@ -32,7 +32,7 @@ import unittest
 import testenvironment
 
 from test_log import Test as test_log
-from test_messages import Test as test_messages
+from test_node import Test as test_node
 from test_payeelink import Test as test_payeelink
 from test_serializable import Test as test_serializable
 

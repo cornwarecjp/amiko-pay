@@ -1,4 +1,5 @@
-#    node.py
+#!/usr/bin/env python
+#    test_node.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -26,60 +27,55 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-import randomsource
+import unittest
 
-import link
-import payeelink
-import meetingpoint
-import transaction
+import testenvironment
 
-import serializable
+from amiko.utils.crypto import RIPEMD160, SHA256
 
-
-
-class Node_PaymentRequest(serializable.Serializable):
-	serializableAttributes = {'amount':0, 'receipt':''}
-serializable.registerClass(Node_PaymentRequest)
+from amiko.core import node
+from amiko.core import payeelink, transaction
 
 
 
-class Node(serializable.Serializable):
-	serializableAttributes = {'links':{}, 'payeeLinks':{}, 'meetingPoints':{}, 'transactions':{}}
+class Test(unittest.TestCase):
+	def setUp(self):
+		self.node = node.Node(token="foo")
 
 
-	def handleMessage(self, msg):
-		return \
-		{
-		Node_PaymentRequest: self.msg_request
-		}[msg.__class__](msg)
+	def test_defaultAttributes(self):
+		"Test default attributes"
+
+		self.assertEqual(self.node.links, {})
+		self.assertEqual(self.node.payeeLinks, {})
+		self.assertEqual(self.node.meetingPoints, {})
+		self.assertEqual(self.node.transactions, {})
 
 
-	def msg_request(self, msg):
-		#ID can be nonsecure random:
-		#It only needs to be semi-unique, not secret.
-		requestID = randomsource.getNonSecureRandom(8).encode("hex")
+	def test_msg_request(self):
+		"Test msg_request"
+		request = node.Node_PaymentRequest(amount=1234, receipt="foobar")
 
-		#Token must be secure random
-		token = randomsource.getSecureRandom(32)
+		ret = self.node.handleMessage(request)
 
-		newPayeeLink = payeelink.PayeeLink(
-			receipt=msg.receipt, token=token)
-		newTransaction = transaction.Transaction(
-			payeeLinkID=requestID,
-			amount=msg.amount
-			)
+		self.assertEqual(len(self.node.payeeLinks), 1)
+		linkID = self.node.payeeLinks.keys()[0]
+		newLink = self.node.payeeLinks[linkID]
+		self.assertEqual(newLink.__class__, payeelink.PayeeLink)
+		self.assertEqual(newLink.receipt, "foobar")
+		txID = newLink.transactionID
+		self.assertEqual(txID, RIPEMD160(SHA256(newLink.token)))
 
-		self.payeeLinks[requestID] = newPayeeLink
-		#The link has calculated transactionID, based on the token
-		self.transactions[newPayeeLink.transactionID] = newTransaction
+		self.assertEqual(self.node.transactions.keys(), [txID])
+		tx = self.node.transactions[txID]
+		self.assertEqual(tx.__class__, transaction.Transaction)
+		self.assertEqual(tx.payeeLinkID, linkID)
+		self.assertEqual(tx.amount, 1234)
 
-		#Returned messages:
-		# - URL to give to payer
-		# - Receipt message to be sent to payer, on connect
-		#return "amikopay://%s/%s" % \
-		#	(self.settings.getAdvertizedNetworkLocation(), requestID)
+		#TODO: test ret
 
 
 
-serializable.registerClass(Node)
+if __name__ == "__main__":
+	unittest.main(verbosity=2)
 
