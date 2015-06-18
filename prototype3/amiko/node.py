@@ -29,8 +29,12 @@
 
 import threading
 from urlparse import urlparse
+import asyncore
+import socket
 
 from core import log
+from core import network
+from core import node as node_state
 from core import paylog
 from core import settings
 
@@ -102,6 +106,9 @@ class Node(threading.Thread):
 			self.settings = conf
 		else:
 			self.settings = settings.Settings(conf)
+
+		self.networkEventDispatcher = network.EventDispatcher(
+			self.settings.listenHost, self.settings.listenPort)
 
 		#self.bitcoind = bitcoind.Bitcoind(self.settings)
 
@@ -245,8 +252,7 @@ class Node(threading.Thread):
 		self.__stop = False
 		while True:
 
-			#self.context.dispatchNetworkEvents()
-			#self.context.dispatchTimerEvents()
+			asyncore.loop(timeout=0.01, count=1)
 
 			with self._commandFunctionLock:
 				s = self._commandFunction
