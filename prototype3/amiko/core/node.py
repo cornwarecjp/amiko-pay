@@ -26,6 +26,9 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+import randomsource
+import messages
+
 import link
 import payeelink
 import meetingpoint
@@ -37,34 +40,41 @@ import serializable
 
 class Node(serializable.Serializable):
 	serializableAttributes = {'links':{}, 'payeeLinks':{}, 'meetingPoints':{}, 'transactions':{}}
-serializable.registerClass(Node)
 
 
+	def handleMessage(self, msg):
+		return \
+		{
+		messages.Request: self.msg_request
+		}[msg.__class__](msg)
 
-if __name__ == "__main__":
-	node = Node(
-		links=
-		{
-		"link1": link.Link(channels=["ch1", "ch2"]),
-		"link2": link.Link(channels=["ch3", "ch4"])
-		},
-		payeeLinks=
-		{
-		"012345": payeelink.PayeeLink(transactionID="abcdef")
-		},
-		meetingPoints=
-		{
-		"foobar": meetingpoint.MeetingPoint(transactions={"012345": True})
-		},
-		transactions=
-		{
-		"012345": transaction.Transaction(
-			payeeLinkID="012345", payerLinkID=None, remainingLinkIDs=["link2"],
-			meetingPointID="foobar"
+
+	def msg_request(self, msg):
+		#ID can be nonsecure random:
+		#It only needs to be semi-unique, not secret.
+		requestID = randomsource.getNonSecureRandom(8).encode("hex")
+
+		#Token must be secure random
+		token = randomsource.getSecureRandom(32)
+
+		newPayeeLink = payeelink.PayeeLink(
+			receipt=msg.receipt, token=token)
+		newTransaction = transaction.Transaction(
+			payeeLinkID=requestID,
+			amount=msg.amount
 			)
-		}
-		)
 
-	state = serializable.object2State(node)
-	print state
+		self.payees[requestID] = newPayeeLink
+		#The link has calculated transactionID, based on the token
+		self.transactions[newPayeeLink.transactionID] = newTransaction
+
+		#Returned messages:
+		# - URL to give to payer
+		# - Receipt message to be sent to payer, on connect
+		#return "amikopay://%s/%s" % \
+		#	(self.settings.getAdvertizedNetworkLocation(), requestID)
+
+
+
+serializable.registerClass(Node)
 
