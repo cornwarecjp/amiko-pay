@@ -40,54 +40,60 @@ def registerClass(c):
 	registeredClasses[c.__name__] = c
 
 
-def state2Object(s):
-	#Default: return s
-	ret = s
-
-	#For these iterables, process the items recursively:
-	if type(ret) == dict:
-		ret = {k: state2Object(v) for k,v in ret.iteritems()}
-	elif type(ret) == list:
-		ret = [state2Object(x) for x in ret]
-
-	#Classes are indicated by the _class item:
-	if type(ret) == dict and "_class" in s.keys():
-		c = registeredClasses[s["_class"]]
-		ret = c(**ret)
-
-	return ret
-
-
-def object2State(obj):
-	#Default: return obj
-	ret = obj
-
-	#Classes are indicated by the _class item:
-	if isinstance(ret, Serializable):
-		className = ret.__class__.__name__
-		c = registeredClasses[className]
-		attributes = c.serializableAttributes
-		ret = {name: getattr(obj, name) for name in attributes.keys()}
-		ret["_class"] = className
-
-	#For these iterables, process the items recursively:
-	if type(ret) == dict:
-		ret = {k: object2State(v) for k,v in ret.iteritems()}
-	elif type(ret) == list:
-		ret = [object2State(x) for x in ret]
-
-	return ret
-
-
-def encodeStrings(obj):
+def applyRecursively(selectFunction, transformFunction, obj):
 	#For these iterables, process the items recursively:
 	if type(obj) == dict:
-		return {k: encodeStrings(v) for k,v in obj.iteritems()}
+		obj = \
+		{
+		k: applyRecursively(selectFunction, transformFunction, v)
+		for k,v in obj.iteritems()
+		}
 	if type(obj) == list:
-		return [encodeStrings(x) for x in obj]
+		obj = \
+		[
+		applyRecursively(selectFunction, transformFunction, x)
+		for x in obj
+		]
 
-	if type(obj) == str:
-		#Do the rewriting:
+	#Apply the transformation for selected objects:
+	if selectFunction(obj):
+		return transformFunction(obj)
+
+	return obj
+
+
+def state2Object(s):
+	def transformFunction(attribs):
+		c = registeredClasses[attribs["_class"]]
+		return c(**attribs)
+
+	return applyRecursively(
+		lambda obj: type(obj) == dict and "_class" in obj.keys(),
+		transformFunction,
+		s)
+
+
+def object2State(s):
+	def transformFunction(obj):
+		className = obj.__class__.__name__
+		c = registeredClasses[className]
+		attributes = c.serializableAttributes
+		obj = \
+		{
+			name: object2State(getattr(obj, name))
+			for name in attributes.keys()
+		}
+		obj["_class"] = className
+		return obj
+
+	return applyRecursively(
+		lambda obj: isinstance(obj, Serializable),
+		transformFunction,
+		s)
+
+
+def encodeStrings(s):
+	def transformFunction(obj):
 		nonReadableChars = [c for c in obj if ord(c) < 32 or ord(c) >= 128]
 		isHumanReadable = len(nonReadableChars) == 0
 		if isHumanReadable:
@@ -95,20 +101,16 @@ def encodeStrings(obj):
 				obj = '!' + obj
 		else:
 			obj = '!x' + obj.encode('hex')
+		return obj
 
-	#all other types:
-	return obj
+	return applyRecursively(
+		lambda obj: type(obj) == str,
+		transformFunction,
+		s)
 
 
-def decodeStrings(obj):
-	#For these iterables, process the items recursively:
-	if type(obj) == dict:
-		return {k: decodeStrings(v) for k,v in obj.iteritems()}
-	if type(obj) == list:
-		return [decodeStrings(x) for x in obj]
-
-	if type(obj) in (unicode, str):
-		#Do the rewriting:
+def decodeStrings(s):
+	def transformFunction(obj):
 		obj = str(obj)
 		if len(obj) >= 2 and obj[0] == '!':
 			if obj[1] == 'x':
@@ -117,9 +119,12 @@ def decodeStrings(obj):
 				return obj[1:]
 			else:
 				raise Exception('Formatting error')
+		return obj
 
-	#all other types:
-	return obj
+	return applyRecursively(
+		lambda obj: type(obj) in (unicode, str),
+		transformFunction,
+		s)
 
 
 def deserialize(s):
