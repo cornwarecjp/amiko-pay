@@ -98,7 +98,34 @@ def encodeStrings(obj):
 
 	#all other types:
 	return obj
-	
+
+
+def decodeStrings(obj):
+	#For these iterables, process the items recursively:
+	if type(obj) == dict:
+		return {k: decodeStrings(v) for k,v in obj.iteritems()}
+	if type(obj) == list:
+		return [decodeStrings(x) for x in obj]
+
+	if type(obj) in (unicode, str):
+		#Do the rewriting:
+		obj = str(obj)
+		if len(obj) >= 2 and obj[0] == '!':
+			if obj[1] == 'x':
+				return obj[2:].decode('hex')
+			elif obj[1] == '!':
+				return obj[1:]
+			else:
+				raise Exception('Formatting error')
+
+	#all other types:
+	return obj
+
+
+def deserialize(s):
+	s = json.loads(s)
+	s = decodeStrings(s)
+	return state2Object(s)
 
 
 

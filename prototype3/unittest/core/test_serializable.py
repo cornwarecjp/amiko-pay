@@ -89,6 +89,25 @@ class Test(unittest.TestCase):
 		self.assertEqual(obj.y[1], 4)
 
 
+	def test_deserialize(self):
+		"Test deserialize"
+
+		obj = serializable.deserialize(
+			'{"x": {"a": "!xff00", "b": "foo"}, "y": ["!!bar", 4], "_class": "C"}'
+			)
+		self.assertEqual(obj.__class__, C)
+		self.assertEqual(len(obj.x), 2)
+		self.assertEqual(len(obj.y), 2)
+		self.assertEqual(type(obj.x), dict)
+		self.assertEqual(type(obj.y), list)
+		self.assertEqual(obj.x['a'], '\xff\x00')
+		self.assertEqual(obj.x['b'], 'foo')
+		self.assertEqual(obj.y[0], '!bar')
+		self.assertEqual(obj.y[1], 4)
+
+		self.assertRaises(Exception, serializable.deserialize, '"!foo"')
+
+
 	def test_getState(self):
 		"Test getState"
 
@@ -108,6 +127,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(obj.serialize(),
 			'{"y": ["!!bar", 4], "x": {"a": "!xff00", "b": "foo"}, "_class": "C"}'
 			)
+
 
 
 if __name__ == "__main__":
