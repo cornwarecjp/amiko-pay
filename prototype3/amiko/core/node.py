@@ -27,7 +27,6 @@
 #    OpenSSL library used as well as that of the covered work.
 
 import randomsource
-import messages
 
 import link
 import payeelink
@@ -38,6 +37,12 @@ import serializable
 
 
 
+class Node_PaymentRequest(serializable.Serializable):
+	serializableAttributes = {'amount':0, 'receipt':''}
+serializable.registerClass(Node_PaymentRequest)
+
+
+
 class Node(serializable.Serializable):
 	serializableAttributes = {'links':{}, 'payeeLinks':{}, 'meetingPoints':{}, 'transactions':{}}
 
@@ -45,7 +50,7 @@ class Node(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		messages.Request: self.msg_request
+		Node_PaymentRequest: self.msg_request
 		}[msg.__class__](msg)
 
 
