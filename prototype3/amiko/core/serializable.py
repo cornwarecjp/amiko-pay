@@ -27,6 +27,7 @@
 #    OpenSSL library used as well as that of the covered work.
 
 import copy
+import json
 
 
 
@@ -78,6 +79,28 @@ def object2State(obj):
 	return ret
 
 
+def encodeStrings(obj):
+	#For these iterables, process the items recursively:
+	if type(obj) == dict:
+		return {k: encodeStrings(v) for k,v in obj.iteritems()}
+	if type(obj) == list:
+		return [encodeStrings(x) for x in obj]
+
+	if type(obj) == str:
+		#Do the rewriting:
+		nonReadableChars = [c for c in obj if ord(c) < 32 or ord(c) >= 128]
+		isHumanReadable = len(nonReadableChars) == 0
+		if isHumanReadable:
+			if len(obj) > 0 and obj[0] == '!':
+				obj = '!' + obj
+		else:
+			obj = '!x' + obj.encode('hex')
+
+	#all other types:
+	return obj
+	
+
+
 
 class Serializable:
 	def __init__(self, **kwargs):
@@ -89,4 +112,14 @@ class Serializable:
 				if name in kwargs else
 					attributes[name] #default value
 				))
+
+
+	def getState(self):
+		return object2State(self)
+
+
+	def serialize(self):
+		s = self.getState()
+		s = encodeStrings(s)
+		return json.dumps(s)
 

@@ -28,6 +28,7 @@
 #    OpenSSL library used as well as that of the covered work.
 
 import unittest
+import json
 
 import testenvironment
 
@@ -87,6 +88,26 @@ class Test(unittest.TestCase):
 		self.assertEqual(obj.y[0].y, 6)
 		self.assertEqual(obj.y[1], 4)
 
+
+	def test_getState(self):
+		"Test getState"
+
+		obj = C(x={'a':C(), 'b':3}, y=[C(), 4])
+		self.assertEqual(obj.getState(),
+			{'_class':'C',
+				'x': {'a':{'_class':'C', 'x':1, 'y':2}, 'b':3},
+				'y': [{'_class':'C', 'x':1, 'y':2}, 4]
+			}
+			)
+
+
+	def test_serialize(self):
+		"Test serialize"
+
+		obj = C(x={'a':"\xff\x00", 'b':"foo"}, y=["!bar", 4])
+		self.assertEqual(obj.serialize(),
+			'{"y": ["!!bar", 4], "x": {"a": "!xff00", "b": "foo"}, "_class": "C"}'
+			)
 
 
 if __name__ == "__main__":
