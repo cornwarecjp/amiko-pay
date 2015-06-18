@@ -32,27 +32,19 @@ import serializable
 
 
 
-class Message(serializable.Serializable):
-	serializableAttributes = {'destinationType': None, 'destinationID':None}
-serializable.registerClass(Message)
-
-
-
-class Request(Message):
-	serializableAttributes = copy.deepcopy(Message.serializableAttributes)
-	serializableAttributes.update({'amount':0, 'receipt':''})
+class Request(serializable.Serializable):
+	serializableAttributes = {'amount':0, 'receipt':''}
 serializable.registerClass(Request)
 
 
 
-class Pay(Message):
+class Pay(serializable.Serializable):
 	"""
 	Pay message (sent from payer to payee on pay link)
 
 	Attributes:
 	requestID: str; the payee link ID
 	"""
-	serializableAttributes = copy.deepcopy(Message.serializableAttributes)
-	serializableAttributes.update({'requestID':None})
+	serializableAttributes = {'requestID':None}
 serializable.registerClass(Pay)
 

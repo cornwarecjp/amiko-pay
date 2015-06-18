@@ -89,11 +89,13 @@ Serialization and objects
 The Python json library makes serialization easy, especially when the state
 data is composed of only basic Python data types like strings, integers,
 booleans, dictionaries and lists. The json library supports escaping of
-non-ASCII data, which might be used for easy handling of binary data. As an
-alternative, a filter function might be designed that changes some
-known-to-be-binary elements in the state to a hexadecimal encoding. Another
-type of filtering function might select those parts of a state that are
-interesting to display in a user interface.
+non-ASCII data, but it doesn't seem to be designed to accept arbitrary binary
+data. One way to deal with this situation, while keeping the human-readable
+parts human-readable, is to encode non-ASCII strings (e.g. hexadecimal,
+which is also relatively easy for debugging), and to use a format prefix
+to distinguish between original and encoded data. However, the exact
+serialization method choice should be separated from the rest of the code,
+and easy to change in the future.
 
 As a consequence of using json, state data and message data must consist of
 only basic Python data types. However, the use of custom classes would be
@@ -105,14 +107,6 @@ absolute minimum of per-class boilerplate code.
 
 Messages
 ========
-
-A message contains
-
-* the message type
-* of course, the message contents
-* the message destination. This is the combination of the ID of the destination
-  and a description of the type of the destination. The type description is
-  necessary to prevent collisions between the ID namespaces of different types.
 
 Incoming events (e.g. network data) are messages, but internal messaging is also
 done with messages. In some cases, messages need to be stored as part of the

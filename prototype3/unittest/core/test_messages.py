@@ -36,20 +36,10 @@ from amiko.core import messages
 
 
 class Test(unittest.TestCase):
-	def test_Message(self):
-		"Test Message"
-
-		message = messages.Message()
-		self.assertEqual(message.destinationType, None)
-		self.assertEqual(message.destinationID, None)
-
-
 	def test_Request(self):
 		"Test Request"
 
 		message = messages.Request()
-		self.assertEqual(message.destinationType, None)
-		self.assertEqual(message.destinationID, None)
 		self.assertEqual(message.amount, 0)
 		self.assertEqual(message.receipt, '')
 
@@ -58,8 +48,6 @@ class Test(unittest.TestCase):
 		"Test Pay"
 
 		message = messages.Pay()
-		self.assertEqual(message.destinationType, None)
-		self.assertEqual(message.destinationID, None)
 		self.assertEqual(message.requestID, None)
 
 
