@@ -148,8 +148,12 @@ class Node(threading.Thread):
 			log.log("Failed to load from %s" % self.settings.stateFile)
 			log.log("Starting with empty state")
 
+			#Create a new, empty state:
 			#TODO: add all state outside the node (e.g. message outbox)
 			self.__node = node_state.Node()
+
+			#Store the newly created state
+			self.__saveState()
 
 
 	def __saveState(self):
@@ -173,6 +177,24 @@ class Node(threading.Thread):
 			os.remove(oldFile)
 		except OSError:
 			log.log("Got OSError on removing old state file; probably it didn't exist, which is OK in a fresh installation.")
+
+
+	def __handleMessage(self, msg):
+		messages = [msg]
+		while len(messages) > 0:
+			msg = messages.pop(0)
+
+			#Messages for the node:
+			if msg.__class__ in [node_state.Node_PaymentRequest]:
+				oldState = self.__node.getState()
+				try:
+					messages += self.__node.handleMessage(msg)
+					self.__saveState()
+				except Exception as e:
+					log.logException()
+					#In case of exception, recover the old state:
+					self.__node = serializable.state2Object(oldState)
+					raise
 
 
 	def stop(self):
@@ -199,7 +221,11 @@ class Node(threading.Thread):
 		The URL of the payment request
 		"""
 
-		raise Exception("NYI")
+		self.__handleMessage(node_state.Node_PaymentRequest(
+			amount=amount, receipt=receipt))
+
+		#TODO:
+		ID = "NYI"
 
 		return "amikopay://%s/%s" % \
 			(self.settings.getAdvertizedNetworkLocation(), ID)
@@ -322,7 +348,4 @@ class Node(threading.Thread):
 				#TODO: stop creation of new transactions
 				#TODO: only break once there are no more open transactions
 				break
-
-		self.__saveState() #TODO: do this whenever necessary
-		log.log("Node thread terminated\n\n")
 
