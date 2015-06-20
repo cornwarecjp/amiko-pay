@@ -8,3 +8,6 @@
 .coverage
 coverage-html
 
+#Application state
+amikopay.dat
+
