@@ -123,9 +123,12 @@ class Test(unittest.TestCase):
 	def test_serialize(self):
 		"Test serialize"
 
-		obj = C(x={'a':"\xff\x00", 'b':"foo"}, y=["!bar", 4])
+		obj = C(x={'a':"\xff\x00", 'b':"foo", "\x01": "\x02"}, y=["!bar", 4])
 		self.assertEqual(obj.serialize(),
-			'{"y": ["!!bar", 4], "x": {"a": "!xff00", "b": "foo"}, "_class": "C"}'
+			'{'
+			'"y": ["!!bar", 4], '
+			'"x": {"a": "!xff00", "b": "foo", "!x01": "!x02"}, '
+			'"_class": "C"}'
 			)
 
 

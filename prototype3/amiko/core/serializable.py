@@ -45,7 +45,8 @@ def applyRecursively(selectFunction, transformFunction, obj):
 	if type(obj) == dict:
 		obj = \
 		{
-		k: applyRecursively(selectFunction, transformFunction, v)
+		applyRecursively(selectFunction, transformFunction, k):
+			applyRecursively(selectFunction, transformFunction, v)
 		for k,v in obj.iteritems()
 		}
 	if type(obj) == list:
