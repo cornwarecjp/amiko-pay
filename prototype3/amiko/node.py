@@ -181,6 +181,8 @@ class Node(threading.Thread):
 
 	def __handleMessage(self, msg):
 		messages = [msg]
+		returnValues = []
+
 		while len(messages) > 0:
 			msg = messages.pop(0)
 
@@ -188,13 +190,16 @@ class Node(threading.Thread):
 			if msg.__class__ in [node_state.Node_PaymentRequest]:
 				oldState = self.__node.getState()
 				try:
-					messages += self.__node.handleMessage(msg)
+					newMessages, returnValue = self.__node.handleMessage(msg)
+					messages += newMessages
+					returnValues.append(returnValue)
 					self.__saveState()
 				except Exception as e:
 					log.logException()
 					#In case of exception, recover the old state:
 					self.__node = serializable.state2Object(oldState)
 					raise
+			return returnValues
 
 
 	def stop(self):
@@ -221,11 +226,10 @@ class Node(threading.Thread):
 		The URL of the payment request
 		"""
 
-		self.__handleMessage(node_state.Node_PaymentRequest(
+		returnValues = self.__handleMessage(node_state.Node_PaymentRequest(
 			amount=amount, receipt=receipt))
 
-		#TODO:
-		ID = "NYI"
+		ID = returnValues[0]
 
 		return "amikopay://%s/%s" % \
 			(self.settings.getAdvertizedNetworkLocation(), ID)

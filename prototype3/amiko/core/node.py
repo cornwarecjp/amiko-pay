@@ -74,12 +74,9 @@ class Node(serializable.Serializable):
 		self.transactions[newPayeeLink.transactionID] = newTransaction
 
 		#Returned messages:
-		return []
+		return [], requestID
 		#TODO:
-		# - URL to give to payer
 		# - Receipt message to be sent to payer, on connect
-		#return "amikopay://%s/%s" % \
-		#	(self.settings.getAdvertizedNetworkLocation(), requestID)
 
 
 
