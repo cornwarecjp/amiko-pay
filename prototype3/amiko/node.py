@@ -31,11 +31,13 @@ import threading
 from urlparse import urlparse
 import asyncore
 import socket
+import os
 
 from core import log
 from core import network
 from core import node as node_state
 from core import paylog
+from core import serializable
 from core import settings
 
 
@@ -121,6 +123,57 @@ class Node(threading.Thread):
 		self._commandProcessed = threading.Event()
 		self._commandReturnValue = None
 
+		self.__loadState()
+
+
+	def __loadState(self):
+
+		oldFile = self.settings.stateFile + ".old"
+		if os.access(oldFile, os.F_OK):
+			if os.access(self.settings.stateFile, os.F_OK):
+				#Remove old file if normal state file exists:
+				os.remove(oldFile)
+			else:
+				#Use old file if state file does not exist:
+				os.rename(oldFile, self.settings.stateFile)
+
+		try:
+			with open(self.settings.stateFile, 'rb') as fp:
+				stateData = fp.read()
+
+			#TODO: add all state outside the node (e.g. message outbox)
+			self.__node = serializable.deserialize(stateData)
+
+		except IOError:
+			log.log("Failed to load from %s" % self.settings.stateFile)
+			log.log("Starting with empty state")
+
+			#TODO: add all state outside the node (e.g. message outbox)
+			self.__node = node_state.Node()
+
+
+	def __saveState(self):
+		#TODO: add all state outside the node (e.g. message outbox)
+		data = self.__node.serialize()
+
+		newFile = self.settings.stateFile + ".new"
+		log.log("Saving in " + newFile)
+		with open(newFile, 'wb') as fp:
+			fp.write(data)
+
+		oldFile = self.settings.stateFile + ".old"
+
+		#Replace old data with new data
+		try:
+			os.rename(self.settings.stateFile, oldFile)
+		except OSError:
+			log.log("Got OSError on renaming old state file; probably it didn't exist yet, which is OK in a fresh installation.")
+		os.rename(newFile, self.settings.stateFile)
+		try:
+			os.remove(oldFile)
+		except OSError:
+			log.log("Got OSError on removing old state file; probably it didn't exist, which is OK in a fresh installation.")
+
 
 	def stop(self):
 		"""
@@ -191,7 +244,7 @@ class Node(threading.Thread):
 		Amiko node.
 		"""
 
-		raise Exception("NYI")
+		return self.__node.getState()
 
 
 	@runInNodeThread
@@ -270,5 +323,6 @@ class Node(threading.Thread):
 				#TODO: only break once there are no more open transactions
 				break
 
+		self.__saveState() #TODO: do this whenever necessary
 		log.log("Node thread terminated\n\n")
 
