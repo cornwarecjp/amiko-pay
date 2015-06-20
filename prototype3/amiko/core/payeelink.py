@@ -43,6 +43,7 @@ class PayeeLink(serializable.Serializable):
 	serializableAttributes = \
 	{
 		'state': states.initial,
+		'amount': 0,
 		'receipt': None,
 		'token': None
 	}

@@ -63,15 +63,9 @@ class Node(serializable.Serializable):
 		token = randomsource.getSecureRandom(32)
 
 		newPayeeLink = payeelink.PayeeLink(
-			receipt=msg.receipt, token=token)
-		newTransaction = transaction.Transaction(
-			payeeLinkID=requestID,
-			amount=msg.amount
-			)
+			amount=msg.amount, receipt=msg.receipt, token=token)
 
 		self.payeeLinks[requestID] = newPayeeLink
-		#The link has calculated transactionID, based on the token
-		self.transactions[newPayeeLink.transactionID] = newTransaction
 
 		#Returned messages:
 		return [], requestID
