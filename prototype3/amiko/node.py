@@ -35,7 +35,7 @@ import os
 
 from core import log
 from core import network
-from core import node as node_state
+from core import node as core_node
 from core import payerlink
 from core import paylog
 from core import serializable
@@ -151,7 +151,7 @@ class Node(threading.Thread):
 
 			#Create a new, empty state:
 			#TODO: add all state outside the node (e.g. message outbox)
-			self.__node = node_state.Node()
+			self.__node = core_node.Node()
 
 			#Store the newly created state
 			self.__saveState()
@@ -182,25 +182,34 @@ class Node(threading.Thread):
 
 	def __handleMessage(self, msg):
 		messages = [msg]
-		returnValues = []
+		returnValue = None
 
 		while len(messages) > 0:
 			msg = messages.pop(0)
 
 			#Messages for the node:
-			if msg.__class__ in [node_state.Node_PaymentRequest]:
+			if msg.__class__ in [core_node.Node_PaymentRequest]:
 				oldState = self.__node.getState()
 				try:
-					newMessages, returnValue = self.__node.handleMessage(msg)
-					messages += newMessages
-					returnValues.append(returnValue)
+					newMessages = self.__node.handleMessage(msg)
+					for timeout, msg in newMessages:
+						if timeout is None:
+							messages.append(msg)
+						else:
+							pass #TODO: add to future messages queue
 					self.__saveState()
 				except Exception as e:
 					log.logException()
 					#In case of exception, recover the old state:
 					self.__node = serializable.state2Object(oldState)
 					raise
-			return returnValues
+			#Messages for the API:
+			elif msg.__class__ == core_node.Node_ReturnValue:
+				#Should happen only once per call of this function.
+				#Otherwise, some return values will be forgotten.
+				returnValue = msg.value
+
+		return returnValue
 
 
 	def stop(self):
@@ -227,10 +236,8 @@ class Node(threading.Thread):
 		The URL of the payment request
 		"""
 
-		returnValues = self.__handleMessage(node_state.Node_PaymentRequest(
+		ID = self.__handleMessage(core_node.Node_PaymentRequest(
 			amount=amount, receipt=receipt))
-
-		ID = returnValues[0]
 
 		return "amikopay://%s/%s" % \
 			(self.settings.getAdvertizedNetworkLocation(), ID)

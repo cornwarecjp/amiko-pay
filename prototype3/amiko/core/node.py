@@ -43,6 +43,12 @@ serializable.registerClass(Node_PaymentRequest)
 
 
 
+class Node_ReturnValue(serializable.Serializable):
+	serializableAttributes = {'value':''}
+serializable.registerClass(Node_ReturnValue)
+
+
+
 class Node(serializable.Serializable):
 	serializableAttributes = {'links':{}, 'payeeLinks':{}, 'meetingPoints':{}, 'transactions':{}}
 
@@ -68,7 +74,7 @@ class Node(serializable.Serializable):
 		self.payeeLinks[requestID] = newPayeeLink
 
 		#Returned messages:
-		return [], requestID
+		return [(None, Node_ReturnValue(value=requestID))]
 		#TODO:
 		# - Receipt message to be sent to payer, on connect
 
