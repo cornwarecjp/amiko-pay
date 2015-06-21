@@ -36,6 +36,7 @@ import os
 from core import log
 from core import network
 from core import node as node_state
+from core import payerlink
 from core import paylog
 from core import serializable
 from core import settings
@@ -250,7 +251,19 @@ class Node(threading.Thread):
 			receipt: A receipt for the payment
 		"""
 
-		raise Exception("NYI")
+		newPayer = self.__pay(URL, linkname) #implemented in Node thread
+		newPayer.waitForReceipt() #Must be done in this thread
+
+		if newPayer.amount is None or newPayer.receipt is None:
+			raise Exception("Connecting to payee failed")
+
+		return newPayer
+
+
+	@runInNodeThread
+	def __pay(self, URL, linkname=None):
+		#TODO: make routing context, based on linkname
+		newPayer = payerlink.PayerLink(URL)
 		return newPayer
 
 
