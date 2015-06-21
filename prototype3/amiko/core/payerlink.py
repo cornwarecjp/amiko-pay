@@ -32,6 +32,13 @@ import threading
 from ..utils import utils
 
 import settings
+import serializable
+
+
+
+class PayerLink_Timeout(serializable.Serializable):
+	serializableAttributes = {'URL':'', 'state':''}
+serializable.registerClass(PayerLink_Timeout)
 
 
 
@@ -73,4 +80,9 @@ class PayerLink:
 	def waitForFinished(self):
 		#TODO: timeout mechanism
 		self.__finished.wait()
+
+
+	def handleMessage(self, msg):
+		print "Received: ", msg.getState() #TODO
+		return []
 

@@ -200,25 +200,34 @@ class Node(threading.Thread):
 			messages = [msg]
 			while len(messages) > 0:
 				msg = messages.pop(0)
+				newMessages = []
 
 				#Messages for the node:
 				if msg.__class__ in [core_node.Node_PaymentRequest]:
 					newMessages = self.__node.handleMessage(msg)
-					for timeout, msg in newMessages:
-						if timeout is None:
-							#Process in another iteration of the loop we're in:
-							messages.append(msg)
-						else:
-							#Add to the list of time-out messages:
-							self.__timeoutMessages.append([time.time()+timeout, msg])
-							self.__timeoutMessages.sort(
-								cmp = lambda a, b: a[0] - b[0]
-								)
+
+				#Messages for the payer:
+				if msg.__class__ == payerlink.PayerLink_Timeout:
+					if not (self.payer is None):
+						newMessages = self.payer.handleMessage(msg)
+
 				#Messages for the API:
 				elif msg.__class__ == core_node.Node_ReturnValue:
 					#Should happen only once per call of this function.
 					#Otherwise, some return values will be forgotten.
 					returnValue = msg.value
+
+				#Put new messages in the right places:
+				for timeout, msg in newMessages:
+					if timeout is None:
+						#Process in another iteration of the loop we're in:
+						messages.append(msg)
+					else:
+						#Add to the list of time-out messages:
+						self.__timeoutMessages.append([time.time()+timeout, msg])
+						self.__timeoutMessages.sort(
+							cmp = lambda a, b: a[0] - b[0]
+							)
 
 			self.__saveState()
 		except Exception as e:
