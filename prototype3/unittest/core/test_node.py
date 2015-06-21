@@ -66,12 +66,6 @@ class Test(unittest.TestCase):
 		txID = newLink.transactionID
 		self.assertEqual(txID, RIPEMD160(SHA256(newLink.token)))
 
-		self.assertEqual(self.node.transactions.keys(), [txID])
-		tx = self.node.transactions[txID]
-		self.assertEqual(tx.__class__, transaction.Transaction)
-		self.assertEqual(tx.payeeLinkID, linkID)
-		self.assertEqual(tx.amount, 1234)
-
 		#TODO: test ret
 
 
