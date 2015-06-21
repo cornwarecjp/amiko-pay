@@ -191,6 +191,17 @@ class Node(threading.Thread):
 			log.log("Got OSError on removing old state file; probably it didn't exist, which is OK in a fresh installation.")
 
 
+	def __addTimeoutMessage(self, timeout, msg):
+		"""
+		Note: you should call __saveState afterwards!
+		"""
+
+		self.__timeoutMessages.append([time.time()+timeout, msg])
+		self.__timeoutMessages.sort(
+			cmp = lambda a, b: a[0] - b[0]
+			)
+
+
 	def __handleMessage(self, msg):
 		returnValue = None
 
@@ -224,10 +235,7 @@ class Node(threading.Thread):
 						messages.append(msg)
 					else:
 						#Add to the list of time-out messages:
-						self.__timeoutMessages.append([time.time()+timeout, msg])
-						self.__timeoutMessages.sort(
-							cmp = lambda a, b: a[0] - b[0]
-							)
+						self.__addTimeoutMessage(timeout, msg)
 
 			self.__saveState()
 		except Exception as e:
@@ -286,6 +294,7 @@ class Node(threading.Thread):
 		"""
 
 		newPayer = self.__pay(URL, linkname) #implemented in Node thread
+
 		newPayer.waitForReceipt() #Must be done in this thread
 
 		if newPayer.amount is None or newPayer.receipt is None:
@@ -298,6 +307,9 @@ class Node(threading.Thread):
 	def __pay(self, URL, linkname=None):
 		#TODO: make routing context, based on linkname
 		self.payer = payerlink.PayerLink(URL)
+		self.__addTimeoutMessage(5.0, self.payer.getTimeoutMessage())
+		self.__saveState()
+
 		return self.payer
 
 

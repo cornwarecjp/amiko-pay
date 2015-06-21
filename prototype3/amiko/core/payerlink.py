@@ -37,7 +37,7 @@ import serializable
 
 
 class PayerLink_Timeout(serializable.Serializable):
-	serializableAttributes = {'URL':'', 'state':''}
+	serializableAttributes = {'ID':'', 'state':''}
 serializable.registerClass(PayerLink_Timeout)
 
 
@@ -72,6 +72,10 @@ class PayerLink:
 		self.state = self.states.initial
 
 
+	def getTimeoutMessage(self):
+		return PayerLink_Timeout(ID=self.ID, state=self.state)
+
+
 	def waitForReceipt(self):
 		#TODO: timeout mechanism
 		self.__receiptReceived.wait()
@@ -83,6 +87,12 @@ class PayerLink:
 
 
 	def handleMessage(self, msg):
-		print "Received: ", msg.getState() #TODO
+		if msg.ID != self.ID:
+			return [] #not related to us -> ignore
+
+		if self.state == self.states.initial and msg.state == self.states.initial:
+			#Receipt time-out
+			self.__receiptReceived.set()
+
 		return []
 
