@@ -32,6 +32,7 @@ from urlparse import urlparse
 import asyncore
 import socket
 import os
+import time
 
 from core import log
 from core import network
@@ -156,7 +157,7 @@ class Node(threading.Thread):
 			#Create a new, empty state:
 			#TODO: add all state outside the node (e.g. message outbox)
 			self.__node = core_node.Node()
-			self.__timeoutMessages = {}
+			self.__timeoutMessages = []
 
 			#Store the newly created state
 			self.__saveState()
@@ -193,7 +194,7 @@ class Node(threading.Thread):
 	def __handleMessage(self, msg):
 		returnValue = None
 
-		oldState = self.__node.getState()
+		oldState = self.__node.getState() #TODO: self.get/setState()
 		try:
 
 			messages = [msg]
@@ -205,9 +206,14 @@ class Node(threading.Thread):
 					newMessages = self.__node.handleMessage(msg)
 					for timeout, msg in newMessages:
 						if timeout is None:
+							#Process in another iteration of the loop we're in:
 							messages.append(msg)
 						else:
-							pass #TODO: add to future messages queue
+							#Add to the list of time-out messages:
+							self.__timeoutMessages.append([time.time()+timeout, msg])
+							self.__timeoutMessages.sort(
+								cmp = lambda a, b: a[0] - b[0]
+								)
 				#Messages for the API:
 				elif msg.__class__ == core_node.Node_ReturnValue:
 					#Should happen only once per call of this function.
@@ -367,8 +373,10 @@ class Node(threading.Thread):
 		self.__stop = False
 		while True:
 
+			#Network events:
 			asyncore.loop(timeout=0.01, count=1)
 
+			#API events:
 			with self._commandFunctionLock:
 				s = self._commandFunction
 				if s != None:
@@ -379,6 +387,14 @@ class Node(threading.Thread):
 						log.logException()
 					self._commandProcessed.set()
 					self._commandFunction = None
+
+			#Time-out events:
+			while len(self.__timeoutMessages) > 0 and self.__timeoutMessages[0][0] < time.time():
+				timeout, msg = self.__timeoutMessages.pop(0)
+				try:
+					self.__handleMessage(msg)
+				except Exception as e:
+					log.logException()
 
 			if self.__stop:
 				#TODO: stop creation of new transactions
