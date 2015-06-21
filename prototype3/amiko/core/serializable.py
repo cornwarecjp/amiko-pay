@@ -134,6 +134,12 @@ def deserialize(s):
 	return state2Object(s)
 
 
+def serialize(obj):
+	s = object2State(obj)
+	s = encodeStrings(s)
+	return json.dumps(s)
+
+
 
 class Serializable:
 	def __init__(self, **kwargs):
@@ -149,10 +155,4 @@ class Serializable:
 
 	def getState(self):
 		return object2State(self)
-
-
-	def serialize(self):
-		s = self.getState()
-		s = encodeStrings(s)
-		return json.dumps(s)
 
