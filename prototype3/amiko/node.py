@@ -181,33 +181,35 @@ class Node(threading.Thread):
 
 
 	def __handleMessage(self, msg):
-		messages = [msg]
 		returnValue = None
 
-		while len(messages) > 0:
-			msg = messages.pop(0)
+		oldState = self.__node.getState()
+		try:
 
-			#Messages for the node:
-			if msg.__class__ in [core_node.Node_PaymentRequest]:
-				oldState = self.__node.getState()
-				try:
+			messages = [msg]
+			while len(messages) > 0:
+				msg = messages.pop(0)
+
+				#Messages for the node:
+				if msg.__class__ in [core_node.Node_PaymentRequest]:
 					newMessages = self.__node.handleMessage(msg)
 					for timeout, msg in newMessages:
 						if timeout is None:
 							messages.append(msg)
 						else:
 							pass #TODO: add to future messages queue
-					self.__saveState()
-				except Exception as e:
-					log.logException()
-					#In case of exception, recover the old state:
-					self.__node = serializable.state2Object(oldState)
-					raise
-			#Messages for the API:
-			elif msg.__class__ == core_node.Node_ReturnValue:
-				#Should happen only once per call of this function.
-				#Otherwise, some return values will be forgotten.
-				returnValue = msg.value
+				#Messages for the API:
+				elif msg.__class__ == core_node.Node_ReturnValue:
+					#Should happen only once per call of this function.
+					#Otherwise, some return values will be forgotten.
+					returnValue = msg.value
+
+			self.__saveState()
+		except Exception as e:
+			log.logException()
+			#In case of exception, recover the old state:
+			self.__node = serializable.state2Object(oldState)
+			raise
 
 		return returnValue
 
