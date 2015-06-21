@@ -128,16 +128,20 @@ def decodeStrings(s):
 		s)
 
 
+def deserializeState(s):
+	return decodeStrings(json.loads(s))
+
+
 def deserialize(s):
-	s = json.loads(s)
-	s = decodeStrings(s)
-	return state2Object(s)
+	return state2Object(deserializeState(s))
+
+
+def serializeState(s):
+	return json.dumps(encodeStrings(s))
 
 
 def serialize(obj):
-	s = object2State(obj)
-	s = encodeStrings(s)
-	return json.dumps(s)
+	return serializeState(object2State(obj))
 
 
 
