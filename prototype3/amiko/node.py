@@ -145,17 +145,13 @@ class Node(threading.Thread):
 			with open(self.settings.stateFile, 'rb') as fp:
 				stateData = fp.read()
 
-			#TODO: add all state outside the node (e.g. message outbox)
-			stateData = serializable.deserialize(stateData)
-			self.__node = stateData["Node"]
-			self.__timeoutMessages = stateData["TimeoutMessages"]
+			self.setState(serializable.deserializeState(stateData))
 
 		except IOError:
 			log.log("Failed to load from %s" % self.settings.stateFile)
 			log.log("Starting with empty state")
 
 			#Create a new, empty state:
-			#TODO: add all state outside the node (e.g. message outbox)
 			self.__node = core_node.Node()
 			self.__timeoutMessages = []
 
@@ -164,13 +160,7 @@ class Node(threading.Thread):
 
 
 	def __saveState(self):
-		#TODO: add all state outside the node (e.g. message outbox)
-
-		stateData = {}
-		stateData["Node"] = self.__node
-		stateData["TimeoutMessages"] = self.__timeoutMessages
-
-		stateData = serializable.serialize(stateData)
+		stateData = serializable.serializeState(self.getState())
 
 		newFile = self.settings.stateFile + ".new"
 		log.log("Saving in " + newFile)
@@ -191,6 +181,20 @@ class Node(threading.Thread):
 			log.log("Got OSError on removing old state file; probably it didn't exist, which is OK in a fresh installation.")
 
 
+	def getState(self):
+		return serializable.object2State(
+			{
+			"Node": self.__node,
+			"TimeoutMessages": self.__timeoutMessages
+			})
+
+
+	def setState(self, s):
+		s = serializable.state2Object(s)
+		self.__node            = s["Node"]
+		self.__timeoutMessages = s["TimeoutMessages"]
+
+
 	def __addTimeoutMessage(self, timeout, msg):
 		"""
 		Note: you should call __saveState afterwards!
@@ -205,7 +209,7 @@ class Node(threading.Thread):
 	def __handleMessage(self, msg):
 		returnValue = None
 
-		oldState = self.__node.getState() #TODO: self.get/setState()
+		oldState = self.getState()
 		try:
 
 			messages = [msg]
@@ -241,7 +245,7 @@ class Node(threading.Thread):
 		except Exception as e:
 			log.logException()
 			#In case of exception, recover the old state:
-			self.__node = serializable.state2Object(oldState)
+			self.setState(oldState)
 			raise
 
 		return returnValue
@@ -333,7 +337,7 @@ class Node(threading.Thread):
 		Amiko node.
 		"""
 
-		return self.__node.getState()
+		return self.getState()
 
 
 	@runInNodeThread
@@ -387,7 +391,7 @@ class Node(threading.Thread):
 		Not intended to be part of the API.
 		"""
 
-		log.log("\n\nAmiko thread started")
+		log.log("\n\nNode thread started")
 
 		#TODO: (re-)enable creation of new transactions
 
@@ -421,4 +425,6 @@ class Node(threading.Thread):
 				#TODO: stop creation of new transactions
 				#TODO: only break once there are no more open transactions
 				break
+
+		log.log("Node thread terminated\n\n")
 
