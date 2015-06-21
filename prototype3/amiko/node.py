@@ -115,6 +115,8 @@ class Node(threading.Thread):
 
 		#self.bitcoind = bitcoind.Bitcoind(self.settings)
 
+		self.payer = None #Only non-None when paying (non-persistent)
+
 		self.payLog = paylog.PayLog(self.settings)
 
 		self.__stop = False
@@ -143,7 +145,9 @@ class Node(threading.Thread):
 				stateData = fp.read()
 
 			#TODO: add all state outside the node (e.g. message outbox)
-			self.__node = serializable.deserialize(stateData)
+			stateData = serializable.deserialize(stateData)
+			self.__node = stateData["Node"]
+			self.__timeoutMessages = stateData["TimeoutMessages"]
 
 		except IOError:
 			log.log("Failed to load from %s" % self.settings.stateFile)
@@ -152,6 +156,7 @@ class Node(threading.Thread):
 			#Create a new, empty state:
 			#TODO: add all state outside the node (e.g. message outbox)
 			self.__node = core_node.Node()
+			self.__timeoutMessages = {}
 
 			#Store the newly created state
 			self.__saveState()
@@ -159,12 +164,17 @@ class Node(threading.Thread):
 
 	def __saveState(self):
 		#TODO: add all state outside the node (e.g. message outbox)
-		data = self.__node.serialize()
+
+		stateData = {}
+		stateData["Node"] = self.__node
+		stateData["TimeoutMessages"] = self.__timeoutMessages
+
+		stateData = serializable.serialize(stateData)
 
 		newFile = self.settings.stateFile + ".new"
 		log.log("Saving in " + newFile)
 		with open(newFile, 'wb') as fp:
-			fp.write(data)
+			fp.write(stateData)
 
 		oldFile = self.settings.stateFile + ".old"
 
@@ -272,8 +282,8 @@ class Node(threading.Thread):
 	@runInNodeThread
 	def __pay(self, URL, linkname=None):
 		#TODO: make routing context, based on linkname
-		newPayer = payerlink.PayerLink(URL)
-		return newPayer
+		self.payer = payerlink.PayerLink(URL)
+		return self.payer
 
 
 	def confirmPayment(self, payer, payerAgrees):
