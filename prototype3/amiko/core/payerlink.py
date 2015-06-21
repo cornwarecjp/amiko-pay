@@ -92,6 +92,7 @@ class PayerLink:
 
 		if self.state == self.states.initial and msg.state == self.states.initial:
 			#Receipt time-out
+			self.state = self.states.cancelled
 			self.__receiptReceived.set()
 
 		return []
