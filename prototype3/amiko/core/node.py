@@ -56,7 +56,8 @@ class Node(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		Node_PaymentRequest: self.msg_request
+		Node_PaymentRequest: self.msg_request,
+		payeelink.Pay: self.msg_passToPayee
 		}[msg.__class__](msg)
 
 
@@ -78,6 +79,10 @@ class Node(serializable.Serializable):
 		#TODO:
 		# - Receipt message to be sent to payer, on connect
 
+
+	def msg_passToPayee(self, msg):
+		payee = self.payeeLinks[msg.ID]
+		return payee.handleMessage(msg)
 
 
 serializable.registerClass(Node)

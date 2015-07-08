@@ -61,5 +61,11 @@ class PayeeLink(serializable.Serializable):
 		#So, token must always be set for successful construction.
 		self.transactionID = settings.hashAlgorithm(self.token)
 
+
+	def handleMessage(self, msg):
+		print "payee:handleMessage called"
+		return []
+
+
 serializable.registerClass(PayeeLink)
 

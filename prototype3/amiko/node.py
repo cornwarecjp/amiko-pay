@@ -219,7 +219,7 @@ class Node(threading.Thread):
 				newMessages = []
 
 				#Messages for the node:
-				if msg.__class__ in [core_node.Node_PaymentRequest]:
+				if msg.__class__ in [core_node.Node_PaymentRequest, payeelink.Pay]:
 					newMessages = self.__node.handleMessage(msg)
 
 				#Messages for the payer:

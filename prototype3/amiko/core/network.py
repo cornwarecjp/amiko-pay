@@ -46,15 +46,16 @@ class Connection(asyncore.dispatcher_with_send):
 		if data:
 			self.readBuffer += data
 
+			#TODO restrict the size of the buffer, to prevent memory issues
+
 			newlinePos = self.readBuffer.find('\n')
 			if newlinePos >= 0:
 				msgData = self.readBuffer[:newlinePos]
 				self.readBuffer = self.readBuffer[newlinePos+1:]
 
-				msg = serializable.deserialize(msgData)
-				print "Got message: ", str(msg.__class__)
-
 				try:
+					msg = serializable.deserialize(msgData)
+					#print "Got message: ", str(msg.__class__)
 					self.callback.handleMessage(msg)
 				except Exception as e:
 					log.logException()
