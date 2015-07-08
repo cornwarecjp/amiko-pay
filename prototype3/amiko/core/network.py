@@ -30,12 +30,15 @@ import asyncore
 import socket
 
 import serializable
+import log
+
 
 
 class Connection(asyncore.dispatcher_with_send):
-	def __init__(self, sock):
+	def __init__(self, sock, callback):
 		asyncore.dispatcher_with_send.__init__(self, sock)
 		self.readBuffer = ''
+		self.callback = callback
 
 
 	def handle_read(self):
@@ -51,6 +54,12 @@ class Connection(asyncore.dispatcher_with_send):
 				msg = serializable.deserialize(msgData)
 				print "Got message: ", str(msg.__class__)
 
+				try:
+					self.callback.handleMessage(msg)
+				except Exception as e:
+					log.logException()
+					#TODO: send error back to remote host?
+
 
 	def sendMessage(self, msg):
 		self.send(serializable.serialize(msg) + '\n')
@@ -58,25 +67,28 @@ class Connection(asyncore.dispatcher_with_send):
 
 
 class EventDispatcher(asyncore.dispatcher):
-	def __init__(self, host, port):
+	def __init__(self, host, port, callback):
 		asyncore.dispatcher.__init__(self)
 		self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.set_reuse_addr()
 		self.bind((host, port))
 		self.listen(5)
 
+		self.callback = callback
+
+
 	def handle_accept(self):
 		pair = self.accept()
 		if pair is not None:
 			sock, addr = pair
 			print 'Incoming connection from %s' % repr(addr)
-			handler = Connection(sock)
+			handler = Connection(sock, self.callback)
 
 
 
-def makeConnection(address):
+def makeConnection(address, callback):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect(address)
-	return Connection(sock)
+	return Connection(sock, callback)
 
 

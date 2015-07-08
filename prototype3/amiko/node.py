@@ -113,7 +113,7 @@ class Node(threading.Thread):
 			self.settings = settings.Settings(conf)
 
 		self.networkEventDispatcher = network.EventDispatcher(
-			self.settings.listenHost, self.settings.listenPort)
+			self.settings.listenHost, self.settings.listenPort, callback=self)
 
 		#self.bitcoind = bitcoind.Bitcoind(self.settings)
 
@@ -207,7 +207,7 @@ class Node(threading.Thread):
 			)
 
 
-	def __handleMessage(self, msg):
+	def handleMessage(self, msg):
 		returnValue = None
 
 		oldState = self.getState()
@@ -279,7 +279,7 @@ class Node(threading.Thread):
 		The URL of the payment request
 		"""
 
-		ID = self.__handleMessage(core_node.Node_PaymentRequest(
+		ID = self.handleMessage(core_node.Node_PaymentRequest(
 			amount=amount, receipt=receipt))
 
 		return "amikopay://%s/%s" % \
@@ -324,7 +324,7 @@ class Node(threading.Thread):
 		self.__addTimeoutMessage(5.0, self.payer.getTimeoutMessage())
 		self.__saveState()
 
-		connection = network.makeConnection((host, port))
+		connection = network.makeConnection((host, port), callback=self)
 		connection.sendMessage(payeelink.Pay(ID=ID))
 
 		return self.payer
@@ -430,7 +430,7 @@ class Node(threading.Thread):
 			while len(self.__timeoutMessages) > 0 and self.__timeoutMessages[0][0] < time.time():
 				timeout, msg = self.__timeoutMessages.pop(0)
 				try:
-					self.__handleMessage(msg)
+					self.handleMessage(msg)
 				except Exception as e:
 					log.logException()
 
