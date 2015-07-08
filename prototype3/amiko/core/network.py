@@ -29,18 +29,31 @@
 import asyncore
 import socket
 
+import serializable
 
 
 class Connection(asyncore.dispatcher_with_send):
+	def __init__(self, sock):
+		asyncore.dispatcher_with_send.__init__(self, sock)
+		self.readBuffer = ''
+
+
 	def handle_read(self):
 		data = self.recv(8192)
 		if data:
-			print data
-			#self.send(data)
+			self.readBuffer += data
+
+			newlinePos = self.readBuffer.find('\n')
+			if newlinePos >= 0:
+				msgData = self.readBuffer[:newlinePos]
+				self.readBuffer = self.readBuffer[newlinePos+1:]
+
+				msg = serializable.deserialize(msgData)
+				print "Got message: ", str(msg.__class__)
 
 
 	def sendMessage(self, msg):
-		print "sendMessage called"
+		self.send(serializable.serialize(msg) + '\n')
 
 
 
