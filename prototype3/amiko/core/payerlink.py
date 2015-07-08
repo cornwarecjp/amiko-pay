@@ -26,19 +26,17 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-from urlparse import urlparse
 import threading
 
 from ..utils import utils
 
-import settings
 import serializable
 
 
 
-class PayerLink_Timeout(serializable.Serializable):
-	serializableAttributes = {'ID':'', 'state':''}
-serializable.registerClass(PayerLink_Timeout)
+class Timeout(serializable.Serializable):
+	serializableAttributes = {'state':''}
+serializable.registerClass(Timeout)
 
 
 
@@ -49,12 +47,7 @@ class PayerLink:
 		])
 
 
-	def __init__(self, URL):
-		URL = urlparse(URL)
-		self.remoteHost = URL.hostname
-		self.remotePort = settings.defaultPort if URL.port == None else URL.port
-		self.ID = URL.path[1:] #remove initial slash
-
+	def __init__(self):
 		self.amount  = None #unknown
 		self.receipt = None #unknown
 		self.hash    = None #unknown
@@ -73,7 +66,7 @@ class PayerLink:
 
 
 	def getTimeoutMessage(self):
-		return PayerLink_Timeout(ID=self.ID, state=self.state)
+		return Timeout(state=self.state)
 
 
 	def waitForReceipt(self):
@@ -87,9 +80,6 @@ class PayerLink:
 
 
 	def handleMessage(self, msg):
-		if msg.ID != self.ID:
-			return [] #not related to us -> ignore
-
 		if self.state == self.states.initial and msg.state == self.states.initial:
 			#Receipt time-out
 			self.state = self.states.cancelled

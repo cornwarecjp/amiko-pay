@@ -35,6 +35,12 @@ import serializable
 
 
 
+class Pay(serializable.Serializable):
+	serializableAttributes = {'ID':''}
+serializable.registerClass(Pay)
+
+
+
 class PayeeLink(serializable.Serializable):
 	states = utils.Enum([
 		"initial", "confirmed", "hasRoutes", "sentCommit", "cancelled", "committed"

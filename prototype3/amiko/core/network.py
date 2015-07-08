@@ -31,11 +31,16 @@ import socket
 
 
 
-class ConnectionHandler(asyncore.dispatcher_with_send):
+class Connection(asyncore.dispatcher_with_send):
 	def handle_read(self):
 		data = self.recv(8192)
 		if data:
-			self.send(data)
+			print data
+			#self.send(data)
+
+
+	def sendMessage(self, msg):
+		print "sendMessage called"
 
 
 
@@ -52,5 +57,13 @@ class EventDispatcher(asyncore.dispatcher):
 		if pair is not None:
 			sock, addr = pair
 			print 'Incoming connection from %s' % repr(addr)
-			handler = ConnectionHandler(sock)
+			handler = Connection(sock)
+
+
+
+def makeConnection(address):
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.connect(address)
+	return Connection(sock)
+
 

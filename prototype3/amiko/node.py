@@ -38,6 +38,7 @@ from core import log
 from core import network
 from core import node as core_node
 from core import payerlink
+from core import payeelink
 from core import paylog
 from core import serializable
 from core import settings
@@ -222,7 +223,7 @@ class Node(threading.Thread):
 					newMessages = self.__node.handleMessage(msg)
 
 				#Messages for the payer:
-				if msg.__class__ == payerlink.PayerLink_Timeout:
+				elif msg.__class__ == payerlink.Timeout:
 					if not (self.payer is None):
 						newMessages = self.payer.handleMessage(msg)
 
@@ -231,6 +232,9 @@ class Node(threading.Thread):
 					#Should happen only once per call of this function.
 					#Otherwise, some return values will be forgotten.
 					returnValue = msg.value
+
+				else:
+					raise Exception("Unsupported message type: " + str(msg.__class__))
 
 				#Put new messages in the right places:
 				for timeout, msg in newMessages:
@@ -310,9 +314,18 @@ class Node(threading.Thread):
 	@runInNodeThread
 	def __pay(self, URL, linkname=None):
 		#TODO: make routing context, based on linkname
-		self.payer = payerlink.PayerLink(URL)
+
+		URL = urlparse(URL)
+		host = URL.hostname
+		port = settings.defaultPort if URL.port == None else URL.port
+		ID = URL.path[1:] #remove initial slash
+
+		self.payer = payerlink.PayerLink()
 		self.__addTimeoutMessage(5.0, self.payer.getTimeoutMessage())
 		self.__saveState()
+
+		connection = network.makeConnection((host, port))
+		connection.sendMessage(payeelink.Pay(ID=ID))
 
 		return self.payer
 
