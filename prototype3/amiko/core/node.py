@@ -72,7 +72,8 @@ class Node(serializable.Serializable):
 		MakePayer: self.msg_makePayer,
 		payeelink.Pay: self.msg_passToPayee,
 		payerlink.Timeout: self.msg_passToPayer,
-		payerlink.Receipt: self.msg_passToPayer
+		payerlink.Receipt: self.msg_passToPayer,
+		payerlink.Confirm: self.msg_passToPayer
 		}[msg.__class__](msg)
 
 

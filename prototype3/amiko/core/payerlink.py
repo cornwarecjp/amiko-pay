@@ -47,6 +47,11 @@ class Receipt(serializable.Serializable):
 serializable.registerClass(Receipt)
 
 
+class Confirm(serializable.Serializable):
+	serializableAttributes = {'agreement':False}
+serializable.registerClass(Confirm)
+
+
 
 class PayerLink(serializable.Serializable):
 	states = utils.Enum([
@@ -109,7 +114,8 @@ class PayerLink(serializable.Serializable):
 		return \
 		{
 		Timeout: self.msg_timeout,
-		Receipt: self.msg_receipt
+		Receipt: self.msg_receipt,
+		Confirm: self.msg_confirm
 		}[msg.__class__](msg)
 
 
@@ -131,6 +137,14 @@ class PayerLink(serializable.Serializable):
 		#self.meetingPointID = msg.meetingPoints[0] #TODO
 		self.state = self.states.hasReceipt #TODO
 		self.__receiptReceived.set()
+
+		return []
+
+
+	def msg_confirm(self, msg):
+		log.log("PayerLink: Received confirm: %s" % str(msg.agreement))
+
+		#TODO
 
 		return []
 

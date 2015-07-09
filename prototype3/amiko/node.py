@@ -224,7 +224,8 @@ class Node(threading.Thread):
 					core_node.MakePayer,
 					payeelink.Pay,
 					payerlink.Timeout,
-					payerlink.Receipt
+					payerlink.Receipt,
+					payerlink.Confirm
 					]:
 					newMessages = self.__node.handleMessage(msg)
 
@@ -345,8 +346,19 @@ class Node(threading.Thread):
 		Return value:
 		str, indicating the final payment state
 		"""
+		self.__confirmPayment(payerAgrees) #implemented in Node thread
+		payer = self.__node.payerLink
 
-		raise Exception("NYI")
+		#TODO:
+		#payer.waitForFinished() #Must be done in this thread
+		#self.payLog.writePayer(payer)
+
+		return payer.state
+
+
+	@runInNodeThread
+	def __confirmPayment(self, payerAgrees):
+		self.handleMessage(payerlink.Confirm(agreement=payerAgrees))
 
 
 	@runInNodeThread
