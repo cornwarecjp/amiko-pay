@@ -33,8 +33,17 @@ import serializable
 import log
 
 
+class Connect(serializable.Serializable):
+	"""
+	This is a base class for messages that indicate a connection ID
+	(Link and Pay).
+	"""
+	serializableAttributes = {'ID':''}
+
+
+
 class OutboundMessage(serializable.Serializable):
-	serializableAttributes = {'localID':'', 'Message': None}
+	serializableAttributes = {'localID':'', 'message': None}
 serializable.registerClass(OutboundMessage)
 
 
@@ -44,6 +53,7 @@ class Connection(asyncore.dispatcher_with_send):
 		asyncore.dispatcher_with_send.__init__(self, sock)
 		self.readBuffer = ''
 		self.callback = callback
+		self.localID = None
 
 
 	def handle_read(self):
@@ -61,6 +71,12 @@ class Connection(asyncore.dispatcher_with_send):
 				try:
 					msg = serializable.deserialize(msgData)
 					#print "Got message: ", str(msg.__class__)
+
+					if isinstance(msg, Connect):
+						if not (self.localID is None):
+							raise Exception("Received connect message while already connected")
+						self.localID = msg.ID
+
 					self.callback.handleMessage(msg)
 				except Exception as e:
 					log.logException()
@@ -90,6 +106,15 @@ class EventDispatcher(asyncore.dispatcher):
 			sock, addr = pair
 			print 'Incoming connection from %s' % repr(addr)
 			self.connections.append(Connection(sock, self.callback))
+
+
+	def sendOutboundMessage(self, msg):
+		localID = msg.localID
+		interfaces = [c for c in self.connections if c.localID == localID]
+		if len(interfaces) == 0:
+			return False
+		interfaces[0].sendMessage(msg.message)
+		return True
 
 
 	def makeConnection(self, address, callback):

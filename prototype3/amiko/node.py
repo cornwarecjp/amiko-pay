@@ -223,7 +223,7 @@ class Node(threading.Thread):
 					newMessages = self.__node.handleMessage(msg)
 
 				#Messages for the payer:
-				elif msg.__class__ == payerlink.Timeout:
+				elif msg.__class__ in [payerlink.Timeout, payerlink.Receipt]:
 					if not (self.payer is None):
 						newMessages = self.payer.handleMessage(msg)
 
@@ -232,6 +232,13 @@ class Node(threading.Thread):
 					#Should happen only once per call of this function.
 					#Otherwise, some return values will be forgotten.
 					returnValue = msg.value
+
+				#Messages for the network:
+				elif msg.__class__ == network.OutboundMessage:
+					if not self.networkEventDispatcher.sendOutboundMessage(msg):
+						#TODO: add to outbox
+						log.log("Failed to send message of class %s: not connected" % \
+							str(msg.message.__class__))
 
 				else:
 					raise Exception("Unsupported message type: " + str(msg.__class__))

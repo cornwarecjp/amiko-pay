@@ -30,13 +30,15 @@
 from ..utils import utils
 
 import settings
+import network
+import payerlink
 
 import serializable
 
 
 
-class Pay(serializable.Serializable):
-	serializableAttributes = {'ID':''}
+class Pay(network.Connect):
+	pass
 serializable.registerClass(Pay)
 
 
@@ -63,8 +65,20 @@ class PayeeLink(serializable.Serializable):
 
 
 	def handleMessage(self, msg):
-		print "payee:handleMessage called"
-		return []
+		return \
+		{
+		Pay: self.handlePay
+		}[msg.__class__](msg)
+
+
+	def handlePay(self, msg):
+		return [(None, network.OutboundMessage(localID = msg.ID, message = \
+			payerlink.Receipt(
+				amount=self.amount,
+				receipt=self.receipt,
+				hash=self.transactionID,
+				meetingPoints=[]
+			)))]
 
 
 serializable.registerClass(PayeeLink)

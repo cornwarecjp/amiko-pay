@@ -40,6 +40,12 @@ serializable.registerClass(Timeout)
 
 
 
+class Receipt(serializable.Serializable):
+	serializableAttributes = {'amount':0, 'receipt':'', 'hash':'', 'meetingPoints':[]}
+serializable.registerClass(Receipt)
+
+
+
 class PayerLink:
 	states = utils.Enum([
 		"initial", "hasReceipt", "confirmed", "hasRoute",
@@ -80,10 +86,24 @@ class PayerLink:
 
 
 	def handleMessage(self, msg):
+		return \
+		{
+		Timeout: self.handleTimeout,
+		Receipt: self.handleReceipt
+		}[msg.__class__](msg)
+
+
+	def handleTimeout(self, msg):
 		if self.state == self.states.initial and msg.state == self.states.initial:
 			#Receipt time-out
 			self.state = self.states.cancelled
 			self.__receiptReceived.set()
+
+		return []
+
+
+	def handleReceipt(self, msg):
+		print "Received receipt: ", msg.amount, msg.receipt
 
 		return []
 
