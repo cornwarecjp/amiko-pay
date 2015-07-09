@@ -27,6 +27,7 @@
 #    OpenSSL library used as well as that of the covered work.
 
 import threading
+import copy
 
 from ..utils import utils
 
@@ -74,6 +75,20 @@ class PayerLink(serializable.Serializable):
 
 		#TODO: recover from a state where one of the above events can be set,
 		#but the user interface is not waiting for it anymore after a re-start.
+
+
+	def __deepcopy__(self, memo):
+		#This is called indirectly from serializable.py.
+		#It overrides default deepcopy behavior to work around a problem with
+		#threading.Event objects
+		return PayerLink(
+			amount         = self.amount,
+			receipt        = self.receipt,
+			transactionID  = self.transactionID,
+			token          = self.token,
+			meetingPointID = self.meetingPointID,
+			state          = self.state
+		)
 
 
 	def getTimeoutMessage(self):
