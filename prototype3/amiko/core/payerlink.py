@@ -41,34 +41,36 @@ serializable.registerClass(Timeout)
 
 
 class Receipt(serializable.Serializable):
-	serializableAttributes = {'amount':0, 'receipt':'', 'hash':'', 'meetingPoints':[]}
+	serializableAttributes = {'amount':0, 'receipt':'', 'transactionID':'', 'meetingPoints':[]}
 serializable.registerClass(Receipt)
 
 
 
-class PayerLink:
+class PayerLink(serializable.Serializable):
 	states = utils.Enum([
 		"initial", "hasReceipt", "confirmed", "hasRoute",
 		"locked", "cancelled", "committed"
 		])
 
+	serializableAttributes = \
+	{
+		'amount' :        None, #unknown
+		'receipt':        None, #unknown
+		'transactionID':  None, #unknown
+		'token'  :        None, #unknown
+		'meetingPointID': None, #unknown
+		'state': states.initial
+	}
 
-	def __init__(self):
-		self.amount  = None #unknown
-		self.receipt = None #unknown
-		self.hash    = None #unknown
-		self.token   = None #unknown
 
-		self.meetingPointID = None #unknown
-		self.transactionID = None
+	def __init__(self, **kwargs):
+		serializable.Serializable.__init__(self, **kwargs)
 
 		# Will be set when receipt message is received from payee
 		self.__receiptReceived = threading.Event()
 
 		# Will be set when transaction is committed or cancelled
 		self.__finished = threading.Event()
-
-		self.state = self.states.initial
 
 
 	def getTimeoutMessage(self):
@@ -103,7 +105,15 @@ class PayerLink:
 
 
 	def handleReceipt(self, msg):
-		print "Received receipt: ", msg.amount, msg.receipt
+		self.amount = msg.amount
+		self.receipt = msg.receipt
+		self.transactionID = msg.transactionID
+		#self.meetingPointID = msg.meetingPoints[0] #TODO
+		self.state = self.states.hasReceipt #TODO
+		self.__receiptReceived.set()
 
 		return []
+
+
+serializable.registerClass(PayerLink)
 

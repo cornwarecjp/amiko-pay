@@ -76,7 +76,7 @@ class PayeeLink(serializable.Serializable):
 			payerlink.Receipt(
 				amount=self.amount,
 				receipt=self.receipt,
-				hash=self.transactionID,
+				transactionID=self.transactionID,
 				meetingPoints=[]
 			)))]
 
