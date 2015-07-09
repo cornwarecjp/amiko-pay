@@ -43,6 +43,10 @@ class PaymentRequest(serializable.Serializable):
 serializable.registerClass(PaymentRequest)
 
 
+class MakePayer(serializable.Serializable):
+	serializableAttributes = {}
+serializable.registerClass(MakePayer)
+
 
 class ReturnValue(serializable.Serializable):
 	serializableAttributes = {'value':''}
@@ -61,17 +65,11 @@ class Node(serializable.Serializable):
 	}
 
 
-	def makePayer(self):
-		if not (self.payerLink is None):
-			raise Exception("There already is a payment in progress")
-		self.payerLink = payerlink.PayerLink()
-		return self.payerLink
-
-
 	def handleMessage(self, msg):
 		return \
 		{
 		PaymentRequest: self.msg_request,
+		MakePayer: self.msg_makePayer,
 		payeelink.Pay: self.msg_passToPayee,
 		payerlink.Timeout: self.msg_passToPayer,
 		payerlink.Receipt: self.msg_passToPayer
@@ -93,6 +91,17 @@ class Node(serializable.Serializable):
 
 		#Returned messages:
 		return [(None, ReturnValue(value=requestID))]
+
+
+	def msg_makePayer(self, msg):
+		if not (self.payerLink is None):
+			raise Exception("There already is a payment in progress")
+		self.payerLink = payerlink.PayerLink()
+
+		#Returned messages:
+		return [
+			(5.0, self.payerLink.getTimeoutMessage())  #Add time-out for payer
+			]
 
 
 	def msg_passToPayee(self, msg):

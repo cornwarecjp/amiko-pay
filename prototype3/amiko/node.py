@@ -216,8 +216,16 @@ class Node(threading.Thread):
 				msg = messages.pop(0)
 				newMessages = []
 
+				log.log("Processing message %s" % str(msg.__class__))
+
 				#Messages for the node:
-				if msg.__class__ in [core_node.PaymentRequest, payeelink.Pay, payerlink.Timeout, payerlink.Receipt]:
+				if msg.__class__ in [
+					core_node.PaymentRequest,
+					core_node.MakePayer,
+					payeelink.Pay,
+					payerlink.Timeout,
+					payerlink.Receipt
+					]:
 					newMessages = self.__node.handleMessage(msg)
 
 				#Messages for the API:
@@ -301,7 +309,8 @@ class Node(threading.Thread):
 			receipt: A receipt for the payment
 		"""
 
-		payer = self.__pay(URL, linkname) #implemented in Node thread
+		self.__pay(URL, linkname) #implemented in Node thread
+		payer = self.__node.payerLink
 
 		payer.waitForReceipt() #Must be done in this thread
 
@@ -320,14 +329,10 @@ class Node(threading.Thread):
 		port = settings.defaultPort if URL.port == None else URL.port
 		ID = URL.path[1:] #remove initial slash
 
-		self.payer = self.__node.makePayer()
-		self.__addTimeoutMessage(5.0, self.payer.getTimeoutMessage())
-		self.__saveState()
+		self.handleMessage(core_node.MakePayer())
 
 		connection = self.networkEventDispatcher.makeConnection((host, port), callback=self)
 		connection.sendMessage(payeelink.Pay(ID=ID))
-
-		return self.payer
 
 
 	def confirmPayment(self, payerAgrees):
