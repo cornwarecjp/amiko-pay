@@ -324,7 +324,7 @@ class Node(threading.Thread):
 		self.__addTimeoutMessage(5.0, self.payer.getTimeoutMessage())
 		self.__saveState()
 
-		connection = network.makeConnection((host, port), callback=self)
+		connection = self.networkEventDispatcher.makeConnection((host, port), callback=self)
 		connection.sendMessage(payeelink.Pay(ID=ID))
 
 		return self.payer

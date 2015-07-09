@@ -33,6 +33,11 @@ import serializable
 import log
 
 
+class OutboundMessage(serializable.Serializable):
+	serializableAttributes = {'localID':'', 'Message': None}
+serializable.registerClass(OutboundMessage)
+
+
 
 class Connection(asyncore.dispatcher_with_send):
 	def __init__(self, sock, callback):
@@ -76,6 +81,7 @@ class EventDispatcher(asyncore.dispatcher):
 		self.listen(5)
 
 		self.callback = callback
+		self.connections = []
 
 
 	def handle_accept(self):
@@ -83,13 +89,14 @@ class EventDispatcher(asyncore.dispatcher):
 		if pair is not None:
 			sock, addr = pair
 			print 'Incoming connection from %s' % repr(addr)
-			handler = Connection(sock, self.callback)
+			self.connections.append(Connection(sock, self.callback))
 
 
-
-def makeConnection(address, callback):
-	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	sock.connect(address)
-	return Connection(sock, callback)
+	def makeConnection(self, address, callback):
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sock.connect(address)
+		connection = Connection(sock, callback)
+		self.connections.append(connection)
+		return connection
 
 
