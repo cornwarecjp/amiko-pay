@@ -32,6 +32,7 @@ import copy
 from ..utils import utils
 
 import serializable
+import log
 
 
 
@@ -96,7 +97,6 @@ class PayerLink(serializable.Serializable):
 
 
 	def waitForReceipt(self):
-		#TODO: timeout mechanism
 		self.__receiptReceived.wait()
 
 
@@ -108,12 +108,12 @@ class PayerLink(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		Timeout: self.handleTimeout,
-		Receipt: self.handleReceipt
+		Timeout: self.msg_timeout,
+		Receipt: self.msg_receipt
 		}[msg.__class__](msg)
 
 
-	def handleTimeout(self, msg):
+	def msg_timeout(self, msg):
 		if self.state == self.states.initial and msg.state == self.states.initial:
 			#Receipt time-out
 			self.state = self.states.cancelled
@@ -122,7 +122,9 @@ class PayerLink(serializable.Serializable):
 		return []
 
 
-	def handleReceipt(self, msg):
+	def msg_receipt(self, msg):
+		log.log("PayerLink: Received payment receipt")
+
 		self.amount = msg.amount
 		self.receipt = msg.receipt
 		self.transactionID = msg.transactionID

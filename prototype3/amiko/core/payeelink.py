@@ -67,11 +67,11 @@ class PayeeLink(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		Pay: self.handlePay
+		Pay: self.msg_pay
 		}[msg.__class__](msg)
 
 
-	def handlePay(self, msg):
+	def msg_pay(self, msg):
 		return [(None, network.OutboundMessage(localID = msg.ID, message = \
 			payerlink.Receipt(
 				amount=self.amount,
