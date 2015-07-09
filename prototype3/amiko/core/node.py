@@ -38,15 +38,15 @@ import serializable
 
 
 
-class Node_PaymentRequest(serializable.Serializable):
+class PaymentRequest(serializable.Serializable):
 	serializableAttributes = {'amount':0, 'receipt':''}
-serializable.registerClass(Node_PaymentRequest)
+serializable.registerClass(PaymentRequest)
 
 
 
-class Node_ReturnValue(serializable.Serializable):
+class ReturnValue(serializable.Serializable):
 	serializableAttributes = {'value':''}
-serializable.registerClass(Node_ReturnValue)
+serializable.registerClass(ReturnValue)
 
 
 
@@ -71,7 +71,7 @@ class Node(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		Node_PaymentRequest: self.msg_request,
+		PaymentRequest: self.msg_request,
 		payeelink.Pay: self.msg_passToPayee,
 		payerlink.Timeout: self.msg_passToPayer,
 		payerlink.Receipt: self.msg_passToPayer
@@ -92,7 +92,7 @@ class Node(serializable.Serializable):
 		self.payeeLinks[requestID] = newPayeeLink
 
 		#Returned messages:
-		return [(None, Node_ReturnValue(value=requestID))]
+		return [(None, ReturnValue(value=requestID))]
 
 
 	def msg_passToPayee(self, msg):

@@ -217,11 +217,11 @@ class Node(threading.Thread):
 				newMessages = []
 
 				#Messages for the node:
-				if msg.__class__ in [core_node.Node_PaymentRequest, payeelink.Pay, payerlink.Timeout, payerlink.Receipt]:
+				if msg.__class__ in [core_node.PaymentRequest, payeelink.Pay, payerlink.Timeout, payerlink.Receipt]:
 					newMessages = self.__node.handleMessage(msg)
 
 				#Messages for the API:
-				elif msg.__class__ == core_node.Node_ReturnValue:
+				elif msg.__class__ == core_node.ReturnValue:
 					#Should happen only once per call of this function.
 					#Otherwise, some return values will be forgotten.
 					returnValue = msg.value
@@ -279,7 +279,7 @@ class Node(threading.Thread):
 		The URL of the payment request
 		"""
 
-		ID = self.handleMessage(core_node.Node_PaymentRequest(
+		ID = self.handleMessage(core_node.PaymentRequest(
 			amount=amount, receipt=receipt))
 
 		return "amikopay://%s/%s" % \
