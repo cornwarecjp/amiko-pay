@@ -37,6 +37,8 @@ def registerClass(c):
 	"""
 	c: class
 	"""
+	if c.__name__ in registeredClasses.keys():
+		raise Exception("Multiple serializable classes with the same name: " + c.__name__)
 	registeredClasses[c.__name__] = c
 
 
