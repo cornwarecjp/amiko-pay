@@ -149,17 +149,17 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 		URL = cmd[1]
 		if len(cmd) < 3:
-			payer = a.pay(URL)
+			amount, receipt = a.pay(URL)
 		else:
 			linkname = cmd[2]
-			payer = a.pay(URL, linkname)
+			amount, receipt = a.pay(URL, linkname)
 
-		print "Receipt: ", repr(payer.receipt)
-		print "Amount: ", payer.amount
+		print "Receipt: ", repr(receipt)
+		print "Amount: ", amount
 		answer = raw_input("Do you want to pay (y/n)? ")
 		OK = answer.lower() == 'y'
-		a.confirmPayment(payer, OK)
-		print "Payment is ", payer.state
+		state = a.confirmPayment(OK)
+		print "Payment is ", state
 
 	elif cmd[0] == "list":
 		data = a.list()

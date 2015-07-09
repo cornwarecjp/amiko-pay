@@ -117,8 +117,6 @@ class Node(threading.Thread):
 
 		#self.bitcoind = bitcoind.Bitcoind(self.settings)
 
-		self.payer = None #Only non-None when paying (non-persistent)
-
 		self.payLog = paylog.PayLog(self.settings)
 
 		self.__stop = False
@@ -219,13 +217,8 @@ class Node(threading.Thread):
 				newMessages = []
 
 				#Messages for the node:
-				if msg.__class__ in [core_node.Node_PaymentRequest, payeelink.Pay]:
+				if msg.__class__ in [core_node.Node_PaymentRequest, payeelink.Pay, payerlink.Timeout, payerlink.Receipt]:
 					newMessages = self.__node.handleMessage(msg)
-
-				#Messages for the payer:
-				elif msg.__class__ in [payerlink.Timeout, payerlink.Receipt]:
-					if not (self.payer is None):
-						newMessages = self.payer.handleMessage(msg)
 
 				#Messages for the API:
 				elif msg.__class__ == core_node.Node_ReturnValue:
@@ -303,19 +296,19 @@ class Node(threading.Thread):
 		          link with the given name.
 
 		Return value:
-		A "payer" object, with the following attributes:
+		A tuple, containing:
 			amount : The amount (integer, in Satoshi) to be paid
 			receipt: A receipt for the payment
 		"""
 
-		newPayer = self.__pay(URL, linkname) #implemented in Node thread
+		payer = self.__pay(URL, linkname) #implemented in Node thread
 
-		newPayer.waitForReceipt() #Must be done in this thread
+		payer.waitForReceipt() #Must be done in this thread
 
-		if newPayer.amount is None or newPayer.receipt is None:
+		if payer.amount is None or payer.receipt is None:
 			raise Exception("Connecting to payee failed")
 
-		return newPayer
+		return payer.amount, payer.receipt
 
 
 	@runInNodeThread
@@ -327,7 +320,7 @@ class Node(threading.Thread):
 		port = settings.defaultPort if URL.port == None else URL.port
 		ID = URL.path[1:] #remove initial slash
 
-		self.payer = payerlink.PayerLink()
+		self.payer = self.__node.makePayer()
 		self.__addTimeoutMessage(5.0, self.payer.getTimeoutMessage())
 		self.__saveState()
 
@@ -337,13 +330,15 @@ class Node(threading.Thread):
 		return self.payer
 
 
-	def confirmPayment(self, payer, payerAgrees):
+	def confirmPayment(self, payerAgrees):
 		"""
 		Finish or cancel paying a payment.
 
 		Arguments:
-		payer      : A "payer" object as returned by the pay() method
 		payerAgrees: Boolean, indicating whether or not the user agrees to pay
+
+		Return value:
+		str, indicating the final payment state
 		"""
 
 		raise Exception("NYI")

@@ -72,6 +72,9 @@ class PayerLink(serializable.Serializable):
 		# Will be set when transaction is committed or cancelled
 		self.__finished = threading.Event()
 
+		#TODO: recover from a state where one of the above events can be set,
+		#but the user interface is not waiting for it anymore after a re-start.
+
 
 	def getTimeoutMessage(self):
 		return Timeout(state=self.state)

@@ -30,6 +30,7 @@ import randomsource
 
 import link
 import payeelink
+import payerlink
 import meetingpoint
 import transaction
 
@@ -50,14 +51,30 @@ serializable.registerClass(Node_ReturnValue)
 
 
 class Node(serializable.Serializable):
-	serializableAttributes = {'links':{}, 'payeeLinks':{}, 'meetingPoints':{}, 'transactions':{}}
+	serializableAttributes = \
+	{
+	'links':{},
+	'payeeLinks':{},
+	'payerLink': None,
+	'meetingPoints':{},
+	'transactions':{}
+	}
+
+
+	def makePayer(self):
+		if not (self.payerLink is None):
+			raise Exception("There already is a payment in progress")
+		self.payerLink = payerlink.PayerLink()
+		return self.payerLink
 
 
 	def handleMessage(self, msg):
 		return \
 		{
 		Node_PaymentRequest: self.msg_request,
-		payeelink.Pay: self.msg_passToPayee
+		payeelink.Pay: self.msg_passToPayee,
+		payerlink.Timeout: self.msg_passToPayer,
+		payerlink.Receipt: self.msg_passToPayer
 		}[msg.__class__](msg)
 
 
@@ -76,13 +93,17 @@ class Node(serializable.Serializable):
 
 		#Returned messages:
 		return [(None, Node_ReturnValue(value=requestID))]
-		#TODO:
-		# - Receipt message to be sent to payer, on connect
 
 
 	def msg_passToPayee(self, msg):
 		payee = self.payeeLinks[msg.ID]
 		return payee.handleMessage(msg)
+
+
+	def msg_passToPayer(self, msg):
+		if self.payerLink is None:
+			raise Exception("Received message for payer, but there is no payer")
+		return self.payerLink.handleMessage(msg)
 
 
 serializable.registerClass(Node)
