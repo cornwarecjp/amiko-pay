@@ -50,5 +50,14 @@ class OutBox(serializable.Serializable):
 		self.messages.append(OutBoxMessage(message=msg, index=index, lastAttemptTimestamp=0.0))
 
 
+	def transmit(self, networkDispatcher):
+		t = time.time()
+		for msg in self.messages:
+			if t - msg.lastAttemptTimestamp > 10.0: #Re-send every 10 seconds
+				transmitted = networkDispatcher.sendOutboundMessage(msg.index, msg.message)
+				if transmitted:
+					msg.lastAttemptTimestamp = t
+
+
 serializable.registerClass(OutBox)
 

@@ -243,10 +243,7 @@ class Node(threading.Thread):
 
 				#Messages for the network:
 				elif msg.__class__ == network.OutboundMessage:
-					if not self.networkEventDispatcher.sendOutboundMessage(msg):
-						#TODO: add to outbox
-						log.log("Failed to send message of class %s: not connected" % \
-							str(msg.message.__class__))
+					self.__outBox.addMessage(msg)
 
 				else:
 					raise Exception("Unsupported message type: " + str(msg.__class__))
@@ -340,7 +337,9 @@ class Node(threading.Thread):
 
 		connection = self.networkEventDispatcher.makeConnection((host, port), callback=self)
 		connection.localID = network.payerLocalID
-		connection.sendMessage(payeelink.Pay(ID=payeeLinkID))
+
+		self.__outBox.addMessage(network.OutboundMessage(localID=connection.localID,
+			message=payeelink.Pay(ID=payeeLinkID)))
 
 
 	def confirmPayment(self, payerAgrees):
@@ -455,10 +454,10 @@ class Node(threading.Thread):
 			#Time-out events:
 			while len(self.__timeoutMessages) > 0 and self.__timeoutMessages[0].timestamp < time.time():
 				msg = self.__timeoutMessages.pop(0)
-				try:
-					self.handleMessage(msg.message)
-				except Exception as e:
-					log.logException()
+				self.handleMessage(msg.message)
+
+			#New attempt to send the outbox:
+			self.__outBox.transmit(self.networkEventDispatcher)
 
 			if self.__stop:
 				#TODO: stop creation of new transactions

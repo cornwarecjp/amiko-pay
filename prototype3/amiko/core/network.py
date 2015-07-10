@@ -74,7 +74,9 @@ class Connection(asyncore.dispatcher_with_send):
 				self.readBuffer = self.readBuffer[newlinePos+1:]
 
 				try:
-					msg = serializable.deserialize(msgData)
+					container = serializable.deserialize(msgData)
+					index = container['index']
+					msg = container['message']
 					#print "Got message: ", str(msg.__class__)
 
 					if isinstance(msg, Connect):
@@ -90,8 +92,9 @@ class Connection(asyncore.dispatcher_with_send):
 					#TODO: send error back to remote host?
 
 
-	def sendMessage(self, msg):
-		self.send(serializable.serialize(msg) + '\n')
+	def sendMessage(self, index, msg):
+		container = {'index': index, 'message': msg}
+		self.send(serializable.serialize(container) + '\n')
 
 
 
@@ -115,12 +118,12 @@ class EventDispatcher(asyncore.dispatcher):
 			self.connections.append(Connection(sock, self.callback))
 
 
-	def sendOutboundMessage(self, msg):
+	def sendOutboundMessage(self, index, msg):
 		localID = msg.localID
 		interfaces = [c for c in self.connections if c.localID == localID]
 		if len(interfaces) == 0:
 			return False
-		interfaces[0].sendMessage(msg.message)
+		interfaces[0].sendMessage(index, msg.message)
 		return True
 
 
