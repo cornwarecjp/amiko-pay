@@ -43,9 +43,13 @@ class OutBox(serializable.Serializable):
 
 	def addMessage(self, msg):
 		try:
-			index = (self.lastIndex[msg.localID] + 1) & 0xffff #16-bit wrap-around
+			#The value wrap-around is artificially shortened to 16 bits.
+			#The reason is to make wrap-around more common, so we're more likely
+			#to find related bugs in an early stage of development.
+			index = (self.lastIndex[msg.localID] + 1) & 0xffff
 		except KeyError:
 			index = 0
+		#TODO: protect against overflow (more than 64k messages in the queue for a single interface)
 		self.lastIndex[msg.localID] = index
 		self.messages.append(OutBoxMessage(message=msg, index=index, lastAttemptTimestamp=0.0))
 
@@ -57,6 +61,14 @@ class OutBox(serializable.Serializable):
 				transmitted = networkDispatcher.sendOutboundMessage(msg.index, msg.message)
 				if transmitted:
 					msg.lastAttemptTimestamp = t
+
+
+	def processConfirmation(self, confirmation):
+		for i in range(len(self.messages)):
+			msg = self.messages[i]
+			if msg.index == confirmation.index and msg.message.localID == confirmation.localID:
+				del self.messages[i]
+				return
 
 
 serializable.registerClass(OutBox)

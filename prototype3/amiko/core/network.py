@@ -48,8 +48,13 @@ class Connect(serializable.Serializable):
 
 
 class OutboundMessage(serializable.Serializable):
-	serializableAttributes = {'localID':'', 'message': None}
+	serializableAttributes = {'localID': '', 'message': None}
 serializable.registerClass(OutboundMessage)
+
+
+class Confirmation(serializable.Serializable):
+	serializableAttributes = {'localID': '', 'index':0}
+serializable.registerClass(Confirmation)
 
 
 
@@ -68,31 +73,52 @@ class Connection(asyncore.dispatcher_with_send):
 
 			#TODO restrict the size of the buffer, to prevent memory issues
 
-			newlinePos = self.readBuffer.find('\n')
-			if newlinePos >= 0:
+			while True:
+				newlinePos = self.readBuffer.find('\n')
+				if newlinePos < 0:
+					break #no more messages in the buffer
 				msgData = self.readBuffer[:newlinePos]
 				self.readBuffer = self.readBuffer[newlinePos+1:]
+				self.processReceivedMessageData(msgData)
 
-				try:
-					container = serializable.deserialize(msgData)
-					index = container['index']
-					msg = container['message']
-					#print "Got message: ", str(msg.__class__)
 
-					if isinstance(msg, Connect):
-						if not (self.localID is None):
-							raise Exception("Received connect message while already connected")
-						self.localID = msg.ID
+	def processReceivedMessageData(self, msgData):
+		log.log("Received data: %s\n" % msgData)
 
-					#TODO: filter for acceptable message types, IDs etc. before
-					#sending them to a general-purpose message handler
-					self.callback.handleMessage(msg)
-				except Exception as e:
-					log.logException()
-					#TODO: send error back to remote host?
+		try:
+			container = serializable.deserialize(msgData)
+			if 'received' in container.keys():
+				#Process received confirmation:
+				index = container['received']
+				self.callback.handleMessage(
+					Confirmation(localID=self.localID, index=index)
+					)
+			elif 'message' in container.keys():
+				index = container['index']
+				msg = container['message']
+				#print "Got message: ", str(msg.__class__)
+
+				#Send confirmation:
+				confirmation = {'received': index}
+				self.send(serializable.serialize(confirmation) + '\n')
+
+				if isinstance(msg, Connect):
+					if not (self.localID is None):
+						raise Exception("Received connect message while already connected")
+					self.localID = msg.ID
+
+				#TODO: filter for acceptable message types, IDs etc. before
+				#sending them to a general-purpose message handler
+				self.callback.handleMessage(msg)
+			else:
+				log.log("Received message with invalid format")
+		except Exception as e:
+			log.logException()
+			#TODO: send error back to remote host?
 
 
 	def sendMessage(self, index, msg):
+		log.log("Sending message %s" % str(msg.__class__))
 		container = {'index': index, 'message': msg}
 		self.send(serializable.serialize(container) + '\n')
 

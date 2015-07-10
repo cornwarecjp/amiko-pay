@@ -241,9 +241,11 @@ class Node(threading.Thread):
 					#Otherwise, some return values will be forgotten.
 					returnValue = msg.value
 
-				#Messages for the network:
+				#Messages for the outbox:
 				elif msg.__class__ == network.OutboundMessage:
 					self.__outBox.addMessage(msg)
+				elif msg.__class__ == network.Confirmation:
+					self.__outBox.processConfirmation(msg)
 
 				else:
 					raise Exception("Unsupported message type: " + str(msg.__class__))
