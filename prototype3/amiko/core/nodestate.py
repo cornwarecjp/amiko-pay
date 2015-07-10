@@ -1,4 +1,4 @@
-#    node.py
+#    nodestate.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -54,7 +54,7 @@ serializable.registerClass(ReturnValue)
 
 
 
-class Node(serializable.Serializable):
+class NodeState(serializable.Serializable):
 	serializableAttributes = \
 	{
 	'links':{},
@@ -121,5 +121,5 @@ class Node(serializable.Serializable):
 		return self.payerLink.handleMessage(msg)
 
 
-serializable.registerClass(Node)
+serializable.registerClass(NodeState)
 

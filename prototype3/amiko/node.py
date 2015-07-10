@@ -36,7 +36,7 @@ import time
 
 from core import log
 from core import network
-from core import node as core_node
+from core import nodestate
 from core import payerlink
 from core import payeelink
 from core import paylog
@@ -151,7 +151,7 @@ class Node(threading.Thread):
 			log.log("Starting with empty state")
 
 			#Create a new, empty state:
-			self.__node = core_node.Node()
+			self.__node = nodestate.NodeState()
 			self.__timeoutMessages = []
 
 			#Store the newly created state
@@ -220,8 +220,8 @@ class Node(threading.Thread):
 
 				#Messages for the node:
 				if msg.__class__ in [
-					core_node.PaymentRequest,
-					core_node.MakePayer,
+					nodestate.PaymentRequest,
+					nodestate.MakePayer,
 					payeelink.Pay,
 					payeelink.Confirm,
 					payeelink.Cancel,
@@ -232,7 +232,7 @@ class Node(threading.Thread):
 					newMessages = self.__node.handleMessage(msg)
 
 				#Messages for the API:
-				elif msg.__class__ == core_node.ReturnValue:
+				elif msg.__class__ == nodestate.ReturnValue:
 					#Should happen only once per call of this function.
 					#Otherwise, some return values will be forgotten.
 					returnValue = msg.value
@@ -290,7 +290,7 @@ class Node(threading.Thread):
 		The URL of the payment request
 		"""
 
-		ID = self.handleMessage(core_node.PaymentRequest(
+		ID = self.handleMessage(nodestate.PaymentRequest(
 			amount=amount, receipt=receipt))
 
 		return "amikopay://%s/%s" % \
@@ -332,7 +332,7 @@ class Node(threading.Thread):
 		port = settings.defaultPort if URL.port == None else URL.port
 		payeeLinkID = URL.path[1:] #remove initial slash
 
-		self.handleMessage(core_node.MakePayer(payeeLinkID=payeeLinkID))
+		self.handleMessage(nodestate.MakePayer(payeeLinkID=payeeLinkID))
 
 		connection = self.networkEventDispatcher.makeConnection((host, port), callback=self)
 		connection.localID = network.payerLocalID
