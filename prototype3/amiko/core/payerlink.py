@@ -64,11 +64,15 @@ class PayerLink(serializable.Serializable):
 
 	serializableAttributes = \
 	{
-		'amount' :        None, #unknown
-		'receipt':        None, #unknown
-		'transactionID':  None, #unknown
-		'token'  :        None, #unknown
-		'meetingPointID': None, #unknown
+		'payeeHost':      None,
+		'payeePort':      None,
+		'payeeLinkID':    None,
+
+		'amount' :        None,
+		'receipt':        None,
+		'transactionID':  None,
+		'token'  :        None,
+		'meetingPointID': None,
 		'state': states.initial
 	}
 
@@ -149,7 +153,7 @@ class PayerLink(serializable.Serializable):
 
 		if self.state != self.states.hasReceipt:
 			raise Exception(
-				"confirmPaymentmsg_confirm should not be called in state %s" % \
+				"msg_confirm should not be called in state %s" % \
 					self.state
 				)
 
@@ -161,7 +165,7 @@ class PayerLink(serializable.Serializable):
 			ret = \
 			[
 			(None, network.OutboundMessage(localID = network.payerLocalID, message = \
-				payeelink.Confirm(meetingPointID=self.meetingPointID)
+				payeelink.Confirm(ID=self.payeeLinkID, meetingPointID=self.meetingPointID)
 			))
 			]
 
@@ -182,7 +186,7 @@ class PayerLink(serializable.Serializable):
 			ret = \
 			[
 			(None, network.OutboundMessage(localID = network.payerLocalID, message = \
-				payeelink.Cancel()
+				payeelink.Cancel(ID=self.payeeLinkID)
 			))
 			]
 

@@ -44,7 +44,7 @@ serializable.registerClass(PaymentRequest)
 
 
 class MakePayer(serializable.Serializable):
-	serializableAttributes = {}
+	serializableAttributes = {'payeeLinkID': ''}
 serializable.registerClass(MakePayer)
 
 
@@ -71,7 +71,9 @@ class Node(serializable.Serializable):
 		PaymentRequest: self.msg_request,
 		MakePayer     : self.msg_makePayer,
 
-		payeelink.Pay: self.msg_passToPayee,
+		payeelink.Pay    : self.msg_passToPayee,
+		payeelink.Confirm: self.msg_passToPayee,
+		payeelink.Cancel : self.msg_passToPayee,
 
 		payerlink.Timeout          : self.msg_passToPayer,
 		payerlink.Receipt          : self.msg_passToPayer,
@@ -100,7 +102,7 @@ class Node(serializable.Serializable):
 	def msg_makePayer(self, msg):
 		if not (self.payerLink is None):
 			raise Exception("There already is a payment in progress")
-		self.payerLink = payerlink.PayerLink()
+		self.payerLink = payerlink.PayerLink(payeeLinkID=msg.payeeLinkID)
 
 		#Returned messages:
 		return [

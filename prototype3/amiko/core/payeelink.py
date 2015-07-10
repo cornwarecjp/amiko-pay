@@ -43,12 +43,12 @@ serializable.registerClass(Pay)
 
 
 class Confirm(serializable.Serializable):
-	serializableAttributes = {"meetingPointID": ""}
+	serializableAttributes = {"ID": None, "meetingPointID": ""}
 serializable.registerClass(Confirm)
 
 
 class Cancel(serializable.Serializable):
-	serializableAttributes = {}
+	serializableAttributes = {"ID": None}
 serializable.registerClass(Cancel)
 
 
@@ -63,7 +63,8 @@ class PayeeLink(serializable.Serializable):
 		'state': states.initial,
 		'amount': 0,
 		'receipt': None,
-		'token': None
+		'token': None,
+		'meetingPointID': ''
 	}
 
 	def __init__(self, **kwargs):
@@ -77,11 +78,19 @@ class PayeeLink(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		Pay: self.msg_pay
+		Pay    : self.msg_pay,
+		Confirm: self.msg_confirm,
+		Cancel : self.msg_cancel
 		}[msg.__class__](msg)
 
 
 	def msg_pay(self, msg):
+		if self.state != self.states.initial:
+			raise Exception(
+				"msg_pay should not be called in state %s" % \
+					self.state
+				)
+
 		return [(None, network.OutboundMessage(localID = msg.ID, message = \
 			payerlink.Receipt(
 				amount=self.amount,
@@ -89,6 +98,33 @@ class PayeeLink(serializable.Serializable):
 				transactionID=self.transactionID,
 				meetingPoints=[]
 			)))]
+
+
+	def msg_confirm(self, msg):
+		if self.state != self.states.initial:
+			raise Exception(
+				"msg_confirm should not be called in state %s" % \
+					self.state
+				)
+
+		self.state = self.states.confirmed
+		self.meetingPointID = msg.meetingPointID
+
+		#TODO
+		return []
+
+
+	def msg_cancel(self, msg):
+		if self.state != self.states.initial:
+			raise Exception(
+				"msg_cancel should not be called in state %s" % \
+					self.state
+				)
+
+		self.state = self.states.cancelled
+
+		#TODO
+		return []
 
 
 serializable.registerClass(PayeeLink)

@@ -223,6 +223,8 @@ class Node(threading.Thread):
 					core_node.PaymentRequest,
 					core_node.MakePayer,
 					payeelink.Pay,
+					payeelink.Confirm,
+					payeelink.Cancel,
 					payerlink.Timeout,
 					payerlink.Receipt,
 					payerlink.PayerLink_Confirm
@@ -328,13 +330,13 @@ class Node(threading.Thread):
 		URL = urlparse(URL)
 		host = URL.hostname
 		port = settings.defaultPort if URL.port == None else URL.port
-		ID = URL.path[1:] #remove initial slash
+		payeeLinkID = URL.path[1:] #remove initial slash
 
-		self.handleMessage(core_node.MakePayer())
+		self.handleMessage(core_node.MakePayer(payeeLinkID=payeeLinkID))
 
 		connection = self.networkEventDispatcher.makeConnection((host, port), callback=self)
 		connection.localID = network.payerLocalID
-		connection.sendMessage(payeelink.Pay(ID=ID))
+		connection.sendMessage(payeelink.Pay(ID=payeeLinkID))
 
 
 	def confirmPayment(self, payerAgrees):
