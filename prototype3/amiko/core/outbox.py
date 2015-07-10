@@ -26,49 +26,94 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-import time
-
 import serializable
 
 
 class OutBoxMessage(serializable.Serializable):
-	serializableAttributes = {'message': None, 'index': 0, 'lastAttemptTimestamp': 0.0}
+	serializableAttributes = {'message': None, 'index': 0}
 serializable.registerClass(OutBoxMessage)
 
 
 
+class OutBoxList(serializable.Serializable):
+	serializableAttributes = {'messages':[], 'lastIndex':-1, 'notYetTransmitted': 0}
+
+
+	def addMessage(self, msg):
+		if len(self.messages) > 32768:
+			raise Exception("Outbox is full; message %s lost for interface %s" % \
+				(str(msg.message.__class__), msg.localID))
+
+		#The value wrap-around is artificially shortened to 16 bits.
+		#The reason is to make wrap-around more common, so we're more likely
+		#to find related bugs in an early stage of development.
+		self.lastIndex = (self.lastIndex + 1) & 0xffff
+
+		self.messages.append(OutBoxMessage(
+			message=msg, index=self.lastIndex, lastAttemptTimestamp=0.0))
+		self.notYetTransmitted += 1
+
+
+	def transmit(self, networkDispatcher):
+		if len(self.messages) == 0:
+			return
+
+		if not networkDispatcher.interfaceExists(self.messages[0].message.localID):
+			#We are not connected (anymore):
+			#Assume all not-yet-confirmed messages were lost
+			self.notYetTransmitted = len(self.messages)
+			return
+
+		#Prevents a problem in the following lines:
+		#self.messages[-0:] would incorrectly select all messages for retransmission
+		if self.notYetTransmitted == 0:
+			return
+
+		#We are connected -> send all not-yet-transmitted messages
+		for msg in self.messages[-self.notYetTransmitted:]:
+			networkDispatcher.sendOutboundMessage(msg.index, msg.message)
+		self.notYetTransmitted = 0
+
+
+	def processConfirmation(self, confirmation):
+		#A confirmation confirms all earlier messages as well.
+		confirmationIndex = confirmation.index
+		for i in range(len(self.messages)):
+			if self.messages[i].index == confirmationIndex:
+				self.messages = self.messages[i+1:]
+				return
+
+
+serializable.registerClass(OutBoxList)
+
+
+
 class OutBox(serializable.Serializable):
-	serializableAttributes = {'messages':[], 'lastIndex':{}}
+	serializableAttributes = {'lists':{}}
 
 
 	def addMessage(self, msg):
 		try:
-			#The value wrap-around is artificially shortened to 16 bits.
-			#The reason is to make wrap-around more common, so we're more likely
-			#to find related bugs in an early stage of development.
-			index = (self.lastIndex[msg.localID] + 1) & 0xffff
+			theList = self.lists[msg.localID]
 		except KeyError:
-			index = 0
-		#TODO: protect against overflow (more than 64k messages in the queue for a single interface)
-		self.lastIndex[msg.localID] = index
-		self.messages.append(OutBoxMessage(message=msg, index=index, lastAttemptTimestamp=0.0))
+			theList = OutBoxList()
+			self.lists[msg.localID] = theList
+
+		theList.addMessage(msg)
 
 
 	def transmit(self, networkDispatcher):
-		t = time.time()
-		for msg in self.messages:
-			if t - msg.lastAttemptTimestamp > 10.0: #Re-send every 10 seconds
-				transmitted = networkDispatcher.sendOutboundMessage(msg.index, msg.message)
-				if transmitted:
-					msg.lastAttemptTimestamp = t
+		for theList in self.lists.itervalues():
+			theList.transmit(networkDispatcher)
 
 
 	def processConfirmation(self, confirmation):
-		for i in range(len(self.messages)):
-			msg = self.messages[i]
-			if msg.index == confirmation.index and msg.message.localID == confirmation.localID:
-				del self.messages[i]
-				return
+		try:
+			theList = self.lists[confirmation.localID]
+		except KeyError:
+			return #ignore
+
+		theList.processConfirmation(confirmation)
 
 
 serializable.registerClass(OutBox)

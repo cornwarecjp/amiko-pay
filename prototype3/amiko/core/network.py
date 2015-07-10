@@ -147,10 +147,12 @@ class EventDispatcher(asyncore.dispatcher):
 	def sendOutboundMessage(self, index, msg):
 		localID = msg.localID
 		interfaces = [c for c in self.connections if c.localID == localID]
-		if len(interfaces) == 0:
-			return False
 		interfaces[0].sendMessage(index, msg.message)
-		return True
+
+
+	def interfaceExists(self, localID):
+		interfaces = [c for c in self.connections if c.localID == localID]
+		return len(interfaces) > 0
 
 
 	def makeConnection(self, address, callback):
