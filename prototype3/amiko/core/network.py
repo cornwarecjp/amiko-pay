@@ -77,6 +77,8 @@ class Connection(asyncore.dispatcher_with_send):
 							raise Exception("Received connect message while already connected")
 						self.localID = msg.ID
 
+					#TODO: filter for acceptable message types, IDs etc. before
+					#sending them to a general-purpose message handler
 					self.callback.handleMessage(msg)
 				except Exception as e:
 					log.logException()
