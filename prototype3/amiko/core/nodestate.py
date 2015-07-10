@@ -29,6 +29,7 @@
 import randomsource
 
 import link
+import time
 import payeelink
 import payerlink
 import meetingpoint
@@ -51,6 +52,11 @@ serializable.registerClass(MakePayer)
 class ReturnValue(serializable.Serializable):
 	serializableAttributes = {'value':''}
 serializable.registerClass(ReturnValue)
+
+
+class TimeoutMessage(serializable.Serializable):
+	serializableAttributes = {'timestamp': 0.0, 'message': None}
+serializable.registerClass(TimeoutMessage)
 
 
 
@@ -106,7 +112,9 @@ class NodeState(serializable.Serializable):
 
 		#Returned messages:
 		return [
-			(5.0, self.payerLink.getTimeoutMessage())  #Add time-out for payer
+			(None, TimeoutMessage(timestamp=time.time()+5.0, message=\
+				self.payerLink.getTimeoutMessage()  #Add time-out for payer
+			))
 			]
 
 

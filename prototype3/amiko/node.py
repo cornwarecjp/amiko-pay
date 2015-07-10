@@ -194,14 +194,14 @@ class Node(threading.Thread):
 		self.__timeoutMessages = s["TimeoutMessages"]
 
 
-	def __addTimeoutMessage(self, timeout, msg):
+	def __addTimeoutMessage(self, msg):
 		"""
 		Note: you should call __saveState afterwards!
 		"""
 
-		self.__timeoutMessages.append([time.time()+timeout, msg])
+		self.__timeoutMessages.append(msg)
 		self.__timeoutMessages.sort(
-			cmp = lambda a, b: a[0] - b[0]
+			cmp = lambda a, b: a.timestamp - b.timestamp
 			)
 
 
@@ -249,12 +249,12 @@ class Node(threading.Thread):
 
 				#Put new messages in the right places:
 				for timeout, msg in newMessages:
-					if timeout is None:
+					if msg.__class__ == nodestate.TimeoutMessage:
+						#Add to the list of time-out messages:
+						self.__addTimeoutMessage(msg)
+					else:
 						#Process in another iteration of the loop we're in:
 						messages.append(msg)
-					else:
-						#Add to the list of time-out messages:
-						self.__addTimeoutMessage(timeout, msg)
 
 			self.__saveState()
 		except Exception as e:
@@ -449,10 +449,10 @@ class Node(threading.Thread):
 					self._commandFunction = None
 
 			#Time-out events:
-			while len(self.__timeoutMessages) > 0 and self.__timeoutMessages[0][0] < time.time():
-				timeout, msg = self.__timeoutMessages.pop(0)
+			while len(self.__timeoutMessages) > 0 and self.__timeoutMessages[0].timestamp < time.time():
+				msg = self.__timeoutMessages.pop(0)
 				try:
-					self.handleMessage(msg)
+					self.handleMessage(msg.message)
 				except Exception as e:
 					log.logException()
 
