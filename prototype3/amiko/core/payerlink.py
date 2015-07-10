@@ -31,8 +31,11 @@ import copy
 
 from ..utils import utils
 
-import serializable
+import network
+import payeelink
 import log
+
+import serializable
 
 
 
@@ -47,9 +50,9 @@ class Receipt(serializable.Serializable):
 serializable.registerClass(Receipt)
 
 
-class Confirm(serializable.Serializable):
+class PayerLink_Confirm(serializable.Serializable):
 	serializableAttributes = {'agreement':False}
-serializable.registerClass(Confirm)
+serializable.registerClass(PayerLink_Confirm)
 
 
 
@@ -113,9 +116,9 @@ class PayerLink(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		Timeout: self.msg_timeout,
-		Receipt: self.msg_receipt,
-		Confirm: self.msg_confirm
+		Timeout          : self.msg_timeout,
+		Receipt          : self.msg_receipt,
+		PayerLink_Confirm: self.msg_confirm
 		}[msg.__class__](msg)
 
 
@@ -144,9 +147,46 @@ class PayerLink(serializable.Serializable):
 	def msg_confirm(self, msg):
 		log.log("PayerLink: Received confirm: %s" % str(msg.agreement))
 
-		#TODO
+		if self.state != self.states.hasReceipt:
+			raise Exception(
+				"confirmPaymentmsg_confirm should not be called in state %s" % \
+					self.state
+				)
 
-		return []
+		ret = []
+
+		if msg.agreement:
+			self.state = self.states.confirmed
+
+			ret = \
+			[
+			(None, network.OutboundMessage(localID = network.payerLocalID, message = \
+				payeelink.Confirm(meetingPointID=self.meetingPointID)
+			))
+			]
+
+			#Note: we don't fill in timestamp values - they will be received
+			#from the payee side.
+			#TODO
+			#self.__transaction = transaction.Transaction(
+			#	self.context, self.routingContext, self.__meetingPoint,
+			#	self.amount, self.hash,
+			#	payerLink=self)
+
+			#This will start the transaction routing
+			#self.__transaction.msg_makeRoute()
+
+		else:
+			self.state = self.states.cancelled
+
+			ret = \
+			[
+			(None, network.OutboundMessage(localID = network.payerLocalID, message = \
+				payeelink.Cancel()
+			))
+			]
+
+		return ret
 
 
 serializable.registerClass(PayerLink)

@@ -225,7 +225,7 @@ class Node(threading.Thread):
 					payeelink.Pay,
 					payerlink.Timeout,
 					payerlink.Receipt,
-					payerlink.Confirm
+					payerlink.PayerLink_Confirm
 					]:
 					newMessages = self.__node.handleMessage(msg)
 
@@ -333,6 +333,7 @@ class Node(threading.Thread):
 		self.handleMessage(core_node.MakePayer())
 
 		connection = self.networkEventDispatcher.makeConnection((host, port), callback=self)
+		connection.localID = network.payerLocalID
 		connection.sendMessage(payeelink.Pay(ID=ID))
 
 
@@ -358,7 +359,7 @@ class Node(threading.Thread):
 
 	@runInNodeThread
 	def __confirmPayment(self, payerAgrees):
-		self.handleMessage(payerlink.Confirm(agreement=payerAgrees))
+		self.handleMessage(payerlink.PayerLink_Confirm(agreement=payerAgrees))
 
 
 	@runInNodeThread

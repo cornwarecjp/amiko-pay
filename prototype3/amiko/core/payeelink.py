@@ -42,6 +42,16 @@ class Pay(network.Connect):
 serializable.registerClass(Pay)
 
 
+class Confirm(serializable.Serializable):
+	serializableAttributes = {"meetingPointID": ""}
+serializable.registerClass(Confirm)
+
+
+class Cancel(serializable.Serializable):
+	serializableAttributes = {}
+serializable.registerClass(Cancel)
+
+
 
 class PayeeLink(serializable.Serializable):
 	states = utils.Enum([

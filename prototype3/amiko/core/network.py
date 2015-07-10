@@ -33,6 +33,11 @@ import serializable
 import log
 
 
+#Note: local link IDs and payee IDs should never be made equal to this!
+#TODO: enforce the above rule
+payerLocalID = "__payer__"
+
+
 class Connect(serializable.Serializable):
 	"""
 	This is a base class for messages that indicate a connection ID

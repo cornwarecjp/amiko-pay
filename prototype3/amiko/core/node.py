@@ -69,11 +69,14 @@ class Node(serializable.Serializable):
 		return \
 		{
 		PaymentRequest: self.msg_request,
-		MakePayer: self.msg_makePayer,
+		MakePayer     : self.msg_makePayer,
+
 		payeelink.Pay: self.msg_passToPayee,
-		payerlink.Timeout: self.msg_passToPayer,
-		payerlink.Receipt: self.msg_passToPayer,
-		payerlink.Confirm: self.msg_passToPayer
+
+		payerlink.Timeout          : self.msg_passToPayer,
+		payerlink.Receipt          : self.msg_passToPayer,
+		payerlink.PayerLink_Confirm: self.msg_passToPayer
+
 		}[msg.__class__](msg)
 
 
