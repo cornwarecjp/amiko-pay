@@ -248,7 +248,7 @@ class Node(threading.Thread):
 					raise Exception("Unsupported message type: " + str(msg.__class__))
 
 				#Put new messages in the right places:
-				for timeout, msg in newMessages:
+				for msg in newMessages:
 					if msg.__class__ == nodestate.TimeoutMessage:
 						#Add to the list of time-out messages:
 						self.__addTimeoutMessage(msg)

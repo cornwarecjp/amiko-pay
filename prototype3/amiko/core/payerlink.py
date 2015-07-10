@@ -164,9 +164,9 @@ class PayerLink(serializable.Serializable):
 
 			ret = \
 			[
-			(None, network.OutboundMessage(localID = network.payerLocalID, message = \
+			network.OutboundMessage(localID = network.payerLocalID, message = \
 				payeelink.Confirm(ID=self.payeeLinkID, meetingPointID=self.meetingPointID)
-			))
+			)
 			]
 
 			#Note: we don't fill in timestamp values - they will be received
@@ -185,9 +185,9 @@ class PayerLink(serializable.Serializable):
 
 			ret = \
 			[
-			(None, network.OutboundMessage(localID = network.payerLocalID, message = \
+			network.OutboundMessage(localID = network.payerLocalID, message = \
 				payeelink.Cancel(ID=self.payeeLinkID)
-			))
+			)
 			]
 
 		return ret

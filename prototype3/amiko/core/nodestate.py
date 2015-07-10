@@ -102,7 +102,7 @@ class NodeState(serializable.Serializable):
 		self.payeeLinks[requestID] = newPayeeLink
 
 		#Returned messages:
-		return [(None, ReturnValue(value=requestID))]
+		return [ReturnValue(value=requestID)]
 
 
 	def msg_makePayer(self, msg):
@@ -112,9 +112,9 @@ class NodeState(serializable.Serializable):
 
 		#Returned messages:
 		return [
-			(None, TimeoutMessage(timestamp=time.time()+5.0, message=\
+			TimeoutMessage(timestamp=time.time()+5.0, message=\
 				self.payerLink.getTimeoutMessage()  #Add time-out for payer
-			))
+			)
 			]
 
 

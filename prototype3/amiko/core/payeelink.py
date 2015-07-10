@@ -91,13 +91,13 @@ class PayeeLink(serializable.Serializable):
 					self.state
 				)
 
-		return [(None, network.OutboundMessage(localID = msg.ID, message = \
+		return [network.OutboundMessage(localID = msg.ID, message = \
 			payerlink.Receipt(
 				amount=self.amount,
 				receipt=self.receipt,
 				transactionID=self.transactionID,
 				meetingPoints=[]
-			)))]
+			))]
 
 
 	def msg_confirm(self, msg):
