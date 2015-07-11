@@ -33,7 +33,7 @@ import serializable
 class Transaction(serializable.Serializable):
 	serializableAttributes = \
 	{
-	'payeeLinkID':None, 'payerLinkID':None, 'remainingLinkIDs':[],
+	'payeeID':None, 'payerID':None, 'remainingLinkIDs':[],
 	'meetingPointID':None, 'amount':0, 'startTime':0, 'endTime':0
 	}
 serializable.registerClass(Transaction)

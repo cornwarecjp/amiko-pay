@@ -54,6 +54,20 @@ class ReturnValue(serializable.Serializable):
 serializable.registerClass(ReturnValue)
 
 
+class MakeTransaction(serializable.Serializable):
+	serializableAttributes = \
+	{
+		'amount': 0,
+		'transactionID': '',
+		'startTime': None,
+		'endTime': None,
+		'meetingPointID': '',
+		'payerID':None,
+		'payeeID':None
+	}
+serializable.registerClass(MakeTransaction)
+
+
 class TimeoutMessage(serializable.Serializable):
 	serializableAttributes = {'timestamp': 0.0, 'message': None}
 serializable.registerClass(TimeoutMessage)
@@ -74,8 +88,9 @@ class NodeState(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		PaymentRequest: self.msg_request,
-		MakePayer     : self.msg_makePayer,
+		PaymentRequest : self.msg_request,
+		MakePayer      : self.msg_makePayer,
+		MakeTransaction: self.msg_makeTransaction,
 
 		payeelink.Pay    : self.msg_passToPayee,
 		payeelink.Confirm: self.msg_passToPayee,
@@ -116,6 +131,22 @@ class NodeState(serializable.Serializable):
 				self.payerLink.getTimeoutMessage()  #Add time-out for payer
 			)
 			]
+
+
+	def msg_makeTransaction(self, msg):
+		#TODO: check for already existing tx with this ID:
+		#same direction -> have no route
+		#opposite direction -> short-cut
+		self.transactions[msg.transactionID] = transaction.Transaction(
+			payeeID=msg.payeeID,
+			payerID=msg.payerID,
+			remainingLinkIDs=self.links.keys(),
+			meetingPointID=msg.meetingPointID,
+			amount=msg.amount,
+			startTime=msg.startTime,
+			endTime=msg.endTime
+			)
+		return []
 
 
 	def msg_passToPayee(self, msg):

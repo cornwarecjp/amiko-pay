@@ -33,6 +33,7 @@ from ..utils import utils
 
 import network
 import payeelink
+import nodestate
 import log
 
 import serializable
@@ -166,19 +167,17 @@ class PayerLink(serializable.Serializable):
 			[
 			network.OutboundMessage(localID = network.payerLocalID, message = \
 				payeelink.Confirm(ID=self.payeeLinkID, meetingPointID=self.meetingPointID)
-			)
+			),
+			nodestate.MakeTransaction( #This will start the transaction routing
+				amount=self.amount,
+				transactionID=self.transactionID,
+				startTime=None, #Will be received from the payee side
+				endTime=None, #Will be received from the payee side
+				meetingPointID=self.meetingPointID,
+				payerID=network.payerLocalID,
+				payeeID=None
+				)
 			]
-
-			#Note: we don't fill in timestamp values - they will be received
-			#from the payee side.
-			#TODO
-			#self.__transaction = transaction.Transaction(
-			#	self.context, self.routingContext, self.__meetingPoint,
-			#	self.amount, self.hash,
-			#	payerLink=self)
-
-			#This will start the transaction routing
-			#self.__transaction.msg_makeRoute()
 
 		else:
 			self.state = self.states.cancelled
