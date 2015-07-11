@@ -85,7 +85,8 @@ class PayeeLink(serializable.Serializable):
 		Pay                     : self.msg_pay,
 		Confirm                 : self.msg_confirm,
 		Cancel                  : self.msg_cancel,
-		nodestate.HavePayeeRoute: self.msg_havePayeeRoute
+		nodestate.HavePayeeRoute: self.msg_havePayeeRoute,
+		nodestate.HavePayerRoute: self.msg_havePayerRoute
 		}[msg.__class__](msg)
 
 
@@ -153,7 +154,23 @@ class PayeeLink(serializable.Serializable):
 		self.states.hasPayerRoute: self.states.hasBothRoutes
 		}[self.state]
 
-		#TODO: send HavePayeeRoute to payee
+		return \
+		[
+		network.OutboundMessage(localID = msg.ID, message = \
+			nodestate.HavePayeeRoute(ID=network.payerLocalID, transactionID=None)
+			)
+		]
+
+
+	def msg_havePayerRoute(self, msg):
+		log.log("Payee: HavePayerRoute received")
+
+		self.state = \
+		{
+		self.states.confirmed    : self.states.hasPayerRoute,
+		self.states.hasPayeeRoute: self.states.hasBothRoutes
+		}[self.state]
+
 		return []
 
 
