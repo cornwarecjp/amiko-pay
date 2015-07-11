@@ -211,6 +211,7 @@ class Node(threading.Thread):
 
 	def handleMessage(self, msg):
 		returnValue = None
+		outboundMessages = []
 
 		oldState = self.getState()
 		try:
@@ -247,10 +248,12 @@ class Node(threading.Thread):
 					returnValue = msg.value
 
 				#Messages for the outbox:
-				elif msg.__class__ == network.OutboundMessage:
-					self.__outBox.addMessage(msg)
 				elif msg.__class__ == network.Confirmation:
 					self.__outBox.processConfirmation(msg)
+
+				#Store outbound messages in a local variable first:
+				elif msg.__class__ == network.OutboundMessage:
+					outboundMessages.append(msg)
 
 				else:
 					raise Exception("Unsupported message type: " + str(msg.__class__))
@@ -263,6 +266,15 @@ class Node(threading.Thread):
 					else:
 						#Process in another iteration of the loop we're in:
 						messages.append(msg)
+
+			#Outbound messages are added to the outbox, but only if the above
+			#code did not generate any exceptions.
+			#In the case of exceptions, the old state will be restored, and the
+			#outbound messages will be forgotten.
+			#The effect is that every message which' processing leads to an
+			#exception is effectively a NOP.
+			for msg in outboundMessages:
+				self.__outBox.addMessage(msg)
 
 			self.__saveState()
 		except Exception as e:
