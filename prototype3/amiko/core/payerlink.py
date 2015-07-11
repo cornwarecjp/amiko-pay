@@ -59,7 +59,8 @@ serializable.registerClass(PayerLink_Confirm)
 
 class PayerLink(serializable.Serializable):
 	states = utils.Enum([
-		"initial", "hasReceipt", "confirmed", "hasRoute",
+		"initial", "hasReceipt", "confirmed",
+		"hasPayerRoute", "hasPayeeRoute", "hasBothRoutes",
 		"locked", "cancelled", "committed"
 		])
 
@@ -194,7 +195,16 @@ class PayerLink(serializable.Serializable):
 
 
 	def msg_haveRoute(self, msg):
-		print "Payer: HaveRoute received"
+		log.log("Payer: HaveRoute received")
+
+		self.state = \
+		{
+		self.states.confirmed    : self.states.hasPayerRoute,
+		self.states.hasPayeeRoute: self.states.hasBothRoutes
+		}[self.state]
+
+		#TODO: send HaveRoute to payee
+		#TODO: if both routes are present, start locking
 		return []
 
 

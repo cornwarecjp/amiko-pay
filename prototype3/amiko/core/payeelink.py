@@ -29,6 +29,7 @@
 
 from ..utils import utils
 
+import log
 import settings
 import network
 import nodestate
@@ -56,7 +57,9 @@ serializable.registerClass(Cancel)
 
 class PayeeLink(serializable.Serializable):
 	states = utils.Enum([
-		"initial", "confirmed", "hasRoutes", "sentCommit", "cancelled", "committed"
+		"initial", "confirmed",
+		"hasPayerRoute", "hasPayeeRoute", "hasBothRoutes",
+		"sentCommit", "cancelled", "committed"
 		])
 
 	serializableAttributes = \
@@ -142,7 +145,15 @@ class PayeeLink(serializable.Serializable):
 
 
 	def msg_haveRoute(self, msg):
-		print "Payee: HaveRoute received"
+		log.log("Payee: HaveRoute received")
+
+		self.state = \
+		{
+		self.states.confirmed    : self.states.hasPayeeRoute,
+		self.states.hasPayerRoute: self.states.hasBothRoutes
+		}[self.state]
+
+		#TODO: send HaveRoute to payee
 		return []
 
 
