@@ -29,11 +29,15 @@
 import serializable
 
 
+side_payer = 1
+side_midpoint = 0
+side_payee = -1
+
 
 class Transaction(serializable.Serializable):
 	serializableAttributes = \
 	{
-	'payeeID':None, 'payerID':None, 'remainingLinkIDs':[],
+	'side':None, 'payeeID':None, 'payerID':None, 'remainingLinkIDs':[],
 	'meetingPointID':None, 'amount':0, 'startTime':0, 'endTime':0
 	}
 serializable.registerClass(Transaction)

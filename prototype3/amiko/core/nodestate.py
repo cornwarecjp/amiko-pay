@@ -134,10 +134,38 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_makeTransaction(self, msg):
-		#TODO: check for already existing tx with this ID:
-		#same direction -> have no route
-		#opposite direction -> short-cut
+		transactionSide = \
+		{
+		(False, True): transaction.side_payer,
+		(True, False): transaction.side_payee
+		}[(msg.payerID is None, msg.payeeID is None)]
+
+		if msg.transactionID in self.transactions.keys():
+			#Match with existing transaction
+			tx = self.transactions[msg.transactionID]
+
+			#TODO: don't match if tx already has a finished route
+
+			if transactionSide == -tx.side:
+				#opposite direction -> short-cut
+
+				#TODO: check that amount matches!!!
+
+				tx.side = transaction.side_midpoint
+				if transactionSide == transaction.side_payer:
+					tx.payerID = msg.payerID
+				else: #side_payee
+					tx.payeeID = msg.payeeID
+
+				#TODO: haveRoute messages, and possibly cancelRoute in case of shortcut
+				return []
+
+			#TODO: same direction -> haveNoRoute message
+			return []
+
+		#Create new transaction
 		self.transactions[msg.transactionID] = transaction.Transaction(
+			side=transactionSide,
 			payeeID=msg.payeeID,
 			payerID=msg.payerID,
 			remainingLinkIDs=self.links.keys(),
@@ -146,6 +174,7 @@ class NodeState(serializable.Serializable):
 			startTime=msg.startTime,
 			endTime=msg.endTime
 			)
+
 		return []
 
 
