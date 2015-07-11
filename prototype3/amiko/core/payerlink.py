@@ -121,9 +121,10 @@ class PayerLink(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		Timeout          : self.msg_timeout,
-		Receipt          : self.msg_receipt,
-		PayerLink_Confirm: self.msg_confirm
+		Timeout            : self.msg_timeout,
+		Receipt            : self.msg_receipt,
+		PayerLink_Confirm  : self.msg_confirm,
+		nodestate.HaveRoute: self.msg_haveRoute
 		}[msg.__class__](msg)
 
 
@@ -190,6 +191,11 @@ class PayerLink(serializable.Serializable):
 			]
 
 		return ret
+
+
+	def msg_haveRoute(self, msg):
+		print "Payer: HaveRoute received"
+		return []
 
 
 serializable.registerClass(PayerLink)

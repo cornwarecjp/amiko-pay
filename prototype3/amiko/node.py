@@ -227,6 +227,7 @@ class Node(threading.Thread):
 					nodestate.PaymentRequest,
 					nodestate.MakePayer,
 					nodestate.MakeRoute,
+					nodestate.HaveRoute,
 					payeelink.Pay,
 					payeelink.Confirm,
 					payeelink.Cancel,

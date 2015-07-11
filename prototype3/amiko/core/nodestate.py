@@ -28,8 +28,10 @@
 
 import randomsource
 
-import link
 import time
+
+import network
+import link
 import payeelink
 import payerlink
 import meetingpoint
@@ -68,6 +70,11 @@ class MakeRoute(serializable.Serializable):
 serializable.registerClass(MakeRoute)
 
 
+class HaveRoute(serializable.Serializable):
+	serializableAttributes = {'linkID': '', 'transactionID': ''}
+serializable.registerClass(HaveRoute)
+
+
 class TimeoutMessage(serializable.Serializable):
 	serializableAttributes = {'timestamp': 0.0, 'message': None}
 serializable.registerClass(TimeoutMessage)
@@ -91,6 +98,7 @@ class NodeState(serializable.Serializable):
 		PaymentRequest : self.msg_request,
 		MakePayer      : self.msg_makePayer,
 		MakeRoute      : self.msg_makeRoute,
+		HaveRoute      : self.msg_haveRoute,
 
 		payeelink.Pay    : self.msg_passToPayee,
 		payeelink.Confirm: self.msg_passToPayee,
@@ -158,7 +166,11 @@ class NodeState(serializable.Serializable):
 					tx.payeeID = msg.payeeID
 
 				#TODO: haveRoute messages, and possibly cancelRoute in case of shortcut
-				return []
+				return \
+				[
+				HaveRoute(linkID=tx.payerID, transactionID=msg.transactionID),
+				HaveRoute(linkID=tx.payeeID, transactionID=msg.transactionID)
+				]
 
 			#TODO: same direction -> haveNoRoute message
 			return []
@@ -176,6 +188,17 @@ class NodeState(serializable.Serializable):
 			)
 
 		return []
+
+
+	def msg_haveRoute(self, msg):
+		if msg.linkID == network.payerLocalID:
+			return self.payerLink.handleMessage(msg)
+		elif msg.linkID in self.payeeLinks.keys():
+			return self.payeeLinks[msg.linkID].handleMessage(msg)
+		elif msg.linkID in self.links.keys():
+			return self.links[msg.linkID].handleMessage(msg)
+
+		raise Exception("Received haveRoute with unknown link ID")
 
 
 	def msg_passToPayee(self, msg):
