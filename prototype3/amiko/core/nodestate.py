@@ -70,9 +70,14 @@ class MakeRoute(serializable.Serializable):
 serializable.registerClass(MakeRoute)
 
 
-class HaveRoute(serializable.Serializable):
-	serializableAttributes = {'linkID': '', 'transactionID': ''}
-serializable.registerClass(HaveRoute)
+class HavePayerRoute(serializable.Serializable):
+	serializableAttributes = {'ID': '', 'transactionID': ''}
+serializable.registerClass(HavePayerRoute)
+
+
+class HavePayeeRoute(serializable.Serializable):
+	serializableAttributes = {'ID': '', 'transactionID': ''}
+serializable.registerClass(HavePayeeRoute)
 
 
 class TimeoutMessage(serializable.Serializable):
@@ -98,7 +103,9 @@ class NodeState(serializable.Serializable):
 		PaymentRequest : self.msg_request,
 		MakePayer      : self.msg_makePayer,
 		MakeRoute      : self.msg_makeRoute,
-		HaveRoute      : self.msg_haveRoute,
+
+		HavePayerRoute : self.msg_passToAnyone,
+		HavePayeeRoute : self.msg_passToAnyone,
 
 		payeelink.Pay    : self.msg_passToPayee,
 		payeelink.Confirm: self.msg_passToPayee,
@@ -168,8 +175,8 @@ class NodeState(serializable.Serializable):
 				#TODO: haveRoute messages, and possibly cancelRoute in case of shortcut
 				return \
 				[
-				HaveRoute(linkID=tx.payerID, transactionID=msg.transactionID),
-				HaveRoute(linkID=tx.payeeID, transactionID=msg.transactionID)
+				HavePayerRoute(ID=tx.payerID, transactionID=msg.transactionID),
+				HavePayeeRoute(ID=tx.payeeID, transactionID=msg.transactionID)
 				]
 
 			#TODO: same direction -> haveNoRoute message
@@ -190,15 +197,15 @@ class NodeState(serializable.Serializable):
 		return []
 
 
-	def msg_haveRoute(self, msg):
-		if msg.linkID == network.payerLocalID:
+	def msg_passToAnyone(self, msg):
+		if msg.ID == network.payerLocalID:
 			return self.payerLink.handleMessage(msg)
-		elif msg.linkID in self.payeeLinks.keys():
-			return self.payeeLinks[msg.linkID].handleMessage(msg)
-		elif msg.linkID in self.links.keys():
-			return self.links[msg.linkID].handleMessage(msg)
+		elif msg.ID in self.payeeLinks.keys():
+			return self.payeeLinks[msg.ID].handleMessage(msg)
+		elif msg.ID in self.links.keys():
+			return self.links[msg.ID].handleMessage(msg)
 
-		raise Exception("Received haveRoute with unknown link ID")
+		raise Exception("Received message with unknown destination ID")
 
 
 	def msg_passToPayee(self, msg):

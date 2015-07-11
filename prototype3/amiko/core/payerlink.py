@@ -122,10 +122,10 @@ class PayerLink(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		Timeout            : self.msg_timeout,
-		Receipt            : self.msg_receipt,
-		PayerLink_Confirm  : self.msg_confirm,
-		nodestate.HaveRoute: self.msg_haveRoute
+		Timeout                 : self.msg_timeout,
+		Receipt                 : self.msg_receipt,
+		PayerLink_Confirm       : self.msg_confirm,
+		nodestate.HavePayerRoute: self.msg_havePayerRoute
 		}[msg.__class__](msg)
 
 
@@ -194,8 +194,8 @@ class PayerLink(serializable.Serializable):
 		return ret
 
 
-	def msg_haveRoute(self, msg):
-		log.log("Payer: HaveRoute received")
+	def msg_havePayerRoute(self, msg):
+		log.log("Payer: HavePayerRoute received")
 
 		self.state = \
 		{
@@ -203,7 +203,7 @@ class PayerLink(serializable.Serializable):
 		self.states.hasPayeeRoute: self.states.hasBothRoutes
 		}[self.state]
 
-		#TODO: send HaveRoute to payee
+		#TODO: send HavePayerRoute to payee
 		#TODO: if both routes are present, start locking
 		return []
 
