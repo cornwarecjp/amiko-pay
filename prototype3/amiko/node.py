@@ -362,8 +362,8 @@ class Node(threading.Thread):
 		self.__confirmPayment(payerAgrees) #implemented in Node thread
 		payer = self.__node.payerLink
 
+		payer.waitForFinished() #Must be done in this thread
 		#TODO:
-		#payer.waitForFinished() #Must be done in this thread
 		#self.payLog.writePayer(payer)
 
 		return payer.state

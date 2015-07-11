@@ -185,6 +185,8 @@ class PayerLink(serializable.Serializable):
 		else:
 			self.state = self.states.cancelled
 
+			self.__finished.set()
+
 			ret = \
 			[
 			network.OutboundMessage(localID = network.payerLocalID, message = \
