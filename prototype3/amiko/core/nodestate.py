@@ -80,6 +80,11 @@ class HavePayeeRoute(serializable.Serializable):
 serializable.registerClass(HavePayeeRoute)
 
 
+class Lock(serializable.Serializable):
+	serializableAttributes = {'transactionID': ''}
+serializable.registerClass(Lock)
+
+
 class TimeoutMessage(serializable.Serializable):
 	serializableAttributes = {'timestamp': 0.0, 'message': None}
 serializable.registerClass(TimeoutMessage)
@@ -103,6 +108,7 @@ class NodeState(serializable.Serializable):
 		PaymentRequest : self.msg_request,
 		MakePayer      : self.msg_makePayer,
 		MakeRoute      : self.msg_makeRoute,
+		Lock           : self.msg_lock,
 
 		HavePayerRoute : self.msg_passToAnyone,
 		HavePayeeRoute : self.msg_passToAnyone,
@@ -197,15 +203,30 @@ class NodeState(serializable.Serializable):
 		return []
 
 
-	def msg_passToAnyone(self, msg):
-		if msg.ID == network.payerLocalID:
-			return self.payerLink.handleMessage(msg)
-		elif msg.ID in self.payeeLinks.keys():
-			return self.payeeLinks[msg.ID].handleMessage(msg)
-		elif msg.ID in self.links.keys():
-			return self.links[msg.ID].handleMessage(msg)
+	def msg_lock(self, msg):
+		tx = self.transactions[msg.transactionID]
+		payer = self.__getLinkObject(tx.payerID)
+		payee = self.__getLinkObject(tx.payeeID)
 
-		raise Exception("Received message with unknown destination ID")
+		ret = payer.lockIncoming(msg)
+		ret += payee.lockOutgoing(msg)
+
+		return ret
+
+
+	def msg_passToAnyone(self, msg):
+		return self.__getLinkObject(msg.ID).handleMessage(msg)
+
+
+	def __getLinkObject(self, linkID):
+		if linkID == network.payerLocalID:
+			return self.payerLink
+		elif linkID in self.payeeLinks.keys():
+			return self.payeeLinks[linkID]
+		elif linkID in self.links.keys():
+			return self.links[linkID]
+
+		raise Exception("Link ID %s not found" % repr(linkID))
 
 
 	def msg_passToPayee(self, msg):

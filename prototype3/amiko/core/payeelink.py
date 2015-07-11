@@ -174,5 +174,10 @@ class PayeeLink(serializable.Serializable):
 		return []
 
 
+	def lockOutgoing(self, msg):
+		log.log("Payee: locked")
+		return []
+
+
 serializable.registerClass(PayeeLink)
 

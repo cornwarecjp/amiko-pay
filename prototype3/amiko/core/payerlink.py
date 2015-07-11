@@ -204,13 +204,20 @@ class PayerLink(serializable.Serializable):
 		self.states.hasPayeeRoute: self.states.hasBothRoutes
 		}[self.state]
 
-		#TODO: if both routes are present, start locking
-		return \
+		ret = \
 		[
 		network.OutboundMessage(localID = network.payerLocalID, message = \
 			nodestate.HavePayerRoute(ID=self.payeeLinkID, transactionID=None)
 			)
 		]
+
+		#If both routes are present, start locking
+		if self.state == self.states.hasBothRoutes:
+			ret.append(
+				nodestate.Lock(transactionID=self.transactionID, payload=[])
+				)
+
+		return ret
 
 
 	def msg_havePayeeRoute(self, msg):
@@ -222,8 +229,19 @@ class PayerLink(serializable.Serializable):
 		self.states.hasPayerRoute: self.states.hasBothRoutes
 		}[self.state]
 
-		#TODO: if both routes are present, start locking
-		return []
+		ret = []
+
+		#If both routes are present, start locking
+		if self.state == self.states.hasBothRoutes:
+			ret.append(
+				nodestate.Lock(transactionID=self.transactionID, payload=[])
+				)
+
+		return ret
+
+
+	def lockIncoming(self, msg):
+		return [] #This is called when our own lock message is processed -> NOP
 
 
 serializable.registerClass(PayerLink)
