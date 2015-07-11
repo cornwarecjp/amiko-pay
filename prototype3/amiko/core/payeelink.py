@@ -58,7 +58,6 @@ serializable.registerClass(Cancel)
 class PayeeLink(serializable.Serializable):
 	states = utils.Enum([
 		"initial", "confirmed",
-		"hasPayerRoute", "hasPayeeRoute", "hasBothRoutes",
 		"sentCommit", "cancelled", "committed"
 		])
 
@@ -85,8 +84,7 @@ class PayeeLink(serializable.Serializable):
 		Pay                     : self.msg_pay,
 		Confirm                 : self.msg_confirm,
 		Cancel                  : self.msg_cancel,
-		nodestate.HavePayeeRoute: self.msg_havePayeeRoute,
-		nodestate.HavePayerRoute: self.msg_havePayerRoute
+		nodestate.HavePayeeRoute: self.msg_havePayeeRoute
 		}[msg.__class__](msg)
 
 
@@ -146,33 +144,13 @@ class PayeeLink(serializable.Serializable):
 
 
 	def msg_havePayeeRoute(self, msg):
-		log.log("Payee: HavePayeeRoute received")
-
-		self.state = \
-		{
-		self.states.confirmed    : self.states.hasPayeeRoute,
-		self.states.hasPayerRoute: self.states.hasBothRoutes
-		}[self.state]
-
+		#Simply pass it to the payer, who keeps track of whether the route is complete
 		return \
 		[
 		network.OutboundMessage(localID = msg.ID, message = \
 			nodestate.HavePayeeRoute(ID=network.payerLocalID, transactionID=None)
 			)
 		]
-
-
-	def msg_havePayerRoute(self, msg):
-		log.log("Payee: HavePayerRoute received")
-
-		self.state = \
-		{
-		self.states.confirmed    : self.states.hasPayerRoute,
-		self.states.hasPayeeRoute: self.states.hasBothRoutes,
-		self.states.sentCommit   : self.states.sentCommit #NOP
-		}[self.state]
-
-		return []
 
 
 	def lockOutgoing(self, msg):

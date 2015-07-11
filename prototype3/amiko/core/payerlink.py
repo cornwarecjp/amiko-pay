@@ -204,12 +204,7 @@ class PayerLink(serializable.Serializable):
 		self.states.hasPayeeRoute: self.states.locked
 		}[self.state]
 
-		ret = \
-		[
-		network.OutboundMessage(localID = network.payerLocalID, message = \
-			nodestate.HavePayerRoute(ID=self.payeeLinkID, transactionID=None)
-			)
-		]
+		ret = []
 
 		#If both routes are present, start locking
 		if self.state == self.states.locked:
