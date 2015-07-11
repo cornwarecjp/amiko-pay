@@ -230,6 +230,7 @@ class Node(threading.Thread):
 					nodestate.HavePayerRoute,
 					nodestate.HavePayeeRoute,
 					nodestate.Lock,
+					nodestate.Commit,
 					payeelink.Pay,
 					payeelink.Confirm,
 					payeelink.Cancel,

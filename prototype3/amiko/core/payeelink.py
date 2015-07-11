@@ -168,15 +168,24 @@ class PayeeLink(serializable.Serializable):
 		self.state = \
 		{
 		self.states.confirmed    : self.states.hasPayerRoute,
-		self.states.hasPayeeRoute: self.states.hasBothRoutes
+		self.states.hasPayeeRoute: self.states.hasBothRoutes,
+		self.states.sentCommit   : self.states.sentCommit #NOP
 		}[self.state]
 
 		return []
 
 
 	def lockOutgoing(self, msg):
-		log.log("Payee: locked")
-		return []
+		log.log("Payee: locked; committing")
+
+		self.state = self.states.sentCommit
+
+		#TODO: add SettleCommit message to payer
+		return [nodestate.Commit(token=self.token)]
+
+
+	def commitIncoming(self, msg):
+		return [] #This is called when our own commit message is processed -> NOP
 
 
 serializable.registerClass(PayeeLink)

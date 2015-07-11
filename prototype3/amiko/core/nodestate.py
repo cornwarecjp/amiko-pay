@@ -31,6 +31,7 @@ import randomsource
 import time
 
 import network
+import settings
 import link
 import payeelink
 import payerlink
@@ -85,6 +86,11 @@ class Lock(serializable.Serializable):
 serializable.registerClass(Lock)
 
 
+class Commit(serializable.Serializable):
+	serializableAttributes = {'token': ''}
+serializable.registerClass(Commit)
+
+
 class TimeoutMessage(serializable.Serializable):
 	serializableAttributes = {'timestamp': 0.0, 'message': None}
 serializable.registerClass(TimeoutMessage)
@@ -109,6 +115,7 @@ class NodeState(serializable.Serializable):
 		MakePayer      : self.msg_makePayer,
 		MakeRoute      : self.msg_makeRoute,
 		Lock           : self.msg_lock,
+		Commit         : self.msg_commit,
 
 		HavePayerRoute : self.msg_passToAnyone,
 		HavePayeeRoute : self.msg_passToAnyone,
@@ -210,6 +217,18 @@ class NodeState(serializable.Serializable):
 
 		ret = payer.lockIncoming(msg)
 		ret += payee.lockOutgoing(msg)
+
+		return ret
+
+
+	def msg_commit(self, msg):
+		transactionID = settings.hashAlgorithm(msg.token)
+		tx = self.transactions[transactionID]
+		payer = self.__getLinkObject(tx.payerID)
+		payee = self.__getLinkObject(tx.payeeID)
+
+		ret = payee.commitIncoming(msg)
+		ret += payer.commitOutgoing(msg)
 
 		return ret
 

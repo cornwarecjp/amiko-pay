@@ -60,7 +60,7 @@ serializable.registerClass(PayerLink_Confirm)
 class PayerLink(serializable.Serializable):
 	states = utils.Enum([
 		"initial", "hasReceipt", "confirmed",
-		"hasPayerRoute", "hasPayeeRoute", "hasBothRoutes",
+		"hasPayerRoute", "hasPayeeRoute",
 		"locked", "cancelled", "committed"
 		])
 
@@ -82,10 +82,10 @@ class PayerLink(serializable.Serializable):
 	def __init__(self, **kwargs):
 		serializable.Serializable.__init__(self, **kwargs)
 
-		# Will be set when receipt message is received from payee
+		# Will be set when receipt message is received from payee, or in case of time-out
 		self.__receiptReceived = threading.Event()
 
-		# Will be set when transaction is committed or cancelled
+		# Will be set when transaction is committed or cancelled, or in case of time-out
 		self.__finished = threading.Event()
 
 		#TODO: recover from a state where one of the above events can be set,
@@ -201,7 +201,7 @@ class PayerLink(serializable.Serializable):
 		self.state = \
 		{
 		self.states.confirmed    : self.states.hasPayerRoute,
-		self.states.hasPayeeRoute: self.states.hasBothRoutes
+		self.states.hasPayeeRoute: self.states.locked
 		}[self.state]
 
 		ret = \
@@ -212,7 +212,7 @@ class PayerLink(serializable.Serializable):
 		]
 
 		#If both routes are present, start locking
-		if self.state == self.states.hasBothRoutes:
+		if self.state == self.states.locked:
 			ret.append(
 				nodestate.Lock(transactionID=self.transactionID, payload=[])
 				)
@@ -226,13 +226,13 @@ class PayerLink(serializable.Serializable):
 		self.state = \
 		{
 		self.states.confirmed    : self.states.hasPayeeRoute,
-		self.states.hasPayerRoute: self.states.hasBothRoutes
+		self.states.hasPayerRoute: self.states.locked
 		}[self.state]
 
 		ret = []
 
 		#If both routes are present, start locking
-		if self.state == self.states.hasBothRoutes:
+		if self.state == self.states.locked:
 			ret.append(
 				nodestate.Lock(transactionID=self.transactionID, payload=[])
 				)
@@ -242,6 +242,20 @@ class PayerLink(serializable.Serializable):
 
 	def lockIncoming(self, msg):
 		return [] #This is called when our own lock message is processed -> NOP
+
+
+	def commitOutgoing(self, msg):
+		if self.state != self.states.locked:
+			raise Exception(
+				"commitOutgoing should not be called in state %s" % \
+					self.state
+				)
+		self.state = self.states.committed
+
+		log.log("Payer: committed")
+		self.__finished.set()
+
+		return []
 
 
 serializable.registerClass(PayerLink)
