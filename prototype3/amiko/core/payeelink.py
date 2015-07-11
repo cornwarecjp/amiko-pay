@@ -31,6 +31,7 @@ from ..utils import utils
 
 import settings
 import network
+import nodestate
 import payerlink
 
 import serializable
@@ -107,11 +108,23 @@ class PayeeLink(serializable.Serializable):
 					self.state
 				)
 
+		#TODO: check that meeting point is in self.meetingPoints
+
 		self.state = self.states.confirmed
 		self.meetingPointID = msg.meetingPointID
 
-		#TODO
-		return []
+		return \
+		[
+			nodestate.MakeTransaction( #This will start the transaction routing
+				amount=self.amount,
+				transactionID=self.transactionID,
+				startTime=None, #TODO: fill in
+				endTime=None, #TODO: fill in
+				meetingPointID=self.meetingPointID,
+				payerID=None,
+				payeeID=msg.ID
+				)
+		]
 
 
 	def msg_cancel(self, msg):
