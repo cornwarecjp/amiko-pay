@@ -168,7 +168,7 @@ class PayerLink(serializable.Serializable):
 			network.OutboundMessage(localID = network.payerLocalID, message = \
 				payeelink.Confirm(ID=self.payeeLinkID, meetingPointID=self.meetingPointID)
 			),
-			nodestate.MakeTransaction( #This will start the transaction routing
+			nodestate.MakeRoute( #This will start the transaction routing
 				amount=self.amount,
 				transactionID=self.transactionID,
 				startTime=None, #Will be received from the payee side

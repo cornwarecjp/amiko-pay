@@ -226,7 +226,7 @@ class Node(threading.Thread):
 				if msg.__class__ in [
 					nodestate.PaymentRequest,
 					nodestate.MakePayer,
-					nodestate.MakeTransaction,
+					nodestate.MakeRoute,
 					payeelink.Pay,
 					payeelink.Confirm,
 					payeelink.Cancel,

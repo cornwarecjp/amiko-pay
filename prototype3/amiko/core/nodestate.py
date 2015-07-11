@@ -54,7 +54,7 @@ class ReturnValue(serializable.Serializable):
 serializable.registerClass(ReturnValue)
 
 
-class MakeTransaction(serializable.Serializable):
+class MakeRoute(serializable.Serializable):
 	serializableAttributes = \
 	{
 		'amount': 0,
@@ -65,7 +65,7 @@ class MakeTransaction(serializable.Serializable):
 		'payerID':None,
 		'payeeID':None
 	}
-serializable.registerClass(MakeTransaction)
+serializable.registerClass(MakeRoute)
 
 
 class TimeoutMessage(serializable.Serializable):
@@ -90,7 +90,7 @@ class NodeState(serializable.Serializable):
 		{
 		PaymentRequest : self.msg_request,
 		MakePayer      : self.msg_makePayer,
-		MakeTransaction: self.msg_makeTransaction,
+		MakeRoute      : self.msg_makeRoute,
 
 		payeelink.Pay    : self.msg_passToPayee,
 		payeelink.Confirm: self.msg_passToPayee,
@@ -133,7 +133,7 @@ class NodeState(serializable.Serializable):
 			]
 
 
-	def msg_makeTransaction(self, msg):
+	def msg_makeRoute(self, msg):
 		transactionSide = \
 		{
 		(False, True): transaction.side_payer,

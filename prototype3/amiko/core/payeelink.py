@@ -115,7 +115,7 @@ class PayeeLink(serializable.Serializable):
 
 		return \
 		[
-			nodestate.MakeTransaction( #This will start the transaction routing
+			nodestate.MakeRoute( #This will start the transaction routing
 				amount=self.amount,
 				transactionID=self.transactionID,
 				startTime=None, #TODO: fill in
