@@ -209,6 +209,27 @@ class Node(threading.Thread):
 			)
 
 
+	def __cleanupState(self):
+		"""
+		Note: you should call __saveState afterwards!
+		"""
+
+		#Remove finished payer and related objects:
+		if not (self.__node.payerLink is None) and \
+			self.__node.payerLink.state in [payerlink.PayerLink.states.cancelled, payerlink.PayerLink.states.committed]:
+				#TODO: add payer to paylog
+				payeeLinkID = self.__node.payerLink.payeeLinkID
+				self.__node.payerLink = None
+				del self.__outBox.lists[payeeLinkID]
+				self.__timeoutMessages = \
+				[
+					msg
+					for msg in self.__timeoutMessages
+					if msg.message.__class__ != payerlink.Timeout
+				]
+				#TODO: remove from outbox
+
+
 	def handleMessage(self, msg):
 		returnValue = None
 		outboundMessages = []
@@ -275,6 +296,8 @@ class Node(threading.Thread):
 			#exception is effectively a NOP.
 			for msg in outboundMessages:
 				self.__outBox.addMessage(msg)
+
+			self.__cleanupState()
 
 			self.__saveState()
 		except Exception as e:
