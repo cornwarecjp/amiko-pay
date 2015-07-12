@@ -36,7 +36,7 @@ serializable.registerClass(OutBoxMessage)
 
 
 class OutBoxList(serializable.Serializable):
-	serializableAttributes = {'messages':[], 'lastIndex':-1, 'notYetTransmitted': 0}
+	serializableAttributes = {'messages':[], 'lastIndex':-1, 'notYetTransmitted': 0, 'closing': False}
 
 
 	def addMessage(self, msg):
@@ -59,9 +59,14 @@ class OutBoxList(serializable.Serializable):
 			return
 
 		if not networkDispatcher.interfaceExists(self.messages[0].message.localID):
+			#If we are closing, just forget about sending the remaining messages:
+			if self.closing:
+				self.messages = []
+
 			#We are not connected (anymore):
 			#Assume all not-yet-confirmed messages were lost
 			self.notYetTransmitted = len(self.messages)
+
 			return
 
 		#Prevents a problem in the following lines:
@@ -103,8 +108,11 @@ class OutBox(serializable.Serializable):
 
 
 	def transmit(self, networkDispatcher):
-		for theList in self.lists.itervalues():
+		for interfaceID, theList in self.lists.iteritems():
 			theList.transmit(networkDispatcher)
+
+			if theList.closing and len(theList.messages) == 0:
+				self.close(interfaceID)
 
 
 	def processConfirmation(self, confirmation):
@@ -114,6 +122,19 @@ class OutBox(serializable.Serializable):
 			return #ignore
 
 		theList.processConfirmation(confirmation)
+
+		if theList.closing and len(theList.messages) == 0:
+			self.close(confirmation.localID)
+
+
+	def close(self, interfaceID):
+		if interfaceID not in self.lists.keys():
+			return #apparently, already closed
+		if len(self.lists[interfaceID].messages) != 0:
+			self.lists[interfaceID].closing = True #delayed close
+			return
+
+		del self.lists[interfaceID] #close now
 
 
 serializable.registerClass(OutBox)

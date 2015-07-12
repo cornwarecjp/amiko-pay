@@ -218,16 +218,18 @@ class Node(threading.Thread):
 		if not (self.__node.payerLink is None) and \
 			self.__node.payerLink.state in [payerlink.PayerLink.states.cancelled, payerlink.PayerLink.states.committed]:
 				#TODO: add payer to paylog
-				payeeLinkID = self.__node.payerLink.payeeLinkID
+				transactionID = self.__node.payerLink.transactionID
 				self.__node.payerLink = None
-				del self.__outBox.lists[payeeLinkID]
+				if transactionID in self.__node.transactions.keys():
+					del self.__node.transactions[transactionID]
+				self.__outBox.close(network.payerLocalID)
 				self.__timeoutMessages = \
 				[
 					msg
 					for msg in self.__timeoutMessages
 					if msg.message.__class__ != payerlink.Timeout
 				]
-				#TODO: remove from outbox
+				#TODO: close network socket
 
 
 	def handleMessage(self, msg):
