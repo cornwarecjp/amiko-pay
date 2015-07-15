@@ -1,5 +1,5 @@
 #    paylog.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2014-2015 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -43,25 +43,24 @@ class PayLog:
 
 	def __write(self, sign, p):
 		if p.state == p.states.committed:
-			self.__writeLogLine(sign*p.amount, p.receipt, p.state, p.ID, p.hash, p.token)
+			self.__writeLogLine(sign*p.amount, p.receipt, p.state, p.transactionID, p.token)
 		else:
 			#Don't write the token even if we know it:
 			#It might be abused by someone who as read access to the log file,
 			#to partially commit the transaction.
 			#TODO: analyze this scenario to see whether this precaution is necessary.
-			self.__writeLogLine(sign*p.amount, p.receipt, p.state, p.ID, p.hash, None)
+			self.__writeLogLine(sign*p.amount, p.receipt, p.state, p.transactionID, None)
 
 
-	def __writeLogLine(self, amount, receipt, status, ID, hash, token):
+	def __writeLogLine(self, amount, receipt, status, transactionID, token):
 		#TODO: add timestamp
 		line = ", ".join([
 			str(amount),
 			repr(receipt), #TODO: better dealing with special characters
 			status,
-			ID,
-			hash.encode("hex"),
+			transactionID.encode("hex"),
 			"" if token==None else token.encode("hex")
 			])
 		self.__file.write(line + '\n')
-
+		self.__file.flush()
 

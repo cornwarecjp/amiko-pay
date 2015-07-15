@@ -217,7 +217,7 @@ class Node(threading.Thread):
 		#Remove finished payer and related objects:
 		if not (self.__node.payerLink is None) and \
 			self.__node.payerLink.state in [payerlink.PayerLink.states.cancelled, payerlink.PayerLink.states.committed]:
-				#TODO: add payer to paylog
+				self.payLog.writePayer(self.__node.payerLink)
 				transactionID = self.__node.payerLink.transactionID
 				self.__node.payerLink = None
 				self.__outBox.close(network.payerLocalID)
@@ -234,7 +234,7 @@ class Node(threading.Thread):
 		for payeeID in payeeIDs:
 			payee = self.__node.payeeLinks[payeeID]
 			if payee.state in [payeelink.PayeeLink.states.cancelled, payeelink.PayeeLink.states.committed]:
-				#TODO: add payer to paylog
+				self.payLog.writePayee(payee)
 				transactionID = payee.transactionID
 				del self.__node.payeeLinks[payeeID]
 				self.__outBox.close(payeeID)
