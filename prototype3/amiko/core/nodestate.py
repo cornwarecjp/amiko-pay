@@ -82,13 +82,18 @@ serializable.registerClass(HavePayeeRoute)
 
 
 class Lock(serializable.Serializable):
-	serializableAttributes = {'transactionID': ''}
+	serializableAttributes = {'transactionID': ''} #TODO: add payload
 serializable.registerClass(Lock)
 
 
 class Commit(serializable.Serializable):
 	serializableAttributes = {'token': ''}
 serializable.registerClass(Commit)
+
+
+class SettleCommit(serializable.Serializable):
+	serializableAttributes = {'transactionID': ''} #TODO: add payload
+serializable.registerClass(SettleCommit)
 
 
 class TimeoutMessage(serializable.Serializable):
@@ -116,6 +121,7 @@ class NodeState(serializable.Serializable):
 		MakeRoute      : self.msg_makeRoute,
 		Lock           : self.msg_lock,
 		Commit         : self.msg_commit,
+		SettleCommit   : self.msg_settleCommit,
 
 		HavePayerRoute : self.msg_passToAnyone,
 		HavePayeeRoute : self.msg_passToAnyone,
@@ -216,7 +222,7 @@ class NodeState(serializable.Serializable):
 		payee = self.__getLinkObject(tx.payeeID)
 
 		ret = payer.lockIncoming(msg)
-		ret += payee.lockOutgoing(msg)
+		ret += payee.lockOutgoing(msg, tx.payeeID)
 
 		return ret
 
@@ -229,6 +235,21 @@ class NodeState(serializable.Serializable):
 
 		ret = payee.commitIncoming(msg)
 		ret += payer.commitOutgoing(msg)
+		ret += payee.settleCommitOutgoing(SettleCommit(transactionID=transactionID))
+
+		return ret
+
+
+	def msg_settleCommit(self, msg):
+		transactionID = msg.transactionID
+		tx = self.transactions[transactionID]
+		payer = self.__getLinkObject(tx.payerID)
+		payee = self.__getLinkObject(tx.payeeID)
+
+		ret = []
+		if not (payer is None): #Payment is committed, so payer object may already be deleted
+			ret += payer.settleCommitIncoming(msg)
+		ret += payee.settleCommitOutgoing(msg)
 
 		return ret
 

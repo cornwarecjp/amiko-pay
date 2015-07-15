@@ -220,8 +220,8 @@ class Node(threading.Thread):
 				#TODO: add payer to paylog
 				transactionID = self.__node.payerLink.transactionID
 				self.__node.payerLink = None
-				if transactionID in self.__node.transactions.keys():
-					del self.__node.transactions[transactionID]
+				#if transactionID in self.__node.transactions.keys():
+				#	del self.__node.transactions[transactionID]
 				self.__outBox.close(network.payerLocalID)
 				self.__timeoutMessages = \
 				[
@@ -255,6 +255,7 @@ class Node(threading.Thread):
 					nodestate.HavePayeeRoute,
 					nodestate.Lock,
 					nodestate.Commit,
+					nodestate.SettleCommit,
 					payeelink.Pay,
 					payeelink.Confirm,
 					payeelink.Cancel,

@@ -255,5 +255,9 @@ class PayerLink(serializable.Serializable):
 		return []
 
 
+	def settleCommitIncoming(self, msg):
+		return [] #Nothing to do on the payer side
+
+
 serializable.registerClass(PayerLink)
 
