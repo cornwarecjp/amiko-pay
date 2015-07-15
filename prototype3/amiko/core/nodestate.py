@@ -263,6 +263,9 @@ class NodeState(serializable.Serializable):
 		except LinkNotFound:
 			pass #Payment is committed, so payee object may already be deleted
 
+		#Clean up no-longer-needed transaction:
+		del self.transactions[transactionID]
+
 		return ret
 
 
