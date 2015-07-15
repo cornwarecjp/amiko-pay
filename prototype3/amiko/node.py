@@ -220,9 +220,6 @@ class Node(threading.Thread):
 				#TODO: add payer to paylog
 				transactionID = self.__node.payerLink.transactionID
 				self.__node.payerLink = None
-				#TODO: transactions
-				#if transactionID in self.__node.transactions.keys():
-				#	del self.__node.transactions[transactionID]
 				self.__outBox.close(network.payerLocalID)
 				self.__timeoutMessages = \
 				[
@@ -240,7 +237,6 @@ class Node(threading.Thread):
 				#TODO: add payer to paylog
 				transactionID = payee.transactionID
 				del self.__node.payeeLinks[payeeID]
-				#TODO: transactions
 				self.__outBox.close(payeeID)
 				#TODO: close network socket
 
@@ -413,11 +409,11 @@ class Node(threading.Thread):
 		self.__confirmPayment(payerAgrees) #implemented in Node thread
 		payer = self.__node.payerLink
 
-		payer.waitForFinished() #Must be done in this thread
-		#TODO:
-		#self.payLog.writePayer(payer)
+		if payerAgrees:
+			payer.waitForFinished() #Must be done in this thread
+			return payer.state
 
-		return payer.state
+		return "cancelled by payer"
 
 
 	@runInNodeThread
