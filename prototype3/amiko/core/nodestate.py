@@ -42,6 +42,11 @@ import serializable
 
 
 
+class LinkNotFound(Exception):
+	pass
+
+
+
 class PaymentRequest(serializable.Serializable):
 	serializableAttributes = {'amount':0, 'receipt':''}
 serializable.registerClass(PaymentRequest)
@@ -243,13 +248,20 @@ class NodeState(serializable.Serializable):
 	def msg_settleCommit(self, msg):
 		transactionID = msg.transactionID
 		tx = self.transactions[transactionID]
-		payer = self.__getLinkObject(tx.payerID)
-		payee = self.__getLinkObject(tx.payeeID)
 
 		ret = []
-		if not (payer is None): #Payment is committed, so payer object may already be deleted
+
+		try:
+			payer = self.__getLinkObject(tx.payerID)
 			ret += payer.settleCommitIncoming(msg)
-		ret += payee.settleCommitOutgoing(msg)
+		except LinkNotFound:
+			pass #Payment is committed, so payer object may already be deleted
+
+		try:
+			payee = self.__getLinkObject(tx.payeeID)
+			ret += payee.settleCommitOutgoing(msg)
+		except LinkNotFound:
+			pass #Payment is committed, so payee object may already be deleted
 
 		return ret
 
@@ -259,14 +271,14 @@ class NodeState(serializable.Serializable):
 
 
 	def __getLinkObject(self, linkID):
-		if linkID == network.payerLocalID:
+		if linkID == network.payerLocalID and not (self.payerLink is None):
 			return self.payerLink
 		elif linkID in self.payeeLinks.keys():
 			return self.payeeLinks[linkID]
 		elif linkID in self.links.keys():
 			return self.links[linkID]
 
-		raise Exception("Link ID %s not found" % repr(linkID))
+		raise LinkNotFound("Link ID %s not found" % repr(linkID))
 
 
 	def msg_passToPayee(self, msg):

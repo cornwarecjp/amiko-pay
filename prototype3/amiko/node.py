@@ -220,6 +220,7 @@ class Node(threading.Thread):
 				#TODO: add payer to paylog
 				transactionID = self.__node.payerLink.transactionID
 				self.__node.payerLink = None
+				#TODO: transactions
 				#if transactionID in self.__node.transactions.keys():
 				#	del self.__node.transactions[transactionID]
 				self.__outBox.close(network.payerLocalID)
@@ -229,6 +230,18 @@ class Node(threading.Thread):
 					for msg in self.__timeoutMessages
 					if msg.message.__class__ != payerlink.Timeout
 				]
+				#TODO: close network socket
+
+		#Remove finished payee and related objects:
+		payeeIDs = self.__node.payeeLinks.keys()
+		for payeeID in payeeIDs:
+			payee = self.__node.payeeLinks[payeeID]
+			if payee.state in [payeelink.PayeeLink.states.cancelled, payeelink.PayeeLink.states.committed]:
+				#TODO: add payer to paylog
+				transactionID = payee.transactionID
+				del self.__node.payeeLinks[payeeID]
+				#TODO: transactions
+				self.__outBox.close(payeeID)
 				#TODO: close network socket
 
 
