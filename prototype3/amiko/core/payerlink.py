@@ -28,6 +28,7 @@
 
 import threading
 import copy
+import time
 
 from ..utils import utils
 
@@ -135,6 +136,9 @@ class PayerLink(serializable.Serializable):
 			#Receipt time-out
 			self.state = self.states.cancelled
 			self.__receiptReceived.set()
+		elif self.state == self.states.receivedCommit and msg.state == self.states.receivedCommit:
+			#settleCommit time-out: assume settled anyway, since we've received the commit token
+			self.settleCommitIncoming(nodestate.SettleCommit(transactionID=self.transactionID))
 
 		return []
 
@@ -248,10 +252,14 @@ class PayerLink(serializable.Serializable):
 					self.state
 				)
 		self.state = self.states.receivedCommit
+		self.token = msg.token #TODO: maybe check?
 
-		#TODO: time-out for settleCommit -> go to committed state and
-		# close the connection to payee
-		return []
+		return \
+		[
+		nodestate.TimeoutMessage(timestamp=time.time()+5.0, message=\
+			self.getTimeoutMessage()  #Add time-out to go to commit
+		)
+		]
 
 
 	def settleCommitIncoming(self, msg):
