@@ -46,6 +46,12 @@ class Test(unittest.TestCase):
 		serializable.registerClass(C)
 
 
+	def test_registerClassNameCollision(self):
+		"Test registerClass name collision"
+
+		self.assertRaises(Exception, serializable.registerClass, C)
+
+
 	def test_registerAddress(self):
 		"Test registerAddress"
 
