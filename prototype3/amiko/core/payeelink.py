@@ -100,7 +100,7 @@ class PayeeLink(serializable.Serializable):
 				amount=self.amount,
 				receipt=self.receipt,
 				transactionID=self.transactionID,
-				meetingPoints=[]
+				meetingPoints=[] #TODO
 			))]
 
 

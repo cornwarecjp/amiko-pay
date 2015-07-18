@@ -33,6 +33,8 @@ import testenvironment
 
 from amiko.utils.crypto import RIPEMD160, SHA256
 
+from amiko.core import network, payerlink
+
 from amiko.core import payeelink
 
 
@@ -46,9 +48,33 @@ class Test(unittest.TestCase):
 		"Test default attributes"
 
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.initial)
+		self.assertEqual(self.payeeLink.amount, 0)
 		self.assertEqual(self.payeeLink.receipt, None)
 		self.assertEqual(self.payeeLink.token, "foo")
 		self.assertEqual(self.payeeLink.transactionID, RIPEMD160(SHA256("foo")))
+		self.assertEqual(self.payeeLink.meetingPointID, "")
+
+
+	def test_msg_pay(self):
+		"Test msg_pay"
+
+		ret = self.payeeLink.handleMessage(payeelink.Pay(ID="foobar"))
+		self.assertEqual(len(ret), 1)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, network.OutboundMessage))
+		self.assertEqual(msg.localID, "foobar")
+		msg = msg.message
+		self.assertTrue(isinstance(msg, payerlink.Receipt))
+		self.assertEqual(msg.amount, self.payeeLink.amount)
+		self.assertEqual(msg.receipt, self.payeeLink.receipt)
+		self.assertEqual(msg.transactionID, self.payeeLink.transactionID)
+		self.assertEqual(msg.meetingPoints, []) #TODO
+
+		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.initial)
+
+		self.payeeLink.state = payeelink.PayeeLink.states.confirmed
+		self.assertRaises(Exception,
+			self.payeeLink.handleMessage, payeelink.Pay(ID="foobar"))
 
 
 
