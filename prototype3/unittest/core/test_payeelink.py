@@ -83,6 +83,9 @@ class Test(unittest.TestCase):
 
 		ret = self.payeeLink.handleMessage(payeelink.Confirm(ID="foobar", meetingPointID="MPID"))
 
+		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.confirmed)
+		self.assertEqual(self.payeeLink.meetingPointID, "MPID")
+
 		self.assertEqual(len(ret), 1)
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, nodestate.MakeRoute))
@@ -94,11 +97,21 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.payerID, None)
 		self.assertEqual(msg.payeeID, "foobar")
 
-		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.confirmed)
-		self.assertEqual(self.payeeLink.meetingPointID, "MPID")
-
 		self.assertRaises(Exception, self.payeeLink.handleMessage,
 			payeelink.Confirm(ID="foobar", meetingPointID="MPID"))
+
+
+	def test_msg_cancel(self):
+		"Test msg_cancel"
+
+		ret = self.payeeLink.handleMessage(payeelink.Cancel(ID="foobar"))
+
+		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.cancelled)
+
+		self.assertEqual(len(ret), 0)
+
+		self.assertRaises(Exception, self.payeeLink.handleMessage,
+			payeelink.Cancel(ID="foobar"))
 
 
 
