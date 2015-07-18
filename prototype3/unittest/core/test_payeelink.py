@@ -114,6 +114,22 @@ class Test(unittest.TestCase):
 			payeelink.Cancel(ID="foobar"))
 
 
+	def test_msg_havePayeeRoute(self):
+		"Test msg_havePayeeRoute"
+
+		ret = self.payeeLink.handleMessage(
+			nodestate.HavePayeeRoute(ID="foobar", transactionID="bar"))
+
+		self.assertEqual(len(ret), 1)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, network.OutboundMessage))
+		self.assertEqual(msg.localID, "foobar")
+		msg = msg.message
+		self.assertTrue(isinstance(msg, nodestate.HavePayeeRoute))
+		self.assertEqual(msg.ID, "__payer__")
+		self.assertEqual(msg.transactionID, None)
+
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
