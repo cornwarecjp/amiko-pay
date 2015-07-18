@@ -33,7 +33,7 @@ import testenvironment
 
 from amiko.utils.crypto import RIPEMD160, SHA256
 
-from amiko.core import network, payerlink
+from amiko.core import network, nodestate, payerlink
 
 from amiko.core import payeelink
 
@@ -59,6 +59,9 @@ class Test(unittest.TestCase):
 		"Test msg_pay"
 
 		ret = self.payeeLink.handleMessage(payeelink.Pay(ID="foobar"))
+
+		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.initial)
+
 		self.assertEqual(len(ret), 1)
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, network.OutboundMessage))
@@ -68,13 +71,34 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.amount, self.payeeLink.amount)
 		self.assertEqual(msg.receipt, self.payeeLink.receipt)
 		self.assertEqual(msg.transactionID, self.payeeLink.transactionID)
-		self.assertEqual(msg.meetingPoints, []) #TODO
-
-		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.initial)
+		#self.assertEqual(msg.meetingPoints, []) #TODO
 
 		self.payeeLink.state = payeelink.PayeeLink.states.confirmed
 		self.assertRaises(Exception,
 			self.payeeLink.handleMessage, payeelink.Pay(ID="foobar"))
+
+
+	def test_msg_confirm(self):
+		"Test msg_confirm"
+
+		ret = self.payeeLink.handleMessage(payeelink.Confirm(ID="foobar", meetingPointID="MPID"))
+
+		self.assertEqual(len(ret), 1)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, nodestate.MakeRoute))
+		self.assertEqual(msg.amount, self.payeeLink.amount)
+		self.assertEqual(msg.transactionID, self.payeeLink.transactionID)
+		#self.assertEqual(msg.startTime, None) #TODO
+		#self.assertEqual(msg.endTime, None) #TODO
+		self.assertEqual(msg.meetingPointID, "MPID")
+		self.assertEqual(msg.payerID, None)
+		self.assertEqual(msg.payeeID, "foobar")
+
+		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.confirmed)
+		self.assertEqual(self.payeeLink.meetingPointID, "MPID")
+
+		self.assertRaises(Exception, self.payeeLink.handleMessage,
+			payeelink.Confirm(ID="foobar", meetingPointID="MPID"))
 
 
 
