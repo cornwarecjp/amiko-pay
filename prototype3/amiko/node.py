@@ -205,7 +205,7 @@ class Node(threading.Thread):
 
 		self.__timeoutMessages.append(msg)
 		self.__timeoutMessages.sort(
-			cmp = lambda a, b: a.timestamp - b.timestamp
+			cmp = lambda a, b: int(a.timestamp - b.timestamp)
 			)
 
 
