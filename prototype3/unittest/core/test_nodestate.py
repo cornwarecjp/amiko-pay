@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    test_node.py
+#    test_nodestate.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -33,34 +33,34 @@ import testenvironment
 
 from amiko.utils.crypto import RIPEMD160, SHA256
 
-from amiko.core import node
+from amiko.core import nodestate
 from amiko.core import payeelink, transaction
 
 
 
 class Test(unittest.TestCase):
 	def setUp(self):
-		self.node = node.Node(token="foo")
+		self.nodeState = nodestate.NodeState(token="foo")
 
 
 	def test_defaultAttributes(self):
 		"Test default attributes"
 
-		self.assertEqual(self.node.links, {})
-		self.assertEqual(self.node.payeeLinks, {})
-		self.assertEqual(self.node.meetingPoints, {})
-		self.assertEqual(self.node.transactions, {})
+		self.assertEqual(self.nodeState.links, {})
+		self.assertEqual(self.nodeState.payeeLinks, {})
+		self.assertEqual(self.nodeState.meetingPoints, {})
+		self.assertEqual(self.nodeState.transactions, {})
 
 
 	def test_msg_request(self):
 		"Test msg_request"
-		request = node.Node_PaymentRequest(amount=1234, receipt="foobar")
+		request = nodestate.PaymentRequest(amount=1234, receipt="foobar")
 
-		ret = self.node.handleMessage(request)
+		ret = self.nodeState.handleMessage(request)
 
-		self.assertEqual(len(self.node.payeeLinks), 1)
-		linkID = self.node.payeeLinks.keys()[0]
-		newLink = self.node.payeeLinks[linkID]
+		self.assertEqual(len(self.nodeState.payeeLinks), 1)
+		linkID = self.nodeState.payeeLinks.keys()[0]
+		newLink = self.nodeState.payeeLinks[linkID]
 		self.assertEqual(newLink.__class__, payeelink.PayeeLink)
 		self.assertEqual(newLink.receipt, "foobar")
 		txID = newLink.transactionID
