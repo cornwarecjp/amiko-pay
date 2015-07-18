@@ -162,7 +162,7 @@ class PayeeLink(serializable.Serializable):
 		[
 		nodestate.Commit(token=self.token),
 		network.OutboundMessage(localID = payeeID, message = \
-			nodestate.SettleCommit(transactionID=self.transactionID)
+			nodestate.SettleCommit(token=self.token)
 			)
 		]
 

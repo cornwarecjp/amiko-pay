@@ -97,7 +97,7 @@ serializable.registerClass(Commit)
 
 
 class SettleCommit(serializable.Serializable):
-	serializableAttributes = {'transactionID': ''} #TODO: add payload
+	serializableAttributes = {'token': ''} #TODO: add payload
 serializable.registerClass(SettleCommit)
 
 
@@ -240,13 +240,13 @@ class NodeState(serializable.Serializable):
 
 		ret = payee.commitIncoming(msg)
 		ret += payer.commitOutgoing(msg)
-		ret += payee.settleCommitOutgoing(SettleCommit(transactionID=transactionID))
+		ret += payee.settleCommitOutgoing(SettleCommit(token=msg.token))
 
 		return ret
 
 
 	def msg_settleCommit(self, msg):
-		transactionID = msg.transactionID
+		transactionID = settings.hashAlgorithm(msg.token)
 		tx = self.transactions[transactionID]
 
 		ret = []
