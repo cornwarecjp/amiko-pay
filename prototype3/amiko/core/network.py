@@ -64,6 +64,7 @@ class Connection(asyncore.dispatcher_with_send):
 		self.readBuffer = ''
 		self.callback = callback
 		self.localID = None
+		self.isClosed = False
 
 
 	def handle_read(self):
@@ -123,6 +124,10 @@ class Connection(asyncore.dispatcher_with_send):
 		self.send(serializable.serialize(container) + '\n')
 
 
+	def handle_close(self):
+		self.isClosed = True
+
+
 
 class EventDispatcher(asyncore.dispatcher):
 	def __init__(self, host, port, callback):
@@ -140,19 +145,28 @@ class EventDispatcher(asyncore.dispatcher):
 		pair = self.accept()
 		if pair is not None:
 			sock, addr = pair
-			print 'Incoming connection from %s' % repr(addr)
+			log.log('Incoming connection from %s' % repr(addr))
 			self.connections.append(Connection(sock, self.callback))
 
 
 	def sendOutboundMessage(self, index, msg):
-		localID = msg.localID
-		interfaces = [c for c in self.connections if c.localID == localID]
-		interfaces[0].sendMessage(index, msg.message)
+		self.getInterface(msg.localID).sendMessage(index, msg.message)
 
 
 	def interfaceExists(self, localID):
-		interfaces = [c for c in self.connections if c.localID == localID]
-		return len(interfaces) > 0
+		return not (self.getInterface(localID) is None)
+
+
+	def getInterface(self, localID):
+		for i in range(len(self.connections)):
+			if self.connections[i].localID == localID:
+				if self.connections[i].isClosed:
+					log.log('Connection %s was closed remotely' % localID)
+					del self.connections[i] #old reference -> remove it
+					return None
+				return self.connections[i]
+
+		return None
 
 
 	def makeConnection(self, address, callback):
@@ -162,4 +176,12 @@ class EventDispatcher(asyncore.dispatcher):
 		self.connections.append(connection)
 		return connection
 
+
+	def closeInterface(self, localID):
+		for i in range(len(self.connections)):
+			if self.connections[i].localID == localID:
+				log.log('Closing connection %s' % localID)
+				self.connections[i].close()
+				del self.connections[i]
+				break
 

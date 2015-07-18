@@ -97,6 +97,12 @@ class OutBox(serializable.Serializable):
 	serializableAttributes = {'lists':{}}
 
 
+	def __init__(self, **kwargs):
+		serializable.Serializable.__init__(self, **kwargs)
+
+		self.toBeClosedInterfaces = []
+
+
 	def addMessage(self, msg):
 		try:
 			theList = self.lists[msg.localID]
@@ -108,7 +114,10 @@ class OutBox(serializable.Serializable):
 
 
 	def transmit(self, networkDispatcher):
-		for interfaceID, theList in self.lists.iteritems():
+		#Note: don't iterate over the self.lists directly, since it can change
+		#inside the loop.
+		for interfaceID in self.lists.keys():
+			theList = self.lists[interfaceID]
 			theList.transmit(networkDispatcher)
 
 			if theList.closing and len(theList.messages) == 0:
@@ -135,6 +144,7 @@ class OutBox(serializable.Serializable):
 			return
 
 		del self.lists[interfaceID] #close now
+		self.toBeClosedInterfaces.append(interfaceID)
 
 
 serializable.registerClass(OutBox)

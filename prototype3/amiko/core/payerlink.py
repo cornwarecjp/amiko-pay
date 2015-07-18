@@ -61,7 +61,7 @@ class PayerLink(serializable.Serializable):
 	states = utils.Enum([
 		"initial", "hasReceipt", "confirmed",
 		"hasPayerRoute", "hasPayeeRoute",
-		"locked", "cancelled", "committed"
+		"locked", "cancelled", "receivedCommit", "committed"
 		])
 
 	serializableAttributes = \
@@ -247,16 +247,21 @@ class PayerLink(serializable.Serializable):
 				"commitOutgoing should not be called in state %s" % \
 					self.state
 				)
-		self.state = self.states.committed
+		self.state = self.states.receivedCommit
 
-		log.log("Payer: committed")
-		self.__finished.set()
-
+		#TODO: time-out for settleCommit -> go to committed state and
+		# close the connection to payee
 		return []
 
 
 	def settleCommitIncoming(self, msg):
-		return [] #Nothing to do on the payer side
+		#TODO: receive token, and check it!
+
+		log.log("Payer: received settleCommit -> committed")
+		self.state = self.states.committed
+		self.__finished.set()
+
+		return []
 
 
 serializable.registerClass(PayerLink)

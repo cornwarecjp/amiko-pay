@@ -217,7 +217,8 @@ class Node(threading.Thread):
 		#Remove finished payer and related objects:
 		if not (self.__node.payerLink is None) and \
 			self.__node.payerLink.state in [payerlink.PayerLink.states.cancelled, payerlink.PayerLink.states.committed]:
-				self.payLog.writePayer(self.__node.payerLink)
+				if not (self.__node.payerLink.amount is None):
+					self.payLog.writePayer(self.__node.payerLink)
 				transactionID = self.__node.payerLink.transactionID
 				self.__node.payerLink = None
 				self.__outBox.close(network.payerLocalID)
@@ -227,7 +228,6 @@ class Node(threading.Thread):
 					for msg in self.__timeoutMessages
 					if msg.message.__class__ != payerlink.Timeout
 				]
-				#TODO: close network socket
 
 		#Remove finished payee and related objects:
 		payeeIDs = self.__node.payeeLinks.keys()
@@ -238,7 +238,6 @@ class Node(threading.Thread):
 				transactionID = payee.transactionID
 				del self.__node.payeeLinks[payeeID]
 				self.__outBox.close(payeeID)
-				#TODO: close network socket
 
 
 	def handleMessage(self, msg):
@@ -512,6 +511,11 @@ class Node(threading.Thread):
 
 			#New attempt to send the outbox:
 			self.__outBox.transmit(self.networkEventDispatcher)
+
+			#Close interfaces whenever requested:
+			for ID in self.__outBox.toBeClosedInterfaces:
+				self.networkEventDispatcher.closeInterface(ID)
+			self.__outBox.toBeClosedInterfaces = []
 
 			if self.__stop:
 				#TODO: stop creation of new transactions
