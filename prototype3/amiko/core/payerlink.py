@@ -138,7 +138,9 @@ class PayerLink(serializable.Serializable):
 			self.__receiptReceived.set()
 		elif self.state == self.states.receivedCommit and msg.state == self.states.receivedCommit:
 			#settleCommit time-out: assume settled anyway, since we've received the commit token
-			self.settleCommitIncoming(nodestate.SettleCommit(transactionID=self.transactionID))
+			log.log("Payer: settleCommit time-out -> committed")
+			self.state = self.states.committed
+			self.__finished.set()
 
 		return []
 
@@ -256,7 +258,7 @@ class PayerLink(serializable.Serializable):
 
 		return \
 		[
-		nodestate.TimeoutMessage(timestamp=time.time()+5.0, message=\
+		nodestate.TimeoutMessage(timestamp=time.time()+1.0, message=\
 			self.getTimeoutMessage()  #Add time-out to go to commit
 		)
 		]
