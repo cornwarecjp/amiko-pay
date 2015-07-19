@@ -151,6 +151,26 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.token, self.payeeLink.token)
 
 
+	def test_commitIncoming(self):
+		"Test commitIncoming"
+
+		ret = self.payeeLink.commitIncoming(
+			messages.Commit(token=self.payeeLink.token))
+
+		self.assertEqual(len(ret), 0)
+
+
+	def test_settleCommitOutgoing(self):
+		"Test settleCommitOutgoing"
+
+		ret = self.payeeLink.settleCommitOutgoing(
+			messages.SettleCommit(token=self.payeeLink.token))
+
+		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.committed)
+
+		self.assertEqual(len(ret), 0)
+
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
