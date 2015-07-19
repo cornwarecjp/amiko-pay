@@ -33,7 +33,7 @@ import testenvironment
 
 from amiko.utils.crypto import RIPEMD160, SHA256
 
-from amiko.core import network, nodestate, payerlink
+from amiko.core import messages
 
 from amiko.core import payeelink
 
@@ -58,16 +58,16 @@ class Test(unittest.TestCase):
 	def test_msg_pay(self):
 		"Test msg_pay"
 
-		ret = self.payeeLink.handleMessage(payeelink.Pay(ID="foobar"))
+		ret = self.payeeLink.handleMessage(messages.Pay(ID="foobar"))
 
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.initial)
 
 		self.assertEqual(len(ret), 1)
 		msg = ret[0]
-		self.assertTrue(isinstance(msg, network.OutboundMessage))
+		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, "foobar")
 		msg = msg.message
-		self.assertTrue(isinstance(msg, payerlink.Receipt))
+		self.assertTrue(isinstance(msg, messages.Receipt))
 		self.assertEqual(msg.amount, self.payeeLink.amount)
 		self.assertEqual(msg.receipt, self.payeeLink.receipt)
 		self.assertEqual(msg.transactionID, self.payeeLink.transactionID)
@@ -75,20 +75,20 @@ class Test(unittest.TestCase):
 
 		self.payeeLink.state = payeelink.PayeeLink.states.confirmed
 		self.assertRaises(Exception,
-			self.payeeLink.handleMessage, payeelink.Pay(ID="foobar"))
+			self.payeeLink.handleMessage, messages.Pay(ID="foobar"))
 
 
 	def test_msg_confirm(self):
 		"Test msg_confirm"
 
-		ret = self.payeeLink.handleMessage(payeelink.Confirm(ID="foobar", meetingPointID="MPID"))
+		ret = self.payeeLink.handleMessage(messages.Confirm(ID="foobar", meetingPointID="MPID"))
 
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.confirmed)
 		self.assertEqual(self.payeeLink.meetingPointID, "MPID")
 
 		self.assertEqual(len(ret), 1)
 		msg = ret[0]
-		self.assertTrue(isinstance(msg, nodestate.MakeRoute))
+		self.assertTrue(isinstance(msg, messages.MakeRoute))
 		self.assertEqual(msg.amount, self.payeeLink.amount)
 		self.assertEqual(msg.transactionID, self.payeeLink.transactionID)
 		#self.assertEqual(msg.startTime, None) #TODO
@@ -98,34 +98,34 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.payeeID, "foobar")
 
 		self.assertRaises(Exception, self.payeeLink.handleMessage,
-			payeelink.Confirm(ID="foobar", meetingPointID="MPID"))
+			messages.Confirm(ID="foobar", meetingPointID="MPID"))
 
 
 	def test_msg_cancel(self):
 		"Test msg_cancel"
 
-		ret = self.payeeLink.handleMessage(payeelink.Cancel(ID="foobar"))
+		ret = self.payeeLink.handleMessage(messages.Cancel(ID="foobar"))
 
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.cancelled)
 
 		self.assertEqual(len(ret), 0)
 
 		self.assertRaises(Exception, self.payeeLink.handleMessage,
-			payeelink.Cancel(ID="foobar"))
+			messages.Cancel(ID="foobar"))
 
 
 	def test_msg_havePayeeRoute(self):
 		"Test msg_havePayeeRoute"
 
 		ret = self.payeeLink.handleMessage(
-			nodestate.HavePayeeRoute(ID="foobar", transactionID="bar"))
+			messages.HavePayeeRoute(ID="foobar", transactionID="bar"))
 
 		self.assertEqual(len(ret), 1)
 		msg = ret[0]
-		self.assertTrue(isinstance(msg, network.OutboundMessage))
+		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, "foobar")
 		msg = msg.message
-		self.assertTrue(isinstance(msg, nodestate.HavePayeeRoute))
+		self.assertTrue(isinstance(msg, messages.HavePayeeRoute))
 		self.assertEqual(msg.ID, "__payer__")
 		self.assertEqual(msg.transactionID, None)
 

@@ -34,7 +34,7 @@ import testenvironment
 from amiko.utils.crypto import RIPEMD160, SHA256
 
 from amiko.core import nodestate
-from amiko.core import payeelink, transaction
+from amiko.core import payeelink, transaction, messages
 
 
 
@@ -54,7 +54,7 @@ class Test(unittest.TestCase):
 
 	def test_msg_request(self):
 		"Test msg_request"
-		request = nodestate.PaymentRequest(amount=1234, receipt="foobar")
+		request = messages.PaymentRequest(amount=1234, receipt="foobar")
 
 		ret = self.nodeState.handleMessage(request)
 

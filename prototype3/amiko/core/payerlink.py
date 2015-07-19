@@ -32,29 +32,10 @@ import time
 
 from ..utils import utils
 
-import network
-import payeelink
-import nodestate
+import messages
 import log
 
 import serializable
-
-
-
-class Timeout(serializable.Serializable):
-	serializableAttributes = {'state':''}
-serializable.registerClass(Timeout)
-
-
-
-class Receipt(serializable.Serializable):
-	serializableAttributes = {'amount':0, 'receipt':'', 'transactionID':'', 'meetingPoints':[]}
-serializable.registerClass(Receipt)
-
-
-class PayerLink_Confirm(serializable.Serializable):
-	serializableAttributes = {'agreement':False}
-serializable.registerClass(PayerLink_Confirm)
 
 
 
@@ -108,7 +89,7 @@ class PayerLink(serializable.Serializable):
 
 
 	def getTimeoutMessage(self):
-		return Timeout(state=self.state)
+		return messages.Timeout(state=self.state)
 
 
 	def waitForReceipt(self):
@@ -123,11 +104,11 @@ class PayerLink(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		Timeout                 : self.msg_timeout,
-		Receipt                 : self.msg_receipt,
-		PayerLink_Confirm       : self.msg_confirm,
-		nodestate.HavePayerRoute: self.msg_havePayerRoute,
-		nodestate.HavePayeeRoute: self.msg_havePayeeRoute
+		messages.Timeout          : self.msg_timeout,
+		messages.Receipt          : self.msg_receipt,
+		messages.PayerLink_Confirm: self.msg_confirm,
+		messages.HavePayerRoute   : self.msg_havePayerRoute,
+		messages.HavePayeeRoute   : self.msg_havePayeeRoute
 		}[msg.__class__](msg)
 
 
@@ -174,16 +155,16 @@ class PayerLink(serializable.Serializable):
 
 			ret = \
 			[
-			network.OutboundMessage(localID = network.payerLocalID, message = \
-				payeelink.Confirm(ID=self.payeeLinkID, meetingPointID=self.meetingPointID)
+			messages.OutboundMessage(localID = messages.payerLocalID, message = \
+				messages.Confirm(ID=self.payeeLinkID, meetingPointID=self.meetingPointID)
 			),
-			nodestate.MakeRoute( #This will start the transaction routing
+			messages.MakeRoute( #This will start the transaction routing
 				amount=self.amount,
 				transactionID=self.transactionID,
 				startTime=None, #Will be received from the payee side
 				endTime=None, #Will be received from the payee side
 				meetingPointID=self.meetingPointID,
-				payerID=network.payerLocalID,
+				payerID=messages.payerLocalID,
 				payeeID=None
 				)
 			]
@@ -195,8 +176,8 @@ class PayerLink(serializable.Serializable):
 
 			ret = \
 			[
-			network.OutboundMessage(localID = network.payerLocalID, message = \
-				payeelink.Cancel(ID=self.payeeLinkID)
+			messages.OutboundMessage(localID = messages.payerLocalID, message = \
+				messages.Cancel(ID=self.payeeLinkID)
 			)
 			]
 
@@ -217,7 +198,7 @@ class PayerLink(serializable.Serializable):
 		#If both routes are present, start locking
 		if self.state == self.states.locked:
 			ret.append(
-				nodestate.Lock(transactionID=self.transactionID, payload=[])
+				messages.Lock(transactionID=self.transactionID, payload=[])
 				)
 
 		return ret
@@ -237,7 +218,7 @@ class PayerLink(serializable.Serializable):
 		#If both routes are present, start locking
 		if self.state == self.states.locked:
 			ret.append(
-				nodestate.Lock(transactionID=self.transactionID, payload=[])
+				messages.Lock(transactionID=self.transactionID, payload=[])
 				)
 
 		return ret
@@ -258,7 +239,7 @@ class PayerLink(serializable.Serializable):
 
 		return \
 		[
-		nodestate.TimeoutMessage(timestamp=time.time()+1.0, message=\
+		messages.TimeoutMessage(timestamp=time.time()+1.0, message=\
 			self.getTimeoutMessage()  #Add time-out to go to commit
 		)
 		]

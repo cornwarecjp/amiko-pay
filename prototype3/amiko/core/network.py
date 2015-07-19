@@ -30,31 +30,8 @@ import asyncore
 import socket
 
 import serializable
+import messages
 import log
-
-
-#Note: local link IDs and payee IDs should never be made equal to this!
-#TODO: enforce the above rule
-payerLocalID = "__payer__"
-
-
-class Connect(serializable.Serializable):
-	"""
-	This is a base class for messages that indicate a connection ID
-	(Link and Pay).
-	"""
-	serializableAttributes = {'ID':''}
-
-
-
-class OutboundMessage(serializable.Serializable):
-	serializableAttributes = {'localID': '', 'message': None}
-serializable.registerClass(OutboundMessage)
-
-
-class Confirmation(serializable.Serializable):
-	serializableAttributes = {'localID': '', 'index':0}
-serializable.registerClass(Confirmation)
 
 
 
@@ -92,7 +69,7 @@ class Connection(asyncore.dispatcher_with_send):
 				#Process received confirmation:
 				index = container['received']
 				self.callback.handleMessage(
-					Confirmation(localID=self.localID, index=index)
+					messages.Confirmation(localID=self.localID, index=index)
 					)
 			elif 'message' in container.keys():
 				index = container['index']
@@ -103,7 +80,7 @@ class Connection(asyncore.dispatcher_with_send):
 				confirmation = {'received': index}
 				self.send(serializable.serialize(confirmation) + '\n')
 
-				if isinstance(msg, Connect):
+				if isinstance(msg, messages.Connect):
 					if not (self.localID is None):
 						raise Exception("Received connect message while already connected")
 					self.localID = msg.ID

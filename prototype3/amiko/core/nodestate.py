@@ -30,7 +30,6 @@ import randomsource
 
 import time
 
-import network
 import settings
 import link
 import payeelink
@@ -38,72 +37,13 @@ import payerlink
 import meetingpoint
 import transaction
 
+import messages
 import serializable
 
 
 
 class LinkNotFound(Exception):
 	pass
-
-
-
-class PaymentRequest(serializable.Serializable):
-	serializableAttributes = {'amount':0, 'receipt':''}
-serializable.registerClass(PaymentRequest)
-
-
-class MakePayer(serializable.Serializable):
-	serializableAttributes = {'payeeLinkID': ''}
-serializable.registerClass(MakePayer)
-
-
-class ReturnValue(serializable.Serializable):
-	serializableAttributes = {'value':''}
-serializable.registerClass(ReturnValue)
-
-
-class MakeRoute(serializable.Serializable):
-	serializableAttributes = \
-	{
-		'amount': 0,
-		'transactionID': '',
-		'startTime': None,
-		'endTime': None,
-		'meetingPointID': '',
-		'payerID':None,
-		'payeeID':None
-	}
-serializable.registerClass(MakeRoute)
-
-
-class HavePayerRoute(serializable.Serializable):
-	serializableAttributes = {'ID': '', 'transactionID': ''}
-serializable.registerClass(HavePayerRoute)
-
-
-class HavePayeeRoute(serializable.Serializable):
-	serializableAttributes = {'ID': '', 'transactionID': ''}
-serializable.registerClass(HavePayeeRoute)
-
-
-class Lock(serializable.Serializable):
-	serializableAttributes = {'transactionID': ''} #TODO: add payload
-serializable.registerClass(Lock)
-
-
-class Commit(serializable.Serializable):
-	serializableAttributes = {'token': ''}
-serializable.registerClass(Commit)
-
-
-class SettleCommit(serializable.Serializable):
-	serializableAttributes = {'token': ''} #TODO: add payload
-serializable.registerClass(SettleCommit)
-
-
-class TimeoutMessage(serializable.Serializable):
-	serializableAttributes = {'timestamp': 0.0, 'message': None}
-serializable.registerClass(TimeoutMessage)
 
 
 
@@ -121,23 +61,23 @@ class NodeState(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		PaymentRequest : self.msg_request,
-		MakePayer      : self.msg_makePayer,
-		MakeRoute      : self.msg_makeRoute,
-		Lock           : self.msg_lock,
-		Commit         : self.msg_commit,
-		SettleCommit   : self.msg_settleCommit,
+		messages.PaymentRequest : self.msg_request,
+		messages.MakePayer      : self.msg_makePayer,
+		messages.MakeRoute      : self.msg_makeRoute,
+		messages.Lock           : self.msg_lock,
+		messages.Commit         : self.msg_commit,
+		messages.SettleCommit   : self.msg_settleCommit,
 
-		HavePayerRoute : self.msg_passToAnyone,
-		HavePayeeRoute : self.msg_passToAnyone,
+		messages.HavePayerRoute : self.msg_passToAnyone,
+		messages.HavePayeeRoute : self.msg_passToAnyone,
 
-		payeelink.Pay    : self.msg_passToPayee,
-		payeelink.Confirm: self.msg_passToPayee,
-		payeelink.Cancel : self.msg_passToPayee,
+		messages.Pay    : self.msg_passToPayee,
+		messages.Confirm: self.msg_passToPayee,
+		messages.Cancel : self.msg_passToPayee,
 
-		payerlink.Timeout          : self.msg_passToPayer,
-		payerlink.Receipt          : self.msg_passToPayer,
-		payerlink.PayerLink_Confirm: self.msg_passToPayer
+		messages.Timeout          : self.msg_passToPayer,
+		messages.Receipt          : self.msg_passToPayer,
+		messages.PayerLink_Confirm: self.msg_passToPayer
 
 		}[msg.__class__](msg)
 
@@ -156,7 +96,7 @@ class NodeState(serializable.Serializable):
 		self.payeeLinks[requestID] = newPayeeLink
 
 		#Returned messages:
-		return [ReturnValue(value=requestID)]
+		return [messages.ReturnValue(value=requestID)]
 
 
 	def msg_makePayer(self, msg):
@@ -166,7 +106,7 @@ class NodeState(serializable.Serializable):
 
 		#Returned messages:
 		return [
-			TimeoutMessage(timestamp=time.time()+5.0, message=\
+			messages.TimeoutMessage(timestamp=time.time()+5.0, message=\
 				self.payerLink.getTimeoutMessage()  #Add time-out for payer
 			)
 			]
@@ -199,8 +139,8 @@ class NodeState(serializable.Serializable):
 				#TODO: haveRoute messages, and possibly cancelRoute in case of shortcut
 				return \
 				[
-				HavePayerRoute(ID=tx.payerID, transactionID=msg.transactionID),
-				HavePayeeRoute(ID=tx.payeeID, transactionID=msg.transactionID)
+				messages.HavePayerRoute(ID=tx.payerID, transactionID=msg.transactionID),
+				messages.HavePayeeRoute(ID=tx.payeeID, transactionID=msg.transactionID)
 				]
 
 			#TODO: same direction -> haveNoRoute message
@@ -240,7 +180,7 @@ class NodeState(serializable.Serializable):
 
 		ret = payee.commitIncoming(msg)
 		ret += payer.commitOutgoing(msg)
-		ret += payee.settleCommitOutgoing(SettleCommit(token=msg.token))
+		ret += payee.settleCommitOutgoing(messages.SettleCommit(token=msg.token))
 
 		return ret
 
@@ -274,7 +214,7 @@ class NodeState(serializable.Serializable):
 
 
 	def __getLinkObject(self, linkID):
-		if linkID == network.payerLocalID and not (self.payerLink is None):
+		if linkID == messages.payerLocalID and not (self.payerLink is None):
 			return self.payerLink
 		elif linkID in self.payeeLinks.keys():
 			return self.payeeLinks[linkID]

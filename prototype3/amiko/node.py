@@ -40,6 +40,7 @@ from core import nodestate
 from core import outbox
 from core import payerlink
 from core import payeelink
+from core import messages
 from core import paylog
 from core import serializable
 from core import settings
@@ -221,12 +222,12 @@ class Node(threading.Thread):
 					self.payLog.writePayer(self.__node.payerLink)
 				transactionID = self.__node.payerLink.transactionID
 				self.__node.payerLink = None
-				self.__outBox.close(network.payerLocalID)
+				self.__outBox.close(messages.payerLocalID)
 				self.__timeoutMessages = \
 				[
 					msg
 					for msg in self.__timeoutMessages
-					if msg.message.__class__ != payerlink.Timeout
+					if msg.message.__class__ != messages.Timeout
 				]
 
 		#Remove finished payee and related objects:
@@ -247,44 +248,44 @@ class Node(threading.Thread):
 		oldState = self.getState()
 		try:
 
-			messages = [msg]
-			while len(messages) > 0:
-				msg = messages.pop(0)
+			messageQueue = [msg]
+			while len(messageQueue) > 0:
+				msg = messageQueue.pop(0)
 				newMessages = []
 
 				log.log("Processing message %s" % str(msg.__class__))
 
 				#Messages for the node:
 				if msg.__class__ in [
-					nodestate.PaymentRequest,
-					nodestate.MakePayer,
-					nodestate.MakeRoute,
-					nodestate.HavePayerRoute,
-					nodestate.HavePayeeRoute,
-					nodestate.Lock,
-					nodestate.Commit,
-					nodestate.SettleCommit,
-					payeelink.Pay,
-					payeelink.Confirm,
-					payeelink.Cancel,
-					payerlink.Timeout,
-					payerlink.Receipt,
-					payerlink.PayerLink_Confirm
+					messages.PaymentRequest,
+					messages.MakePayer,
+					messages.MakeRoute,
+					messages.HavePayerRoute,
+					messages.HavePayeeRoute,
+					messages.Lock,
+					messages.Commit,
+					messages.SettleCommit,
+					messages.Pay,
+					messages.Confirm,
+					messages.Cancel,
+					messages.Timeout,
+					messages.Receipt,
+					messages.PayerLink_Confirm
 					]:
 					newMessages = self.__node.handleMessage(msg)
 
 				#Messages for the API:
-				elif msg.__class__ == nodestate.ReturnValue:
+				elif msg.__class__ == messages.ReturnValue:
 					#Should happen only once per call of this function.
 					#Otherwise, some return values will be forgotten.
 					returnValue = msg.value
 
 				#Messages for the outbox:
-				elif msg.__class__ == network.Confirmation:
+				elif msg.__class__ == messages.Confirmation:
 					self.__outBox.processConfirmation(msg)
 
 				#Store outbound messages in a local variable first:
-				elif msg.__class__ == network.OutboundMessage:
+				elif msg.__class__ == messages.OutboundMessage:
 					outboundMessages.append(msg)
 
 				else:
@@ -292,12 +293,12 @@ class Node(threading.Thread):
 
 				#Put new messages in the right places:
 				for msg in newMessages:
-					if msg.__class__ == nodestate.TimeoutMessage:
+					if msg.__class__ == messages.TimeoutMessage:
 						#Add to the list of time-out messages:
 						self.__addTimeoutMessage(msg)
 					else:
 						#Process in another iteration of the loop we're in:
-						messages.append(msg)
+						messageQueue.append(msg)
 
 			#Outbound messages are added to the outbox, but only if the above
 			#code did not generate any exceptions.
@@ -344,7 +345,7 @@ class Node(threading.Thread):
 		The URL of the payment request
 		"""
 
-		ID = self.handleMessage(nodestate.PaymentRequest(
+		ID = self.handleMessage(messages.PaymentRequest(
 			amount=amount, receipt=receipt))
 
 		return "amikopay://%s/%s" % \
@@ -386,13 +387,13 @@ class Node(threading.Thread):
 		port = settings.defaultPort if URL.port == None else URL.port
 		payeeLinkID = URL.path[1:] #remove initial slash
 
-		self.handleMessage(nodestate.MakePayer(payeeLinkID=payeeLinkID))
+		self.handleMessage(messages.MakePayer(payeeLinkID=payeeLinkID))
 
 		connection = self.networkEventDispatcher.makeConnection((host, port), callback=self)
-		connection.localID = network.payerLocalID
+		connection.localID = messages.payerLocalID
 
-		self.__outBox.addMessage(network.OutboundMessage(localID=connection.localID,
-			message=payeelink.Pay(ID=payeeLinkID)))
+		self.__outBox.addMessage(messages.OutboundMessage(localID=connection.localID,
+			message=messages.Pay(ID=payeeLinkID)))
 
 
 	def confirmPayment(self, payerAgrees):
@@ -417,7 +418,7 @@ class Node(threading.Thread):
 
 	@runInNodeThread
 	def __confirmPayment(self, payerAgrees):
-		self.handleMessage(payerlink.PayerLink_Confirm(agreement=payerAgrees))
+		self.handleMessage(messages.PayerLink_Confirm(agreement=payerAgrees))
 
 
 	@runInNodeThread

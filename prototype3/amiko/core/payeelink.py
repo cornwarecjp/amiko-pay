@@ -31,27 +31,9 @@ from ..utils import utils
 
 import log
 import settings
-import network
-import nodestate
-import payerlink
+import messages
 
 import serializable
-
-
-
-class Pay(network.Connect):
-	pass
-serializable.registerClass(Pay)
-
-
-class Confirm(serializable.Serializable):
-	serializableAttributes = {"ID": None, "meetingPointID": ""}
-serializable.registerClass(Confirm)
-
-
-class Cancel(serializable.Serializable):
-	serializableAttributes = {"ID": None}
-serializable.registerClass(Cancel)
 
 
 
@@ -81,10 +63,10 @@ class PayeeLink(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		Pay                     : self.msg_pay,
-		Confirm                 : self.msg_confirm,
-		Cancel                  : self.msg_cancel,
-		nodestate.HavePayeeRoute: self.msg_havePayeeRoute
+		messages.Pay           : self.msg_pay,
+		messages.Confirm       : self.msg_confirm,
+		messages.Cancel        : self.msg_cancel,
+		messages.HavePayeeRoute: self.msg_havePayeeRoute
 		}[msg.__class__](msg)
 
 
@@ -95,8 +77,8 @@ class PayeeLink(serializable.Serializable):
 					self.state
 				)
 
-		return [network.OutboundMessage(localID = msg.ID, message = \
-			payerlink.Receipt(
+		return [messages.OutboundMessage(localID = msg.ID, message = \
+			messages.Receipt(
 				amount=self.amount,
 				receipt=self.receipt,
 				transactionID=self.transactionID,
@@ -118,7 +100,7 @@ class PayeeLink(serializable.Serializable):
 
 		return \
 		[
-			nodestate.MakeRoute( #This will start the transaction routing
+			messages.MakeRoute( #This will start the transaction routing
 				amount=self.amount,
 				transactionID=self.transactionID,
 				startTime=None, #TODO: fill in
@@ -147,8 +129,8 @@ class PayeeLink(serializable.Serializable):
 		#Simply pass it to the payer, who keeps track of whether the route is complete
 		return \
 		[
-		network.OutboundMessage(localID = msg.ID, message = \
-			nodestate.HavePayeeRoute(ID=network.payerLocalID, transactionID=None)
+		messages.OutboundMessage(localID = msg.ID, message = \
+			messages.HavePayeeRoute(ID=messages.payerLocalID, transactionID=None)
 			)
 		]
 
@@ -160,9 +142,9 @@ class PayeeLink(serializable.Serializable):
 
 		return \
 		[
-		nodestate.Commit(token=self.token),
-		network.OutboundMessage(localID = payeeID, message = \
-			nodestate.SettleCommit(token=self.token)
+		messages.Commit(token=self.token),
+		messages.OutboundMessage(localID = payeeID, message = \
+			messages.SettleCommit(token=self.token)
 			)
 		]
 
