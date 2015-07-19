@@ -83,6 +83,20 @@ class Test(unittest.TestCase):
 		self.assertEqual(payer2.state          , "state")
 
 
+	def test_getTimeoutMessage(self):
+		"Test getTimeoutMessage"
+
+		msg = self.payerLink.getTimeoutMessage()
+		self.assertTrue(isinstance(msg, messages.Timeout))
+		self.assertEqual(msg.state, payerlink.PayerLink.states.initial)
+
+		self.payerLink.state = payerlink.PayerLink.states.receivedCommit
+
+		msg = self.payerLink.getTimeoutMessage()
+		self.assertTrue(isinstance(msg, messages.Timeout))
+		self.assertEqual(msg.state, payerlink.PayerLink.states.receivedCommit)
+
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
