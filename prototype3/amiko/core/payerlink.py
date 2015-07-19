@@ -79,6 +79,9 @@ class PayerLink(serializable.Serializable):
 		#It overrides default deepcopy behavior to work around a problem with
 		#threading.Event objects
 		return PayerLink(
+			payeeHost      = self.payeeHost,
+			payeePort      = self.payeePort,
+			payeeLinkID    = self.payeeLinkID,
 			amount         = self.amount,
 			receipt        = self.receipt,
 			transactionID  = self.transactionID,
