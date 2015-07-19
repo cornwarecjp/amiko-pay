@@ -130,6 +130,27 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.transactionID, None)
 
 
+	def test_lockOutgoing(self):
+		"Test lockOutgoing"
+
+		ret = self.payeeLink.lockOutgoing(
+			messages.Lock(transactionID="bar"),
+			"foobar")
+
+		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.sentCommit)
+
+		self.assertEqual(len(ret), 2)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.Commit))
+		self.assertEqual(msg.token, self.payeeLink.token)
+		msg = ret[1]
+		self.assertTrue(isinstance(msg, messages.OutboundMessage))
+		self.assertEqual(msg.localID, "foobar")
+		msg = msg.message
+		self.assertTrue(isinstance(msg, messages.SettleCommit))
+		self.assertEqual(msg.token, self.payeeLink.token)
+
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
