@@ -29,6 +29,8 @@
 
 import unittest
 import copy
+import threading
+import time
 
 import testenvironment
 
@@ -95,6 +97,69 @@ class Test(unittest.TestCase):
 		msg = self.payerLink.getTimeoutMessage()
 		self.assertTrue(isinstance(msg, messages.Timeout))
 		self.assertEqual(msg.state, payerlink.PayerLink.states.receivedCommit)
+
+
+	def test_msg_timeout_initial(self):
+		"Test msg_timeout (state: initial)"
+
+		measuredTime = [0.0]
+		def measureTime():
+			t0 = time.time()
+			self.payerLink.waitForReceipt()
+			t1 = time.time()
+			measuredTime[0] = t1 - t0
+		measureTime = threading.Thread(target=measureTime)
+		measureTime.start()
+
+		time.sleep(0.5)
+		ret = self.payerLink.handleMessage(
+			messages.Timeout(state=payerlink.PayerLink.states.initial))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
+
+		self.assertEqual(len(ret), 0)
+
+		measureTime.join()
+		self.assertGreaterEqual(measuredTime[0], 0.5)
+		self.assertLess(measuredTime[0], 0.6)
+
+
+	def test_msg_timeout_receivedCommit(self):
+		"Test msg_timeout (state: receivedCommit)"
+
+		self.payerLink.state = payerlink.PayerLink.states.receivedCommit
+
+		measuredTime = [0.0]
+		def measureTime():
+			t0 = time.time()
+			self.payerLink.waitForFinished()
+			t1 = time.time()
+			measuredTime[0] = t1 - t0
+		measureTime = threading.Thread(target=measureTime)
+		measureTime.start()
+
+		time.sleep(0.5)
+		ret = self.payerLink.handleMessage(
+			messages.Timeout(state=payerlink.PayerLink.states.receivedCommit))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.committed)
+
+		self.assertEqual(len(ret), 0)
+
+		measureTime.join()
+		self.assertGreaterEqual(measuredTime[0], 0.5)
+		self.assertLess(measuredTime[0], 0.6)
+
+
+	def test_msg_timeout_other(self):
+		"Test msg_timeout (state: other)"
+
+		ret = self.payerLink.handleMessage(
+			messages.Timeout(state=payerlink.PayerLink.states.receivedCommit))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.initial)
+
+		self.assertEqual(len(ret), 0)
 
 
 
