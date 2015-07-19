@@ -28,6 +28,7 @@
 #    OpenSSL library used as well as that of the covered work.
 
 import unittest
+import copy
 
 import testenvironment
 
@@ -54,6 +55,32 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.payerLink.token, None)
 		self.assertEqual(self.payerLink.meetingPointID, None)
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.initial)
+
+
+	def test_deepcopy(self):
+		"Test deep copy operator"
+
+		self.payerLink = payerlink.PayerLink(
+			payeeHost      = "payeeHost",
+			payeePort      = "payeePort",
+			payeeLinkID    = "payeeLinkID",
+			amount         = "amount",
+			receipt        = "receipt",
+			transactionID  = "transactionID",
+			token          = "token",
+			meetingPointID = "meetingPointID",
+			state          = "state"
+			)
+		payer2 = copy.deepcopy(self.payerLink)
+		self.assertEqual(payer2.payeeHost      , "payeeHost")
+		self.assertEqual(payer2.payeePort      , "payeePort")
+		self.assertEqual(payer2.payeeLinkID    , "payeeLinkID")
+		self.assertEqual(payer2.amount         , "amount")
+		self.assertEqual(payer2.receipt        , "receipt")
+		self.assertEqual(payer2.transactionID  , "transactionID")
+		self.assertEqual(payer2.token          , "token")
+		self.assertEqual(payer2.meetingPointID , "meetingPointID")
+		self.assertEqual(payer2.state          , "state")
 
 
 
