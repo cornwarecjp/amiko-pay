@@ -162,6 +162,40 @@ class Test(unittest.TestCase):
 		self.assertEqual(len(ret), 0)
 
 
+	def test_msg_receipt(self):
+		"Test msg_receipt"
+
+		measuredTime = [0.0]
+		def measureTime():
+			t0 = time.time()
+			self.payerLink.waitForReceipt()
+			t1 = time.time()
+			measuredTime[0] = t1 - t0
+		measureTime = threading.Thread(target=measureTime)
+		measureTime.start()
+
+		time.sleep(0.5)
+		ret = self.payerLink.handleMessage(
+			messages.Receipt(
+				amount=123,
+				receipt="receipt",
+				transactionID="txID",
+				meetingPoints=["MPID"]
+				))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.hasReceipt)
+		self.assertEqual(self.payerLink.amount, 123)
+		self.assertEqual(self.payerLink.receipt, "receipt")
+		self.assertEqual(self.payerLink.transactionID, "txID")
+		#self.assertEqual(self.payerLink.meetingPointID, "MPID") #TODO
+
+		self.assertEqual(len(ret), 0)
+
+		measureTime.join()
+		self.assertGreaterEqual(measuredTime[0], 0.5)
+		self.assertLess(measuredTime[0], 0.6)
+
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
