@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    all.py
+#    test_payerlink.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -31,11 +31,30 @@ import unittest
 
 import testenvironment
 
-from test_log import Test as test_log
-from test_nodestate import Test as test_nodestate
-from test_payeelink import Test as test_payeelink
-from test_payerlink import Test as test_payerlink
-from test_serializable import Test as test_serializable
+from amiko.core import messages
+
+from amiko.core import payerlink
+
+
+
+class Test(unittest.TestCase):
+	def setUp(self):
+		self.payerLink = payerlink.PayerLink()
+
+
+	def test_defaultAttributes(self):
+		"Test default attributes"
+
+		self.assertEqual(self.payerLink.payeeHost, None)
+		self.assertEqual(self.payerLink.payeePort, None)
+		self.assertEqual(self.payerLink.payeeLinkID, None)
+		self.assertEqual(self.payerLink.amount, None)
+		self.assertEqual(self.payerLink.receipt, None)
+		self.assertEqual(self.payerLink.transactionID, None)
+		self.assertEqual(self.payerLink.token, None)
+		self.assertEqual(self.payerLink.meetingPointID, None)
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.initial)
+
 
 
 if __name__ == "__main__":
