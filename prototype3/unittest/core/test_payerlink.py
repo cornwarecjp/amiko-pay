@@ -277,6 +277,43 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.transactionID, self.payerLink.transactionID)
 
 
+	def test_msg_havePayeeRoute(self):
+		"Test msg_havePayeeRoute"
+
+		self.assertRaises(Exception, self.payerLink.handleMessage,
+			messages.HavePayeeRoute(
+				ID=messages.payerLocalID,
+				transactionID=self.payerLink.transactionID
+				))
+
+		self.payerLink.state = payerlink.PayerLink.states.confirmed
+
+		ret = self.payerLink.handleMessage(
+			messages.HavePayeeRoute(
+				ID=messages.payerLocalID,
+				transactionID=self.payerLink.transactionID
+				))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.hasPayeeRoute)
+
+		self.assertEqual(len(ret), 0)
+
+		self.payerLink.state = payerlink.PayerLink.states.hasPayerRoute
+
+		ret = self.payerLink.handleMessage(
+			messages.HavePayeeRoute(
+				ID=messages.payerLocalID,
+				transactionID=self.payerLink.transactionID
+				))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.locked)
+
+		self.assertEqual(len(ret), 1)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.Lock))
+		self.assertEqual(msg.transactionID, self.payerLink.transactionID)
+
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
