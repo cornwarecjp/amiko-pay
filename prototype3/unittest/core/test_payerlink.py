@@ -196,6 +196,50 @@ class Test(unittest.TestCase):
 		self.assertLess(measuredTime[0], 0.6)
 
 
+	def test_msg_confirm(self):
+		"Test msg_confirm"
+		self.assertRaises(Exception,
+			self.payerLink.handleMessage, messages.PayerLink_Confirm(agreement=True))
+
+		self.payerLink.state = payerlink.PayerLink.states.hasReceipt
+
+		ret = self.payerLink.handleMessage(messages.PayerLink_Confirm(agreement=True))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.confirmed)
+
+		self.assertEqual(len(ret), 2)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.OutboundMessage))
+		self.assertEqual(msg.localID, messages.payerLocalID)
+		msg = msg.message
+		self.assertTrue(isinstance(msg, messages.Confirm))
+		self.assertEqual(msg.ID, None)
+		self.assertEqual(msg.meetingPointID, self.payerLink.meetingPointID)
+		msg = ret[1]
+		self.assertTrue(isinstance(msg, messages.MakeRoute))
+		self.assertEqual(msg.amount, self.payerLink.amount)
+		self.assertEqual(msg.transactionID, self.payerLink.transactionID)
+		#self.assertEqual(msg.startTime, None) #TODO
+		#self.assertEqual(msg.endTime, None) #TODO
+		self.assertEqual(msg.meetingPointID, self.payerLink.meetingPointID)
+		self.assertEqual(msg.payerID, messages.payerLocalID)
+		self.assertEqual(msg.payeeID, None)
+
+		self.payerLink.state = payerlink.PayerLink.states.hasReceipt
+
+		ret = self.payerLink.handleMessage(messages.PayerLink_Confirm(agreement=False))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
+
+		self.assertEqual(len(ret), 1)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.OutboundMessage))
+		self.assertEqual(msg.localID, messages.payerLocalID)
+		msg = msg.message
+		self.assertTrue(isinstance(msg, messages.Cancel))
+		self.assertEqual(msg.ID, None)
+
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
