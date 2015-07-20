@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    all.py
+#    test_settings.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -31,12 +31,32 @@ import unittest
 
 import testenvironment
 
-from test_log import Test as test_log
-from test_nodestate import Test as test_nodestate
-from test_payeelink import Test as test_payeelink
-from test_payerlink import Test as test_payerlink
-from test_serializable import Test as test_serializable
-from test_settings import Test as test_settings
+from amiko.utils.crypto import RIPEMD160, SHA256
+
+from amiko.core import settings
+
+
+
+class Test(unittest.TestCase):
+	def setUp(self):
+		self.settings = settings.Settings()
+
+
+	def test_globalConstants(self):
+		"Test global constants"
+		self.assertEqual(settings.defaultPort, 4321)
+
+
+	def test_hashAlgorithm(self):
+		"Test hashAlgorithm function"
+		self.assertEqual(settings.hashAlgorithm("foobar"),
+			RIPEMD160(SHA256("foobar")))
+
+
+	def test_constructor(self):
+		"Test constructor"
+		pass #TODO
+
 
 
 if __name__ == "__main__":
