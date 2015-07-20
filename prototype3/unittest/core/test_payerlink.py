@@ -343,6 +343,30 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.state, payerlink.PayerLink.states.receivedCommit)
 
 
+	def test_settleCommitIncoming(self):
+		"Test settleCommitIncoming"
+
+		measuredTime = [0.0]
+		def measureTime():
+			t0 = time.time()
+			self.payerLink.waitForFinished()
+			t1 = time.time()
+			measuredTime[0] = t1 - t0
+		measureTime = threading.Thread(target=measureTime)
+		measureTime.start()
+
+		time.sleep(0.5)
+		ret = self.payerLink.settleCommitIncoming(messages.SettleCommit(token="bar"))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.committed)
+
+		self.assertEqual(len(ret), 0)
+
+		measureTime.join()
+		self.assertGreaterEqual(measuredTime[0], 0.5)
+		self.assertLess(measuredTime[0], 0.6)
+
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
