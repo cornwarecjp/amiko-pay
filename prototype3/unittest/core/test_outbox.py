@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    all.py
+#    test_outbox.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -31,13 +31,18 @@ import unittest
 
 import testenvironment
 
-from test_log import Test as test_log
-from test_nodestate import Test as test_nodestate
-from test_outbox import Test as test_outbox
-from test_payeelink import Test as test_payeelink
-from test_payerlink import Test as test_payerlink
-from test_serializable import Test as test_serializable
-from test_settings import Test as test_settings
+from amiko.core import outbox
+
+
+
+class Test(unittest.TestCase):
+	def setUp(self):
+		self.outBox = outbox.OutBox()
+
+
+	def test_constructor(self):
+		self.assertEqual(self.outBox.lists, {})
+
 
 
 if __name__ == "__main__":
