@@ -40,7 +40,7 @@ class OutBoxList(serializable.Serializable):
 
 
 	def addMessage(self, msg):
-		if len(self.messages) > 32768:
+		if len(self.messages) >= 32768:
 			raise Exception("Outbox is full; message %s lost for interface %s" % \
 				(str(msg.message.__class__), msg.localID))
 

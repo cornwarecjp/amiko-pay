@@ -31,7 +31,15 @@ import unittest
 
 import testenvironment
 
+from amiko.core import serializable
+from amiko.core import messages
+
 from amiko.core import outbox
+
+
+class OutBoxTestMessage(serializable.Serializable):
+	serializableAttributes = {'payload': None}
+serializable.registerClass(OutBoxTestMessage)
 
 
 
@@ -41,7 +49,75 @@ class Test(unittest.TestCase):
 
 
 	def test_constructor(self):
+		"Test constructor"
+
 		self.assertEqual(self.outBox.lists, {})
+
+
+	def test_addMessage(self):
+		"Test addMessage"
+
+		msg1 = messages.OutboundMessage(
+			localID='foo',
+			message=OutBoxTestMessage(payload='bar')
+			)
+		self.outBox.addMessage(msg1)
+
+		self.assertEqual(self.outBox.lists.keys(), ['foo'])
+		outBoxList = self.outBox.lists['foo']
+		self.assertEqual(len(outBoxList.messages), 1)
+		msg = outBoxList.messages[0]
+		self.assertEqual(msg.message.getState(), msg1.getState())
+		self.assertEqual(msg.index, 0)
+		self.assertEqual(outBoxList.lastIndex, 0)
+		self.assertEqual(outBoxList.notYetTransmitted, 1)
+		self.assertEqual(outBoxList.closing, False)
+
+		msg2 = messages.OutboundMessage(
+			localID='foo',
+			message=OutBoxTestMessage(payload='foobar')
+			)
+		self.outBox.addMessage(msg2)
+
+		self.assertEqual(self.outBox.lists.keys(), ['foo'])
+		outBoxList = self.outBox.lists['foo']
+		self.assertEqual(len(outBoxList.messages), 2)
+		msg = outBoxList.messages[0]
+		self.assertEqual(msg.message.getState(), msg1.getState())
+		self.assertEqual(msg.index, 0)
+		msg = outBoxList.messages[1]
+		self.assertEqual(msg.message.getState(), msg2.getState())
+		self.assertEqual(msg.index, 1)
+		self.assertEqual(outBoxList.lastIndex, 1)
+		self.assertEqual(outBoxList.notYetTransmitted, 2)
+		self.assertEqual(outBoxList.closing, False)
+
+		msg3 = messages.OutboundMessage(
+			localID='baz',
+			message=OutBoxTestMessage(payload='foobar')
+			)
+		self.outBox.addMessage(msg3)
+
+		self.assertEqual(set(self.outBox.lists.keys()), set(['foo', 'baz']))
+		self.assertEqual(len(self.outBox.lists['foo'].messages), 2)
+		self.assertEqual(len(self.outBox.lists['baz'].messages), 1)
+
+
+	def test_addMessage_limit(self):
+		"Test addMessage (limit)"
+
+		msg = messages.OutboundMessage(
+			localID='foo',
+			message=OutBoxTestMessage(payload='bar')
+			)
+
+		for i in range(32768):
+			self.outBox.addMessage(msg)
+
+		#After exactly 32768 times, it gives an exception:
+		self.assertRaises(Exception, self.outBox.addMessage, msg)
+
+		self.assertEqual(len(self.outBox.lists['foo'].messages), 32768)
 
 
 
