@@ -38,10 +38,6 @@ from amiko.core import settings
 
 
 class Test(unittest.TestCase):
-	def setUp(self):
-		self.settings = settings.Settings()
-
-
 	def test_globalConstants(self):
 		"Test global constants"
 		self.assertEqual(settings.defaultPort, 4321)
@@ -53,9 +49,45 @@ class Test(unittest.TestCase):
 			RIPEMD160(SHA256("foobar")))
 
 
-	def test_constructor(self):
-		"Test constructor"
-		pass #TODO
+	def test_construct_without_file(self):
+		"Test constion without file"
+
+		s = settings.Settings()
+		self.checkDefaultValues(s)
+
+
+	def test_construct_with_file(self):
+		"Test constion with file"
+
+		s = settings.Settings('test_settings.conf')
+		self.checkLoadedValues(s)
+
+
+	def checkDefaultValues(self, s):
+		self.assertEqual(s.listenHost, '')
+		self.assertEqual(s.listenPort, 4321)
+		self.assertEqual(s.advertizedHost, '')
+		self.assertEqual(s.advertizedPort, 4321)
+		self.assertEqual(s.stateFile, 'amikopay.dat')
+		self.assertEqual(s.payLogFile, 'payments.log')
+		self.assertEqual(s.acceptedEscrowKeys, [])
+		self.assertEqual(s.externalMeetingPoints, [])
+		self.assertEqual(s.bitcoinRPCURL, '')
+
+		self.assertEqual(s.getAdvertizedNetworkLocation(), '')
+
+	def checkLoadedValues(self, s):
+		self.assertEqual(s.listenHost, 'test_listen_host')
+		self.assertEqual(s.listenPort, 12345)
+		self.assertEqual(s.advertizedHost, 'test_advertized_host')
+		self.assertEqual(s.advertizedPort, 2468)
+		self.assertEqual(s.stateFile, 'test_state_file')
+		self.assertEqual(s.payLogFile, 'test_log_file')
+		self.assertEqual(s.acceptedEscrowKeys, ['\xde\xad\xbe\xef', '\x01\x23\x45\x67'])
+		self.assertEqual(s.externalMeetingPoints, ['MP1', 'MP2'])
+		self.assertEqual(s.bitcoinRPCURL, 'test_rpc_url')
+
+		self.assertEqual(s.getAdvertizedNetworkLocation(), 'test_advertized_host:2468')
 
 
 
