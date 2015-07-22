@@ -116,5 +116,13 @@ class PersistentConnection(serializable.Serializable):
 		return True
 
 
+	def close(self):
+		self.closing = True
+
+
+	def canBeClosed(self):
+		return self.closing and len(self.messages) == 0
+
+
 serializable.registerClass(PersistentConnection)
 

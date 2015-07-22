@@ -218,11 +218,12 @@ class Node(threading.Thread):
 		#Remove finished payer and related objects:
 		if not (self.__node.payerLink is None) and \
 			self.__node.payerLink.state in [payerlink.PayerLink.states.cancelled, payerlink.PayerLink.states.committed]:
+				log.log('Cleaning up payer')
 				if not (self.__node.payerLink.amount is None):
 					self.payLog.writePayer(self.__node.payerLink)
 				transactionID = self.__node.payerLink.transactionID
 				self.__node.payerLink = None
-				self.__outBox.close(messages.payerLocalID)
+				self.__node.connections[messages.payerLocalID].close()
 				self.__timeoutMessages = \
 				[
 					msg
@@ -235,10 +236,11 @@ class Node(threading.Thread):
 		for payeeID in payeeIDs:
 			payee = self.__node.payeeLinks[payeeID]
 			if payee.state in [payeelink.PayeeLink.states.cancelled, payeelink.PayeeLink.states.committed]:
+				log.log('Cleaning up payee ' + payeeID)
 				self.payLog.writePayee(payee)
 				transactionID = payee.transactionID
 				del self.__node.payeeLinks[payeeID]
-				self.__outBox.close(payeeID)
+				self.__node.connections[payeeID].close()
 
 
 	def handleMessage(self, msg):
@@ -500,18 +502,20 @@ class Node(threading.Thread):
 				msg = self.__timeoutMessages.pop(0)
 				self.handleMessage(msg.message)
 
-			#New attempt to send the outbox:
-			hasTransmitted = False
-			for c in self.__node.connections.values():
+			#Connections: data transmission and closing
+			doSaveState = False
+			for localID, c in self.__node.connections.copy().iteritems():
+				#New attempt to send the outbox:
 				if c.transmit(self.networkEventDispatcher):
-					hasTransmitted = True
-			if hasTransmitted:
+					doSaveState = True
+				#Close interface whenever requested:
+				if c.canBeClosed():
+					log.log('Closing persistent connection ' + localID)
+					del self.__node.connections[localID]
+					self.networkEventDispatcher.closeInterface(localID)
+					doSaveState = True
+			if doSaveState:
 				self.__saveState()
-
-			#Close interfaces whenever requested:
-			for ID in self.__outBox.toBeClosedInterfaces:
-				self.networkEventDispatcher.closeInterface(ID)
-			self.__outBox.toBeClosedInterfaces = []
 
 			if self.__stop:
 				#TODO: stop creation of new transactions
