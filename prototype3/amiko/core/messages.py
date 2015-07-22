@@ -90,7 +90,7 @@ serializable.registerClass(PaymentRequest)
 
 
 class MakePayer(serializable.Serializable):
-	serializableAttributes = {'payeeLinkID': ''}
+	serializableAttributes = {'host':'', 'port':0, 'payeeLinkID': ''}
 serializable.registerClass(MakePayer)
 
 

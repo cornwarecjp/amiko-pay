@@ -76,14 +76,14 @@ class Connection(asyncore.dispatcher_with_send):
 				msg = container['message']
 				#print "Got message: ", str(msg.__class__)
 
-				#Send confirmation:
-				confirmation = {'received': index}
-				self.send(serializable.serialize(confirmation) + '\n')
-
 				if isinstance(msg, messages.Connect):
 					if not (self.localID is None):
 						raise Exception("Received connect message while already connected")
 					self.localID = msg.ID
+				else:
+					#Send confirmation on non-connect messages:
+					confirmation = {'received': index}
+					self.send(serializable.serialize(confirmation) + '\n')
 
 				#TODO: filter for acceptable message types, IDs etc. before
 				#sending them to a general-purpose message handler

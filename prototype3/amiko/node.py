@@ -321,6 +321,14 @@ class Node(threading.Thread):
 		return returnValue
 
 
+	def makeConnection(self, ID):
+		persistentConn = self.__node.connections[ID]
+		connection = self.networkEventDispatcher.makeConnection(
+			(persistentConn.host, persistentConn.port), callback=self)
+		connection.localID = ID
+		connection.sendMessage(None, persistentConn.connectMessage)
+
+
 	def stop(self):
 		"""
 		Stops the Node object.
@@ -387,13 +395,11 @@ class Node(threading.Thread):
 		port = settings.defaultPort if URL.port == None else URL.port
 		payeeLinkID = URL.path[1:] #remove initial slash
 
-		self.handleMessage(messages.MakePayer(payeeLinkID=payeeLinkID))
+		self.handleMessage(messages.MakePayer(
+			host=host, port=port, payeeLinkID=payeeLinkID
+			))
 
-		connection = self.networkEventDispatcher.makeConnection((host, port), callback=self)
-		connection.localID = messages.payerLocalID
-
-		self.__outBox.addMessage(messages.OutboundMessage(localID=connection.localID,
-			message=messages.Pay(ID=payeeLinkID)))
+		self.makeConnection(messages.payerLocalID)
 
 
 	def confirmPayment(self, payerAgrees):

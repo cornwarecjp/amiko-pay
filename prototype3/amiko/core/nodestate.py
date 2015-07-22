@@ -36,6 +36,7 @@ import payeelink
 import payerlink
 import meetingpoint
 import transaction
+import persistentconnection
 
 import messages
 import serializable
@@ -54,7 +55,8 @@ class NodeState(serializable.Serializable):
 	'payeeLinks':{},
 	'payerLink': None,
 	'meetingPoints':{},
-	'transactions':{}
+	'transactions':{},
+	'connections':{}
 	}
 
 
@@ -85,7 +87,7 @@ class NodeState(serializable.Serializable):
 	def msg_request(self, msg):
 		#ID can be nonsecure random:
 		#It only needs to be semi-unique, not secret.
-		requestID = randomsource.getNonSecureRandom(8).encode("hex")
+		payeeLinkID = randomsource.getNonSecureRandom(8).encode("hex")
 
 		#Token must be secure random
 		token = randomsource.getSecureRandom(32)
@@ -93,16 +95,26 @@ class NodeState(serializable.Serializable):
 		newPayeeLink = payeelink.PayeeLink(
 			amount=msg.amount, receipt=msg.receipt, token=token)
 
-		self.payeeLinks[requestID] = newPayeeLink
+		self.payeeLinks[payeeLinkID] = newPayeeLink
+
+		self.connections[payeeLinkID] = \
+			persistentconnection.PersistentConnection(host=None, port=None)
 
 		#Returned messages:
-		return [messages.ReturnValue(value=requestID)]
+		return [messages.ReturnValue(value=payeeLinkID)]
 
 
 	def msg_makePayer(self, msg):
 		if not (self.payerLink is None):
 			raise Exception("There already is a payment in progress")
 		self.payerLink = payerlink.PayerLink(payeeLinkID=msg.payeeLinkID)
+
+		self.connections[messages.payerLocalID] = \
+			persistentconnection.PersistentConnection(
+				host=msg.host,
+				port=msg.port,
+				connectMessage=messages.Pay(ID=msg.payeeLinkID)
+				)
 
 		#Returned messages:
 		return [
