@@ -243,7 +243,6 @@ class Node(threading.Thread):
 
 	def handleMessage(self, msg):
 		returnValue = None
-		outboundMessages = []
 
 		oldState = self.getState()
 		try:
@@ -270,7 +269,9 @@ class Node(threading.Thread):
 					messages.Cancel,
 					messages.Timeout,
 					messages.Receipt,
-					messages.PayerLink_Confirm
+					messages.PayerLink_Confirm,
+					messages.OutboundMessage,
+					messages.Confirmation
 					]:
 					newMessages = self.__node.handleMessage(msg)
 
@@ -279,14 +280,6 @@ class Node(threading.Thread):
 					#Should happen only once per call of this function.
 					#Otherwise, some return values will be forgotten.
 					returnValue = msg.value
-
-				#Messages for the outbox:
-				elif msg.__class__ == messages.Confirmation:
-					self.__outBox.processConfirmation(msg)
-
-				#Store outbound messages in a local variable first:
-				elif msg.__class__ == messages.OutboundMessage:
-					outboundMessages.append(msg)
 
 				else:
 					raise Exception("Unsupported message type: " + str(msg.__class__))
@@ -299,15 +292,6 @@ class Node(threading.Thread):
 					else:
 						#Process in another iteration of the loop we're in:
 						messageQueue.append(msg)
-
-			#Outbound messages are added to the outbox, but only if the above
-			#code did not generate any exceptions.
-			#In the case of exceptions, the old state will be restored, and the
-			#outbound messages will be forgotten.
-			#The effect is that every message which' processing leads to an
-			#exception is effectively a NOP.
-			for msg in outboundMessages:
-				self.__outBox.addMessage(msg)
 
 			self.__cleanupState()
 
@@ -517,7 +501,12 @@ class Node(threading.Thread):
 				self.handleMessage(msg.message)
 
 			#New attempt to send the outbox:
-			self.__outBox.transmit(self.networkEventDispatcher)
+			hasTransmitted = False
+			for c in self.__node.connections.values():
+				if c.transmit(self.networkEventDispatcher):
+					hasTransmitted = True
+			if hasTransmitted:
+				self.__saveState()
 
 			#Close interfaces whenever requested:
 			for ID in self.__outBox.toBeClosedInterfaces:

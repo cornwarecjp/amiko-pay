@@ -79,8 +79,10 @@ class NodeState(serializable.Serializable):
 
 		messages.Timeout          : self.msg_passToPayer,
 		messages.Receipt          : self.msg_passToPayer,
-		messages.PayerLink_Confirm: self.msg_passToPayer
+		messages.PayerLink_Confirm: self.msg_passToPayer,
 
+		messages.OutboundMessage: self.msg_passToConnection,
+		messages.Confirmation   : self.msg_passToConnection
 		}[msg.__class__](msg)
 
 
@@ -245,6 +247,10 @@ class NodeState(serializable.Serializable):
 		if self.payerLink is None:
 			raise Exception("Received message for payer, but there is no payer")
 		return self.payerLink.handleMessage(msg)
+
+
+	def msg_passToConnection(self, msg):
+		return self.connections[msg.localID].handleMessage(msg)
 
 
 serializable.registerClass(NodeState)

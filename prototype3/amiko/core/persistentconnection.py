@@ -26,6 +26,8 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+import messages
+
 import serializable
 
 
@@ -49,6 +51,14 @@ class PersistentConnection(serializable.Serializable):
 	}
 
 
+	def handleMessage(self, msg):
+		if msg.__class__ == messages.OutboundMessage:
+			self.addMessage(msg)
+		elif msg.__class__ == messages.Confirmation:
+			self.processConfirmation(msg)
+		return []
+
+
 	def addMessage(self, msg):
 		if len(self.messages) >= 32768:
 			raise Exception("Outbox is full; message %s lost for interface %s" % \
@@ -64,34 +74,6 @@ class PersistentConnection(serializable.Serializable):
 		self.notYetTransmitted += 1
 
 
-	def transmit(self, networkDispatcher):
-		if len(self.messages) == 0:
-			return
-
-		if not networkDispatcher.interfaceExists(self.messages[0].message.localID):
-			#We are connected.
-
-			#If we are closing, just forget about sending the remaining messages:
-			if self.closing:
-				self.messages = []
-
-			#We are not connected (anymore):
-			#Assume all not-yet-confirmed messages were lost
-			self.notYetTransmitted = len(self.messages)
-
-			return
-
-		#Prevents a problem in the following lines:
-		#self.messages[-0:] would incorrectly select all messages for retransmission
-		if self.notYetTransmitted == 0:
-			return
-
-		#We are connected -> send all not-yet-transmitted messages
-		for msg in self.messages[-self.notYetTransmitted:]:
-			networkDispatcher.sendOutboundMessage(msg.index, msg.message)
-		self.notYetTransmitted = 0
-
-
 	def processConfirmation(self, confirmation):
 		#A confirmation confirms all earlier messages as well.
 		confirmationIndex = confirmation.index
@@ -99,6 +81,39 @@ class PersistentConnection(serializable.Serializable):
 			if self.messages[i].index == confirmationIndex:
 				self.messages = self.messages[i+1:]
 				return
+
+
+	def transmit(self, networkDispatcher):
+		if len(self.messages) == 0:
+			return False
+
+		if not networkDispatcher.interfaceExists(self.messages[0].message.localID):
+			#We are not connected.
+
+			changed = False
+
+			#If we are closing, just forget about sending the remaining messages:
+			if self.closing:
+				changed = changed or len(self.messages) > 0
+				self.messages = []
+
+			#We are not connected (anymore):
+			#Assume all not-yet-confirmed messages were lost
+			changed = changed or self.notYetTransmitted != len(self.messages)
+			self.notYetTransmitted = len(self.messages)
+
+			return changed
+
+		#Prevents a problem in the following lines:
+		#self.messages[-0:] would incorrectly select all messages for retransmission
+		if self.notYetTransmitted == 0:
+			return False
+
+		#We are connected -> send all not-yet-transmitted messages
+		for msg in self.messages[-self.notYetTransmitted:]:
+			networkDispatcher.sendOutboundMessage(msg.index, msg.message)
+		self.notYetTransmitted = 0
+		return True
 
 
 serializable.registerClass(PersistentConnection)
