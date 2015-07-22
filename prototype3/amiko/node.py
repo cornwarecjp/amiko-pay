@@ -37,7 +37,6 @@ import time
 from core import log
 from core import network
 from core import nodestate
-from core import outbox
 from core import payerlink
 from core import payeelink
 from core import messages
@@ -155,7 +154,6 @@ class Node(threading.Thread):
 			#Create a new, empty state:
 			self.__node = nodestate.NodeState()
 			self.__timeoutMessages = []
-			self.__outBox = outbox.OutBox()
 
 			#Store the newly created state
 			self.__saveState()
@@ -187,8 +185,7 @@ class Node(threading.Thread):
 		return serializable.object2State(
 			{
 			"Node": self.__node,
-			"TimeoutMessages": self.__timeoutMessages,
-			"OutBox": self.__outBox
+			"TimeoutMessages": self.__timeoutMessages
 			})
 
 
@@ -196,7 +193,6 @@ class Node(threading.Thread):
 		s = serializable.state2Object(s)
 		self.__node            = s["Node"]
 		self.__timeoutMessages = s["TimeoutMessages"]
-		self.__outBox          = s["OutBox"]
 
 
 	def __addTimeoutMessage(self, msg):
