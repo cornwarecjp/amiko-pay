@@ -106,16 +106,15 @@ class Connection(asyncore.dispatcher_with_send):
 
 
 
-class EventDispatcher(asyncore.dispatcher):
-	def __init__(self, host, port, callback):
+class Listener(asyncore.dispatcher):
+	def __init__(self, host, port, network):
 		asyncore.dispatcher.__init__(self)
 		self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.set_reuse_addr()
 		self.bind((host, port))
 		self.listen(5)
 
-		self.callback = callback
-		self.connections = []
+		self.network = network
 
 
 	def handle_accept(self):
@@ -123,7 +122,15 @@ class EventDispatcher(asyncore.dispatcher):
 		if pair is not None:
 			sock, addr = pair
 			log.log('Incoming connection from %s' % repr(addr))
-			self.connections.append(Connection(sock, self.callback))
+			self.network.makeConnectionFromSocket(sock)
+
+
+
+class Network:
+	def __init__(self, host, port, callback):
+		self.listener = Listener(host, port, self)
+		self.callback = callback
+		self.connections = []
 
 
 	def sendOutboundMessage(self, index, msg):
@@ -149,7 +156,11 @@ class EventDispatcher(asyncore.dispatcher):
 	def makeConnection(self, address, callback):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.connect(address)
-		connection = Connection(sock, callback)
+		return self.makeConnectionFromSocket(sock)
+
+
+	def makeConnectionFromSocket(self, sock):
+		connection = Connection(sock, self.callback)
 		self.connections.append(connection)
 		return connection
 

@@ -83,11 +83,11 @@ class PersistentConnection(serializable.Serializable):
 				return
 
 
-	def transmit(self, networkDispatcher):
+	def transmit(self, network):
 		if len(self.messages) == 0:
 			return False
 
-		if not networkDispatcher.interfaceExists(self.messages[0].message.localID):
+		if not network.interfaceExists(self.messages[0].message.localID):
 			#We are not connected.
 
 			changed = False
@@ -111,7 +111,7 @@ class PersistentConnection(serializable.Serializable):
 
 		#We are connected -> send all not-yet-transmitted messages
 		for msg in self.messages[-self.notYetTransmitted:]:
-			networkDispatcher.sendOutboundMessage(msg.index, msg.message)
+			network.sendOutboundMessage(msg.index, msg.message)
 		self.notYetTransmitted = 0
 		return True
 

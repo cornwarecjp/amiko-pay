@@ -113,7 +113,7 @@ class Node(threading.Thread):
 		else:
 			self.settings = settings.Settings(conf)
 
-		self.networkEventDispatcher = network.EventDispatcher(
+		self.__network = network.Network(
 			self.settings.listenHost, self.settings.listenPort, callback=self)
 
 		#self.bitcoind = bitcoind.Bitcoind(self.settings)
@@ -305,7 +305,7 @@ class Node(threading.Thread):
 
 	def makeConnection(self, ID):
 		persistentConn = self.__node.connections[ID]
-		connection = self.networkEventDispatcher.makeConnection(
+		connection = self.__network.makeConnection(
 			(persistentConn.host, persistentConn.port), callback=self)
 		connection.localID = ID
 		connection.sendMessage(None, persistentConn.connectMessage)
@@ -502,13 +502,13 @@ class Node(threading.Thread):
 			doSaveState = False
 			for localID, c in self.__node.connections.copy().iteritems():
 				#New attempt to send the outbox:
-				if c.transmit(self.networkEventDispatcher):
+				if c.transmit(self.__network):
 					doSaveState = True
 				#Close interface whenever requested:
 				if c.canBeClosed():
 					log.log('Closing persistent connection ' + localID)
 					del self.__node.connections[localID]
-					self.networkEventDispatcher.closeInterface(localID)
+					self.__network.closeInterface(localID)
 					doSaveState = True
 			if doSaveState:
 				self.__saveState()
