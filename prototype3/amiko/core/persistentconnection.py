@@ -56,6 +56,9 @@ class PersistentConnection(serializable.Serializable):
 			self.addMessage(msg)
 		elif msg.__class__ == messages.Confirmation:
 			self.processConfirmation(msg)
+		else:
+			raise Exception(
+				"Bug: non-supported message type passed to PersistentConnection")
 		return []
 
 
