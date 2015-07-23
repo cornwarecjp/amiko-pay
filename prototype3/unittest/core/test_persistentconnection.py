@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    all.py
+#    test_persistentconnection.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -31,13 +31,25 @@ import unittest
 
 import testenvironment
 
-from test_log                  import Test as test_log
-from test_nodestate            import Test as test_nodestate
-from test_payeelink            import Test as test_payeelink
-from test_payerlink            import Test as test_payerlink
-from test_persistentconnection import Test as test_persistentconnection
-from test_serializable         import Test as test_serializable
-from test_settings             import Test as test_settings
+from amiko.core import persistentconnection
+
+
+
+class Test(unittest.TestCase):
+	def setUp(self):
+		self.connection = persistentconnection.PersistentConnection()
+
+
+	def test_constructor(self):
+		"Test constructor"
+		self.assertEqual(self.connection.host, None)
+		self.assertEqual(self.connection.port, None)
+		self.assertEqual(self.connection.connectMessage, None)
+		self.assertEqual(self.connection.messages, [])
+		self.assertEqual(self.connection.lastIndex, -1)
+		self.assertEqual(self.connection.notYetTransmitted, 0)
+		self.assertEqual(self.connection.closing, False)
+
 
 
 if __name__ == "__main__":
