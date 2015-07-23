@@ -31,6 +31,8 @@ import unittest
 
 import testenvironment
 
+from amiko.core import messages
+
 from amiko.core import persistentconnection
 
 
@@ -49,6 +51,64 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.connection.lastIndex, -1)
 		self.assertEqual(self.connection.notYetTransmitted, 0)
 		self.assertEqual(self.connection.closing, False)
+
+
+	def test_addMessage_fullOutbox(self):
+		"Test addMessage (full outbox)"
+
+		msgIn = messages.OutboundMessage(
+			localID="localID",
+			message=messages.Cancel()
+			)
+		msgInState = msgIn.getState()
+
+		for i in range(32768):
+			self.connection.handleMessage(msgIn)
+
+			self.assertEqual(self.connection.lastIndex, i)
+			self.assertEqual(self.connection.notYetTransmitted, i+1)
+			self.assertEqual(len(self.connection.messages), i+1)
+			msg = self.connection.messages[-1]
+			self.assertEqual(msg.index, i)
+			self.assertEqual(msg.message.getState(), msgInState)
+
+		self.assertRaises(Exception, self.connection.handleMessage, msgIn)
+
+		self.assertEqual(self.connection.lastIndex, 32767)
+		self.assertEqual(self.connection.notYetTransmitted, 32768)
+		self.assertEqual(len(self.connection.messages), 32768)
+
+
+	def test_addMessage_wrapAround(self):
+		"Test addMessage (wrap-around)"
+
+		msgIn = messages.OutboundMessage(
+			localID="localID",
+			message=messages.Cancel()
+			)
+		msgInState = msgIn.getState()
+
+		for i in range(65536):
+			self.connection.handleMessage(msgIn)
+
+			self.assertEqual(self.connection.lastIndex, i)
+			self.assertEqual(self.connection.notYetTransmitted, 1)
+			self.assertEqual(len(self.connection.messages), 1)
+			msg = self.connection.messages[-1]
+			self.assertEqual(msg.index, i)
+			self.assertEqual(msg.message.getState(), msgInState)
+
+			self.connection.messages = []
+			self.connection.notYetTransmitted = 0
+
+		self.connection.handleMessage(msgIn)
+
+		self.assertEqual(self.connection.lastIndex, 0)
+		self.assertEqual(self.connection.notYetTransmitted, 1)
+		self.assertEqual(len(self.connection.messages), 1)
+		msg = self.connection.messages[-1]
+		self.assertEqual(msg.index, 0)
+		self.assertEqual(msg.message.getState(), msgInState)
 
 
 
