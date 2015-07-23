@@ -141,3 +141,10 @@ class DummyBitcoind(Tracer):
 	def getPrivateKey(self, address):
 		return base58.encodeBase58Check(address, 128)
 
+
+
+class DummyNetwork(Tracer):
+	def interfaceExists(self, *args, **kwargs):
+		self.trace.append(('interfaceExists', args, kwargs))
+		return self.interfaceExistsReturnValue
+

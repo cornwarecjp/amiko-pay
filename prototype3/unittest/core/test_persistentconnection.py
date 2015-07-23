@@ -31,6 +31,8 @@ import unittest
 
 import testenvironment
 
+from dummy_interfaces import DummyNetwork
+
 from amiko.core import messages
 
 from amiko.core import persistentconnection
@@ -139,6 +141,107 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.connection.messages[0].index, 3)
 		self.assertEqual(self.connection.messages[1].index, 4)
 		self.assertEqual(self.connection.messages[2].index, 0)
+
+
+	def test_transmit_noMessages(self):
+		"Test transmit (no messages)"
+		network = DummyNetwork()
+
+		self.assertFalse(self.connection.transmit(network))
+
+		self.assertEqual(network.trace, [])
+
+
+	def test_transmit_closedConnection(self):
+		"Test transmit (closed connection)"
+		network = DummyNetwork()
+		network.interfaceExistsReturnValue = False
+
+		self.connection.messages = \
+		[
+		persistentconnection.PersistentConnectionMessage(
+			index=1,
+			message=messages.OutboundMessage(localID="localID")
+			),
+		persistentconnection.PersistentConnectionMessage(
+			index=2,
+			message=messages.OutboundMessage(localID="localID")
+			),
+		persistentconnection.PersistentConnectionMessage(
+			index=3,
+			message=messages.OutboundMessage(localID="localID")
+			)
+		]
+
+		self.connection.closing = False
+		self.connection.notYetTransmitted = 1
+
+		self.assertTrue(self.connection.transmit(network))
+
+		self.assertEqual(network.trace, [('interfaceExists', ('localID',), {})])
+		self.assertEqual(len(self.connection.messages), 3)
+		self.assertEqual(self.connection.notYetTransmitted, 3)
+
+		network.trace = []
+
+		self.assertFalse(self.connection.transmit(network))
+
+		self.assertEqual(network.trace, [('interfaceExists', ('localID',), {})])
+		self.assertEqual(len(self.connection.messages), 3)
+		self.assertEqual(self.connection.notYetTransmitted, 3)
+
+		network.trace = []
+		self.connection.closing = True
+
+		self.assertTrue(self.connection.transmit(network))
+
+		self.assertEqual(network.trace, [('interfaceExists', ('localID',), {})])
+		self.assertEqual(len(self.connection.messages), 0)
+		self.assertEqual(self.connection.notYetTransmitted, 0)
+
+
+	def test_transmit_openConnection(self):
+		"Test transmit (open connection)"
+		network = DummyNetwork()
+		network.interfaceExistsReturnValue = True
+
+		self.connection.messages = \
+		[
+		persistentconnection.PersistentConnectionMessage(
+			index=1,
+			message=messages.OutboundMessage(localID="localID")
+			),
+		persistentconnection.PersistentConnectionMessage(
+			index=2,
+			message=messages.OutboundMessage(localID="localID")
+			),
+		persistentconnection.PersistentConnectionMessage(
+			index=3,
+			message=messages.OutboundMessage(localID="localID")
+			)
+		]
+
+		self.connection.notYetTransmitted = 0
+
+		self.assertFalse(self.connection.transmit(network))
+
+		self.assertEqual(network.trace, [('interfaceExists', ('localID',), {})])
+		self.assertEqual(len(self.connection.messages), 3)
+		self.assertEqual(self.connection.notYetTransmitted, 0)
+
+		network.trace = []
+		self.connection.notYetTransmitted = 2
+
+		self.assertTrue(self.connection.transmit(network))
+
+		self.assertEqual(network.trace,
+			[
+			('interfaceExists', ('localID',), {}),
+			('sendOutboundMessage', (2, self.connection.messages[1].message), {}),
+			('sendOutboundMessage', (3, self.connection.messages[2].message), {})
+			])
+		self.assertEqual(len(self.connection.messages), 3)
+		self.assertEqual(self.connection.notYetTransmitted, 0)
 
 
 
