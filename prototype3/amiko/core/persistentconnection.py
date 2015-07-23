@@ -94,7 +94,7 @@ class PersistentConnection(serializable.Serializable):
 
 			#If we are closing, just forget about sending the remaining messages:
 			if self.closing:
-				changed = changed or len(self.messages) > 0
+				changed = True
 				self.messages = []
 
 			#We are not connected (anymore):
