@@ -143,6 +143,13 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.connection.messages[2].index, 0)
 
 
+	def test_handleMessage_otherMessageType(self):
+		"Test handleMessage (other message type)"
+
+		self.assertRaises(Exception,
+			self.connection.handleMessage, messages.Cancel())
+
+
 	def test_transmit_noMessages(self):
 		"Test transmit (no messages)"
 		network = DummyNetwork()
@@ -242,6 +249,33 @@ class Test(unittest.TestCase):
 			])
 		self.assertEqual(len(self.connection.messages), 3)
 		self.assertEqual(self.connection.notYetTransmitted, 0)
+
+
+	def test_close(self):
+		"Test close"
+
+		self.connection.closing = False
+		self.connection.close()
+		self.assertTrue(self.connection.closing)
+
+
+	def test_canBeClosed(self):
+		"Test canBeClosed"
+
+		self.connection.closing = False
+		self.connection.messages = []
+
+		self.assertFalse(self.connection.canBeClosed())
+
+		self.connection.closing = True
+		self.connection.messages = [1,2,3]
+
+		self.assertFalse(self.connection.canBeClosed())
+
+		self.connection.closing = True
+		self.connection.messages = []
+
+		self.assertTrue(self.connection.canBeClosed())
 
 
 
