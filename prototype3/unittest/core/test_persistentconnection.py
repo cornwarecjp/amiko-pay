@@ -111,6 +111,36 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.message.getState(), msgInState)
 
 
+	def test_processConfirmation(self):
+		"Test processConfirmation"
+
+		self.connection.messages = \
+		[
+		persistentconnection.PersistentConnectionMessage(index=1000),
+		persistentconnection.PersistentConnectionMessage(index=1001),
+		persistentconnection.PersistentConnectionMessage(index=1002),
+		persistentconnection.PersistentConnectionMessage(index=1),
+		persistentconnection.PersistentConnectionMessage(index=2),
+		persistentconnection.PersistentConnectionMessage(index=3),
+		persistentconnection.PersistentConnectionMessage(index=4),
+		persistentconnection.PersistentConnectionMessage(index=0)
+		]
+
+		self.connection.handleMessage(messages.Confirmation(index=2))
+
+		self.assertEqual(len(self.connection.messages), 3)
+		self.assertEqual(self.connection.messages[0].index, 3)
+		self.assertEqual(self.connection.messages[1].index, 4)
+		self.assertEqual(self.connection.messages[2].index, 0)
+
+		self.connection.handleMessage(messages.Confirmation(index=1))
+
+		self.assertEqual(len(self.connection.messages), 3)
+		self.assertEqual(self.connection.messages[0].index, 3)
+		self.assertEqual(self.connection.messages[1].index, 4)
+		self.assertEqual(self.connection.messages[2].index, 0)
+
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
