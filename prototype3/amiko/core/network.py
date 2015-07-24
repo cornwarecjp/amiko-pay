@@ -118,11 +118,12 @@ class Listener(asyncore.dispatcher):
 
 
 	def handle_accept(self):
-		pair = self.accept()
-		if pair is not None:
-			sock, addr = pair
+		try:
+			sock, addr = self.accept()
 			log.log('Incoming connection from %s' % repr(addr))
 			self.network.makeConnectionFromSocket(sock)
+		except:
+			log.logException()
 
 
 
