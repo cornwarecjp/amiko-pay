@@ -41,6 +41,8 @@ class Test(unittest.TestCase):
 	def setUp(self):
 		self.network = network.Network('localhost', 4321, self)
 
+		self.messages = []
+
 
 	def test_connectionSession(self):
 		"Test connection session"
@@ -65,12 +67,17 @@ class Test(unittest.TestCase):
 			localID='localID',
 			message=messages.Pay(ID='remoteID')))
 
+		self.assertEqual(len(self.messages), 0)
+
 		self.network.processNetworkEvents(timeout=0.01)
 
 		self.assertEqual(c2.localID, 'remoteID')
 		self.assertTrue(self.network.interfaceExists('remoteID'))
+		self.assertEqual(len(self.messages), 1)
+		self.assertEqual(self.messages[0].__class__, messages.Pay)
 
 		#Sending another connect message (illegal):
+		self.messages = []
 		self.network.sendOutboundMessage(0, messages.OutboundMessage(
 			localID='localID',
 			message=messages.Pay(ID='remoteID2')))
@@ -78,19 +85,33 @@ class Test(unittest.TestCase):
 		self.network.processNetworkEvents(timeout=0.01)
 
 		self.assertEqual(c2.localID, 'remoteID') #unchanged
+		self.assertEqual(len(self.messages), 0) #nothing received
 
 		#Sending another message back:
-		self.network.sendOutboundMessage(0, messages.OutboundMessage(
+		self.network.sendOutboundMessage(42, messages.OutboundMessage(
 			localID='remoteID',
 			message=messages.Cancel(ID=None)))
 
 		self.network.processNetworkEvents(timeout=0.01) #sends the confirmation
+
+		self.assertEqual(len(self.messages), 1)
+		self.assertEqual(self.messages[0].__class__, messages.Cancel)
+
+		self.messages = []
 		self.network.processNetworkEvents(timeout=0.01) #receives the confirmation
 
+		self.assertEqual(len(self.messages), 1)
+		self.assertEqual(self.messages[0].__class__, messages.Confirmation)
+		self.assertEqual(self.messages[0].localID, 'remoteID')
+		self.assertEqual(self.messages[0].index, 42)
+
 		#Sending an invalid message:
+		self.messages = []
 		c2.send('{"data": "Invalid"}\n')
 
 		self.network.processNetworkEvents(timeout=0.01)
+
+		self.assertEqual(len(self.messages), 0)
 
 		#Closing the connection:
 		self.network.closeInterface('remoteID')
@@ -108,9 +129,11 @@ class Test(unittest.TestCase):
 		#Closing a no-longer-existing connection (should be fine):
 		self.network.closeInterface('localID')
 
+		self.assertEqual(len(self.messages), 0)
+
 
 	def handleMessage(self, msg):
-		pass #TODO
+		self.messages.append(msg)
 
 
 
