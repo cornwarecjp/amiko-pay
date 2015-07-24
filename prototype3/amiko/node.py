@@ -29,8 +29,6 @@
 
 import threading
 from urlparse import urlparse
-import asyncore
-import socket
 import os
 import time
 
@@ -477,9 +475,7 @@ class Node(threading.Thread):
 
 		self.__stop = False
 		while True:
-
-			#Network events:
-			asyncore.loop(timeout=0.01, count=1)
+			self.__network.processNetworkEvents(timeout=0.01)
 
 			#API events:
 			with self._commandFunctionLock:

@@ -133,6 +133,10 @@ class Network:
 		self.connections = []
 
 
+	def processNetworkEvents(self, timeout):
+		asyncore.loop(timeout=timeout, count=1)
+
+
 	def sendOutboundMessage(self, index, msg):
 		self.getInterface(msg.localID).sendMessage(index, msg.message)
 
