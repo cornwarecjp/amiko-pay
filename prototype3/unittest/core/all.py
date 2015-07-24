@@ -32,6 +32,7 @@ import unittest
 import testenvironment
 
 from test_log                  import Test as test_log
+from test_network              import Test as test_network
 from test_nodestate            import Test as test_nodestate
 from test_payeelink            import Test as test_payeelink
 from test_payerlink            import Test as test_payerlink
