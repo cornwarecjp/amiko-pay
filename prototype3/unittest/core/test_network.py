@@ -44,6 +44,11 @@ class Test(unittest.TestCase):
 		self.messages = []
 
 
+	def tearDown(self):
+		#Clean up the listener, so we can run other tests:
+		self.network.listener.close()
+
+
 	def test_connectionSession(self):
 		"Test connection session"
 
@@ -130,6 +135,20 @@ class Test(unittest.TestCase):
 		self.network.closeInterface('localID')
 
 		self.assertEqual(len(self.messages), 0)
+
+
+	def test_acceptError(self):
+		"Test accept error"
+
+		def acceptWithException():
+			raise Exception("Unit test exception")
+		self.network.listener.accept = acceptWithException
+
+		#Opening a connection:
+		c1 = self.network.makeConnection(('localhost', 4321), 'localID')
+
+		#This triggers the handle_accept to be called for the above connection:
+		self.network.processNetworkEvents(timeout=0.01)
 
 
 	def handleMessage(self, msg):
