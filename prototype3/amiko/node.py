@@ -304,7 +304,7 @@ class Node(threading.Thread):
 	def makeConnection(self, ID):
 		persistentConn = self.__node.connections[ID]
 		connection = self.__network.makeConnection(
-			(persistentConn.host, persistentConn.port), callback=self)
+			(persistentConn.host, persistentConn.port))
 		connection.localID = ID
 		connection.sendMessage(None, persistentConn.connectMessage)
 

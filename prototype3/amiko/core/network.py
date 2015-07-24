@@ -157,7 +157,7 @@ class Network:
 		return None
 
 
-	def makeConnection(self, address, callback):
+	def makeConnection(self, address):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.connect(address)
 		return self.makeConnectionFromSocket(sock)
