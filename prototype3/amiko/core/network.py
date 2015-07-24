@@ -157,10 +157,12 @@ class Network:
 		return None
 
 
-	def makeConnection(self, address):
+	def makeConnection(self, address, localID):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.connect(address)
-		return self.makeConnectionFromSocket(sock)
+		connection = self.makeConnectionFromSocket(sock)
+		connection.localID = localID
+		return connection
 
 
 	def makeConnectionFromSocket(self, sock):
