@@ -250,36 +250,15 @@ class Node(threading.Thread):
 
 				log.log("Processing message %s" % str(msg.__class__))
 
-				#Messages for the node:
-				if msg.__class__ in [
-					messages.PaymentRequest,
-					messages.MakePayer,
-					messages.MakeLink,
-					messages.MakeRoute,
-					messages.HavePayerRoute,
-					messages.HavePayeeRoute,
-					messages.Lock,
-					messages.Commit,
-					messages.SettleCommit,
-					messages.Pay,
-					messages.Confirm,
-					messages.Cancel,
-					messages.Timeout,
-					messages.Receipt,
-					messages.PayerLink_Confirm,
-					messages.OutboundMessage,
-					messages.Confirmation
-					]:
-					newMessages = self.__node.handleMessage(msg)
-
 				#Messages for the API:
-				elif msg.__class__ == messages.ReturnValue:
+				if msg.__class__ == messages.ReturnValue:
 					#Should happen only once per call of this function.
 					#Otherwise, some return values will be forgotten.
 					returnValue = msg.value
 
 				else:
-					raise Exception("Unsupported message type: " + str(msg.__class__))
+					#All other messages go to the node:
+					newMessages = self.__node.handleMessage(msg)
 
 				#Put new messages in the right places:
 				for msg in newMessages:
