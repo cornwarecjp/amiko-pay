@@ -33,6 +33,11 @@ class PayLog:
 		self.__file = open(settings.payLogFile, "a")
 
 
+	def close(self):
+		#Useful in unit-testing, when making multiple PayLog objects
+		self.__file.close()
+
+
 	def writePayer(self, p):
 		self.__write(-1, p)
 
