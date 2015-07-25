@@ -118,6 +118,7 @@ class PayerLink(serializable.Serializable):
 	def msg_timeout(self, msg):
 		if self.state == self.states.initial and msg.state == self.states.initial:
 			#Receipt time-out
+			log.log("Payer: receipt time-out -> cancelled")
 			self.state = self.states.cancelled
 			self.__receiptReceived.set()
 		elif self.state == self.states.receivedCommit and msg.state == self.states.receivedCommit:
@@ -125,6 +126,9 @@ class PayerLink(serializable.Serializable):
 			log.log("Payer: settleCommit time-out -> committed")
 			self.state = self.states.committed
 			self.__finished.set()
+		else:
+			log.log("Payer: time-out of state %s no longer applicable: we are now in state %s" % \
+				(msg.state, self.state))
 
 		return []
 
