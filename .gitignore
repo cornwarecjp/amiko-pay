@@ -3,11 +3,9 @@
 
 #program output
 *.log
+*.dat
 
 #Coverage output
 .coverage
 coverage-html
-
-#Application state
-amikopay.dat
 
