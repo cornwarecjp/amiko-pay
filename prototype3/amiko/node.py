@@ -427,6 +427,8 @@ class Node(threading.Thread):
 			remoteID = URL.path[1:]
 
 		self.handleMessage(messages.MakeLink(
+			localHost=self.settings.advertizedHost,
+			localPort=self.settings.advertizedPort,
 			localID=localName,
 			remoteHost=remoteHost,
 			remotePort=remotePort,

@@ -50,7 +50,12 @@ serializable.registerClass(Pay)
 
 
 class ConnectLink(Connect):
-	pass
+	serializableAttributes = {
+		'ID': '',
+		'callbackHost': None,
+		'callbackPort': None,
+		'callbackID': None
+		}
 serializable.registerClass(ConnectLink)
 
 
@@ -100,7 +105,13 @@ serializable.registerClass(MakePayer)
 
 
 class MakeLink(serializable.Serializable):
-	serializableAttributes = {'localID':'', 'remoteHost':None, 'remotePort':None, 'remoteID':None}
+	serializableAttributes = {
+		'localHost': None,
+		'localPort': None,
+		'localID': '',
+		'remoteHost': None,
+		'remotePort': None,
+		'remoteID': None}
 serializable.registerClass(MakeLink)
 
 

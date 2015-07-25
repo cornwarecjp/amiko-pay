@@ -82,6 +82,8 @@ class NodeState(serializable.Serializable):
 		messages.Receipt          : self.msg_passToPayer,
 		messages.PayerLink_Confirm: self.msg_passToPayer,
 
+		messages.ConnectLink: self.msg_connectLink,
+
 		messages.OutboundMessage: self.msg_passToConnection,
 		messages.Confirmation   : self.msg_passToConnection
 		}[msg.__class__](msg)
@@ -143,7 +145,14 @@ class NodeState(serializable.Serializable):
 			persistentconnection.PersistentConnection(
 				host=msg.remoteHost,
 				port=msg.remotePort,
-				connectMessage=messages.ConnectLink(ID=msg.remoteID)
+				connectMessage=messages.ConnectLink(
+					ID=msg.remoteID,
+
+					#TODO: find a way to update this whenever it changes:
+					callbackHost=msg.localHost,
+					callbackPort=msg.localPort,
+					callbackID=msg.localID
+					)
 				)
 
 		return []
@@ -244,6 +253,17 @@ class NodeState(serializable.Serializable):
 		del self.transactions[transactionID]
 
 		return ret
+
+
+	def msg_connectLink(self, msg):
+		#Update call-back information:
+		if None not in (msg.callbackHost, msg.callbackPort, msg.callbackID):
+			self.connections[msg.ID].host = msg.callbackHost
+			self.connections[msg.ID].port = msg.callbackPort
+			self.connections[msg.ID].connectMessage.ID = msg.callbackID
+
+		#TODO: maybe inform link about creation of the connection?
+		return []
 
 
 	def msg_passToAnyone(self, msg):
