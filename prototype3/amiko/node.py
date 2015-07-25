@@ -283,6 +283,13 @@ class Node(threading.Thread):
 
 	def makeConnection(self, ID):
 		persistentConn = self.__node.connections[ID]
+
+		if None in (persistentConn.host, persistentConn.port, persistentConn.connectMessage):
+			log.log(
+				'Not enough information for creating connection %s; skipping' % \
+				ID)
+			return
+
 		connection = self.__network.makeConnection(
 			(persistentConn.host, persistentConn.port), ID)
 		connection.sendMessage(None, persistentConn.connectMessage)
@@ -425,6 +432,8 @@ class Node(threading.Thread):
 			remotePort=remotePort,
 			remoteID=remoteID
 			))
+
+		self.makeConnection(localName)
 
 		return "amikolink://%s/%s" % \
 			(self.settings.getAdvertizedNetworkLocation(), localName)

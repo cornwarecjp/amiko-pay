@@ -128,6 +128,15 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_makeLink(self, msg):
+		if msg.localID in self.links.keys():
+			raise Exception('A link with ID %s already exists' % msg.localID)
+
+		if msg.localID in self.payeeLinks.keys():
+			raise Exception('A payee link with ID %s already exists' % msg.localID)
+
+		if msg.localID[0] == '_':
+			raise Exception('Names starting with an underscore are reserved, and can not be used')
+
 		self.links[msg.localID] = link.Link()
 
 		self.connections[msg.localID] = \
