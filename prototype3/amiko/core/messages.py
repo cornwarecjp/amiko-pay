@@ -44,6 +44,16 @@ class Connect(serializable.Serializable):
 	serializableAttributes = {'ID':''}
 
 
+class Pay(Connect):
+	pass
+serializable.registerClass(Pay)
+
+
+class ConnectLink(Connect):
+	pass
+serializable.registerClass(ConnectLink)
+
+
 class OutboundMessage(serializable.Serializable):
 	serializableAttributes = {'localID': '', 'message': None}
 serializable.registerClass(OutboundMessage)
@@ -69,11 +79,6 @@ class PayerLink_Confirm(serializable.Serializable):
 serializable.registerClass(PayerLink_Confirm)
 
 
-class Pay(Connect):
-	pass
-serializable.registerClass(Pay)
-
-
 class Confirm(serializable.Serializable):
 	serializableAttributes = {"ID": None, "meetingPointID": ""}
 serializable.registerClass(Confirm)
@@ -92,6 +97,11 @@ serializable.registerClass(PaymentRequest)
 class MakePayer(serializable.Serializable):
 	serializableAttributes = {'host':'', 'port':0, 'payeeLinkID': ''}
 serializable.registerClass(MakePayer)
+
+
+class MakeLink(serializable.Serializable):
+	serializableAttributes = {'localID':'', 'remoteHost':None, 'remotePort':None, 'remoteID':None}
+serializable.registerClass(MakeLink)
 
 
 class ReturnValue(serializable.Serializable):

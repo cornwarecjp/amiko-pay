@@ -65,6 +65,7 @@ class NodeState(serializable.Serializable):
 		{
 		messages.PaymentRequest : self.msg_request,
 		messages.MakePayer      : self.msg_makePayer,
+		messages.MakeLink       : self.msg_makeLink,
 		messages.MakeRoute      : self.msg_makeRoute,
 		messages.Lock           : self.msg_lock,
 		messages.Commit         : self.msg_commit,
@@ -124,6 +125,19 @@ class NodeState(serializable.Serializable):
 				self.payerLink.getTimeoutMessage()  #Add time-out for payer
 			)
 			]
+
+
+	def msg_makeLink(self, msg):
+		self.links[msg.localID] = link.Link()
+
+		self.connections[msg.localID] = \
+			persistentconnection.PersistentConnection(
+				host=msg.remoteHost,
+				port=msg.remotePort,
+				connectMessage=messages.ConnectLink(ID=msg.remoteID)
+				)
+
+		return []
 
 
 	def msg_makeRoute(self, msg):

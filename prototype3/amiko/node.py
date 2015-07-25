@@ -254,6 +254,7 @@ class Node(threading.Thread):
 				if msg.__class__ in [
 					messages.PaymentRequest,
 					messages.MakePayer,
+					messages.MakeLink,
 					messages.MakeRoute,
 					messages.HavePayerRoute,
 					messages.HavePayeeRoute,
@@ -430,7 +431,24 @@ class Node(threading.Thread):
 
 	@runInNodeThread
 	def makeLink(self, localName, remoteURL=""):
-		raise Exception("NYI")
+		remoteHost = None
+		remotePort = None
+		remoteID = None
+		if remoteURL != "":
+			URL = urlparse(remoteURL)
+			remoteHost = URL.hostname
+			remotePort = settings.defaultPort if URL.port == None else URL.port
+			remoteID = URL.path[1:]
+
+		self.handleMessage(messages.MakeLink(
+			localID=localName,
+			remoteHost=remoteHost,
+			remotePort=remotePort,
+			remoteID=remoteID
+			))
+
+		return "amikolink://%s/%s" % \
+			(self.settings.getAdvertizedNetworkLocation(), localName)
 
 
 	@runInNodeThread
