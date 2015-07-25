@@ -36,8 +36,8 @@ import log
 
 
 class Connection(asyncore.dispatcher_with_send):
-	def __init__(self, sock, callback):
-		asyncore.dispatcher_with_send.__init__(self, sock)
+	def __init__(self, sock, channelMap, callback):
+		asyncore.dispatcher_with_send.__init__(self, sock, map=channelMap)
 		self.readBuffer = ''
 		self.callback = callback
 		self.localID = None
@@ -108,7 +108,7 @@ class Connection(asyncore.dispatcher_with_send):
 
 class Listener(asyncore.dispatcher):
 	def __init__(self, host, port, network):
-		asyncore.dispatcher.__init__(self)
+		asyncore.dispatcher.__init__(self, map=network.channelMap)
 		self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.set_reuse_addr()
 		self.bind((host, port))
@@ -129,13 +129,14 @@ class Listener(asyncore.dispatcher):
 
 class Network:
 	def __init__(self, host, port, callback):
+		self.channelMap = {}
 		self.listener = Listener(host, port, self)
 		self.callback = callback
 		self.connections = []
 
 
 	def processNetworkEvents(self, timeout):
-		asyncore.loop(timeout=timeout, count=1)
+		asyncore.loop(timeout=timeout, count=1, map=self.channelMap)
 
 
 	def sendOutboundMessage(self, index, msg):
@@ -167,7 +168,7 @@ class Network:
 
 
 	def makeConnectionFromSocket(self, sock):
-		connection = Connection(sock, self.callback)
+		connection = Connection(sock, self.channelMap, self.callback)
 		self.connections.append(connection)
 		return connection
 
