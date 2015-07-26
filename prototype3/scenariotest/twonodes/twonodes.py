@@ -138,6 +138,8 @@ URL = node2.request(123, "receipt")
 print "Payment URL:", URL
 
 amount, receipt = node1.pay(URL)
+print "Amount: ", amount
+print "Receipt: ", receipt
 paymentState = node1.confirmPayment(True)
 print "Payment is ", paymentState
 
