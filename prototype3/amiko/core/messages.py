@@ -79,11 +79,6 @@ class Receipt(serializable.Serializable):
 serializable.registerClass(Receipt)
 
 
-class PayerLink_Confirm(serializable.Serializable):
-	serializableAttributes = {'agreement':False}
-serializable.registerClass(PayerLink_Confirm)
-
-
 class Confirm(serializable.Serializable):
 	serializableAttributes = {"ID": None, "meetingPointID": ""}
 serializable.registerClass(Confirm)
@@ -97,6 +92,11 @@ serializable.registerClass(Cancel)
 class PaymentRequest(serializable.Serializable):
 	serializableAttributes = {'amount':0, 'receipt':''}
 serializable.registerClass(PaymentRequest)
+
+
+class PayerLink_Confirm(serializable.Serializable):
+	serializableAttributes = {'agreement':False}
+serializable.registerClass(PayerLink_Confirm)
 
 
 class MakePayer(serializable.Serializable):
@@ -113,6 +113,11 @@ class MakeLink(serializable.Serializable):
 		'remotePort': None,
 		'remoteID': None}
 serializable.registerClass(MakeLink)
+
+
+class Link_Deposit(serializable.Serializable):
+	serializableAttributes = {'ID': '', 'channel': None}
+serializable.registerClass(Link_Deposit)
 
 
 class ReturnValue(serializable.Serializable):

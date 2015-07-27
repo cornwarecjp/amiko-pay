@@ -85,7 +85,9 @@ class NodeState(serializable.Serializable):
 		messages.ConnectLink: self.msg_connectLink,
 
 		messages.OutboundMessage: self.msg_passToConnection,
-		messages.Confirmation   : self.msg_passToConnection
+		messages.Confirmation   : self.msg_passToConnection,
+
+		messages.Link_Deposit: self.msg_passToLink
 		}[msg.__class__](msg)
 
 
@@ -294,6 +296,10 @@ class NodeState(serializable.Serializable):
 
 	def msg_passToConnection(self, msg):
 		return self.connections[msg.localID].handleMessage(msg)
+
+
+	def msg_passToLink(self, msg):
+		return self.links[msg.ID].handleMessage(msg)
 
 
 serializable.registerClass(NodeState)

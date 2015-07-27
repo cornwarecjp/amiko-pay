@@ -442,17 +442,16 @@ class Node(threading.Thread):
 
 
 	@runInNodeThread
-	def deposit(self, linkname, amount):
+	def deposit(self, linkname, channel):
 		"""
 		Deposit into a link.
 
 		Arguments:
 		linkname: the name of the link
-		amount: the amount (integer, Satoshi) to be deposited
+		channel: a new channel object, to be added to the link for the deposit
 		"""
 
-		raise Exception("NYI")
-
+		self.handleMessage(messages.Link_Deposit(ID=linkname, channel=channel))
 
 
 	@runInNodeThread

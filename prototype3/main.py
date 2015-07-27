@@ -33,6 +33,7 @@ import pprint
 from decimal import Decimal
 
 from amiko.utils import crypto
+from amiko.channels import plainchannel
 from amiko import node
 
 
@@ -192,7 +193,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 			print "Aborted"
 			return
 
-		a.deposit(linkname, amount)
+		channel = plainchannel.PlainChannel.makeForOwnDeposit(amount)
+
+		a.deposit(linkname, channel)
 
 	elif cmd[0] == "withdraw":
 		checkNumArgs(2, 2)

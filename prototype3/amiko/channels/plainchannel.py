@@ -1,4 +1,4 @@
-#    link.py
+#    plainchannel.py
 #    Copyright (C) 2015 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -26,40 +26,39 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-import messages
-
-import serializable
-
+#TODO: should serializable be moved to utils?
+from ..core import serializable
 
 
-class Link(serializable.Serializable):
-	serializableAttributes = {'channels':[]}
+
+class PlainChannel(serializable.Serializable):
+	"""
+	Payment channel without any protection.
+	This implements a pure Ripple-style system, with full trust between
+	neighbors.
+	"""
+
+	serializableAttributes = \
+	{
+	'amountLocal': 0,
+	'amountRemote': 0,
+
+	#hash -> amount
+	'transactionsIncomingReserved': {},
+	'transactionsOutgoingReserved': {},
+	'transactionsIncomingLocked':   {},
+	'transactionsOutgoingLocked':   {}
+	}
+
+
+	@staticmethod
+	def makeForOwnDeposit(amount):
+		return PlainChannel(amountLocal=amount, amountRemote=0)
 
 
 	def handleMessage(self, msg):
-		return \
-		{
-		messages.Link_Deposit: self.msg_ownDeposit
-		}[msg.__class__](msg)
+		return None
 
 
-	def msg_ownDeposit(self, msg):
-		self.channels.append(msg.channel)
-
-		#Allow the channel to start a conversation with the peer,
-		#related to the deposit.
-		return self.startChannelConversation(msg.channel)
-
-
-	def startChannelConversation(self, channel):
-		channelMessage = channel.handleMessage(None) #None = start of conversation
-
-		if channelMessage is None: #None = end of conversation
-			return []
-
-		#TODO: encapsulate the channel message, and return it.
-		return []
-
-
-serializable.registerClass(Link)
+serializable.registerClass(PlainChannel)
 
