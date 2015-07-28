@@ -59,19 +59,24 @@ class ConnectLink(Connect):
 serializable.registerClass(ConnectLink)
 
 
-class OutboundMessage(serializable.Serializable):
-	serializableAttributes = {'localID': '', 'message': None}
-serializable.registerClass(OutboundMessage)
-
-
 class Confirmation(serializable.Serializable):
 	serializableAttributes = {'localID': '', 'index':0}
 serializable.registerClass(Confirmation)
 
 
+class OutboundMessage(serializable.Serializable):
+	serializableAttributes = {'localID': '', 'message': None}
+serializable.registerClass(OutboundMessage)
+
+
 class Timeout(serializable.Serializable):
 	serializableAttributes = {'state':''}
 serializable.registerClass(Timeout)
+
+
+class ChannelMessage(serializable.Serializable):
+	serializableAttributes = {'ID': '', 'channelIndex': 0, 'message': None}
+serializable.registerClass(ChannelMessage)
 
 
 class Receipt(serializable.Serializable):

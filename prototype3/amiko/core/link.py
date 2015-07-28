@@ -40,7 +40,8 @@ class Link(serializable.Serializable):
 		return \
 		{
 		messages.Link_Deposit: self.msg_ownDeposit,
-		messages.Deposit: self.msg_peerDeposit
+		messages.Deposit: self.msg_peerDeposit,
+		messages.ChannelMessage: self.continueChannelConversation
 		}[msg.__class__](msg)
 
 
@@ -49,6 +50,7 @@ class Link(serializable.Serializable):
 			raise Exception('Can not deposit into a link whose remote ID is unknown')
 
 		self.channels.append(msg.channel)
+		channelIndex = len(self.channels) - 1
 
 		#Allow the channel to start a conversation with the peer,
 		#related to the deposit.
@@ -57,11 +59,11 @@ class Link(serializable.Serializable):
 			messages.OutboundMessage(localID=msg.ID,
 				message=messages.Deposit(
 					ID=self.remoteID,
-					channelIndex=len(self.channels)-1,
+					channelIndex=channelIndex,
 					channelClass=str(msg.channel.__class__.__name__)
 				))
 			] + \
-			self.startChannelConversation(msg.channel)
+			self.startChannelConversation(msg.ID, channelIndex)
 
 
 	def msg_peerDeposit(self, msg):
@@ -70,23 +72,38 @@ class Link(serializable.Serializable):
 
 		#TODO: prevent spamming DOS attack?
 
+		#TODO: maybe we accept some channel classes for some links, but not for others
 		channel = serializable.state2Object({'_class': msg.channelClass})
-
-		#TODO: immediate channel initialization?
 
 		self.channels.append(channel)
 
 		return []
 
 
-	def startChannelConversation(self, channel):
-		channelMessage = channel.handleMessage(None) #None = start of conversation
+	def startChannelConversation(self, localID, channelIndex):
+		inputMessage = messages.ChannelMessage(
+			ID=localID,
+			channelIndex=channelIndex,
+			message=None #None = start of conversation
+			)
 
-		if channelMessage is None: #None = end of conversation
+		return self.continueChannelConversation(inputMessage)
+
+
+	def continueChannelConversation(self, msg):
+		outputMessage = self.channels[msg.channelIndex].handleMessage(msg.message)
+
+		if outputMessage is None: #None = end of conversation
 			return []
 
-		#TODO: encapsulate the channel message, and return it.
-		return []
+		return \
+			[
+			messages.OutboundMessage(localID=msg.ID, message=messages.ChannelMessage(
+				ID=self.remoteID,
+				channelIndex=msg.channelIndex,
+				message=outputMessage
+				))
+			]
 
 
 serializable.registerClass(Link)

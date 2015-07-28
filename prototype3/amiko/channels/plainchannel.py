@@ -26,8 +26,16 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+from ..utils import utils
+
 #TODO: should serializable be moved to utils?
 from ..core import serializable
+
+
+
+class PlainChannel_Deposit(serializable.Serializable):
+	serializableAttributes = {'amount': 0}
+serializable.registerClass(PlainChannel_Deposit)
 
 
 
@@ -38,8 +46,15 @@ class PlainChannel(serializable.Serializable):
 	neighbors.
 	"""
 
+	states = utils.Enum([
+		"initial", "depositing",
+		"ready"
+		])
+
 	serializableAttributes = \
 	{
+	'state': states.initial,
+
 	'amountLocal': 0,
 	'amountRemote': 0,
 
@@ -53,10 +68,19 @@ class PlainChannel(serializable.Serializable):
 
 	@staticmethod
 	def makeForOwnDeposit(amount):
-		return PlainChannel(amountLocal=amount, amountRemote=0)
+		return PlainChannel(
+			state=PlainChannel.states.depositing, amountLocal=amount, amountRemote=0)
 
 
 	def handleMessage(self, msg):
+		if (self.state, msg) == (self.states.depositing, None):
+			self.state = self.states.ready
+			return PlainChannel_Deposit(amount=self.amountLocal)
+		elif (self.state, msg.__class__) == (self.states.initial, PlainChannel_Deposit):
+			self.state = self.states.ready
+			self.amountRemote = msg.amount
+			return None
+
 		return None
 
 
