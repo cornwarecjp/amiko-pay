@@ -33,22 +33,50 @@ import serializable
 
 
 class Link(serializable.Serializable):
-	serializableAttributes = {'channels':[]}
+	serializableAttributes = {'remoteID': '', 'channels':[]}
 
 
 	def handleMessage(self, msg):
 		return \
 		{
-		messages.Link_Deposit: self.msg_ownDeposit
+		messages.Link_Deposit: self.msg_ownDeposit,
+		messages.Deposit: self.msg_peerDeposit
 		}[msg.__class__](msg)
 
 
 	def msg_ownDeposit(self, msg):
+		if self.remoteID is None:
+			raise Exception('Can not deposit into a link whose remote ID is unknown')
+
 		self.channels.append(msg.channel)
 
 		#Allow the channel to start a conversation with the peer,
 		#related to the deposit.
-		return self.startChannelConversation(msg.channel)
+		return \
+			[
+			messages.OutboundMessage(localID=msg.ID,
+				message=messages.Deposit(
+					ID=self.remoteID,
+					channelIndex=len(self.channels)-1,
+					channelClass=str(msg.channel.__class__.__name__)
+				))
+			] + \
+			self.startChannelConversation(msg.channel)
+
+
+	def msg_peerDeposit(self, msg):
+		if msg.channelIndex != len(self.channels):
+			raise Exception('Received Deposit message with incorrect channel index.')
+
+		#TODO: prevent spamming DOS attack?
+
+		channel = serializable.state2Object({'_class': msg.channelClass})
+
+		#TODO: immediate channel initialization?
+
+		self.channels.append(channel)
+
+		return []
 
 
 	def startChannelConversation(self, channel):

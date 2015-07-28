@@ -87,7 +87,8 @@ class NodeState(serializable.Serializable):
 		messages.OutboundMessage: self.msg_passToConnection,
 		messages.Confirmation   : self.msg_passToConnection,
 
-		messages.Link_Deposit: self.msg_passToLink
+		messages.Link_Deposit: self.msg_passToLink,
+		messages.Deposit     : self.msg_passToLink
 		}[msg.__class__](msg)
 
 
@@ -141,7 +142,7 @@ class NodeState(serializable.Serializable):
 		if msg.localID[0] == '_':
 			raise Exception('Names starting with an underscore are reserved, and can not be used')
 
-		self.links[msg.localID] = link.Link()
+		self.links[msg.localID] = link.Link(remoteID=msg.remoteID)
 
 		self.connections[msg.localID] = \
 			persistentconnection.PersistentConnection(
@@ -263,6 +264,7 @@ class NodeState(serializable.Serializable):
 			self.connections[msg.ID].host = msg.callbackHost
 			self.connections[msg.ID].port = msg.callbackPort
 			self.connections[msg.ID].connectMessage.ID = msg.callbackID
+			self.links[msg.ID].remoteID = msg.callbackID
 
 		#TODO: maybe inform link about creation of the connection?
 		return []
