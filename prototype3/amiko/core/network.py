@@ -32,15 +32,17 @@ import socket
 import serializable
 import messages
 import log
+import randomsource
 
 
 
 class Connection(asyncore.dispatcher_with_send):
-	def __init__(self, sock, channelMap, callback):
-		asyncore.dispatcher_with_send.__init__(self, sock, map=channelMap)
+	def __init__(self, sock, network):
+		asyncore.dispatcher_with_send.__init__(self, sock, map=network.channelMap)
 		self.readBuffer = ''
-		self.callback = callback
+		self.network = network
 		self.localID = None
+		self.dice = None
 		self.isClosed = False
 
 
@@ -68,7 +70,7 @@ class Connection(asyncore.dispatcher_with_send):
 			if 'received' in container.keys():
 				#Process received confirmation:
 				index = container['received']
-				self.callback.handleMessage(
+				self.network.callback.handleMessage(
 					messages.Confirmation(localID=self.localID, index=index)
 					)
 			elif 'message' in container.keys():
@@ -80,6 +82,8 @@ class Connection(asyncore.dispatcher_with_send):
 					if not (self.localID is None):
 						raise Exception("Received connect message while already connected")
 					self.localID = msg.ID
+					self.dice = msg.dice
+					self.network.checkForDuplicateConnections(self.localID)
 				else:
 					#Send confirmation on non-connect messages:
 					confirmation = {'received': index}
@@ -87,7 +91,7 @@ class Connection(asyncore.dispatcher_with_send):
 
 				#TODO: filter for acceptable message types, IDs etc. before
 				#sending them to a general-purpose message handler
-				self.callback.handleMessage(msg)
+				self.network.callback.handleMessage(msg)
 			else:
 				log.log("Received message with invalid format")
 		except Exception as e:
@@ -159,18 +163,47 @@ class Network:
 		return None
 
 
-	def makeConnection(self, address, localID):
+	def makeConnection(self, address, localID, connectMessage):
+		log.log('Making connection %s' % localID)
+
+		if self.interfaceExists(localID):
+			log.log('Connection %s already exists -> don\'t create it' % localID)
+			return
+
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.connect(address)
 		connection = self.makeConnectionFromSocket(sock)
 		connection.localID = localID
+		connection.dice = randomsource.getNonSecureRandom(numBytes=4)
+
+		connectMessage.dice = connection.dice
+		connection.sendMessage(None, connectMessage)
+
 		return connection
 
 
 	def makeConnectionFromSocket(self, sock):
-		connection = Connection(sock, self.channelMap, self.callback)
+		connection = Connection(sock, self)
 		self.connections.append(connection)
 		return connection
+
+
+	def checkForDuplicateConnections(self, localID):
+		connections = [c for c in self.connections if c.localID == localID]
+		if len(connections) < 2:
+			return
+
+		keepConnection = connections[0]
+		for c in connections:
+			if c.dice > keepConnection.dice: #'alphabetical': big endian
+				keepConnection = c
+
+		for c in connections:
+			if c != keepConnection:
+				i = self.connections.index(c)
+				log.log('Closing duplicate connection for %s' % localID)
+				self.connections[i].close()
+				del self.connections[i]
 
 
 	def closeInterface(self, localID):

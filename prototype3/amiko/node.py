@@ -127,6 +127,9 @@ class Node(threading.Thread):
 
 		self.__loadState()
 
+		for ID in self.__node.connections.keys():
+			self.makeConnection(ID)
+
 
 	def __loadState(self):
 
@@ -290,9 +293,8 @@ class Node(threading.Thread):
 				ID)
 			return
 
-		connection = self.__network.makeConnection(
-			(persistentConn.host, persistentConn.port), ID)
-		connection.sendMessage(None, persistentConn.connectMessage)
+		self.__network.makeConnection(
+			(persistentConn.host, persistentConn.port), ID, persistentConn.connectMessage)
 
 
 	def stop(self):

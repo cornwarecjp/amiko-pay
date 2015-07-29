@@ -41,7 +41,7 @@ class Connect(serializable.Serializable):
 	This is a base class for messages that indicate a connection ID
 	(Link and Pay).
 	"""
-	serializableAttributes = {'ID':''}
+	serializableAttributes = {'ID': '', 'dice': 0}
 
 
 class Pay(Connect):
@@ -52,6 +52,7 @@ serializable.registerClass(Pay)
 class ConnectLink(Connect):
 	serializableAttributes = {
 		'ID': '',
+		'dice': 0,
 		'callbackHost': None,
 		'callbackPort': None,
 		'callbackID': None

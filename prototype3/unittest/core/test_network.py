@@ -53,7 +53,8 @@ class Test(unittest.TestCase):
 		"Test connection session"
 
 		#Opening the connection:
-		c1 = self.network.makeConnection(('localhost', 4321), 'localID')
+		c1 = self.network.makeConnection(
+			('localhost', 4321), 'localID', messages.Pay(ID='remoteID'))
 
 		self.assertEqual(c1.localID, 'localID')
 		self.assertEqual(len(self.network.connections), 1)
@@ -66,11 +67,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(len(self.network.connections), 2)
 		c2 = self.network.connections[1]
 		self.assertEqual(c2.localID, None)
-
-		#Sending a connect message:
-		self.network.sendOutboundMessage(0, messages.OutboundMessage(
-			localID='localID',
-			message=messages.Pay(ID='remoteID')))
 
 		self.assertEqual(len(self.messages), 0)
 
@@ -118,6 +114,11 @@ class Test(unittest.TestCase):
 
 		self.assertEqual(len(self.messages), 0)
 
+		#Try to make an already open connection (should be ignored):
+		self.network.makeConnection(
+			('localhost', 4321), 'localID', messages.Pay(ID='remoteID'))
+		self.assertEqual(len(self.network.connections), 2)
+
 		#Closing the connection:
 		self.network.closeInterface('remoteID')
 
@@ -137,6 +138,31 @@ class Test(unittest.TestCase):
 		self.assertEqual(len(self.messages), 0)
 
 
+	def test_duplicateConnection(self):
+		"Test duplicate connection scenario"
+
+		c1 = self.network.makeConnection(
+			('localhost', 4321), 'localID', messages.Pay(ID='remoteID'))
+		c2 = self.network.makeConnection(
+			('localhost', 4321), 'remoteID', messages.Pay(ID='localID'))
+
+		self.assertEqual(len(self.network.connections), 2)
+		self.assertTrue(c1 in self.network.connections)
+		self.assertTrue(c2 in self.network.connections)
+		self.assertTrue(self.network.interfaceExists('localID'))
+		self.assertTrue(self.network.interfaceExists('remoteID'))
+
+		self.network.processNetworkEvents(timeout=0.01)
+		self.network.processNetworkEvents(timeout=0.01)
+		self.network.processNetworkEvents(timeout=0.01)
+
+		self.assertEqual(len(self.network.connections), 2)
+		stillOpen = [c for c in (c1,c2) if c in self.network.connections]
+		self.assertEqual(len(stillOpen), 1) #exactly one of the original connections is still open
+		self.assertTrue(self.network.interfaceExists('localID'))
+		self.assertTrue(self.network.interfaceExists('remoteID'))
+
+
 	def test_acceptError(self):
 		"Test accept error"
 
@@ -145,7 +171,8 @@ class Test(unittest.TestCase):
 		self.network.listener.accept = acceptWithException
 
 		#Opening a connection:
-		c1 = self.network.makeConnection(('localhost', 4321), 'localID')
+		c1 = self.network.makeConnection(
+			('localhost', 4321), 'localID', messages.Pay(ID='remoteID'))
 
 		#This triggers the handle_accept to be called for the above connection:
 		self.network.processNetworkEvents(timeout=0.01)
