@@ -32,6 +32,8 @@ import pprint
 import sys
 sys.path.append('../..')
 
+from amiko.channels import plainchannel
+
 from amiko import node
 from amiko.core import settings
 
@@ -51,7 +53,23 @@ with open(settings1.stateFile, "wb") as f:
 				"_class": "NodeState",
 				"links":
 				{
-					"node1": {"_class": "Link", "channels": []}
+					"node1":
+					{
+						"_class": "Link",
+						"channels":
+						[
+						{
+						"_class": "PlainChannel",
+						"state": "ready",
+						"amountLocal": 1000,
+						"amountRemote": 0,
+						"transactionsIncomingLocked": {},
+						"transactionsOutgoingLocked": {},
+						"transactionsIncomingReserved": {},
+						"transactionsOutgoingReserved": {}
+						}
+						]
+					}
 				},
 				"connections":
 				{
@@ -96,7 +114,23 @@ with open(settings2.stateFile, "wb") as f:
 				"_class": "NodeState",
 				"links":
 				{
-					"node2": {"_class": "Link", "channels": []}
+					"node2":
+					{
+						"_class": "Link",
+						"channels":
+						[
+						{
+						"_class": "PlainChannel",
+						"state": "ready",
+						"amountLocal": 0,
+						"amountRemote": 1000,
+						"transactionsIncomingLocked": {},
+						"transactionsOutgoingLocked": {},
+						"transactionsIncomingReserved": {},
+						"transactionsOutgoingReserved": {}
+						}
+						]
+					}
 				},
 				"connections":
 				{
