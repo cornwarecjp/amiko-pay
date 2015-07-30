@@ -128,7 +128,10 @@ class Node(threading.Thread):
 		self.__loadState()
 
 		for ID in self.__node.connections.keys():
-			self.makeConnection(ID)
+			try:
+				self.makeConnection(ID)
+			except network.ConnectFailed as e:
+				log.log("Connect failed (ignored)")
 
 
 	def __loadState(self):
@@ -437,7 +440,10 @@ class Node(threading.Thread):
 			remoteID=remoteID
 			))
 
-		self.makeConnection(localName)
+		try:
+			self.makeConnection(localName)
+		except network.ConnectFailed:
+			log.log("Connect failed (ignored)")
 
 		return "amikolink://%s/%s" % \
 			(self.settings.getAdvertizedNetworkLocation(), localName)

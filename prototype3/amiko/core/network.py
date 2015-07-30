@@ -36,6 +36,10 @@ import randomsource
 
 
 
+class ConnectFailed(Exception):
+	pass
+
+
 class Connection(asyncore.dispatcher_with_send):
 	def __init__(self, sock, network):
 		asyncore.dispatcher_with_send.__init__(self, sock, map=network.channelMap)
@@ -170,8 +174,13 @@ class Network:
 			log.log('Connection %s already exists -> don\'t create it' % localID)
 			return
 
-		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sock.connect(address)
+		try:
+			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			sock.connect(address)
+		except Exception as e:
+			log.log("Connect failed: " + str(e))
+			raise ConnectFailed("Connect failed: " + str(e))
+
 		connection = self.makeConnectionFromSocket(sock)
 		connection.localID = localID
 		connection.dice = randomsource.getNonSecureRandom(numBytes=4)
