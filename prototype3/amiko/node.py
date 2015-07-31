@@ -29,7 +29,6 @@
 
 import threading
 from urlparse import urlparse
-import os
 import time
 
 from core import log
@@ -40,6 +39,7 @@ from core import payeelink
 from core import messages
 from core import paylog
 from core import serializable
+from core import persistentobject
 from core import settings
 
 
@@ -125,71 +125,16 @@ class Node(threading.Thread):
 		self._commandProcessed = threading.Event()
 		self._commandReturnValue = None
 
-		self.__loadState()
+		self.__node = persistentobject.PersistentObject(
+			filename=self.settings.stateFile,
+			defaultObject=nodestate.NodeState() #empty state
+			)
 
 		for ID in self.__node.connections.keys():
 			try:
 				self.makeConnection(ID)
 			except network.ConnectFailed as e:
 				log.log("Connect failed (ignored)")
-
-
-	def __loadState(self):
-
-		oldFile = self.settings.stateFile + ".old"
-		if os.access(oldFile, os.F_OK):
-			if os.access(self.settings.stateFile, os.F_OK):
-				#Remove old file if normal state file exists:
-				os.remove(oldFile)
-			else:
-				#Use old file if state file does not exist:
-				os.rename(oldFile, self.settings.stateFile)
-
-		try:
-			with open(self.settings.stateFile, 'rb') as fp:
-				stateData = fp.read()
-
-			self.setState(serializable.deserializeState(stateData))
-
-		except IOError:
-			log.log("Failed to load from %s" % self.settings.stateFile)
-			log.log("Starting with empty state")
-
-			#Create a new, empty state:
-			self.__node = nodestate.NodeState()
-
-			#Store the newly created state
-			self.__saveState()
-
-
-	def __saveState(self):
-		stateData = serializable.serializeState(self.getState())
-
-		newFile = self.settings.stateFile + ".new"
-		log.log("Saving in " + newFile)
-		with open(newFile, 'wb') as fp:
-			fp.write(stateData)
-
-		oldFile = self.settings.stateFile + ".old"
-
-		#Replace old data with new data
-		try:
-			os.rename(self.settings.stateFile, oldFile)
-		except OSError:
-			log.log("Got OSError on renaming old state file; probably it didn't exist yet, which is OK in a fresh installation.")
-		os.rename(newFile, self.settings.stateFile)
-		try:
-			os.remove(oldFile)
-		except OSError:
-			log.log("Got OSError on removing old state file; probably it didn't exist, which is OK in a fresh installation.")
-
-
-	def getState(self):
-		return serializable.object2State(self.__node)
-
-
-	def setState(self, s):
-		self.__node = serializable.state2Object(s)
 
 
 	def __addTimeoutMessage(self, msg):
@@ -214,7 +159,6 @@ class Node(threading.Thread):
 				log.log('Cleaning up payer')
 				if not (self.__node.payerLink.amount is None):
 					self.payLog.writePayer(self.__node.payerLink)
-				transactionID = self.__node.payerLink.transactionID
 				self.__node.payerLink = None
 				self.__node.connections[messages.payerLocalID].close()
 				self.__node.timeoutMessages = \
@@ -231,7 +175,6 @@ class Node(threading.Thread):
 			if payee.state in [payeelink.PayeeLink.states.cancelled, payeelink.PayeeLink.states.committed]:
 				log.log('Cleaning up payee ' + payeeID)
 				self.payLog.writePayee(payee)
-				transactionID = payee.transactionID
 				del self.__node.payeeLinks[payeeID]
 				self.__node.connections[payeeID].close()
 
@@ -239,8 +182,7 @@ class Node(threading.Thread):
 	def handleMessage(self, msg):
 		returnValue = None
 
-		oldState = self.getState()
-		try:
+		with self.__node: #makes sure the state is saved or restored in the end
 
 			messageQueue = [msg]
 			while len(messageQueue) > 0:
@@ -269,13 +211,6 @@ class Node(threading.Thread):
 						messageQueue.append(msg)
 
 			self.__cleanupState()
-
-			self.__saveState()
-		except Exception as e:
-			log.logException()
-			#In case of exception, recover the old state:
-			self.setState(oldState)
-			raise
 
 		return returnValue
 
@@ -399,7 +334,7 @@ class Node(threading.Thread):
 		Amiko node.
 		"""
 
-		return self.getState()
+		return self.__node.getState()
 
 
 	@runInNodeThread
@@ -514,7 +449,7 @@ class Node(threading.Thread):
 					self.__network.closeInterface(localID)
 					doSaveState = True
 			if doSaveState:
-				self.__saveState()
+				self.__node.save()
 
 			if self.__stop:
 				#TODO: stop creation of new transactions
