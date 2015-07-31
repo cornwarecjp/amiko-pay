@@ -127,9 +127,10 @@ class Node(threading.Thread):
 
 		self.__node = persistentobject.PersistentObject(
 			filename=self.settings.stateFile,
-			defaultObject=nodestate.NodeState() #empty state
+			defaultObject=nodestate.NodeState() #empty state; used when file can not be loaded
 			)
 
+		#Establish connections
 		for ID in self.__node.connections.keys():
 			try:
 				self.makeConnection(ID)
@@ -138,45 +139,39 @@ class Node(threading.Thread):
 
 
 	def __addTimeoutMessage(self, msg):
-		"""
-		Note: you should call __saveState afterwards!
-		"""
-
-		self.__node.timeoutMessages.append(msg)
-		self.__node.timeoutMessages.sort(
-			cmp = lambda a, b: int(a.timestamp - b.timestamp)
-			)
+		with self.__node: #makes sure the state is saved or restored in the end
+			self.__node.timeoutMessages.append(msg)
+			self.__node.timeoutMessages.sort(
+				cmp = lambda a, b: int(a.timestamp - b.timestamp)
+				)
 
 
 	def __cleanupState(self):
-		"""
-		Note: you should call __saveState afterwards!
-		"""
+		with self.__node: #makes sure the state is saved or restored in the end
+			#Remove finished payer and related objects:
+			if not (self.__node.payerLink is None) and \
+				self.__node.payerLink.state in [payerlink.PayerLink.states.cancelled, payerlink.PayerLink.states.committed]:
+					log.log('Cleaning up payer')
+					if not (self.__node.payerLink.amount is None):
+						self.payLog.writePayer(self.__node.payerLink)
+					self.__node.payerLink = None
+					self.__node.connections[messages.payerLocalID].close()
+					self.__node.timeoutMessages = \
+					[
+						msg
+						for msg in self.__node.timeoutMessages
+						if msg.message.__class__ != messages.Timeout
+					]
 
-		#Remove finished payer and related objects:
-		if not (self.__node.payerLink is None) and \
-			self.__node.payerLink.state in [payerlink.PayerLink.states.cancelled, payerlink.PayerLink.states.committed]:
-				log.log('Cleaning up payer')
-				if not (self.__node.payerLink.amount is None):
-					self.payLog.writePayer(self.__node.payerLink)
-				self.__node.payerLink = None
-				self.__node.connections[messages.payerLocalID].close()
-				self.__node.timeoutMessages = \
-				[
-					msg
-					for msg in self.__node.timeoutMessages
-					if msg.message.__class__ != messages.Timeout
-				]
-
-		#Remove finished payee and related objects:
-		payeeIDs = self.__node.payeeLinks.keys()
-		for payeeID in payeeIDs:
-			payee = self.__node.payeeLinks[payeeID]
-			if payee.state in [payeelink.PayeeLink.states.cancelled, payeelink.PayeeLink.states.committed]:
-				log.log('Cleaning up payee ' + payeeID)
-				self.payLog.writePayee(payee)
-				del self.__node.payeeLinks[payeeID]
-				self.__node.connections[payeeID].close()
+			#Remove finished payee and related objects:
+			payeeIDs = self.__node.payeeLinks.keys()
+			for payeeID in payeeIDs:
+				payee = self.__node.payeeLinks[payeeID]
+				if payee.state in [payeelink.PayeeLink.states.cancelled, payeelink.PayeeLink.states.committed]:
+					log.log('Cleaning up payee ' + payeeID)
+					self.payLog.writePayee(payee)
+					del self.__node.payeeLinks[payeeID]
+					self.__node.connections[payeeID].close()
 
 
 	def handleMessage(self, msg):
