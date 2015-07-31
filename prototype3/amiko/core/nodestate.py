@@ -56,7 +56,8 @@ class NodeState(serializable.Serializable):
 	'payerLink': None,
 	'meetingPoints':{},
 	'transactions':{},
-	'connections':{}
+	'connections':{},
+	'timeoutMessages': []
 	}
 
 

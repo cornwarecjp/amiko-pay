@@ -157,7 +157,6 @@ class Node(threading.Thread):
 
 			#Create a new, empty state:
 			self.__node = nodestate.NodeState()
-			self.__timeoutMessages = []
 
 			#Store the newly created state
 			self.__saveState()
@@ -186,17 +185,11 @@ class Node(threading.Thread):
 
 
 	def getState(self):
-		return serializable.object2State(
-			{
-			"Node": self.__node,
-			"TimeoutMessages": self.__timeoutMessages
-			})
+		return serializable.object2State(self.__node)
 
 
 	def setState(self, s):
-		s = serializable.state2Object(s)
-		self.__node            = s["Node"]
-		self.__timeoutMessages = s["TimeoutMessages"]
+		self.__node = serializable.state2Object(s)
 
 
 	def __addTimeoutMessage(self, msg):
@@ -204,8 +197,8 @@ class Node(threading.Thread):
 		Note: you should call __saveState afterwards!
 		"""
 
-		self.__timeoutMessages.append(msg)
-		self.__timeoutMessages.sort(
+		self.__node.timeoutMessages.append(msg)
+		self.__node.timeoutMessages.sort(
 			cmp = lambda a, b: int(a.timestamp - b.timestamp)
 			)
 
@@ -224,10 +217,10 @@ class Node(threading.Thread):
 				transactionID = self.__node.payerLink.transactionID
 				self.__node.payerLink = None
 				self.__node.connections[messages.payerLocalID].close()
-				self.__timeoutMessages = \
+				self.__node.timeoutMessages = \
 				[
 					msg
-					for msg in self.__timeoutMessages
+					for msg in self.__node.timeoutMessages
 					if msg.message.__class__ != messages.Timeout
 				]
 
@@ -504,8 +497,8 @@ class Node(threading.Thread):
 					self._commandFunction = None
 
 			#Time-out events:
-			while len(self.__timeoutMessages) > 0 and self.__timeoutMessages[0].timestamp < time.time():
-				msg = self.__timeoutMessages.pop(0)
+			while len(self.__node.timeoutMessages) > 0 and self.__node.timeoutMessages[0].timestamp < time.time():
+				msg = self.__node.timeoutMessages.pop(0)
 				self.handleMessage(msg.message)
 
 			#Connections: data transmission and closing
