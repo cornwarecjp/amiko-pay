@@ -113,15 +113,16 @@ class PayeeLink(serializable.Serializable):
 
 
 	def msg_cancel(self, msg):
-		if self.state != self.states.initial:
+		if self.state not in (self.states.initial, self.states.confirmed):
 			raise Exception(
 				"msg_cancel should not be called in state %s" % \
 					self.state
 				)
 
+		#TODO: in state confirmed, cancel the routing
+
 		self.state = self.states.cancelled
 
-		#TODO
 		return []
 
 

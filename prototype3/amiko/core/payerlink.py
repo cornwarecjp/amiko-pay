@@ -116,6 +116,7 @@ class PayerLink(serializable.Serializable):
 
 
 	def msg_timeout(self, msg):
+		ret = []
 		if self.state == self.states.initial and msg.state == self.states.initial:
 			#Receipt time-out
 			log.log("Payer: receipt time-out -> cancelled")
@@ -129,13 +130,19 @@ class PayerLink(serializable.Serializable):
 		elif self.state in (self.states.confirmed, self.states.hasPayerRoute, self.states.hasPayeeRoute) and msg.state == self.states.confirmed:
 			log.log("Payer: routing time-out -> cancelled")
 			self.state = self.states.cancelled
-			#TODO: send cancel and endRoute messages
+			ret += \
+				[
+				#TODO: cancel routing
+				messages.OutboundMessage(localID = messages.payerLocalID, message = \
+					messages.Cancel(ID=self.payeeLinkID)
+					)
+				]
 			self.__finished.set()
 		else:
 			log.log("Payer: time-out of state %s no longer applicable: we are now in state %s" % \
 				(msg.state, self.state))
 
-		return []
+		return ret
 
 
 	def msg_receipt(self, msg):
