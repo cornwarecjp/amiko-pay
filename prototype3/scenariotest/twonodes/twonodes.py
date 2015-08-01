@@ -48,51 +48,48 @@ settings1.payLogFile = "payments1.log"
 with open(settings1.stateFile, "wb") as f:
 	f.write("""
 		{
-			"Node":
+			"_class": "NodeState",
+			"links":
 			{
-				"_class": "NodeState",
-				"links":
+				"node1":
 				{
-					"node1":
+					"_class": "Link",
+					"channels":
+					[
 					{
-						"_class": "Link",
-						"channels":
-						[
-						{
-						"_class": "PlainChannel",
-						"state": "ready",
-						"amountLocal": 1000,
-						"amountRemote": 0,
-						"transactionsIncomingLocked": {},
-						"transactionsOutgoingLocked": {},
-						"transactionsIncomingReserved": {},
-						"transactionsOutgoingReserved": {}
-						}
-						]
+					"_class": "PlainChannel",
+					"state": "ready",
+					"amountLocal": 1000,
+					"amountRemote": 0,
+					"transactionsIncomingLocked": {},
+					"transactionsOutgoingLocked": {},
+					"transactionsIncomingReserved": {},
+					"transactionsOutgoingReserved": {}
 					}
-				},
-				"connections":
-				{
-					"node1":
-					{
-						"_class": "PersistentConnection",
-						"connectMessage":
-						{
-							"_class": "ConnectLink",
-							"ID": "node2",
-							"callbackHost": "localhost", "callbackPort": 4322, "callbackID": "node1"
-						},
-						"messages": [], "lastIndex": -1, "notYetTransmitted": 0,
-						"host": "localhost", "port": 4323,
-						"closing": false
-					}
-				},
-				"transactions": {},
-				"meetingPoints": {},
-				"payeeLinks": {},
-				"payerLink": null
+					]
+				}
 			},
-			"TimeoutMessages": []
+			"connections":
+			{
+				"node1":
+				{
+					"_class": "PersistentConnection",
+					"connectMessage":
+					{
+						"_class": "ConnectLink",
+						"ID": "node2",
+						"callbackHost": "localhost", "callbackPort": 4322, "callbackID": "node1"
+					},
+					"messages": [], "lastIndex": -1, "notYetTransmitted": 0,
+					"host": "localhost", "port": 4323,
+					"closing": false
+				}
+			},
+			"transactions": {},
+			"meetingPoints": {},
+			"payeeLinks": {},
+			"payerLink": null,
+			"timeoutMessages": []
 		}
 		""")
 node1 = node.Node(settings1)
@@ -109,51 +106,48 @@ settings2.payLogFile = "payments2.log"
 with open(settings2.stateFile, "wb") as f:
 	f.write("""
 		{
-			"Node":
+			"_class": "NodeState",
+			"links":
 			{
-				"_class": "NodeState",
-				"links":
+				"node2":
 				{
-					"node2":
+					"_class": "Link",
+					"channels":
+					[
 					{
-						"_class": "Link",
-						"channels":
-						[
-						{
-						"_class": "PlainChannel",
-						"state": "ready",
-						"amountLocal": 0,
-						"amountRemote": 1000,
-						"transactionsIncomingLocked": {},
-						"transactionsOutgoingLocked": {},
-						"transactionsIncomingReserved": {},
-						"transactionsOutgoingReserved": {}
-						}
-						]
+					"_class": "PlainChannel",
+					"state": "ready",
+					"amountLocal": 0,
+					"amountRemote": 1000,
+					"transactionsIncomingLocked": {},
+					"transactionsOutgoingLocked": {},
+					"transactionsIncomingReserved": {},
+					"transactionsOutgoingReserved": {}
 					}
-				},
-				"connections":
-				{
-					"node2":
-					{
-						"_class": "PersistentConnection",
-						"connectMessage":
-						{
-							"_class": "ConnectLink",
-							"ID": "node1",
-							"callbackHost": "localhost", "callbackPort": 4323, "callbackID": "node2"
-						},
-						"messages": [], "lastIndex": -1, "notYetTransmitted": 0,
-						"host": "localhost", "port": 4322,
-						"closing": false
-					}
-				},
-				"transactions": {},
-				"meetingPoints": {},
-				"payeeLinks": {},
-				"payerLink": null
+					]
+				}
 			},
-			"TimeoutMessages": []
+			"connections":
+			{
+				"node2":
+				{
+					"_class": "PersistentConnection",
+					"connectMessage":
+					{
+						"_class": "ConnectLink",
+						"ID": "node1",
+						"callbackHost": "localhost", "callbackPort": 4323, "callbackID": "node2"
+					},
+					"messages": [], "lastIndex": -1, "notYetTransmitted": 0,
+					"host": "localhost", "port": 4322,
+					"closing": false
+				}
+			},
+			"transactions": {},
+			"meetingPoints": {},
+			"payeeLinks": {},
+			"payerLink": null,
+			"timeoutMessages": []
 		}
 		""")
 node2 = node.Node(settings2)
