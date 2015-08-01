@@ -247,12 +247,22 @@ class PayerLink(serializable.Serializable):
 
 
 	def cancelIncoming(self, msg):
-		print "payer: cancelIncoming" #TODO
-		return []
+		return [] #NOP
 
 
 	def cancelOutgoing(self, msg):
-		print "payer: cancelOutgoing" #TODO
+		if self.state not in \
+			(
+			self.states.confirmed,
+			self.states.hasPayerRoute,
+			self.states.hasPayeeRoute,
+			self.states.cancelled
+			):
+			raise Exception(
+				"cancelOutgoing should not be called in state %s" % \
+					self.state
+				)
+
 		return []
 
 

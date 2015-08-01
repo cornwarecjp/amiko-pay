@@ -221,6 +221,7 @@ class NodeState(serializable.Serializable):
 				msg.transactionID.encode('hex'))
 			return []
 
+		#TODO: simplify in the future, if these always evaluate to True
 		hasPayer = not (tx.payerID is None)
 		hasPayee = not (tx.payeeID is None)
 
@@ -239,6 +240,9 @@ class NodeState(serializable.Serializable):
 				ret = payee.cancelIncoming(msg)
 			if hasPayer:
 				ret += payer.cancelOutgoing(msg)
+
+		#Clean up cancelled transaction:
+		del self.transactions[msg.transactionID]
 
 		return ret
 

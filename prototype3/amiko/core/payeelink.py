@@ -140,12 +140,16 @@ class PayeeLink(serializable.Serializable):
 
 
 	def cancelIncoming(self, msg):
-		print "payee: cancelIncoming" #TODO
-		return []
+		return [] #NOP
 
 
 	def cancelOutgoing(self, msg):
-		print "payee: cancelOutgoing" #TODO
+		if self.state not in (self.states.confirmed, self.states.cancelled):
+			raise Exception(
+				"cancelOutgoing should not be called in state %s" % \
+					self.state
+				)
+
 		return []
 
 
