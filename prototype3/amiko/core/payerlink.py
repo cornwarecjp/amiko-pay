@@ -126,6 +126,11 @@ class PayerLink(serializable.Serializable):
 			log.log("Payer: settleCommit time-out -> committed")
 			self.state = self.states.committed
 			self.__finished.set()
+		elif self.state in (self.states.confirmed, self.states.hasPayerRoute, self.states.hasPayeeRoute) and msg.state == self.states.confirmed:
+			log.log("Payer: routing time-out -> cancelled")
+			self.state = self.states.cancelled
+			#TODO: send cancel and endRoute messages
+			self.__finished.set()
 		else:
 			log.log("Payer: time-out of state %s no longer applicable: we are now in state %s" % \
 				(msg.state, self.state))
@@ -173,6 +178,9 @@ class PayerLink(serializable.Serializable):
 				meetingPointID=self.meetingPointID,
 				payerID=messages.payerLocalID,
 				payeeID=None
+				),
+			messages.TimeoutMessage(timestamp=time.time()+5.0, message=\
+				self.getTimeoutMessage()  #Add time-out to routing
 				)
 			]
 
