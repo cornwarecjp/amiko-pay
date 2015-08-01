@@ -132,7 +132,7 @@ class PayerLink(serializable.Serializable):
 			self.state = self.states.cancelled
 			ret += \
 				[
-				#TODO: cancel routing
+				messages.CancelRoute(transactionID=self.transactionID, payerSide=True),
 				messages.OutboundMessage(localID = messages.payerLocalID, message = \
 					messages.Cancel(ID=self.payeeLinkID)
 					)
@@ -244,6 +244,16 @@ class PayerLink(serializable.Serializable):
 				)
 
 		return ret
+
+
+	def cancelIncoming(self, msg):
+		print "payer: cancelIncoming" #TODO
+		return []
+
+
+	def cancelOutgoing(self, msg):
+		print "payer: cancelOutgoing" #TODO
+		return []
 
 
 	def lockIncoming(self, msg):

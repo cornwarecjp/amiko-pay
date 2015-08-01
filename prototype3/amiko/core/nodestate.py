@@ -68,6 +68,7 @@ class NodeState(serializable.Serializable):
 		messages.MakePayer      : self.msg_makePayer,
 		messages.MakeLink       : self.msg_makeLink,
 		messages.MakeRoute      : self.msg_makeRoute,
+		messages.CancelRoute    : self.msg_cancelRoute,
 		messages.Lock           : self.msg_lock,
 		messages.Commit         : self.msg_commit,
 		messages.SettleCommit   : self.msg_settleCommit,
@@ -210,6 +211,36 @@ class NodeState(serializable.Serializable):
 			)
 
 		return []
+
+
+	def msg_cancelRoute(self, msg):
+		try:
+			tx = self.transactions[msg.transactionID]
+		except KeyError:
+			log.log('cancelRoute failed: transaction %s does not (or no longer) exist (ignored)' % \
+				msg.transactionID.encode('hex'))
+			return []
+
+		hasPayer = not (tx.payerID is None)
+		hasPayee = not (tx.payeeID is None)
+
+		if hasPayer:
+			payer = self.__getLinkObject(tx.payerID)
+		if hasPayee:
+			payee = self.__getLinkObject(tx.payeeID)
+
+		if msg.payerSide:
+			if hasPayer:
+				ret = payer.cancelIncoming(msg)
+			if hasPayee:
+				ret += payee.cancelOutgoing(msg)
+		else:
+			if hasPayee:
+				ret = payee.cancelIncoming(msg)
+			if hasPayer:
+				ret += payer.cancelOutgoing(msg)
+
+		return ret
 
 
 	def msg_lock(self, msg):

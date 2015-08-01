@@ -119,11 +119,14 @@ class PayeeLink(serializable.Serializable):
 					self.state
 				)
 
-		#TODO: in state confirmed, cancel the routing
+		ret = []
+
+		if self.state == self.states.confirmed:
+			ret = [messages.CancelRoute(transactionID=self.transactionID, payerSide=False)]
 
 		self.state = self.states.cancelled
 
-		return []
+		return ret
 
 
 	def msg_havePayeeRoute(self, msg):
@@ -134,6 +137,16 @@ class PayeeLink(serializable.Serializable):
 			messages.HavePayeeRoute(ID=messages.payerLocalID, transactionID=None)
 			)
 		]
+
+
+	def cancelIncoming(self, msg):
+		print "payee: cancelIncoming" #TODO
+		return []
+
+
+	def cancelOutgoing(self, msg):
+		print "payee: cancelOutgoing" #TODO
+		return []
 
 
 	def lockOutgoing(self, msg, payeeID):

@@ -145,6 +145,11 @@ class MakeRoute(serializable.Serializable):
 serializable.registerClass(MakeRoute)
 
 
+class CancelRoute(serializable.Serializable):
+	serializableAttributes = {'transactionID': '', 'payerSide': None}
+serializable.registerClass(CancelRoute)
+
+
 class HavePayerRoute(serializable.Serializable):
 	serializableAttributes = {'ID': '', 'transactionID': ''}
 serializable.registerClass(HavePayerRoute)
