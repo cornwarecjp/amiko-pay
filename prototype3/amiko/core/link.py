@@ -41,8 +41,7 @@ class Link(serializable.Serializable):
 		{
 		messages.Link_Deposit  : self.msg_ownDeposit,
 		messages.Deposit       : self.msg_peerDeposit,
-		messages.ChannelMessage: self.continueChannelConversation,
-		messages.Link_MakeRoute: self.msg_ownMakeRoute
+		messages.ChannelMessage: self.continueChannelConversation
 		}[msg.__class__](msg)
 
 
@@ -81,8 +80,8 @@ class Link(serializable.Serializable):
 		return []
 
 
-	def msg_ownMakeRoute(self, msg):
-		print "msg_ownMakeRoute: NYI"
+	def makeOutgoing(self, msg):
+		print "makeOutgoing: NYI"
 		return []
 
 

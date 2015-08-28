@@ -126,19 +126,6 @@ class Link_Deposit(serializable.Serializable):
 serializable.registerClass(Link_Deposit)
 
 
-class Link_MakeRoute(serializable.Serializable):
-	serializableAttributes = \
-	{
-		'ID': '',
-		'amount': 0,
-		'transactionID': '',
-		'startTime': None,
-		'endTime': None,
-		'meetingPointID': '',
-	}
-serializable.registerClass(Link_MakeRoute)
-
-
 class ReturnValue(serializable.Serializable):
 	serializableAttributes = {'value':''}
 serializable.registerClass(ReturnValue)

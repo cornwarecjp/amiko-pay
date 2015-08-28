@@ -45,25 +45,14 @@ class Transaction(serializable.Serializable):
 
 	def tryNextRoute(self, transactionID):
 		nextRoute = self.remainingLinkIDs.pop(0)
-		#TODO: None; haveNoRoute message in case of exception
+		#TODO: None in case of exception
 
 		if self.side == side_payer:
 			self.payeeID = nextRoute
 		else: #side_payee
 			self.payerID = nextRoute
 
-		#TODO: route time-out
-		return \
-		[
-		messages.Link_MakeRoute(
-			ID=nextRoute,
-			amount=self.amount,
-			transactionID=transactionID,
-			startTime=self.startTime,
-			endTime=self.endTime,
-			meetingPointID=self.meetingPointID
-			)
-		]
+		return nextRoute
 
 
 serializable.registerClass(Transaction)
