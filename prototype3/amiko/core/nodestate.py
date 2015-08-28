@@ -91,7 +91,8 @@ class NodeState(serializable.Serializable):
 
 		messages.Link_Deposit  : self.msg_passToLink,
 		messages.ChannelMessage: self.msg_passToLink,
-		messages.Deposit       : self.msg_passToLink
+		messages.Deposit       : self.msg_passToLink,
+		messages.Link_MakeRoute: self.msg_passToLink
 		}[msg.__class__](msg)
 
 
@@ -188,7 +189,7 @@ class NodeState(serializable.Serializable):
 				else: #side_payee
 					tx.payeeID = msg.payeeID
 
-				#TODO: haveRoute messages, and possibly cancelRoute in case of shortcut
+				#TODO: possibly cancelRoute message in case of shortcut
 				return \
 				[
 				messages.HavePayerRoute(ID=tx.payerID, transactionID=msg.transactionID),
@@ -203,14 +204,16 @@ class NodeState(serializable.Serializable):
 			side=transactionSide,
 			payeeID=msg.payeeID,
 			payerID=msg.payerID,
-			remainingLinkIDs=self.links.keys(),
+			remainingLinkIDs=self.links.keys(), #TODO: skip source link
 			meetingPointID=msg.meetingPointID,
 			amount=msg.amount,
 			startTime=msg.startTime,
 			endTime=msg.endTime
 			)
 
-		return []
+		#TODO: match with our meeting points
+
+		return self.transactions[msg.transactionID].tryNextRoute(msg.transactionID)
 
 
 	def msg_cancelRoute(self, msg):

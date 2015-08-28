@@ -39,9 +39,10 @@ class Link(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		messages.Link_Deposit: self.msg_ownDeposit,
-		messages.Deposit: self.msg_peerDeposit,
-		messages.ChannelMessage: self.continueChannelConversation
+		messages.Link_Deposit  : self.msg_ownDeposit,
+		messages.Deposit       : self.msg_peerDeposit,
+		messages.ChannelMessage: self.continueChannelConversation,
+		messages.Link_MakeRoute: self.msg_ownMakeRoute
 		}[msg.__class__](msg)
 
 
@@ -80,6 +81,11 @@ class Link(serializable.Serializable):
 		return []
 
 
+	def msg_ownMakeRoute(self, msg):
+		print "msg_ownMakeRoute: NYI"
+		return []
+
+
 	def startChannelConversation(self, localID, channelIndex):
 		inputMessage = messages.ChannelMessage(
 			ID=localID,
@@ -104,6 +110,11 @@ class Link(serializable.Serializable):
 				message=outputMessage
 				))
 			]
+
+
+	def cancelOutgoing(self, msg):
+		print "Link.cancelOutgoing: NYI"
+		return []
 
 
 serializable.registerClass(Link)

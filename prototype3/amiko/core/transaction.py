@@ -27,6 +27,7 @@
 #    OpenSSL library used as well as that of the covered work.
 
 import serializable
+import messages
 
 
 side_payer = 1
@@ -40,5 +41,30 @@ class Transaction(serializable.Serializable):
 	'side':None, 'payeeID':None, 'payerID':None, 'remainingLinkIDs':[],
 	'meetingPointID':None, 'amount':0, 'startTime':0, 'endTime':0
 	}
+
+
+	def tryNextRoute(self, transactionID):
+		nextRoute = self.remainingLinkIDs.pop(0)
+		#TODO: None; haveNoRoute message in case of exception
+
+		if self.side == side_payer:
+			self.payeeID = nextRoute
+		else: #side_payee
+			self.payerID = nextRoute
+
+		#TODO: route time-out
+		return \
+		[
+		messages.Link_MakeRoute(
+			ID=nextRoute,
+			amount=self.amount,
+			transactionID=transactionID,
+			startTime=self.startTime,
+			endTime=self.endTime,
+			meetingPointID=self.meetingPointID
+			)
+		]
+
+
 serializable.registerClass(Transaction)
 
