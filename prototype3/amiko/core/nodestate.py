@@ -37,8 +37,9 @@ import payerlink
 import meetingpoint
 import transaction
 import persistentconnection
-
 import messages
+import log
+
 import serializable
 
 
@@ -165,6 +166,8 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_makeRoute(self, msg):
+		log.log('Processing MakeRoute message')
+
 		ret = []
 		#TODO: call makeIncoming on incoming link
 
@@ -176,6 +179,7 @@ class NodeState(serializable.Serializable):
 
 		if msg.transactionID in self.transactions.keys():
 			#Match with existing transaction
+			log.log('  Found an existing open transaction with the same transactionID')
 			tx = self.transactions[msg.transactionID]
 
 			#TODO: don't match if tx already has a finished route
@@ -191,12 +195,16 @@ class NodeState(serializable.Serializable):
 				else: #side_payee
 					tx.payeeID = payeeID
 
+				log.log('  Transactions match -> sending HaveRoute messages back')
+
 				#TODO: possibly cancelRoute message in case of shortcut
 				return ret + \
 				[
 				messages.HavePayerRoute(ID=tx.payerID, transactionID=msg.transactionID),
 				messages.HavePayeeRoute(ID=tx.payeeID, transactionID=msg.transactionID)
 				]
+
+			log.log('  Transactions don\'t match (same direction: probably a route loop)')
 
 			#TODO: same direction -> haveNoRoute message
 			return ret
@@ -213,12 +221,20 @@ class NodeState(serializable.Serializable):
 			endTime=msg.endTime
 			)
 
-		#TODO: match with our meeting points
+		#Match with our meeting points
+		if msg.meetingPointID in self.meetingPoints.keys():
+			log.log('  Matched with local meeting point')
+			#Do nothing, just wait for the other side to arrive.
+			#TODO: route time-out
+			return ret
 
 		nextRoute = self.transactions[msg.transactionID].tryNextRoute(msg.transactionID)
 		if nextRoute is None:
+			log.log('  No more route')
 			#TODO: add haveNoRoute
 			return ret
+
+		log.log('  Forwarding MakeRoute to the first route')
 
 		ret += self.__getLinkObject(nextRoute).makeRouteOutgoing(nextRoute, msg)
 
