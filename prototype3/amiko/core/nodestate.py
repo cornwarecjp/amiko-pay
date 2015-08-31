@@ -105,7 +105,8 @@ class NodeState(serializable.Serializable):
 		token = randomsource.getSecureRandom(32)
 
 		newPayeeLink = payeelink.PayeeLink(
-			amount=msg.amount, receipt=msg.receipt, token=token)
+			amount=msg.amount, receipt=msg.receipt, token=token,
+			meetingPoints=msg.meetingPoints)
 
 		self.payeeLinks[payeeLinkID] = newPayeeLink
 

@@ -96,7 +96,7 @@ serializable.registerClass(Cancel)
 
 
 class PaymentRequest(serializable.Serializable):
-	serializableAttributes = {'amount':0, 'receipt':''}
+	serializableAttributes = {'amount':0, 'receipt':'', 'meetingPoints':[]}
 serializable.registerClass(PaymentRequest)
 
 

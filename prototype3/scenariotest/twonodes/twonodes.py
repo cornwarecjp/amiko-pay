@@ -45,6 +45,7 @@ settings1.advertizedHost = settings1.listenHost
 settings1.advertizedPort = settings1.listenPort
 settings1.stateFile = "twonodes_1.dat"
 settings1.payLogFile = "payments1.log"
+settings1.externalMeetingPoints = ["MeetingPoint2"]
 with open(settings1.stateFile, "wb") as f:
 	f.write("""
 		{
@@ -144,7 +145,7 @@ with open(settings2.stateFile, "wb") as f:
 				}
 			},
 			"transactions": {},
-			"meetingPoints": {},
+			"meetingPoints": {"MeetingPoint2": null},
 			"payeeLinks": {},
 			"payerLink": null,
 			"timeoutMessages": []

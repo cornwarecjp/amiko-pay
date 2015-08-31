@@ -49,6 +49,7 @@ class PayeeLink(serializable.Serializable):
 		'amount': 0,
 		'receipt': None,
 		'token': None,
+		'meetingPoints': [],
 		'meetingPointID': ''
 	}
 
@@ -82,7 +83,7 @@ class PayeeLink(serializable.Serializable):
 				amount=self.amount,
 				receipt=self.receipt,
 				transactionID=self.transactionID,
-				meetingPoints=[] #TODO
+				meetingPoints=self.meetingPoints
 			))]
 
 
@@ -93,7 +94,10 @@ class PayeeLink(serializable.Serializable):
 					self.state
 				)
 
-		#TODO: check that meeting point is in self.meetingPoints
+		if msg.meetingPointID not in self.meetingPoints:
+			raise Exception(
+				"The meeting point selected by the payer is not in our meeting point list"
+				)
 
 		self.state = self.states.confirmed
 		self.meetingPointID = msg.meetingPointID

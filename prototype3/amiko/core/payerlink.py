@@ -151,8 +151,8 @@ class PayerLink(serializable.Serializable):
 		self.amount = msg.amount
 		self.receipt = msg.receipt
 		self.transactionID = msg.transactionID
-		#self.meetingPointID = msg.meetingPoints[0] #TODO
-		self.state = self.states.hasReceipt #TODO
+		self.meetingPointID = msg.meetingPoints[0] #TODO: more intelligent choice
+		self.state = self.states.hasReceipt
 		self.__receiptReceived.set()
 
 		return []

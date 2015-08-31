@@ -248,7 +248,8 @@ class Node(threading.Thread):
 		"""
 
 		ID = self.handleMessage(messages.PaymentRequest(
-			amount=amount, receipt=receipt))
+			amount=amount, receipt=receipt,
+			meetingPoints=self.__node.meetingPoints.keys() + self.settings.externalMeetingPoints))
 
 		return "amikopay://%s/%s" % \
 			(self.settings.getAdvertizedNetworkLocation(), ID)
