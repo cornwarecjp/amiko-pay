@@ -139,8 +139,8 @@ class MakeRoute(serializable.Serializable):
 		'startTime': None,
 		'endTime': None,
 		'meetingPointID': '',
-		'payerID':None,
-		'payeeID':None
+		'ID': '',
+		'isPayerSide': False
 	}
 serializable.registerClass(MakeRoute)
 

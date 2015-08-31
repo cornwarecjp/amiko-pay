@@ -106,8 +106,8 @@ class PayeeLink(serializable.Serializable):
 				startTime=None, #TODO: fill in
 				endTime=None, #TODO: fill in
 				meetingPointID=self.meetingPointID,
-				payerID=None,
-				payeeID=msg.ID
+				ID=msg.ID,
+				isPayerSide=False
 				)
 		]
 

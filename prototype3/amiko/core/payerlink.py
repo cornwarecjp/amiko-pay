@@ -183,8 +183,8 @@ class PayerLink(serializable.Serializable):
 				startTime=None, #Will be received from the payee side
 				endTime=None, #Will be received from the payee side
 				meetingPointID=self.meetingPointID,
-				payerID=messages.payerLocalID,
-				payeeID=None
+				ID=messages.payerLocalID,
+				isPayerSide=True
 				),
 			messages.TimeoutMessage(timestamp=time.time()+5.0, message=\
 				self.getTimeoutMessage()  #Add time-out to routing

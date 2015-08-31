@@ -44,8 +44,11 @@ class Transaction(serializable.Serializable):
 
 
 	def tryNextRoute(self, transactionID):
-		nextRoute = self.remainingLinkIDs.pop(0)
-		#TODO: None in case of exception
+		try:
+			nextRoute = self.remainingLinkIDs.pop(0)
+		except IndexError:
+			#None in case there is no more route
+			nextRoute = None
 
 		if self.side == side_payer:
 			self.payeeID = nextRoute

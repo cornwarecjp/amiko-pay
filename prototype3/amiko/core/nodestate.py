@@ -168,11 +168,11 @@ class NodeState(serializable.Serializable):
 		ret = []
 		#TODO: call makeIncoming on incoming link
 
-		transactionSide = \
+		transactionSide, payerID, payeeID = \
 		{
-		(False, True): transaction.side_payer,
-		(True, False): transaction.side_payee
-		}[(msg.payerID is None, msg.payeeID is None)]
+		True: (transaction.side_payer, msg.ID, None),
+		False: (transaction.side_payee, None, msg.ID)
+		}[msg.isPayerSide]
 
 		if msg.transactionID in self.transactions.keys():
 			#Match with existing transaction
@@ -187,9 +187,9 @@ class NodeState(serializable.Serializable):
 
 				tx.side = transaction.side_midpoint
 				if transactionSide == transaction.side_payer:
-					tx.payerID = msg.payerID
+					tx.payerID = payerID
 				else: #side_payee
-					tx.payeeID = msg.payeeID
+					tx.payeeID = payeeID
 
 				#TODO: possibly cancelRoute message in case of shortcut
 				return ret + \
@@ -204,8 +204,8 @@ class NodeState(serializable.Serializable):
 		#Create new transaction
 		self.transactions[msg.transactionID] = transaction.Transaction(
 			side=transactionSide,
-			payeeID=msg.payeeID,
-			payerID=msg.payerID,
+			payeeID=payeeID,
+			payerID=payerID,
 			remainingLinkIDs=self.links.keys(), #TODO: skip source link
 			meetingPointID=msg.meetingPointID,
 			amount=msg.amount,
@@ -216,7 +216,9 @@ class NodeState(serializable.Serializable):
 		#TODO: match with our meeting points
 
 		nextRoute = self.transactions[msg.transactionID].tryNextRoute(msg.transactionID)
-		#TODO: haveNoRoute in case of None
+		if nextRoute is None:
+			#TODO: add haveNoRoute
+			return ret
 
 		ret += self.__getLinkObject(nextRoute).makeOutgoing(msg)
 
