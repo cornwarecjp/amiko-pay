@@ -26,6 +26,8 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+import copy
+
 import messages
 
 import serializable
@@ -80,8 +82,24 @@ class Link(serializable.Serializable):
 		return []
 
 
-	def makeOutgoing(self, msg):
-		print "makeOutgoing: NYI"
+	def makeRouteOutgoing(self, localID, msg):
+		#Try the channels one by one:
+		for c in self.channels:
+
+			#TODO: reserve funds in channel.
+			#TODO: attach channel index to message
+			#For now, assume that the channel is OK.
+
+			msgOutbound = copy.deepcopy(msg)
+			msgOutbound.ID = self.remoteID
+
+			return \
+			[
+			messages.OutboundMessage(localID=localID, message=msgOutbound)
+			]
+
+		#None of the channels worked (or there are no channels):
+		#TODO: haveNoRoute
 		return []
 
 

@@ -220,7 +220,7 @@ class NodeState(serializable.Serializable):
 			#TODO: add haveNoRoute
 			return ret
 
-		ret += self.__getLinkObject(nextRoute).makeOutgoing(msg)
+		ret += self.__getLinkObject(nextRoute).makeRouteOutgoing(nextRoute, msg)
 
 		#TODO: route time-out
 		return ret
