@@ -210,11 +210,16 @@ class NodeState(serializable.Serializable):
 			return ret
 
 		#Create new transaction
+		remainingLinks = self.links.keys()
+		try:
+			remainingLinks.remove(msg.ID) #Skip source link
+		except ValueError:
+			pass #it's OK if the source link wasn't present already
 		self.transactions[msg.transactionID] = transaction.Transaction(
 			side=transactionSide,
 			payeeID=payeeID,
 			payerID=payerID,
-			remainingLinkIDs=self.links.keys(), #TODO: skip source link
+			remainingLinkIDs=remainingLinks, 
 			meetingPointID=msg.meetingPointID,
 			amount=msg.amount,
 			startTime=msg.startTime,
