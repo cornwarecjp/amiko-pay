@@ -120,6 +120,19 @@ class Link(serializable.Serializable):
 		return []
 
 
+	def lockOutgoing(self, msg, localID):
+		#TODO: lock in channel and add payload
+		#TODO: add time-out for committing?
+		msg = copy.deepcopy(msg)
+		msg.ID = self.remoteID
+		return [messages.OutboundMessage(localID=localID, message=msg)]
+
+
+	def lockIncoming(self, msg):
+		#TODO: lock in channel and process payload
+		return []
+
+
 	def msg_havePayerRoute(self, msg):
 		txInfo = self.transactions[msg.transactionID]
 		if txInfo['outgoing']:
