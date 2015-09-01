@@ -35,7 +35,7 @@ import serializable
 
 
 class Link(serializable.Serializable):
-	serializableAttributes = {'remoteID': '', 'channels':[]}
+	serializableAttributes = {'remoteID': '', 'channels':[], 'transactions':{}}
 
 
 	def handleMessage(self, msg):
@@ -43,6 +43,7 @@ class Link(serializable.Serializable):
 		{
 		messages.Link_Deposit  : self.msg_ownDeposit,
 		messages.Deposit       : self.msg_peerDeposit,
+		messages.HavePayerRoute: self.msg_havePayerRoute,
 		messages.ChannelMessage: self.continueChannelConversation
 		}[msg.__class__](msg)
 
@@ -90,6 +91,8 @@ class Link(serializable.Serializable):
 			#TODO: attach channel index to message
 			#For now, assume that the channel is OK.
 
+			self.transactions[msg.transactionID] = None #TODO: add data
+
 			msgOutbound = copy.deepcopy(msg)
 			msgOutbound.ID = self.remoteID
 
@@ -100,6 +103,20 @@ class Link(serializable.Serializable):
 
 		#None of the channels worked (or there are no channels):
 		#TODO: haveNoRoute
+		return []
+
+
+	def makeRouteIncoming(self, msg):
+		#TODO: reserve funds in channel
+
+		self.transactions[msg.transactionID] = None #TODO: add data
+
+		return []
+
+
+	def msg_havePayerRoute(self, msg):
+		txInfo = self.transactions[msg.transactionID]
+		#TODO: pass to transaction ID, or send to external
 		return []
 
 

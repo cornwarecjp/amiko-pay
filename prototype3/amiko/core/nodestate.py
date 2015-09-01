@@ -169,8 +169,7 @@ class NodeState(serializable.Serializable):
 	def msg_makeRoute(self, msg):
 		log.log('Processing MakeRoute message')
 
-		ret = []
-		#TODO: call makeIncoming on incoming link
+		ret = self.__getObject(msg.ID).makeRouteIncoming(msg)
 
 		transactionSide, payerID, payeeID = \
 		{

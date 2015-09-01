@@ -143,6 +143,10 @@ class PayeeLink(serializable.Serializable):
 		]
 
 
+	def makeRouteIncoming(self, msg):
+		return [] #NOP
+
+
 	def cancelIncoming(self, msg):
 		return [] #NOP
 
