@@ -26,6 +26,8 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+import copy
+
 import serializable
 import messages
 
@@ -41,6 +43,28 @@ class Transaction(serializable.Serializable):
 	'side':None, 'payeeID':None, 'payerID':None, 'remainingLinkIDs':[],
 	'meetingPointID':None, 'amount':0, 'startTime':0, 'endTime':0
 	}
+
+
+	def handleMessage(self, msg):
+		return \
+		{
+		messages.HavePayerRoute: self.msg_havePayerRoute,
+		messages.HavePayeeRoute: self.msg_havePayeeRoute,
+		}[msg.__class__](msg)
+
+
+	def msg_havePayerRoute(self, msg):
+		#Pass to payer
+		msg = copy.deepcopy(msg)
+		msg.ID = self.payerID
+		return [msg]
+
+
+	def msg_havePayeeRoute(self, msg):
+		#Pass to payee
+		msg = copy.deepcopy(msg)
+		msg.ID = self.payeeID
+		return [msg]
 
 
 	def tryNextRoute(self, transactionID):
