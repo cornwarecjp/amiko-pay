@@ -91,7 +91,10 @@ class Link(serializable.Serializable):
 			#TODO: attach channel index to message
 			#For now, assume that the channel is OK.
 
-			self.transactions[msg.transactionID] = None #TODO: add data
+			self.transactions[msg.transactionID] = \
+			{
+			'outgoing': True
+			}
 
 			msgOutbound = copy.deepcopy(msg)
 			msgOutbound.ID = self.remoteID
@@ -109,15 +112,28 @@ class Link(serializable.Serializable):
 	def makeRouteIncoming(self, msg):
 		#TODO: reserve funds in channel
 
-		self.transactions[msg.transactionID] = None #TODO: add data
+		self.transactions[msg.transactionID] = \
+			{
+			'outgoing': False
+			}
 
 		return []
 
 
 	def msg_havePayerRoute(self, msg):
 		txInfo = self.transactions[msg.transactionID]
-		#TODO: pass to transaction ID, or send to external
-		return []
+		if txInfo['outgoing']:
+			#came from peer -> pass to internal processing
+			msg = copy.deepcopy(msg)
+			msg.ID = msg.transactionID
+		else:
+			#came from internal processing -> pass to peer
+			localID = msg.ID
+			msg = copy.deepcopy(msg)
+			msg.ID = self.remoteID
+			msg = messages.OutboundMessage(localID=localID, message=msg)
+
+		return [msg]
 
 
 	def startChannelConversation(self, localID, channelIndex):
