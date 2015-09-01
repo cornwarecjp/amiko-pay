@@ -299,7 +299,7 @@ class NodeState(serializable.Serializable):
 		payee = self.__getObject(tx.payeeID)
 
 		ret = payee.commitIncoming(msg)
-		ret += payer.commitOutgoing(msg)
+		ret += payer.commitOutgoing(msg, tx.payerID)
 		ret += payee.settleCommitOutgoing(messages.SettleCommit(token=msg.token))
 
 		return ret

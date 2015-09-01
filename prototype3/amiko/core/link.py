@@ -129,7 +129,19 @@ class Link(serializable.Serializable):
 
 
 	def lockIncoming(self, msg):
-		#TODO: lock in channel and process payload
+		#TODO: check, lock in channel and process payload
+		return []
+
+
+	def commitOutgoing(self, msg, localID):
+		#TODO: commit in channel and add payload
+		msg = copy.deepcopy(msg)
+		msg.ID = self.remoteID
+		return [messages.OutboundMessage(localID=localID, message=msg)]
+
+
+	def commitIncoming(self, msg):
+		#TODO: check, commit in channel and process payload
 		return []
 
 
