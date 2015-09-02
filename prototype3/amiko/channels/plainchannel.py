@@ -121,6 +121,16 @@ class PlainChannel(serializable.Serializable):
 		del self.transactionsIncomingReserved[transactionID]
 
 
+	def settleCommitOutgoing(self, transactionID, token):
+		self.amountRemote += self.transactionsOutgoingLocked[transactionID].amount
+		del self.transactionsOutgoingLocked[transactionID]
+
+
+	def settleCommitIncoming(self, transactionID):
+		self.amountLocal += self.transactionsIncomingLocked[transactionID].amount
+		del self.transactionsIncomingLocked[transactionID]
+
+
 	def hasTransaction(self, transactionID):
 		return \
 			transactionID in self.transactionsIncomingReserved or \

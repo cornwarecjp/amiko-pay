@@ -29,6 +29,7 @@
 import copy
 
 import log
+import settings
 import messages
 
 import serializable
@@ -148,21 +149,24 @@ class Link(serializable.Serializable):
 
 
 	def commitOutgoing(self, msg, localID):
-		#TODO: check commit hash
 		msg = copy.deepcopy(msg)
 		msg.ID = self.remoteID
 		return [messages.OutboundMessage(localID=localID, message=msg)]
 
 
 	def commitIncoming(self, msg):
-		#TODO: check and process payload
+		#TODO: check commit hash
 		return []
 
 
 	def settleCommitOutgoing(self, msg, localID):
 		#TODO: skip actions if already settled
 
-		#TODO: commit in channel and add payload
+		transactionID = settings.hashAlgorithm(msg.token)
+		c = self.__findChannelWithTransaction(transactionID)
+		c.settleCommitOutgoing(transactionID, msg.token)
+
+		#TODO: add payload
 		msg = copy.deepcopy(msg)
 		msg.ID = self.remoteID
 		return [messages.OutboundMessage(localID=localID, message=msg)]
@@ -171,7 +175,11 @@ class Link(serializable.Serializable):
 	def settleCommitIncoming(self, msg):
 		#TODO: skip actions if already settled
 
-		#TODO: check, commit in channel and process payload
+		#TODO: process payload
+		transactionID = settings.hashAlgorithm(msg.token)
+		c = self.__findChannelWithTransaction(transactionID)
+		c.settleCommitIncoming(transactionID)
+
 		return []
 
 
