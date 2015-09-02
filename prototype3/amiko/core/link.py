@@ -129,15 +129,21 @@ class Link(serializable.Serializable):
 
 
 	def lockOutgoing(self, msg, localID):
-		#TODO: lock in channel and add payload
-		#TODO: add time-out for committing?
+		c = self.__findChannelWithTransaction(msg.transactionID)
+		c.lockOutgoing(msg.transactionID)
+
+		#TODO: add payload
 		msg = copy.deepcopy(msg)
 		msg.ID = self.remoteID
+		#TODO: add time-out for committing?
 		return [messages.OutboundMessage(localID=localID, message=msg)]
 
 
 	def lockIncoming(self, msg):
-		#TODO: check, lock in channel and process payload
+		#TODO: process payload
+		c = self.__findChannelWithTransaction(msg.transactionID)
+		c.lockIncoming(msg.transactionID)
+
 		return []
 
 
@@ -198,6 +204,13 @@ class Link(serializable.Serializable):
 	def cancelOutgoing(self, msg):
 		print "Link.cancelOutgoing: NYI"
 		return []
+
+
+	def __findChannelWithTransaction(self, transactionID):
+		for c in self.channels:
+			if c.hasTransaction(transactionID):
+				return c
+		raise Exception("None of the channels is processing the transaction")
 
 
 serializable.registerClass(Link)

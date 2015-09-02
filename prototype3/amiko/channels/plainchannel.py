@@ -109,5 +109,25 @@ class PlainChannel(serializable.Serializable):
 					startTime=startTime, endTime=endTime, amount=amount)
 
 
+	def lockOutgoing(self, transactionID):
+		self.transactionsOutgoingLocked[transactionID] = \
+			self.transactionsOutgoingReserved[transactionID]
+		del self.transactionsOutgoingReserved[transactionID]
+
+
+	def lockIncoming(self, transactionID):
+		self.transactionsIncomingLocked[transactionID] = \
+			self.transactionsIncomingReserved[transactionID]
+		del self.transactionsIncomingReserved[transactionID]
+
+
+	def hasTransaction(self, transactionID):
+		return \
+			transactionID in self.transactionsIncomingReserved or \
+			transactionID in self.transactionsOutgoingReserved or \
+			transactionID in self.transactionsIncomingLocked or \
+			transactionID in self.transactionsOutgoingLocked
+
+
 serializable.registerClass(PlainChannel)
 
