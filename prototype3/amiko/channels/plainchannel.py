@@ -39,6 +39,12 @@ serializable.registerClass(PlainChannel_Deposit)
 
 
 
+class PlainChannel_Transaction(serializable.Serializable):
+	serializableAttributes = {'startTime': None, 'endTime': None, 'amount': 0}
+serializable.registerClass(PlainChannel_Transaction)
+
+
+
 class PlainChannel(serializable.Serializable):
 	"""
 	Payment channel without any protection.
@@ -82,6 +88,25 @@ class PlainChannel(serializable.Serializable):
 			return None
 
 		return None
+
+
+	def reserve(self, isPayerSide, transactionID, startTime, endTime, amount):
+		if isPayerSide:
+			if self.amountLocal < amount:
+				raise Exception("Insufficient funds")
+
+			self.amountLocal -= amount
+			self.transactionsOutgoingReserved[transactionID] = \
+				PlainChannel_Transaction(
+					startTime=startTime, endTime=endTime, amount=amount)
+		else:
+			if self.amountRemote < amount:
+				raise Exception("Insufficient funds")
+
+			self.amountRemote -= amount
+			self.transactionsIncomingReserved[transactionID] = \
+				PlainChannel_Transaction(
+					startTime=startTime, endTime=endTime, amount=amount)
 
 
 serializable.registerClass(PlainChannel)

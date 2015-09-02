@@ -140,6 +140,7 @@ class MakeRoute(serializable.Serializable):
 		'endTime': None,
 		'meetingPointID': '',
 		'ID': '',
+		'channelIndex': 0,
 		'isPayerSide': False
 	}
 serializable.registerClass(MakeRoute)

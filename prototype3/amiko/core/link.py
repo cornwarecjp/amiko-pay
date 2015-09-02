@@ -28,15 +28,15 @@
 
 import copy
 
+import log
 import messages
-import settings
 
 import serializable
 
 
 
 class Link(serializable.Serializable):
-	serializableAttributes = {'remoteID': '', 'channels':[], 'transactions':{}}
+	serializableAttributes = {'remoteID': '', 'channels':[]}
 
 
 	def handleMessage(self, msg):
@@ -94,23 +94,25 @@ class Link(serializable.Serializable):
 
 	def makeRouteOutgoing(self, localID, msg):
 		#Try the channels one by one:
-		for c in self.channels:
+		for i, c in enumerate(self.channels):
 
-			#TODO: reserve funds in channel.
-			#TODO: attach channel index to message
-			#For now, assume that the channel is OK.
+			#Reserve funds in channel.
+			try:
+				c.reserve(msg.isPayerSide, msg.transactionID, msg.startTime, msg.endTime, msg.amount)
+			except Exception as e:
+				#TODO: make sure the state of the channel is restored?
+				log.log("Reserving on channel %d failed: returned exception \"%s\"" % (i, str(e)))
+				continue
 
-			self.transactions[msg.transactionID] = \
-			{
-			'outgoing': True
-			}
+			log.log("Reserving on channel %d succeeded" % i)
 
-			msgOutbound = copy.deepcopy(msg)
-			msgOutbound.ID = self.remoteID
+			msg = copy.deepcopy(msg)
+			msg.ID = self.remoteID
+			msg.channelIndex = i
 
 			return \
 			[
-			messages.OutboundMessage(localID=localID, message=msgOutbound)
+			messages.OutboundMessage(localID=localID, message=msg)
 			]
 
 		#None of the channels worked (or there are no channels):
@@ -119,12 +121,9 @@ class Link(serializable.Serializable):
 
 
 	def makeRouteIncoming(self, msg):
-		#TODO: reserve funds in channel
-
-		self.transactions[msg.transactionID] = \
-			{
-			'outgoing': False
-			}
+		#Reserve funds in channel
+		c = self.channels[msg.channelIndex]
+		c.reserve(not msg.isPayerSide, msg.transactionID, msg.startTime, msg.endTime, msg.amount)
 
 		return []
 
@@ -157,10 +156,6 @@ class Link(serializable.Serializable):
 	def settleCommitOutgoing(self, msg, localID):
 		#TODO: skip actions if already settled
 
-		#Clean up no-longer-needed transaction:
-		transactionID = settings.hashAlgorithm(msg.token)
-		del self.transactions[transactionID]
-
 		#TODO: commit in channel and add payload
 		msg = copy.deepcopy(msg)
 		msg.ID = self.remoteID
@@ -169,10 +164,6 @@ class Link(serializable.Serializable):
 
 	def settleCommitIncoming(self, msg):
 		#TODO: skip actions if already settled
-
-		#Clean up no-longer-needed transaction:
-		transactionID = settings.hashAlgorithm(msg.token)
-		del self.transactions[transactionID]
 
 		#TODO: check, commit in channel and process payload
 		return []
