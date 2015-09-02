@@ -84,6 +84,14 @@ class Link(serializable.Serializable):
 		return []
 
 
+	def msg_havePayerRoute(self, msg):
+		#Forward to peer:
+		localID = msg.ID
+		msg = copy.deepcopy(msg)
+		msg.ID = self.remoteID
+		return [messages.OutboundMessage(localID=localID, message=msg)]
+
+
 	def makeRouteOutgoing(self, localID, msg):
 		#Try the channels one by one:
 		for c in self.channels:
@@ -168,22 +176,6 @@ class Link(serializable.Serializable):
 
 		#TODO: check, commit in channel and process payload
 		return []
-
-
-	def msg_havePayerRoute(self, msg):
-		txInfo = self.transactions[msg.transactionID]
-		if txInfo['outgoing']:
-			#came from peer -> pass to internal processing
-			msg = copy.deepcopy(msg)
-			msg.ID = msg.transactionID
-		else:
-			#came from internal processing -> pass to peer
-			localID = msg.ID
-			msg = copy.deepcopy(msg)
-			msg.ID = self.remoteID
-			msg = messages.OutboundMessage(localID=localID, message=msg)
-
-		return [msg]
 
 
 	def startChannelConversation(self, localID, channelIndex):

@@ -45,28 +45,6 @@ class Transaction(serializable.Serializable):
 	}
 
 
-	def handleMessage(self, msg):
-		return \
-		{
-		messages.HavePayerRoute: self.msg_havePayerRoute,
-		messages.HavePayeeRoute: self.msg_havePayeeRoute,
-		}[msg.__class__](msg)
-
-
-	def msg_havePayerRoute(self, msg):
-		#Pass to payer
-		msg = copy.deepcopy(msg)
-		msg.ID = self.payerID
-		return [msg]
-
-
-	def msg_havePayeeRoute(self, msg):
-		#Pass to payee
-		msg = copy.deepcopy(msg)
-		msg.ID = self.payeeID
-		return [msg]
-
-
 	def tryNextRoute(self, transactionID):
 		try:
 			nextRoute = self.remainingLinkIDs.pop(0)

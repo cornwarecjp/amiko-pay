@@ -70,12 +70,11 @@ class NodeState(serializable.Serializable):
 		messages.MakeLink       : self.msg_makeLink,
 		messages.MakeRoute      : self.msg_makeRoute,
 		messages.CancelRoute    : self.msg_cancelRoute,
+		messages.HavePayerRoute : self.msg_havePayerRoute,
+		messages.HavePayeeRoute : self.msg_passToAnyone, #TODO
 		messages.Lock           : self.msg_lock,
 		messages.Commit         : self.msg_commit,
 		messages.SettleCommit   : self.msg_settleCommit,
-
-		messages.HavePayerRoute : self.msg_passToAnyone,
-		messages.HavePayeeRoute : self.msg_passToAnyone,
 
 		messages.Pay    : self.msg_passToPayee,
 		messages.Confirm: self.msg_passToPayee,
@@ -279,6 +278,15 @@ class NodeState(serializable.Serializable):
 		del self.transactions[msg.transactionID]
 
 		return ret
+
+
+	def msg_havePayerRoute(self, msg):
+		tx = self.transactions[msg.transactionID]
+		payer = self.__getObject(tx.payerID)
+		#payee = self.__getObject(tx.payeeID) #TODO: check whether this matches msg.ID
+
+		msg.ID = tx.payerID
+		return payer.handleMessage(msg)
 
 
 	def msg_lock(self, msg):
