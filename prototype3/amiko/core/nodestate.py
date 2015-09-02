@@ -300,7 +300,7 @@ class NodeState(serializable.Serializable):
 
 		ret = payee.commitIncoming(msg)
 		ret += payer.commitOutgoing(msg, tx.payerID)
-		ret += payee.settleCommitOutgoing(messages.SettleCommit(token=msg.token))
+		ret += payee.settleCommitOutgoing(messages.SettleCommit(token=msg.token), tx.payeeID)
 
 		return ret
 
@@ -319,7 +319,7 @@ class NodeState(serializable.Serializable):
 
 		try:
 			payee = self.__getObject(tx.payeeID)
-			ret += payee.settleCommitOutgoing(msg)
+			ret += payee.settleCommitOutgoing(msg, tx.payeeID)
 		except ObjectNotFound:
 			pass #Payment is committed, so payee object may already be deleted
 

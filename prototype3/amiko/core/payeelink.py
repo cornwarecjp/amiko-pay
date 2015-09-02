@@ -179,7 +179,7 @@ class PayeeLink(serializable.Serializable):
 		return [] #This is called when our own commit message is processed -> NOP
 
 
-	def settleCommitOutgoing(self, msg):
+	def settleCommitOutgoing(self, msg, payeeID):
 		log.log("Payee: committed")
 		self.state = self.states.committed
 		return []

@@ -29,6 +29,7 @@
 import copy
 
 import messages
+import settings
 
 import serializable
 
@@ -134,13 +135,37 @@ class Link(serializable.Serializable):
 
 
 	def commitOutgoing(self, msg, localID):
-		#TODO: commit in channel and add payload
+		#TODO: check commit hash
 		msg = copy.deepcopy(msg)
 		msg.ID = self.remoteID
 		return [messages.OutboundMessage(localID=localID, message=msg)]
 
 
 	def commitIncoming(self, msg):
+		#TODO: check and process payload
+		return []
+
+
+	def settleCommitOutgoing(self, msg, localID):
+		#TODO: skip actions if already settled
+
+		#Clean up no-longer-needed transaction:
+		transactionID = settings.hashAlgorithm(msg.token)
+		del self.transactions[transactionID]
+
+		#TODO: commit in channel and add payload
+		msg = copy.deepcopy(msg)
+		msg.ID = self.remoteID
+		return [messages.OutboundMessage(localID=localID, message=msg)]
+
+
+	def settleCommitIncoming(self, msg):
+		#TODO: skip actions if already settled
+
+		#Clean up no-longer-needed transaction:
+		transactionID = settings.hashAlgorithm(msg.token)
+		del self.transactions[transactionID]
+
 		#TODO: check, commit in channel and process payload
 		return []
 
