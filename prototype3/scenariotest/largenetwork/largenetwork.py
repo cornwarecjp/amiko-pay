@@ -33,8 +33,10 @@ import json
 import sys
 sys.path.append('../..')
 
+from amiko.channels import plainchannel
+
 from amiko import node
-from amiko.core import event, settings
+from amiko.core import settings
 
 
 
@@ -75,7 +77,7 @@ nodes = []
 for i in range(len(linkDefinitions)):
 	links = linkDefinitions[i]
 	s = settings.Settings()
-	s.RPCURL = "dummy"
+	s.bitcoinRPCURL = "dummy"
 	s.listenHost = "localhost"
 	s.listenPort = ports[i]
 	s.advertizedHost = s.listenHost
@@ -84,43 +86,71 @@ for i in range(len(linkDefinitions)):
 	s.payLogFile = "payments_%d.log" % i
 	s.externalMeetingPoints = ["Node4"]
 
-	meetingPoints = []
+	meetingPoints = '{}'
 	if i == 4:
-		meetingPoints.append({"ID": "Node4"})
+		meetingPoints = '{"Node4": null}'
 
 	linkStates = []
+	linkConnections = []
 	for link in links:
 		localID = "link_to_%d" % link
 		remoteID = "link_to_%d" % i
 		linkStates.append(
+			""""%s":
 			{
-			"name": localID,
-			"localID": localID,
-			"remoteID": remoteID,
-			"remoteURL": "amikolink://localhost:%d/%s" % (ports[link], remoteID),
-			"channels":
-			[{
-				"ID": 0,
-				"amountLocal"           : 1000,
-				"amountRemote"          : 1000,
+				"_class": "Link",
+				"channels":
+				[
+				{
+				"_class": "PlainChannel",
+				"state": "ready",
+				"amountLocal": 1000,
+				"amountRemote": 1000,
+				"transactionsIncomingLocked": {},
+				"transactionsOutgoingLocked": {},
 				"transactionsIncomingReserved": {},
-				"transactionsOutgoingReserved": {},
-				"transactionsIncomingLocked"  : {},
-				"transactionsOutgoingLocked"  : {},
-				"type": "plain"
-			}]
-			}
+				"transactionsOutgoingReserved": {}
+				}
+				],
+				"remoteID": "%s"
+			}""" % (localID, remoteID)
+			)
+		linkConnections.append(
+			""""%s":
+			{
+				"_class": "PersistentConnection",
+				"connectMessage":
+				{
+					"_class": "ConnectLink",
+					"ID": "%s",
+					"callbackHost": "localhost", "callbackPort": %d, "callbackID": "%s"
+				},
+				"messages": [], "lastIndex": -1, "notYetTransmitted": 0,
+				"host": "localhost", "port": %d,
+				"closing": false
+			}""" % (localID, remoteID, ports[i], localID, ports[link])
 			)
 
-	state = \
-	{
-	"links": linkStates,
-	"meetingPoints": meetingPoints,
-	"payees": []
-	}
+	linkStates = ",\n".join(linkStates)
+	linkConnections = ",\n".join(linkConnections)
 
-	state = json.dumps(state, sort_keys=True, ensure_ascii=True,
-		indent=4, separators=(',', ': '))
+	state = \
+	"""{
+		"_class": "NodeState",
+		"links":
+		{
+		%s
+		},
+		"connections":
+		{
+		%s
+		},
+		"transactions": {},
+		"meetingPoints": %s,
+		"payeeLinks": {},
+		"payerLink": null,
+		"timeoutMessages": []
+	}""" % (linkStates, linkConnections, meetingPoints)
 
 	with open(s.stateFile, "wb") as f:
 		f.write(state)
