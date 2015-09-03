@@ -3,4 +3,5 @@ test:
 
 clean:
 	make -C twonodes clean
+	make -C largenetwork clean
 
