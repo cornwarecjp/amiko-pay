@@ -195,9 +195,9 @@ t0 = time.time()
 URL = nodes[7].request(123, "receipt")
 print "Payment URL:", URL
 
-payer = nodes[0].pay(URL)
-nodes[0].confirmPayment(payer, True)
-print "Payment is ", payer.state
+amount, receipt = nodes[0].pay(URL)
+paymentState = nodes[0].confirmPayment(True)
+print "Payment is ", paymentState
 t1 = time.time()
 
 print "Payment took %f seconds" % (t1-t0)
