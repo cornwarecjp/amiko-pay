@@ -168,15 +168,18 @@ def printNodeInfo():
 		print "Node %d:" % i
 		print "==========================="
 		data = nodes[i].list()
+
 		data['links'] = \
 			{
-			lnk['localURL'] :
+			ID :
 			{
 				'amountLocal' : sum([chn['amountLocal'] for chn in lnk['channels']]),
 				'amountRemote': sum([chn['amountRemote'] for chn in lnk['channels']]),
 			}
-			for lnk in data['links']
+
+			for ID, lnk in data['links'].iteritems()
 			}
+		del data['connections']
 		pprint.pprint(data)
 
 
