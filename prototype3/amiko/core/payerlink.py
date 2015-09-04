@@ -254,7 +254,7 @@ class PayerLink(serializable.Serializable):
 		return [] #NOP
 
 
-	def cancelOutgoing(self, msg):
+	def cancelOutgoing(self, msg, payerID):
 		if self.state not in \
 			(
 			self.states.confirmed,

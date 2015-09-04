@@ -267,12 +267,12 @@ class NodeState(serializable.Serializable):
 			if hasPayer:
 				ret = payer.cancelIncoming(msg)
 			if hasPayee:
-				ret += payee.cancelOutgoing(msg)
+				ret += payee.cancelOutgoing(msg, tx.payeeID)
 		else:
 			if hasPayee:
 				ret = payee.cancelIncoming(msg)
 			if hasPayer:
-				ret += payer.cancelOutgoing(msg)
+				ret += payer.cancelOutgoing(msg, tx.payerID)
 
 		#Clean up cancelled transaction:
 		del self.transactions[msg.transactionID]

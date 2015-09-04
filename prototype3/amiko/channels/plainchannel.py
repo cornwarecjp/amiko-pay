@@ -109,6 +109,15 @@ class PlainChannel(serializable.Serializable):
 					startTime=startTime, endTime=endTime, amount=amount)
 
 
+	def unreserve(self, isPayerSide, transactionID):
+		if isPayerSide:
+			self.amountLocal += self.transactionsOutgoingReserved[transactionID].amount
+			del self.transactionsOutgoingReserved[transactionID]
+		else:
+			self.amountRemote += self.transactionsIncomingReserved[transactionID].amount
+			del self.transactionsIncomingReserved[transactionID]
+
+
 	def lockOutgoing(self, transactionID):
 		self.transactionsOutgoingLocked[transactionID] = \
 			self.transactionsOutgoingReserved[transactionID]

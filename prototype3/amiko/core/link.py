@@ -129,6 +129,22 @@ class Link(serializable.Serializable):
 		return []
 
 
+	def cancelOutgoing(self, msg, localID):
+		c = self.__findChannelWithTransaction(msg.transactionID)
+		c.unreserve(msg.payerSide, msg.transactionID)
+
+		msg = copy.deepcopy(msg)
+		msg.ID = self.remoteID
+		return [messages.OutboundMessage(localID=localID, message=msg)]
+
+
+	def cancelIncoming(self, msg):
+		c = self.__findChannelWithTransaction(msg.transactionID)
+		c.unreserve(not msg.payerSide, msg.transactionID)
+
+		return []
+
+
 	def lockOutgoing(self, msg, localID):
 		c = self.__findChannelWithTransaction(msg.transactionID)
 		c.lockOutgoing(msg.transactionID)
@@ -207,11 +223,6 @@ class Link(serializable.Serializable):
 				message=outputMessage
 				))
 			]
-
-
-	def cancelOutgoing(self, msg):
-		print "Link.cancelOutgoing: NYI"
-		return []
 
 
 	def __findChannelWithTransaction(self, transactionID):
