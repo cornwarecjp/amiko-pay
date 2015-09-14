@@ -46,6 +46,7 @@ class Link(serializable.Serializable):
 		messages.Link_Deposit  : self.msg_ownDeposit,
 		messages.Deposit       : self.msg_peerDeposit,
 		messages.HavePayerRoute: self.msg_havePayerRoute,
+		messages.HavePayeeRoute: self.msg_havePayeeRoute,
 		messages.ChannelMessage: self.continueChannelConversation
 		}[msg.__class__](msg)
 
@@ -86,6 +87,14 @@ class Link(serializable.Serializable):
 
 
 	def msg_havePayerRoute(self, msg):
+		#Forward to peer:
+		localID = msg.ID
+		msg = copy.deepcopy(msg)
+		msg.ID = self.remoteID
+		return [messages.OutboundMessage(localID=localID, message=msg)]
+
+
+	def msg_havePayeeRoute(self, msg):
 		#Forward to peer:
 		localID = msg.ID
 		msg = copy.deepcopy(msg)

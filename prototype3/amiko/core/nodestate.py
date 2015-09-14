@@ -72,7 +72,7 @@ class NodeState(serializable.Serializable):
 		messages.HaveNoRoute    : self.msg_haveNoRoute,
 		messages.CancelRoute    : self.msg_cancelRoute,
 		messages.HavePayerRoute : self.msg_havePayerRoute,
-		messages.HavePayeeRoute : self.msg_passToAnyone, #TODO
+		messages.HavePayeeRoute : self.msg_havePayeeRoute,
 		messages.Lock           : self.msg_lock,
 		messages.Commit         : self.msg_commit,
 		messages.SettleCommit   : self.msg_settleCommit,
@@ -253,29 +253,55 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_haveNoRoute(self, msg):
+		log.log('Processing HaveNoRoute message')
 		try:
 			tx = self.transactions[msg.transactionID]
 		except KeyError:
-			log.log('haveNoRoute failed: transaction %s does not (or no longer) exist (ignored)' % \
+			log.log('  HaveNoRoute failed: transaction %s does not (or no longer) exist (ignored)' % \
 				msg.transactionID.encode('hex'))
 			return []
-
-		#TODO: try to find another route
 
 		payer = self.__getObject(tx.payerID)
 		payee = self.__getObject(tx.payeeID)
 
-		if tx.side == transaction.side_payer:
-			ret = payee.haveNoRouteIncoming(msg, isPayerSide=True)
-			ret += payer.haveNoRouteOutgoing(msg.transactionID, tx.payerID, isPayerSide=True)
-		elif tx.side == transaction.side_payee:
-			ret = payer.haveNoRouteIncoming(msg, isPayerSide=False)
-			ret += payee.haveNoRouteOutgoing(msg.transactionID, tx.payeeID, isPayerSide=False)
-		else:
-			raise Exception("HaveNoRoute should only be received on payer or payee route")
+		ret = []
 
-		#Clean up cancelled transaction:
-		del self.transactions[msg.transactionID]
+		if tx.side == transaction.side_payer:
+			ret += payee.haveNoRouteIncoming(msg, isPayerSide=True)
+		elif tx.side == transaction.side_payee:
+			ret += payer.haveNoRouteIncoming(msg, isPayerSide=False)
+		else:
+			raise Exception('  HaveNoRoute should only be received on payer or payee route')
+
+		#Try to find another route
+		nextRoute = tx.tryNextRoute(msg.transactionID)
+		if nextRoute is None:
+			log.log('  No remaining route found')
+
+			if tx.side == transaction.side_payer:
+				ret += payer.haveNoRouteOutgoing(msg.transactionID, tx.payerID, isPayerSide=True)
+			elif tx.side == transaction.side_payee:
+				ret += payee.haveNoRouteOutgoing(msg.transactionID, tx.payeeID, isPayerSide=False)
+			else:
+				raise Exception('  HaveNoRoute should only be received on payer or payee route')
+
+			#Clean up cancelled transaction:
+			del self.transactions[msg.transactionID]
+
+			return ret
+
+		log.log('  Forwarding MakeRoute to the next route')
+
+		ret += self.__getObject(nextRoute).makeRouteOutgoing(nextRoute,
+			messages.MakeRoute(
+				amount         = tx.amount,
+				transactionID  = msg.transactionID,
+				startTime      = tx.startTime,
+				endTime        = tx.endTime,
+				meetingPointID = tx.meetingPointID,
+				ID             = nextRoute,
+				isPayerSide    = tx.side == transaction.side_payer
+				))
 
 		return ret
 
@@ -311,6 +337,19 @@ class NodeState(serializable.Serializable):
 
 		msg.ID = tx.payerID
 		return payer.handleMessage(msg)
+
+
+	def msg_havePayeeRoute(self, msg):
+		#Special case for payee->payer transmission of this message type:
+		if msg.ID == messages.payerLocalID:
+			return self.payerLink.handleMessage(msg)
+
+		tx = self.transactions[msg.transactionID]
+		#payer = self.__getObject(tx.payerID) #TODO: check whether this matches msg.ID
+		payee = self.__getObject(tx.payeeID)
+
+		msg.ID = tx.payeeID
+		return payee.handleMessage(msg)
 
 
 	def msg_lock(self, msg):
@@ -371,10 +410,6 @@ class NodeState(serializable.Serializable):
 
 		#TODO: maybe inform link about creation of the connection?
 		return []
-
-
-	def msg_passToAnyone(self, msg):
-		return self.__getObject(msg.ID).handleMessage(msg)
 
 
 	def __getObject(self, objID):
