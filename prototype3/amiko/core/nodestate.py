@@ -236,7 +236,9 @@ class NodeState(serializable.Serializable):
 
 		nextRoute = self.transactions[msg.transactionID].tryNextRoute(msg.transactionID)
 		if nextRoute is None:
-			log.log('  No more route')
+			log.log('  No route found')
+			#Delete the tx we just created:
+			del self.transactions[msg.transactionID]
 			#Send back haveNoRoute:
 			ret += sourceLink.haveNoRouteOutgoing(
 				msg.transactionID, msg.ID, msg.isPayerSide)
