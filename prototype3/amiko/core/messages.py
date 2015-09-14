@@ -161,6 +161,11 @@ class HavePayeeRoute(serializable.Serializable):
 serializable.registerClass(HavePayeeRoute)
 
 
+class HaveNoRoute(serializable.Serializable):
+	serializableAttributes = {'ID': '', 'transactionID': ''}
+serializable.registerClass(HaveNoRoute)
+
+
 class Deposit(serializable.Serializable):
 	serializableAttributes = {'ID': '', 'channelIndex': 0, 'channelClass': ''} #TODO: add payload?
 serializable.registerClass(Deposit)

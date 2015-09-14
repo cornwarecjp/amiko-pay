@@ -121,6 +121,20 @@ class Link(serializable.Serializable):
 		return []
 
 
+	def haveNoRouteOutgoing(self, transactionID, localID):
+		#TODO: maybe clean-up some things (e.g. un-reserve)
+		return \
+		[
+		messages.OutboundMessage(localID=localID,
+			message=messages.HaveNoRoute(ID=self.remoteID, transactionID=transactionID))
+		]
+
+
+	def haveNoRouteIncoming(self, msg):
+		#TODO: maybe clean-up some things (e.g. un-reserve)
+		return []
+
+
 	def makeRouteIncoming(self, msg):
 		#Reserve funds in channel
 		c = self.channels[msg.channelIndex]
