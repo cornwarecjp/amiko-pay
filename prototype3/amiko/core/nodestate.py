@@ -238,7 +238,8 @@ class NodeState(serializable.Serializable):
 		if nextRoute is None:
 			log.log('  No more route')
 			#Send back haveNoRoute:
-			ret += sourceLink.haveNoRouteOutgoing(msg.transactionID, msg.ID)
+			ret += sourceLink.haveNoRouteOutgoing(
+				msg.transactionID, msg.ID, msg.isPayerSide)
 			return ret
 
 		log.log('  Forwarding MakeRoute to the first route')
@@ -272,14 +273,14 @@ class NodeState(serializable.Serializable):
 
 		if tx.side == transaction.side_payer:
 			if hasPayer:
-				ret += payee.haveNoRouteIncoming(msg)
+				ret += payee.haveNoRouteIncoming(msg, isPayerSide=True)
 			if hasPayee:
-				ret += payer.haveNoRouteOutgoing(msg.transactionID, tx.payerID)
+				ret += payer.haveNoRouteOutgoing(msg.transactionID, tx.payerID, isPayerSide=True)
 		elif tx.side == transaction.side_payee:
 			if hasPayee:
-				ret += payer.haveNoRouteIncoming(msg)
+				ret += payer.haveNoRouteIncoming(msg, isPayerSide=False)
 			if hasPayer:
-				ret += payee.haveNoRouteOutgoing(msg.transactionID, tx.payeeID)
+				ret += payee.haveNoRouteOutgoing(msg.transactionID, tx.payeeID, isPayerSide=False)
 		else:
 			raise Exception("HaveNoRoute should only be received on payer or payee route")
 

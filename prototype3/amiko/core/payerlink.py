@@ -250,7 +250,7 @@ class PayerLink(serializable.Serializable):
 		return [] #NOP
 
 
-	def haveNoRouteOutgoing(self, transactionID, payerID):
+	def haveNoRouteOutgoing(self, transactionID, payerID, isPayerSide):
 		#TODO: go to state cancelled
 		return [] #NOP
 

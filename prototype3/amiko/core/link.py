@@ -121,8 +121,10 @@ class Link(serializable.Serializable):
 		return []
 
 
-	def haveNoRouteOutgoing(self, transactionID, localID):
-		#TODO: maybe clean-up some things (e.g. un-reserve)
+	def haveNoRouteOutgoing(self, transactionID, localID, isPayerSide):
+		c = self.__findChannelWithTransaction(transactionID)
+		c.unreserve(not isPayerSide, transactionID)
+
 		return \
 		[
 		messages.OutboundMessage(localID=localID,
@@ -130,8 +132,10 @@ class Link(serializable.Serializable):
 		]
 
 
-	def haveNoRouteIncoming(self, msg):
-		#TODO: maybe clean-up some things (e.g. un-reserve)
+	def haveNoRouteIncoming(self, msg, isPayerSide):
+		c = self.__findChannelWithTransaction(msg.transactionID)
+		c.unreserve(isPayerSide, msg.transactionID)
+
 		return []
 
 
