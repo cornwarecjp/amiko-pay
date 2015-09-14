@@ -262,27 +262,15 @@ class NodeState(serializable.Serializable):
 
 		#TODO: try to find another route
 
-		#TODO: simplify in the future, if these always evaluate to True
-		hasPayer = not (tx.payerID is None)
-		hasPayee = not (tx.payeeID is None)
-
-		if hasPayer:
-			payer = self.__getObject(tx.payerID)
-		if hasPayee:
-			payee = self.__getObject(tx.payeeID)
-
-		ret = []
+		payer = self.__getObject(tx.payerID)
+		payee = self.__getObject(tx.payeeID)
 
 		if tx.side == transaction.side_payer:
-			if hasPayer:
-				ret += payee.haveNoRouteIncoming(msg, isPayerSide=True)
-			if hasPayee:
-				ret += payer.haveNoRouteOutgoing(msg.transactionID, tx.payerID, isPayerSide=True)
+			ret = payee.haveNoRouteIncoming(msg, isPayerSide=True)
+			ret += payer.haveNoRouteOutgoing(msg.transactionID, tx.payerID, isPayerSide=True)
 		elif tx.side == transaction.side_payee:
-			if hasPayee:
-				ret += payer.haveNoRouteIncoming(msg, isPayerSide=False)
-			if hasPayer:
-				ret += payee.haveNoRouteOutgoing(msg.transactionID, tx.payeeID, isPayerSide=False)
+			ret = payer.haveNoRouteIncoming(msg, isPayerSide=False)
+			ret += payee.haveNoRouteOutgoing(msg.transactionID, tx.payeeID, isPayerSide=False)
 		else:
 			raise Exception("HaveNoRoute should only be received on payer or payee route")
 
@@ -300,27 +288,15 @@ class NodeState(serializable.Serializable):
 				msg.transactionID.encode('hex'))
 			return []
 
-		#TODO: simplify in the future, if these always evaluate to True
-		hasPayer = not (tx.payerID is None)
-		hasPayee = not (tx.payeeID is None)
-
-		if hasPayer:
-			payer = self.__getObject(tx.payerID)
-		if hasPayee:
-			payee = self.__getObject(tx.payeeID)
-
-		ret = []
+		payer = self.__getObject(tx.payerID)
+		payee = self.__getObject(tx.payeeID)
 
 		if msg.payerSide:
-			if hasPayer:
-				ret += payer.cancelIncoming(msg)
-			if hasPayee:
-				ret += payee.cancelOutgoing(msg, tx.payeeID)
+			ret = payer.cancelIncoming(msg)
+			ret += payee.cancelOutgoing(msg, tx.payeeID)
 		else:
-			if hasPayee:
-				ret += payee.cancelIncoming(msg)
-			if hasPayer:
-				ret += payer.cancelOutgoing(msg, tx.payerID)
+			ret = payee.cancelIncoming(msg)
+			ret += payer.cancelOutgoing(msg, tx.payerID)
 
 		#Clean up cancelled transaction:
 		del self.transactions[msg.transactionID]
