@@ -365,7 +365,12 @@ class NodeState(serializable.Serializable):
 
 	def msg_commit(self, msg):
 		transactionID = settings.hashAlgorithm(msg.token)
-		tx = self.transactions[transactionID]
+		try:
+			tx = self.transactions[transactionID]
+		except KeyError:
+			log.log('Received a commit message for an unknown transaction. Probably we\'ve already settled, so we ignore this.')
+			return []
+
 		payer = self.__getObject(tx.payerID)
 		payee = self.__getObject(tx.payeeID)
 
