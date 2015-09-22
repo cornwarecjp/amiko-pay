@@ -35,6 +35,9 @@ import messages
 import serializable
 
 
+class TransactionNotInChannelsException(Exception):
+	pass
+
 
 class Link(serializable.Serializable):
 	serializableAttributes = {'remoteID': '', 'channels':[]}
@@ -203,10 +206,13 @@ class Link(serializable.Serializable):
 
 
 	def settleCommitOutgoing(self, msg, localID):
-		#TODO: skip actions if already settled
-
 		transactionID = settings.hashAlgorithm(msg.token)
-		c = self.__findChannelWithTransaction(transactionID)
+		try:
+			c = self.__findChannelWithTransaction(transactionID)
+		except TransactionNotInChannelsException:
+			log.log('No channel found for transaction; assuming settleCommitOutgoing was already performed, so we skip it.')
+			return []
+
 		c.settleCommitOutgoing(transactionID, msg.token)
 
 		#TODO: add payload
@@ -216,8 +222,6 @@ class Link(serializable.Serializable):
 
 
 	def settleCommitIncoming(self, msg):
-		#TODO: skip actions if already settled
-
 		#TODO: process payload
 		transactionID = settings.hashAlgorithm(msg.token)
 		c = self.__findChannelWithTransaction(transactionID)
@@ -256,7 +260,8 @@ class Link(serializable.Serializable):
 		for c in self.channels:
 			if c.hasTransaction(transactionID):
 				return c
-		raise Exception("None of the channels is processing the transaction")
+		raise TransactionNotInChannelsException(
+			"None of the channels is processing the transaction")
 
 
 serializable.registerClass(Link)
