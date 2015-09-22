@@ -111,6 +111,9 @@ class Node(threading.Thread):
 		else:
 			self.settings = settings.Settings(conf)
 
+		#threading.Thread attribute; used in log.py
+		self.name = self.settings.name
+
 		self.__network = network.Network(
 			self.settings.listenHost, self.settings.listenPort, callback=self)
 

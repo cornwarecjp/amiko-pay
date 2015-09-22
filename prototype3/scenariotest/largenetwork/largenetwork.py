@@ -77,6 +77,7 @@ nodes = []
 for i in range(len(linkDefinitions)):
 	links = linkDefinitions[i]
 	s = settings.Settings()
+	s.name = 'Node %d' % i
 	s.bitcoinRPCURL = "dummy"
 	s.listenHost = "localhost"
 	s.listenPort = ports[i]

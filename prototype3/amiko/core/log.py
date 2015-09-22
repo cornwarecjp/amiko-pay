@@ -29,6 +29,7 @@
 
 import traceback
 import time
+import threading
 
 
 
@@ -46,9 +47,11 @@ def log(data):
 
 	t = time.time()
 	ms = int(1000*t % 1000)
-	t_str = time.strftime("%Y-%m-%d %H:%M:%S.", time.localtime(t)) + ("%03d" % ms)
+	time_str = time.strftime("%Y-%m-%d %H:%M:%S.", time.localtime(t)) + ("%03d" % ms)
 
-	logfile.write(t_str + ' ' + data + '\n')
+	thread_str = threading.currentThread().name
+
+	logfile.write('%s %s: %s\n' % (time_str, thread_str, data))
 	logfile.flush()
 
 

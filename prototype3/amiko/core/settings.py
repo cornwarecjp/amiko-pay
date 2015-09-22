@@ -55,6 +55,10 @@ class Settings:
 			self.__config = ConfigParser.RawConfigParser()
 			self.__config.read(filename)
 
+		#general
+		self.name = self.__get(
+			"general", "name", '')
+
 		#network
 		self.listenHost = self.__get(
 			"network", "listenHost", '')
