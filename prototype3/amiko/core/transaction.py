@@ -26,10 +26,7 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-import copy
-
 import serializable
-import messages
 
 
 side_payer = 1
@@ -45,7 +42,7 @@ class Transaction(serializable.Serializable):
 	}
 
 
-	def tryNextRoute(self, transactionID):
+	def tryNextRoute(self):
 		try:
 			nextRoute = self.remainingLinkIDs.pop(0)
 		except IndexError:

@@ -234,7 +234,7 @@ class NodeState(serializable.Serializable):
 			#TODO: route time-out
 			return ret
 
-		nextRoute = self.transactions[msg.transactionID].tryNextRoute(msg.transactionID)
+		nextRoute = self.transactions[msg.transactionID].tryNextRoute()
 		if nextRoute is None:
 			log.log('  No route found')
 			#Delete the tx we just created:
@@ -274,7 +274,7 @@ class NodeState(serializable.Serializable):
 			raise Exception('  HaveNoRoute should only be received on payer or payee route')
 
 		#Try to find another route
-		nextRoute = tx.tryNextRoute(msg.transactionID)
+		nextRoute = tx.tryNextRoute()
 		if nextRoute is None:
 			log.log('  No remaining route found')
 
