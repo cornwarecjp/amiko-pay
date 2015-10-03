@@ -178,6 +178,14 @@ class Test(unittest.TestCase):
 		self.network.processNetworkEvents(timeout=0.01)
 
 
+	def test_connectError(self):
+		"Test connect error"
+
+		self.assertRaises(network.ConnectFailed,
+			self.network.makeConnection,
+			None, 'localID', messages.Pay(ID='remoteID'))
+
+
 	def handleMessage(self, msg):
 		self.messages.append(msg)
 
