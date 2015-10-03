@@ -42,8 +42,13 @@ class C(serializable.Serializable):
 
 class Test(unittest.TestCase):
 	def setUp(self):
+		self.registeredClassesBackup = serializable.registeredClasses
 		serializable.registeredClasses = {}
 		serializable.registerClass(C)
+
+
+	def tearDown(self):
+		serializable.registeredClasses = self.registeredClassesBackup
 
 
 	def test_registerClassNameCollision(self):
