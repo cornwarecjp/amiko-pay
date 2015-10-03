@@ -151,6 +151,38 @@ class Test(unittest.TestCase):
 		self.assertLess(measuredTime[0], 0.6)
 
 
+	def test_msg_timeout_confirmed(self):
+		"Test msg_timeout (state: confirmed)"
+
+		self.payerLink.transactionID = "txID"
+		self.payerLink.payeeLinkID = "payeeLinkID"
+
+		for s in ( \
+			payerlink.PayerLink.states.confirmed,
+			payerlink.PayerLink.states.hasPayerRoute,
+			payerlink.PayerLink.states.hasPayeeRoute):
+
+			self.payerLink.state = s
+
+			ret = self.payerLink.handleMessage(
+				messages.Timeout(state=payerlink.PayerLink.states.confirmed))
+
+			self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
+
+			self.assertEqual(len(ret), 2)
+
+			msg = ret[0]
+			self.assertTrue(isinstance(msg, messages.CancelRoute))
+			self.assertEqual(msg.transactionID, "txID")
+			self.assertEqual(msg.payerSide, True)
+			msg = ret[1]
+			self.assertTrue(isinstance(msg, messages.OutboundMessage))
+			self.assertEqual(msg.localID, messages.payerLocalID)
+			msg = msg.message
+			self.assertTrue(isinstance(msg, messages.Cancel))
+			self.assertEqual(msg.ID, "payeeLinkID")
+
+
 	def test_msg_timeout_other(self):
 		"Test msg_timeout (state: other)"
 
@@ -207,7 +239,7 @@ class Test(unittest.TestCase):
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.confirmed)
 
-		self.assertEqual(len(ret), 2)
+		self.assertEqual(len(ret), 3)
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, messages.payerLocalID)
@@ -222,8 +254,15 @@ class Test(unittest.TestCase):
 		#self.assertEqual(msg.startTime, None) #TODO
 		#self.assertEqual(msg.endTime, None) #TODO
 		self.assertEqual(msg.meetingPointID, self.payerLink.meetingPointID)
-		self.assertEqual(msg.payerID, messages.payerLocalID)
-		self.assertEqual(msg.payeeID, None)
+		self.assertEqual(msg.ID, messages.payerLocalID)
+		self.assertEqual(msg.isPayerSide, True)
+		msg = ret[2]
+		self.assertTrue(isinstance(msg, messages.TimeoutMessage))
+		self.assertTrue(msg.timestamp > time.time() + 1.0)
+		self.assertTrue(msg.timestamp < time.time() + 10.0)
+		msg = msg.message
+		self.assertTrue(isinstance(msg, messages.Timeout))
+		self.assertEqual(msg.state, payerlink.PayerLink.states.confirmed)
 
 		self.payerLink.state = payerlink.PayerLink.states.hasReceipt
 
@@ -321,16 +360,50 @@ class Test(unittest.TestCase):
 		self.assertEqual(len(ret), 0)
 
 
+	def test_makeRouteIncoming(self):
+		"Test makeRouteIncoming"
+
+		ret = self.payerLink.makeRouteIncoming(None)
+		self.assertEqual(len(ret), 0)
+
+
+	def test_haveNoRouteOutgoing(self):
+		"Test haveNoRouteOutgoing"
+
+		ret = self.payerLink.haveNoRouteOutgoing(None, None, None)
+		self.assertEqual(len(ret), 0)
+
+
+	def test_cancelIncoming(self):
+		"Test cancelIncoming"
+
+		ret = self.payerLink.cancelIncoming(None)
+		self.assertEqual(len(ret), 0)
+
+
+	def test_cancelOutgoing(self):
+		"Test cancelOutgoing"
+
+		self.assertRaises(Exception,
+			self.payerLink.cancelOutgoing, None, None)
+
+		self.payerLink.state = payerlink.PayerLink.states.confirmed
+
+		ret = self.payerLink.cancelOutgoing(None, None)
+		self.assertEqual(len(ret), 0)
+
+
 	def test_commitOutgoing(self):
 		"Test commitOutgoing"
 
 		self.assertRaises(Exception, self.payerLink.commitOutgoing,
-			messages.Commit(token="bar")
+			messages.Commit(token="bar"),
+			"foobar"
 			)
 
 		self.payerLink.state = payerlink.PayerLink.states.locked
 
-		ret = self.payerLink.commitOutgoing(messages.Commit(token="bar"))
+		ret = self.payerLink.commitOutgoing(messages.Commit(token="bar"), "foobar")
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.receivedCommit)
 		self.assertEqual(self.payerLink.token, "bar")

@@ -41,7 +41,7 @@ from amiko.core import payeelink
 
 class Test(unittest.TestCase):
 	def setUp(self):
-		self.payeeLink = payeelink.PayeeLink(token="foo")
+		self.payeeLink = payeelink.PayeeLink(token="foo", meetingPoints=["MPID"])
 
 
 	def test_defaultAttributes(self):
@@ -81,6 +81,9 @@ class Test(unittest.TestCase):
 	def test_msg_confirm(self):
 		"Test msg_confirm"
 
+		self.assertRaises(Exception, self.payeeLink.handleMessage,
+			messages.Confirm(ID="foobar", meetingPointID="UnknownMeetingPoint"))
+
 		ret = self.payeeLink.handleMessage(messages.Confirm(ID="foobar", meetingPointID="MPID"))
 
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.confirmed)
@@ -94,8 +97,8 @@ class Test(unittest.TestCase):
 		#self.assertEqual(msg.startTime, None) #TODO
 		#self.assertEqual(msg.endTime, None) #TODO
 		self.assertEqual(msg.meetingPointID, "MPID")
-		self.assertEqual(msg.payerID, None)
-		self.assertEqual(msg.payeeID, "foobar")
+		self.assertEqual(msg.ID, "foobar")
+		self.assertEqual(msg.isPayerSide, False)
 
 		self.assertRaises(Exception, self.payeeLink.handleMessage,
 			messages.Confirm(ID="foobar", meetingPointID="MPID"))
@@ -105,10 +108,18 @@ class Test(unittest.TestCase):
 		"Test msg_cancel"
 
 		ret = self.payeeLink.handleMessage(messages.Cancel(ID="foobar"))
-
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.cancelled)
-
 		self.assertEqual(len(ret), 0)
+
+		self.payeeLink.state = payeelink.PayeeLink.states.confirmed
+
+		ret = self.payeeLink.handleMessage(messages.Cancel(ID="foobar"))
+		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.cancelled)
+		self.assertEqual(len(ret), 1)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.CancelRoute))
+		self.assertEqual(msg.transactionID, self.payeeLink.transactionID)
+		self.assertEqual(msg.payerSide, False)
 
 		self.assertRaises(Exception, self.payeeLink.handleMessage,
 			messages.Cancel(ID="foobar"))
@@ -128,6 +139,39 @@ class Test(unittest.TestCase):
 		self.assertTrue(isinstance(msg, messages.HavePayeeRoute))
 		self.assertEqual(msg.ID, "__payer__")
 		self.assertEqual(msg.transactionID, None)
+
+
+	def test_makeRouteIncoming(self):
+		"Test makeRouteIncoming"
+
+		ret = self.payeeLink.makeRouteIncoming(None)
+		self.assertEqual(len(ret), 0)
+
+
+	def test_haveNoRouteOutgoing(self):
+		"Test haveNoRouteOutgoing"
+
+		ret = self.payeeLink.haveNoRouteOutgoing(None, None, None)
+		self.assertEqual(len(ret), 0)
+
+
+	def test_cancelIncoming(self):
+		"Test cancelIncoming"
+
+		ret = self.payeeLink.cancelIncoming(None)
+		self.assertEqual(len(ret), 0)
+
+
+	def test_cancelOutgoing(self):
+		"Test cancelOutgoing"
+
+		self.assertRaises(Exception,
+			self.payeeLink.cancelOutgoing, None, None)
+
+		self.payeeLink.state = payeelink.PayeeLink.states.confirmed
+
+		ret = self.payeeLink.cancelOutgoing(None, None)
+		self.assertEqual(len(ret), 0)
 
 
 	def test_lockOutgoing(self):
@@ -164,7 +208,8 @@ class Test(unittest.TestCase):
 		"Test settleCommitOutgoing"
 
 		ret = self.payeeLink.settleCommitOutgoing(
-			messages.SettleCommit(token=self.payeeLink.token))
+			messages.SettleCommit(token=self.payeeLink.token),
+			"foobar")
 
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.committed)
 
