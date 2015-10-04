@@ -35,7 +35,7 @@ from ..utils import utils
 import messages
 import log
 
-import serializable
+from ..utils import serializable
 
 
 

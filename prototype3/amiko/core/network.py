@@ -29,7 +29,7 @@
 import asyncore
 import socket
 
-import serializable
+from ..utils import serializable
 import messages
 import log
 import randomsource

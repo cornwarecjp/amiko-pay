@@ -33,7 +33,7 @@ import log
 import settings
 import messages
 
-import serializable
+from ..utils import serializable
 
 
 

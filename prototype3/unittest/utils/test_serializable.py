@@ -32,7 +32,7 @@ import json
 
 import testenvironment
 
-from amiko.core import serializable
+from amiko.utils import serializable
 
 
 class C(serializable.Serializable):

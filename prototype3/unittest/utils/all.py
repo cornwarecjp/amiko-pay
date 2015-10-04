@@ -31,11 +31,12 @@ import unittest
 
 import testenvironment
 
-from test_base58 import Test as test_base58
+from test_base58             import Test as test_base58
 from test_bitcointransaction import Test as test_bitcointransaction
-from test_bitcoinutils import Test as test_bitcoinutils
-from test_crypto import Test as test_crypto
-from test_utils import Test as test_utils
+from test_bitcoinutils       import Test as test_bitcoinutils
+from test_crypto             import Test as test_crypto
+from test_serializable       import Test as test_serializable
+from test_utils              import Test as test_utils
 
 
 if __name__ == "__main__":

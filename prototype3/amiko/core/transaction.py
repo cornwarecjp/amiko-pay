@@ -26,7 +26,7 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-import serializable
+from ..utils import serializable
 
 
 side_payer = 1

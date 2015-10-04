@@ -38,7 +38,6 @@ from test_payeelink            import Test as test_payeelink
 from test_payerlink            import Test as test_payerlink
 from test_paylog               import Test as test_paylog
 from test_persistentconnection import Test as test_persistentconnection
-from test_serializable         import Test as test_serializable
 from test_settings             import Test as test_settings
 from test_transaction          import Test as test_transaction
 

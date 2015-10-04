@@ -27,9 +27,7 @@
 #    OpenSSL library used as well as that of the covered work.
 
 from ..utils import utils
-
-#TODO: should serializable be moved to utils?
-from ..core import serializable
+from ..utils import serializable
 
 
 

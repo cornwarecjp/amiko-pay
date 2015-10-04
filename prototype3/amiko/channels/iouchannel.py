@@ -26,11 +26,7 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-from ..utils import utils
-
-#TODO: should serializable be moved to utils?
-from ..core import serializable
-
+from ..utils import serializable
 
 from plainchannel import PlainChannel
 

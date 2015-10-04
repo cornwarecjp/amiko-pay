@@ -29,7 +29,7 @@
 import os
 
 import log
-import serializable
+from ..utils import serializable
 
 
 

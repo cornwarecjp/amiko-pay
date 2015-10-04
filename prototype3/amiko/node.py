@@ -38,7 +38,6 @@ from core import payerlink
 from core import payeelink
 from core import messages
 from core import paylog
-from core import serializable
 from core import persistentobject
 from core import settings
 
