@@ -75,18 +75,6 @@ class Settings:
 		self.payLogFile = self.__get(
 			"files", "paylogfile", "payments.log")
 
-		#escrow services
-		self.acceptedEscrowKeys = self.__get(
-			"providers", "escrowKeys", "")
-		#de-code the keys:
-		self.acceptedEscrowKeys = self.acceptedEscrowKeys.split(",")
-		self.acceptedEscrowKeys = \
-			[s.strip() for s in self.acceptedEscrowKeys]
-		if self.acceptedEscrowKeys[-1] == '':
-			self.acceptedEscrowKeys = self.acceptedEscrowKeys[:-1] #remove empty
-		self.acceptedEscrowKeys = \
-			[binascii.unhexlify(s) for s in self.acceptedEscrowKeys]
-
 		#external meeting points
 		self.externalMeetingPoints = self.__get(
 			"providers", "externalMeetingPoints", "")

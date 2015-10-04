@@ -70,7 +70,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(s.advertizedPort, 4321)
 		self.assertEqual(s.stateFile, 'amikopay.dat')
 		self.assertEqual(s.payLogFile, 'payments.log')
-		self.assertEqual(s.acceptedEscrowKeys, [])
 		self.assertEqual(s.externalMeetingPoints, [])
 		self.assertEqual(s.bitcoinRPCURL, '')
 
@@ -83,7 +82,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(s.advertizedPort, 2468)
 		self.assertEqual(s.stateFile, 'test_state_file')
 		self.assertEqual(s.payLogFile, 'test_log_file')
-		self.assertEqual(s.acceptedEscrowKeys, ['\xde\xad\xbe\xef', '\x01\x23\x45\x67'])
 		self.assertEqual(s.externalMeetingPoints, ['MP1', 'MP2'])
 		self.assertEqual(s.bitcoinRPCURL, 'test_rpc_url')
 
