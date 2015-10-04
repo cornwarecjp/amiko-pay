@@ -48,8 +48,7 @@ serializable.registerClass(PlainChannel_Transaction)
 class PlainChannel(serializable.Serializable):
 	"""
 	Payment channel without any protection.
-	This implements a pure Ripple-style system, with full trust between
-	neighbors.
+	This can be used as a base class for other channel types.
 	"""
 
 	states = utils.Enum([

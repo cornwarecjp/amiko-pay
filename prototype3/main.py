@@ -33,7 +33,7 @@ import pprint
 from decimal import Decimal
 
 from amiko.utils import crypto
-from amiko.channels import plainchannel
+from amiko.channels import iouchannel
 from amiko import node
 
 
@@ -193,7 +193,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 			print "Aborted"
 			return
 
-		channel = plainchannel.PlainChannel.makeForOwnDeposit(amount)
+		channel = iouchannel.IOUChannel.makeForOwnDeposit(amount)
 
 		a.deposit(linkname, channel)
 
