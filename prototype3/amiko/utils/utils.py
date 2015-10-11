@@ -26,6 +26,9 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+import copy
+
+
 
 class Enum(set):
 	"""
@@ -50,4 +53,15 @@ def inheritDocString(cls):
 		fn.__doc__ = getattr(cls,fn.__name__).__doc__
 		return fn
 	return docstring_inheriting_decorator
+
+
+def dictSum(a, b):
+	"""
+	Returns a dictionary that contains the elements of both a and b.
+	In case of equal keys, the values in b get included.
+	"""
+
+	ret = copy.copy(a) #shallow copy
+	ret.update(b)
+	return ret
 

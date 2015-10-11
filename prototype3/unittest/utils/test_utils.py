@@ -67,6 +67,24 @@ class Test(unittest.TestCase):
 			e = enum.foobar
 
 
+	def test_dictSum(self):
+		"test dictSum function"
+
+		class Dummy:
+			pass
+
+		dummies = [Dummy(), Dummy(), Dummy(), Dummy()]
+
+		a = {'a': dummies[0], 'b': dummies[1]}
+		b = {'b': dummies[2], 'c': dummies[3]}
+
+		c = utils.dictSum(a, b)
+
+		self.assertEqual(a, {'a': dummies[0], 'b': dummies[1]})
+		self.assertEqual(b, {'b': dummies[2], 'c': dummies[3]})
+		self.assertEqual(c, {'a': dummies[0], 'b': dummies[2], 'c': dummies[3]})
+
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)

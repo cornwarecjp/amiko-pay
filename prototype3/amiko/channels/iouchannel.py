@@ -27,6 +27,7 @@
 #    OpenSSL library used as well as that of the covered work.
 
 from ..utils import serializable
+from ..utils import utils
 
 from plainchannel import PlainChannel
 
@@ -41,10 +42,17 @@ class IOUChannel(PlainChannel):
 	(e.g. user trusts service provider, but not vice versa).
 	"""
 
+	serializableAttributes = utils.dictSum(PlainChannel.serializableAttributes,
+		{'isDepositor': False})
+
+
 	@staticmethod
 	def makeForOwnDeposit(amount):
 		return IOUChannel(
-			state=PlainChannel.states.depositing, amountLocal=amount, amountRemote=0)
+			state=PlainChannel.states.depositing,
+			amountLocal=amount,
+			amountRemote=0,
+			isDepositor=True)
 
 
 
