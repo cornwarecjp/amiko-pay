@@ -91,6 +91,7 @@ class NodeState(serializable.Serializable):
 		messages.Confirmation   : self.msg_passToConnection,
 
 		messages.Link_Deposit  : self.msg_passToLink,
+		messages.Link_Withdraw : self.msg_passToLink,
 		messages.ChannelMessage: self.msg_passToLink,
 		messages.Deposit       : self.msg_passToLink
 		}[msg.__class__](msg)

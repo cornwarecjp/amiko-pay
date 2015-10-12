@@ -126,6 +126,11 @@ class Link_Deposit(serializable.Serializable):
 serializable.registerClass(Link_Deposit)
 
 
+class Link_Withdraw(serializable.Serializable):
+	serializableAttributes = {'ID': '', 'channelID': 0}
+serializable.registerClass(Link_Withdraw)
+
+
 class ReturnValue(serializable.Serializable):
 	serializableAttributes = {'value':''}
 serializable.registerClass(ReturnValue)

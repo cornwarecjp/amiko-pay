@@ -398,7 +398,7 @@ class Node(threading.Thread):
 		channelID: the channel ID of the channel to be withdrawn
 		"""
 
-		raise Exception("NYI")
+		self.handleMessage(messages.Link_Withdraw(ID=linkname, channelID=channelID))
 
 
 	def run(self):

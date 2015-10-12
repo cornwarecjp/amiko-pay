@@ -47,6 +47,7 @@ class Link(serializable.Serializable):
 		return \
 		{
 		messages.Link_Deposit  : self.msg_ownDeposit,
+		messages.Link_Withdraw : self.msg_ownWithdraw,
 		messages.Deposit       : self.msg_peerDeposit,
 		messages.HavePayerRoute: self.msg_havePayerRoute,
 		messages.HavePayeeRoute: self.msg_havePayeeRoute,
@@ -85,6 +86,12 @@ class Link(serializable.Serializable):
 		channel = serializable.state2Object({'_class': msg.channelClass})
 
 		self.channels.append(channel)
+
+		return []
+
+
+	def msg_ownWithdraw(self, msg):
+		print "msg_ownWithdraw" #TODO
 
 		return []
 
