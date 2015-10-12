@@ -127,7 +127,7 @@ serializable.registerClass(Link_Deposit)
 
 
 class Link_Withdraw(serializable.Serializable):
-	serializableAttributes = {'ID': '', 'channelID': 0}
+	serializableAttributes = {'ID': '', 'channelIndex': 0}
 serializable.registerClass(Link_Withdraw)
 
 

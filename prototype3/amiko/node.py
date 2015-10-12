@@ -389,16 +389,16 @@ class Node(threading.Thread):
 
 
 	@runInNodeThread
-	def withdraw(self, linkname, channelID):
+	def withdraw(self, linkname, channelIndex):
 		"""
 		Withdraw from a link.
 
 		Arguments:
 		linkname: the name of the link
-		channelID: the channel ID of the channel to be withdrawn
+		channelIndex: the index of the channel to be withdrawn
 		"""
 
-		self.handleMessage(messages.Link_Withdraw(ID=linkname, channelID=channelID))
+		self.handleMessage(messages.Link_Withdraw(ID=linkname, channelIndex=channelIndex))
 
 
 	def run(self):

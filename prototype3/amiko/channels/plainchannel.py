@@ -50,8 +50,11 @@ class PlainChannel(serializable.Serializable):
 	"""
 
 	states = utils.Enum([
-		"initial", "depositing",
-		"ready"
+		"initial",
+		"depositing",
+		"ready",
+		"withdrawing",
+		"closed"
 		])
 
 	serializableAttributes = \
@@ -85,6 +88,17 @@ class PlainChannel(serializable.Serializable):
 			return None
 
 		return None
+
+
+	def startWithdraw(self):
+		if self.state in (self.states.withdrawing, self.states.closed):
+			raise Exception("Channel is already %s." % self.state)
+
+		if self.state != self.states.ready:
+			raise Exception("Can not withdraw from a channel in state %s." % self.state)
+
+		self.state = self.states.withdrawing
+		return self.tryToClose()
 
 
 	def reserve(self, isPayerSide, transactionID, startTime, endTime, amount):
@@ -135,6 +149,26 @@ class PlainChannel(serializable.Serializable):
 	def settleCommitIncoming(self, transactionID):
 		self.amountLocal += self.transactionsIncomingLocked[transactionID].amount
 		del self.transactionsIncomingLocked[transactionID]
+
+
+	def tryToClose(self):
+		if self.state != self.states.withdrawing:
+			return
+
+		if len(self.transactionsIncomingReserved) != 0:
+			return
+		if len(self.transactionsOutgoingReserved) != 0:
+			return
+		if len(self.transactionsIncomingLocked) != 0:
+			return
+		if len(self.transactionsOutgoingLocked) != 0:
+			return
+
+		#we're withdrawing, and there are no more ongoing transactions,
+		#so it's OK to close the channel now.
+		self.state = self.states.closed
+
+		#TODO: message to peer?
 
 
 	def hasTransaction(self, transactionID):

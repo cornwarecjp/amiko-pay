@@ -91,9 +91,20 @@ class Link(serializable.Serializable):
 
 
 	def msg_ownWithdraw(self, msg):
-		print "msg_ownWithdraw" #TODO
+		if msg.channelIndex < 0:
+			raise Exception('Withdraw error: negative channel index.')
+		if msg.channelIndex >= len(self.channels):
+			raise Exception('Withdraw error: too large channel index.')
 
-		return []
+		message = self.channels[msg.channelIndex].startWithdraw()
+		if message is None:
+			return []
+
+		return [messages.ChannelMessage(
+			ID=localID,
+			channelIndex=msg.channelIndex,
+			message=message
+			)]
 
 
 	def msg_havePayerRoute(self, msg):
