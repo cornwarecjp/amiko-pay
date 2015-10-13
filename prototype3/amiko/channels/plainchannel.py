@@ -102,6 +102,9 @@ class PlainChannel(serializable.Serializable):
 
 
 	def reserve(self, isPayerSide, transactionID, startTime, endTime, amount):
+		if self.state != self.states.ready:
+			raise Exception("Channel will not start transactions in state %s." % self.state)
+
 		if isPayerSide:
 			if self.amountLocal < amount:
 				raise Exception("Insufficient funds")
@@ -127,6 +130,7 @@ class PlainChannel(serializable.Serializable):
 		else:
 			self.amountRemote += self.transactionsIncomingReserved[transactionID].amount
 			del self.transactionsIncomingReserved[transactionID]
+		return self.tryToClose()
 
 
 	def lockOutgoing(self, transactionID):
@@ -144,11 +148,13 @@ class PlainChannel(serializable.Serializable):
 	def settleCommitOutgoing(self, transactionID, token):
 		self.amountRemote += self.transactionsOutgoingLocked[transactionID].amount
 		del self.transactionsOutgoingLocked[transactionID]
+		return self.tryToClose()
 
 
 	def settleCommitIncoming(self, transactionID):
 		self.amountLocal += self.transactionsIncomingLocked[transactionID].amount
 		del self.transactionsIncomingLocked[transactionID]
+		return self.tryToClose()
 
 
 	def tryToClose(self):
