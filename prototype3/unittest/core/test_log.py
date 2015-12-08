@@ -102,9 +102,9 @@ class Test(unittest.TestCase):
 
 			#The expected data is present, including a trailing newline:
 			self.assertTrue("Traceback" in lines[0])
-			self.assertTrue('File "test_log.py", line' in lines[1])
-			self.assertTrue("x = 1 / 0" in lines[2])
-			self.assertTrue("ZeroDivisionError: integer division or modulo by zero" in lines[3])
+			self.assertTrue('test_log.py", line' in lines[-5])
+			self.assertTrue("x = 1 / 0" in lines[-4])
+			self.assertTrue("ZeroDivisionError: integer division or modulo by zero" in lines[-3])
 			self.assertGreater(len(lines), 4)
 
 
