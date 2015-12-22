@@ -27,6 +27,7 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+import threading
 import ctypes
 
 libssl = ctypes.cdll.LoadLibrary("libssl.so") #Will be different on windows
@@ -46,7 +47,17 @@ class BIGNUM(ctypes.Structure):
 	]
 
 
+#Callback types:
+#Maybe WINFUNCTYPE in windows?
+lockingCallbackType = ctypes.CFUNCTYPE(None,
+	ctypes.c_int, ctypes.c_int, ctypes.c_char_p, ctypes.c_int,
+	use_errno=True, use_last_error=True)
+threadIDCallbackType = ctypes.CFUNCTYPE(ctypes.c_ulong,
+	use_errno=True, use_last_error=True)
+
 #Constants:
+CRYPTO_LOCK = 1
+
 NID_secp256k1 = 714
 
 POINT_CONVERSION_COMPRESSED = 2
@@ -54,6 +65,15 @@ POINT_CONVERSION_UNCOMPRESSED = 4
 
 
 #Function prototype modifications:
+libssl.CRYPTO_set_locking_callback.argtypes = [ctypes.c_void_p]
+libssl.CRYPTO_set_locking_callback.restype = None
+
+libssl.CRYPTO_set_id_callback.argtypes = [ctypes.c_void_p]
+libssl.CRYPTO_set_id_callback.restype = None
+
+libssl.CRYPTO_num_locks.argtypes = []
+libssl.CRYPTO_num_locks.restype = ctypes.c_int
+
 libssl.EC_KEY_new_by_curve_name.argtypes = [ctypes.c_int]
 libssl.EC_KEY_new_by_curve_name.restype = ctypes.c_void_p
 
@@ -136,14 +156,34 @@ def BN_num_bytes(a):
 	return (libssl.BN_num_bits(a)+7)/8
 
 
+mutexes = []
+def lockingCallback(mode, i, file, line):
+	global mutexes
+
+	if mode & CRYPTO_LOCK:
+		mutexes[int(i)].acquire()
+	else:
+		mutexes[int(i)].release()
+ctypes_lockingCallback = lockingCallbackType(lockingCallback)
+
+
+def threadIDCallback():
+	return long(threading.currentThread().ident)
+ctypes_threadIDCallback = threadIDCallbackType(threadIDCallback)
+
 
 libssl.SSL_load_error_strings()
 libssl.SSL_library_init()
 
+for i in range(libssl.CRYPTO_num_locks()):
+	mutexes.append(threading.Lock())
+
+libssl.CRYPTO_set_locking_callback(ctypes_lockingCallback)
+libssl.CRYPTO_set_id_callback(ctypes_threadIDCallback)
 
 #Note: it might be possible to register this with Python's atexit module, but
 #it might be necessary to make sure that all constructed objects (such as keys)
-#are freed before calling this.Calling this at program termination shouldn't be
+#are freed before calling this. Calling this at program termination shouldn't be
 #that essential anyway, so wel'll leave it to the application code.
 def cleanup():
 	"""
@@ -152,6 +192,7 @@ def cleanup():
 	"""
 
 	libssl.ERR_free_strings()
+	#TODO: maybe clean up the callbacks?
 
 
 def SHA256(data):

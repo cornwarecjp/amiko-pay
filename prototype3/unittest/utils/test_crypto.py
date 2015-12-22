@@ -29,6 +29,7 @@
 
 import unittest
 import binascii
+import threading
 
 import testenvironment
 
@@ -333,6 +334,23 @@ class Test(unittest.TestCase):
 
 			libssl.returnValues = {'ECDSA_verify': [-1]}
 			self.assertRaises(Exception, key.verify, '', '')
+
+
+	def test_multithreading(self):
+		"Test whether libssl works nicely in a separate thread"
+
+		def test():
+			k = crypto.Key()
+			k.makeNewKey(compressed=True)
+			k.getPrivateKey()
+
+		# Main thread:
+		test()
+
+		# Other thread:
+		t = threading.Thread(target=test)
+		t.start()
+		t.join()
 
 
 
