@@ -80,7 +80,7 @@ libssl.EC_KEY_new_by_curve_name.restype = ctypes.c_void_p
 libssl.EC_KEY_free.argtypes = [ctypes.c_void_p]
 
 libssl.EC_KEY_generate_key.argtypes = [ctypes.c_void_p]
-libssl.EC_KEY_new_by_curve_name.restype = ctypes.c_int
+libssl.EC_KEY_generate_key.restype = ctypes.c_int
 
 libssl.EC_KEY_get0_group.argtypes = [ctypes.c_void_p]
 libssl.EC_KEY_get0_group.restype = ctypes.c_void_p
