@@ -87,7 +87,7 @@ class PlainChannel(serializable.Serializable):
 			self.amountRemote = msg.amount
 			return None
 
-		return None
+		raise Exception("Received unexpected channel message")
 
 
 	def startWithdraw(self):

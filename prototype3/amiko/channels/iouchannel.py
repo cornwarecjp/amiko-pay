@@ -28,8 +28,16 @@
 
 from ..utils import serializable
 from ..utils import utils
+from ..utils.crypto import Key, RIPEMD160, SHA256
+from ..utils.base58 import decodeBase58Check, encodeBase58Check
 
-from plainchannel import PlainChannel
+from plainchannel import PlainChannel, PlainChannel_Deposit
+
+
+
+class IOUChannel_Address(serializable.Serializable):
+	serializableAttributes = {'address': ''}
+serializable.registerClass(IOUChannel_Address)
 
 
 
@@ -43,7 +51,7 @@ class IOUChannel(PlainChannel):
 	"""
 
 	serializableAttributes = utils.dictSum(PlainChannel.serializableAttributes,
-		{'isDepositor': False})
+		{'isIssuer': False, 'address': None, 'privateKey': None})
 
 
 	@staticmethod
@@ -52,7 +60,33 @@ class IOUChannel(PlainChannel):
 			state=PlainChannel.states.depositing,
 			amountLocal=amount,
 			amountRemote=0,
-			isDepositor=True)
+			isIssuer=True)
+
+
+	def __init__(self, **kwargs):
+		PlainChannel.__init__(self, **kwargs)
+
+		if not self.isIssuer and self.privateKey is None:
+			k = Key()
+			k.makeNewKey(compressed=True)
+			self.privateKey = k.getPrivateKey()
+			publicKeyHash = RIPEMD160(SHA256(k.getPublicKey()))
+			self.address = encodeBase58Check(publicKeyHash, 0) #PUBKEY_ADDRESS = 0
+
+
+	def handleMessage(self, msg):
+		if (self.state, msg) == (self.states.depositing, None):
+			return PlainChannel_Deposit(amount=self.amountLocal)
+		elif (self.state, msg.__class__) == (self.states.initial, PlainChannel_Deposit):
+			self.state = self.states.ready
+			self.amountRemote = msg.amount
+			return IOUChannel_Address(address=self.address)
+		elif (self.state, msg.__class__) == (self.states.depositing, IOUChannel_Address):
+			self.address = msg.address
+			self.state = self.states.ready
+			return None
+
+		raise Exception("Received unexpected channel message")
 
 
 
