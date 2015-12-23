@@ -271,19 +271,22 @@ class Link(serializable.Serializable):
 
 
 	def handleChannelOutput(self, localID, channelIndex, channelOutput):
-		#TODO: handle message, actions format
-
 		if channelOutput is None: #None = end of conversation
 			return []
 
-		return \
-			[
-			messages.OutboundMessage(localID=localID, message=messages.ChannelMessage(
-				ID=self.remoteID,
-				channelIndex=channelIndex,
-				message=channelOutput
-				))
-			]
+		message, actions = channelOutput
+
+		if not(message is None):
+			actions.append(
+				messages.OutboundMessage(localID=localID,
+					message=messages.ChannelMessage(
+						ID=self.remoteID,
+						channelIndex=channelIndex,
+						message=message
+					))
+				)
+
+		return actions
 
 
 	def __findChannelWithTransaction(self, transactionID):

@@ -75,12 +75,19 @@ class IOUChannel(PlainChannel):
 
 
 	def handleMessage(self, msg):
+		"""
+		Return value:
+			None
+			tuple(None, list)
+			tuple(message, list)
+		"""
+
 		if (self.state, msg) == (self.states.depositing, None):
-			return PlainChannel_Deposit(amount=self.amountLocal)
+			return PlainChannel_Deposit(amount=self.amountLocal), []
 		elif (self.state, msg.__class__) == (self.states.initial, PlainChannel_Deposit):
 			self.state = self.states.ready
 			self.amountRemote = msg.amount
-			return IOUChannel_Address(address=self.address)
+			return IOUChannel_Address(address=self.address), []
 		elif (self.state, msg.__class__) == (self.states.depositing, IOUChannel_Address):
 			self.address = msg.address
 			self.state = self.states.ready

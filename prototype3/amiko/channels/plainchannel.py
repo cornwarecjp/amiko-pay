@@ -79,9 +79,16 @@ class PlainChannel(serializable.Serializable):
 
 
 	def handleMessage(self, msg):
+		"""
+		Return value:
+			None
+			tuple(None, list)
+			tuple(message, list)
+		"""
+
 		if (self.state, msg) == (self.states.depositing, None):
 			self.state = self.states.ready
-			return PlainChannel_Deposit(amount=self.amountLocal)
+			return PlainChannel_Deposit(amount=self.amountLocal), []
 		elif (self.state, msg.__class__) == (self.states.initial, PlainChannel_Deposit):
 			self.state = self.states.ready
 			self.amountRemote = msg.amount
@@ -91,6 +98,13 @@ class PlainChannel(serializable.Serializable):
 
 
 	def startWithdraw(self):
+		"""
+		Return value:
+			None
+			tuple(None, list)
+			tuple(message, list)
+		"""
+
 		if self.state in (self.states.withdrawing, self.states.closed):
 			raise Exception("Channel is already %s." % self.state)
 
@@ -124,6 +138,13 @@ class PlainChannel(serializable.Serializable):
 
 
 	def unreserve(self, isPayerSide, transactionID):
+		"""
+		Return value:
+			None
+			tuple(None, list)
+			tuple(message, list)
+		"""
+
 		if isPayerSide:
 			self.amountLocal += self.transactionsOutgoingReserved[transactionID].amount
 			del self.transactionsOutgoingReserved[transactionID]
@@ -146,18 +167,39 @@ class PlainChannel(serializable.Serializable):
 
 
 	def settleCommitOutgoing(self, transactionID, token):
+		"""
+		Return value:
+			None
+			tuple(None, list)
+			tuple(message, list)
+		"""
+
 		self.amountRemote += self.transactionsOutgoingLocked[transactionID].amount
 		del self.transactionsOutgoingLocked[transactionID]
 		return self.tryToClose()
 
 
 	def settleCommitIncoming(self, transactionID):
+		"""
+		Return value:
+			None
+			tuple(None, list)
+			tuple(message, list)
+		"""
+
 		self.amountLocal += self.transactionsIncomingLocked[transactionID].amount
 		del self.transactionsIncomingLocked[transactionID]
 		return self.tryToClose()
 
 
 	def tryToClose(self):
+		"""
+		Return value:
+			None
+			tuple(None, list)
+			tuple(message, list)
+		"""
+
 		if self.state != self.states.withdrawing:
 			return
 
