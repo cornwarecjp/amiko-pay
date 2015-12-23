@@ -96,15 +96,8 @@ class Link(serializable.Serializable):
 		if msg.channelIndex >= len(self.channels):
 			raise Exception('Withdraw error: too large channel index.')
 
-		message = self.channels[msg.channelIndex].startWithdraw()
-		if message is None:
-			return []
-
-		return [messages.ChannelMessage(
-			ID=localID,
-			channelIndex=msg.channelIndex,
-			message=message
-			)]
+		channelOutput = self.channels[msg.channelIndex].startWithdraw()
+		return self.handleChannelOutput(msg.ID, msg.channelIndex, channelOutput)
 
 
 	def msg_havePayerRoute(self, msg):
@@ -152,10 +145,13 @@ class Link(serializable.Serializable):
 
 
 	def haveNoRouteOutgoing(self, transactionID, localID, isPayerSide):
-		c = self.__findChannelWithTransaction(transactionID)
-		c.unreserve(not isPayerSide, transactionID)
+		c, ci = self.__findChannelWithTransaction(transactionID)
+		ret = self.handleChannelOutput(
+			localID, ci,
+			c.unreserve(not isPayerSide, transactionID)
+			)
 
-		return \
+		return ret + \
 		[
 		messages.OutboundMessage(localID=localID,
 			message=messages.HaveNoRoute(ID=self.remoteID, transactionID=transactionID))
@@ -163,10 +159,11 @@ class Link(serializable.Serializable):
 
 
 	def haveNoRouteIncoming(self, msg, isPayerSide):
-		c = self.__findChannelWithTransaction(msg.transactionID)
-		c.unreserve(isPayerSide, msg.transactionID)
-
-		return []
+		c, ci = self.__findChannelWithTransaction(msg.transactionID)
+		return self.handleChannelOutput(
+			msg.ID, ci,
+			c.unreserve(isPayerSide, msg.transactionID)
+			)
 
 
 	def makeRouteIncoming(self, msg):
@@ -178,23 +175,27 @@ class Link(serializable.Serializable):
 
 
 	def cancelOutgoing(self, msg, localID):
-		c = self.__findChannelWithTransaction(msg.transactionID)
-		c.unreserve(msg.payerSide, msg.transactionID)
+		c, ci = self.__findChannelWithTransaction(msg.transactionID)
+		ret = self.handleChannelOutput(
+			localID, ci,
+			c.unreserve(msg.payerSide, msg.transactionID)
+			)
 
 		msg = copy.deepcopy(msg)
 		msg.ID = self.remoteID
-		return [messages.OutboundMessage(localID=localID, message=msg)]
+		return ret + [messages.OutboundMessage(localID=localID, message=msg)]
 
 
 	def cancelIncoming(self, msg):
-		c = self.__findChannelWithTransaction(msg.transactionID)
-		c.unreserve(not msg.payerSide, msg.transactionID)
-
-		return []
+		c, ci = self.__findChannelWithTransaction(msg.transactionID)
+		return self.handleChannelOutput(
+			msg.ID, ci,
+			c.unreserve(not msg.payerSide, msg.transactionID)
+			)
 
 
 	def lockOutgoing(self, msg, localID):
-		c = self.__findChannelWithTransaction(msg.transactionID)
+		c, ci = self.__findChannelWithTransaction(msg.transactionID)
 		c.lockOutgoing(msg.transactionID)
 
 		#TODO: add payload
@@ -206,7 +207,7 @@ class Link(serializable.Serializable):
 
 	def lockIncoming(self, msg):
 		#TODO: process payload
-		c = self.__findChannelWithTransaction(msg.transactionID)
+		c, ci = self.__findChannelWithTransaction(msg.transactionID)
 		c.lockIncoming(msg.transactionID)
 
 		return []
@@ -226,26 +227,30 @@ class Link(serializable.Serializable):
 	def settleCommitOutgoing(self, msg, localID):
 		transactionID = settings.hashAlgorithm(msg.token)
 		try:
-			c = self.__findChannelWithTransaction(transactionID)
+			c, ci = self.__findChannelWithTransaction(transactionID)
 		except TransactionNotInChannelsException:
 			log.log('No channel found for transaction; assuming settleCommitOutgoing was already performed, so we skip it.')
 			return []
 
-		c.settleCommitOutgoing(transactionID, msg.token)
+		ret = self.handleChannelOutput(
+			localID, ci,
+			c.settleCommitOutgoing(transactionID, msg.token)
+			)
 
 		#TODO: add payload
 		msg = copy.deepcopy(msg)
 		msg.ID = self.remoteID
-		return [messages.OutboundMessage(localID=localID, message=msg)]
+		return ret + [messages.OutboundMessage(localID=localID, message=msg)]
 
 
 	def settleCommitIncoming(self, msg):
 		#TODO: process payload
 		transactionID = settings.hashAlgorithm(msg.token)
-		c = self.__findChannelWithTransaction(transactionID)
-		c.settleCommitIncoming(transactionID)
-
-		return []
+		c, ci = self.__findChannelWithTransaction(transactionID)
+		return self.handleChannelOutput(
+			msg.ID, ci,
+			c.settleCommitIncoming(transactionID)
+			)
 
 
 	def startChannelConversation(self, localID, channelIndex):
@@ -259,25 +264,32 @@ class Link(serializable.Serializable):
 
 
 	def continueChannelConversation(self, msg):
-		outputMessage = self.channels[msg.channelIndex].handleMessage(msg.message)
+		return self.handleChannelOutput(
+			msg.ID, msg.channelIndex,
+			self.channels[msg.channelIndex].handleMessage(msg.message)
+			)
 
-		if outputMessage is None: #None = end of conversation
+
+	def handleChannelOutput(self, localID, channelIndex, channelOutput):
+		#TODO: handle message, actions format
+
+		if channelOutput is None: #None = end of conversation
 			return []
 
 		return \
 			[
-			messages.OutboundMessage(localID=msg.ID, message=messages.ChannelMessage(
+			messages.OutboundMessage(localID=localID, message=messages.ChannelMessage(
 				ID=self.remoteID,
-				channelIndex=msg.channelIndex,
-				message=outputMessage
+				channelIndex=channelIndex,
+				message=channelOutput
 				))
 			]
 
 
 	def __findChannelWithTransaction(self, transactionID):
-		for c in self.channels:
+		for ci, c in enumerate(self.channels):
 			if c.hasTransaction(transactionID):
-				return c
+				return c, ci
 		raise TransactionNotInChannelsException(
 			"None of the channels is processing the transaction")
 
