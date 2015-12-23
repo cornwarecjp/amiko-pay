@@ -70,6 +70,11 @@ class OutboundMessage(serializable.Serializable):
 serializable.registerClass(OutboundMessage)
 
 
+class BitcoinCommand(serializable.Serializable):
+	serializableAttributes = {'command': '', 'arguments':[]}
+serializable.registerClass(BitcoinCommand)
+
+
 class Timeout(serializable.Serializable):
 	serializableAttributes = {'state':''}
 serializable.registerClass(Timeout)
@@ -187,7 +192,7 @@ serializable.registerClass(Commit)
 
 
 class SettleCommit(serializable.Serializable):
-	serializableAttributes = {'token': ''} #TODO: add payload
+	serializableAttributes = {'ID': '', 'token': ''} #TODO: add payload
 serializable.registerClass(SettleCommit)
 
 
