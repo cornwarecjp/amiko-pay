@@ -31,6 +31,9 @@ from ..utils import utils
 from ..utils.crypto import Key, RIPEMD160, SHA256
 from ..utils.base58 import decodeBase58Check, encodeBase58Check
 
+#TODO: move (part of) messages to utils
+from ..core.messages import BitcoinCommand
+
 from plainchannel import PlainChannel, PlainChannel_Deposit
 
 
@@ -51,7 +54,7 @@ class IOUChannel(PlainChannel):
 	"""
 
 	serializableAttributes = utils.dictSum(PlainChannel.serializableAttributes,
-		{'isIssuer': False, 'address': None, 'privateKey': None})
+		{'isIssuer': False, 'address': None})
 
 
 	@staticmethod
@@ -66,13 +69,6 @@ class IOUChannel(PlainChannel):
 	def __init__(self, **kwargs):
 		PlainChannel.__init__(self, **kwargs)
 
-		if not self.isIssuer and self.privateKey is None:
-			k = Key()
-			k.makeNewKey(compressed=True)
-			self.privateKey = k.getPrivateKey()
-			publicKeyHash = RIPEMD160(SHA256(k.getPublicKey()))
-			self.address = encodeBase58Check(publicKeyHash, 0) #PUBKEY_ADDRESS = 0
-
 
 	def handleMessage(self, msg):
 		"""
@@ -84,10 +80,28 @@ class IOUChannel(PlainChannel):
 
 		if (self.state, msg) == (self.states.depositing, None):
 			return PlainChannel_Deposit(amount=self.amountLocal), []
+
 		elif (self.state, msg.__class__) == (self.states.initial, PlainChannel_Deposit):
 			self.state = self.states.ready
 			self.amountRemote = msg.amount
-			return IOUChannel_Address(address=self.address), []
+
+			k = Key()
+			k.makeNewKey(compressed=True)
+			publicKeyHash = RIPEMD160(SHA256(k.getPublicKey()))
+			self.address = encodeBase58Check(publicKeyHash, 0) #PUBKEY_ADDRESS = 0
+
+			privateKey = encodeBase58Check(k.getPrivateKey(), 128) #PRIVKEY = 128
+
+			return IOUChannel_Address(address=self.address), \
+				[
+				BitcoinCommand(
+					command='importprivkey',
+					#We've just created the key and haven't shared it yet, so
+					#it's impossible we've already received bitcoins on it.
+					#Therefore, rescan=False is safe.
+					arguments=[privateKey, 'Amiko Pay IOUChannel', False])
+				]
+
 		elif (self.state, msg.__class__) == (self.states.depositing, IOUChannel_Address):
 			self.address = msg.address
 			self.state = self.states.ready

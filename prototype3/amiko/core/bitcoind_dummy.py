@@ -48,6 +48,10 @@ class Bitcoind_Dummy:
 		self.numConfirmations = {}
 
 
+	#####################################################
+	# Old API (used in previous prototype and in goodies)
+	#####################################################
+
 	def isConnected(self):
 		return True
 		
@@ -122,6 +126,14 @@ class Bitcoind_Dummy:
 		return base58.encodeBase58Check(
 			RIPEMD160(SHA256(key.getPublicKey())),
 			0)
+
+
+	######################################
+	# New API (used in this prototype)
+	######################################
+
+	def handleMessage(self, msg):
+		return []
 
 
 

@@ -31,6 +31,7 @@ import binascii
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 
 import log
+import messages
 
 
 RPC_TRANSACTION_ALREADY_IN_CHAIN= -27 # Transaction already in chain
@@ -59,6 +60,10 @@ class Bitcoind_Real:
 			log.log("Bitcoin-RPC URL is not set: not connecting")
 			self.access = None
 
+
+	#####################################################
+	# Old API (used in previous prototype and in goodies)
+	#####################################################
 
 	def isConnected(self):
 		"""
@@ -225,6 +230,16 @@ class Bitcoind_Real:
 	def DecimaltoAmount(self, value):
 		return int(value*100000000)
 
+
+	######################################
+	# New API (used in this prototype)
+	######################################
+
+	def handleMessage(self, msg):
+		getattr(self.access, msg.command)(*(msg.arguments))
+		#TODO: check return value?
+		#TODO: check whether exception handling is OK
+		return [] #TODO: put return values here?
 
 
 #This is a proxy-class that wraps different implementations.

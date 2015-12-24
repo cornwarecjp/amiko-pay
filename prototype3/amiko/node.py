@@ -32,6 +32,7 @@ from urlparse import urlparse
 import time
 
 from core import log
+from core import bitcoind
 from core import network
 from core import nodestate
 from core import payerlink
@@ -116,7 +117,7 @@ class Node(threading.Thread):
 		self.__network = network.Network(
 			self.settings.listenHost, self.settings.listenPort, callback=self)
 
-		#self.bitcoind = bitcoind.Bitcoind(self.settings)
+		self.bitcoind = bitcoind.Bitcoind(self.settings)
 
 		self.payLog = paylog.PayLog(self.settings)
 
@@ -193,6 +194,14 @@ class Node(threading.Thread):
 					#Should happen only once per call of this function.
 					#Otherwise, some return values will be forgotten.
 					returnValue = msg.value
+
+				#Messages for Bitcoind:
+				elif msg.__class__ == messages.BitcoinCommand:
+					#Right now, these messages are not buffered/stored.
+					#We depend on bitcoind to remain available.
+					#TODO: find out whether buffering of messages in the node
+					#state makes sense.
+					newMessages = self.bitcoind.handleMessage(msg)
 
 				else:
 					#All other messages go to the node:
