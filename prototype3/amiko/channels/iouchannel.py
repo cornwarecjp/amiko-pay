@@ -34,7 +34,7 @@ from ..utils.base58 import decodeBase58Check, encodeBase58Check
 #TODO: move (part of) messages to utils
 from ..core.messages import BitcoinCommand
 
-from plainchannel import PlainChannel, PlainChannel_Deposit
+from plainchannel import PlainChannel, PlainChannel_Deposit, PlainChannel_Withdraw
 
 
 
@@ -106,6 +106,13 @@ class IOUChannel(PlainChannel):
 			self.address = msg.address
 			self.state = self.states.ready
 			return None
+
+		elif msg.__class__ == PlainChannel_Withdraw:
+			if self.state in (self.states.withdrawing, self.states.closed):
+				#Ignore if already in progress/done
+				return None
+			else:
+				return self.startWithdraw()
 
 		raise Exception("Received unexpected channel message")
 

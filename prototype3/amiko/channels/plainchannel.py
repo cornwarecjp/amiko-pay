@@ -37,6 +37,12 @@ serializable.registerClass(PlainChannel_Deposit)
 
 
 
+class PlainChannel_Withdraw(serializable.Serializable):
+	serializableAttributes = {}
+serializable.registerClass(PlainChannel_Withdraw)
+
+
+
 class PlainChannel_Transaction(serializable.Serializable):
 	serializableAttributes = {'startTime': None, 'endTime': None, 'amount': 0}
 serializable.registerClass(PlainChannel_Transaction)
@@ -89,10 +95,18 @@ class PlainChannel(serializable.Serializable):
 		if (self.state, msg) == (self.states.depositing, None):
 			self.state = self.states.ready
 			return PlainChannel_Deposit(amount=self.amountLocal), []
+
 		elif (self.state, msg.__class__) == (self.states.initial, PlainChannel_Deposit):
 			self.state = self.states.ready
 			self.amountRemote = msg.amount
 			return None
+
+		elif msg.__class__ == PlainChannel_Withdraw:
+			if self.state in (self.states.withdrawing, self.states.closed):
+				#Ignore if already in progress/done
+				return None
+			else:
+				return self.startWithdraw()
 
 		raise Exception("Received unexpected channel message")
 
@@ -214,9 +228,21 @@ class PlainChannel(serializable.Serializable):
 
 		#we're withdrawing, and there are no more ongoing transactions,
 		#so it's OK to close the channel now.
+		return self.doClose()
+
+
+	def doClose(self):
+		"""
+		Return value:
+			None
+			tuple(None, list)
+			tuple(message, list)
+		"""
+
 		self.state = self.states.closed
 
-		#TODO: message to peer?
+		#Tell peer to do withdrawal
+		return PlainChannel_Withdraw(), []
 
 
 	def hasTransaction(self, transactionID):
