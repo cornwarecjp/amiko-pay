@@ -259,7 +259,7 @@ class PayerLink(serializable.Serializable):
 		return [] #NOP
 
 
-	def cancelOutgoing(self, msg, payerID):
+	def cancelOutgoing(self, msg):
 		if self.state not in \
 			(
 			self.states.confirmed,
@@ -279,7 +279,7 @@ class PayerLink(serializable.Serializable):
 		return [] #This is called when our own lock message is processed -> NOP
 
 
-	def commitOutgoing(self, msg, payerID):
+	def commitOutgoing(self, msg):
 		if self.state != self.states.locked:
 			raise Exception(
 				"commitOutgoing should not be called in state %s" % \

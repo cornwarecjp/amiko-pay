@@ -46,6 +46,7 @@ class PayeeLink(serializable.Serializable):
 	serializableAttributes = \
 	{
 		'state': states.initial,
+		'ID': '',
 		'amount': 0,
 		'receipt': None,
 		'token': None,
@@ -147,7 +148,7 @@ class PayeeLink(serializable.Serializable):
 		return [] #NOP
 
 
-	def haveNoRouteOutgoing(self, transactionID, payeeID, isPayerSide):
+	def haveNoRouteOutgoing(self, transactionID, isPayerSide):
 		#TODO: go to state cancelled
 		return [] #NOP
 
@@ -156,7 +157,7 @@ class PayeeLink(serializable.Serializable):
 		return [] #NOP
 
 
-	def cancelOutgoing(self, msg, payeeID):
+	def cancelOutgoing(self, msg):
 		if self.state not in (self.states.confirmed, self.states.cancelled):
 			raise Exception(
 				"cancelOutgoing should not be called in state %s" % \
@@ -166,7 +167,7 @@ class PayeeLink(serializable.Serializable):
 		return []
 
 
-	def lockOutgoing(self, msg, payeeID):
+	def lockOutgoing(self, msg):
 		log.log("Payee: locked; committing")
 
 		self.state = self.states.sentCommit
@@ -174,7 +175,7 @@ class PayeeLink(serializable.Serializable):
 		return \
 		[
 		messages.Commit(token=self.token),
-		messages.OutboundMessage(localID = payeeID, message = \
+		messages.OutboundMessage(localID = self.ID, message = \
 			messages.SettleCommit(token=self.token)
 			)
 		]
@@ -184,7 +185,7 @@ class PayeeLink(serializable.Serializable):
 		return [] #This is called when our own commit message is processed -> NOP
 
 
-	def settleCommitOutgoing(self, msg, payeeID):
+	def settleCommitOutgoing(self, msg):
 		log.log("Payee: committed")
 		self.state = self.states.committed
 		return []

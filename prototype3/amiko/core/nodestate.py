@@ -106,6 +106,7 @@ class NodeState(serializable.Serializable):
 		token = randomsource.getSecureRandom(32)
 
 		newPayeeLink = payeelink.PayeeLink(
+			ID=payeeLinkID,
 			amount=msg.amount, receipt=msg.receipt, token=token,
 			meetingPoints=msg.meetingPoints)
 
@@ -148,7 +149,7 @@ class NodeState(serializable.Serializable):
 		if msg.localID[0] == '_':
 			raise Exception('Names starting with an underscore are reserved, and can not be used')
 
-		self.links[msg.localID] = link.Link(remoteID=msg.remoteID)
+		self.links[msg.localID] = link.Link(remoteID=msg.remoteID, localID=msg.localID)
 
 		self.connections[msg.localID] = \
 			persistentconnection.PersistentConnection(
@@ -242,12 +243,12 @@ class NodeState(serializable.Serializable):
 			del self.transactions[msg.transactionID]
 			#Send back haveNoRoute:
 			ret += sourceLink.haveNoRouteOutgoing(
-				msg.transactionID, msg.ID, msg.isPayerSide)
+				msg.transactionID, msg.isPayerSide)
 			return ret
 
 		log.log('  Forwarding MakeRoute to the first route')
 
-		ret += self.__getObject(nextRoute).makeRouteOutgoing(nextRoute, msg)
+		ret += self.__getObject(nextRoute).makeRouteOutgoing(msg)
 
 		#TODO: route time-out
 		return ret
@@ -280,9 +281,9 @@ class NodeState(serializable.Serializable):
 			log.log('  No remaining route found')
 
 			if tx.side == transaction.side_payer:
-				ret += payer.haveNoRouteOutgoing(msg.transactionID, tx.payerID, isPayerSide=True)
+				ret += payer.haveNoRouteOutgoing(msg.transactionID, isPayerSide=True)
 			elif tx.side == transaction.side_payee:
-				ret += payee.haveNoRouteOutgoing(msg.transactionID, tx.payeeID, isPayerSide=False)
+				ret += payee.haveNoRouteOutgoing(msg.transactionID, isPayerSide=False)
 			else:
 				raise Exception('  HaveNoRoute should only be received on payer or payee route')
 
@@ -293,7 +294,7 @@ class NodeState(serializable.Serializable):
 
 		log.log('  Forwarding MakeRoute to the next route')
 
-		ret += self.__getObject(nextRoute).makeRouteOutgoing(nextRoute,
+		ret += self.__getObject(nextRoute).makeRouteOutgoing(
 			messages.MakeRoute(
 				amount         = tx.amount,
 				transactionID  = msg.transactionID,
@@ -320,10 +321,10 @@ class NodeState(serializable.Serializable):
 
 		if msg.payerSide:
 			ret = payer.cancelIncoming(msg)
-			ret += payee.cancelOutgoing(msg, tx.payeeID)
+			ret += payee.cancelOutgoing(msg)
 		else:
 			ret = payee.cancelIncoming(msg)
-			ret += payer.cancelOutgoing(msg, tx.payerID)
+			ret += payer.cancelOutgoing(msg)
 
 		#Clean up cancelled transaction:
 		del self.transactions[msg.transactionID]
@@ -359,7 +360,7 @@ class NodeState(serializable.Serializable):
 		payee = self.__getObject(tx.payeeID)
 
 		ret = payer.lockIncoming(msg)
-		ret += payee.lockOutgoing(msg, tx.payeeID)
+		ret += payee.lockOutgoing(msg)
 
 		return ret
 
@@ -376,8 +377,8 @@ class NodeState(serializable.Serializable):
 		payee = self.__getObject(tx.payeeID)
 
 		ret = payee.commitIncoming(msg)
-		ret += payer.commitOutgoing(msg, tx.payerID)
-		ret += payee.settleCommitOutgoing(messages.SettleCommit(token=msg.token), tx.payeeID)
+		ret += payer.commitOutgoing(msg)
+		ret += payee.settleCommitOutgoing(messages.SettleCommit(token=msg.token))
 
 		return ret
 
@@ -396,7 +397,7 @@ class NodeState(serializable.Serializable):
 
 		try:
 			payee = self.__getObject(tx.payeeID)
-			ret += payee.settleCommitOutgoing(msg, tx.payeeID)
+			ret += payee.settleCommitOutgoing(msg)
 		except ObjectNotFound:
 			pass #Payment is committed, so payee object may already be deleted
 

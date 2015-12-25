@@ -68,6 +68,7 @@ with open(settings1.stateFile, "wb") as f:
 					"transactionsOutgoingReserved": {}
 					}
 					],
+					"localID": "node1",
 					"remoteID": "node2"
 				}
 			},
@@ -127,6 +128,7 @@ with open(settings2.stateFile, "wb") as f:
 					"transactionsOutgoingReserved": {}
 					}
 					],
+					"localID": "node2",
 					"remoteID": "node1"
 				}
 			},

@@ -41,7 +41,8 @@ from amiko.core import payeelink
 
 class Test(unittest.TestCase):
 	def setUp(self):
-		self.payeeLink = payeelink.PayeeLink(token="foo", meetingPoints=["MPID"])
+		self.payeeLink = payeelink.PayeeLink(
+			ID="PayeeID", token="foo", meetingPoints=["MPID"])
 
 
 	def test_defaultAttributes(self):
@@ -151,7 +152,7 @@ class Test(unittest.TestCase):
 	def test_haveNoRouteOutgoing(self):
 		"Test haveNoRouteOutgoing"
 
-		ret = self.payeeLink.haveNoRouteOutgoing(None, None, None)
+		ret = self.payeeLink.haveNoRouteOutgoing(None, None)
 		self.assertEqual(len(ret), 0)
 
 
@@ -166,11 +167,11 @@ class Test(unittest.TestCase):
 		"Test cancelOutgoing"
 
 		self.assertRaises(Exception,
-			self.payeeLink.cancelOutgoing, None, None)
+			self.payeeLink.cancelOutgoing, None)
 
 		self.payeeLink.state = payeelink.PayeeLink.states.confirmed
 
-		ret = self.payeeLink.cancelOutgoing(None, None)
+		ret = self.payeeLink.cancelOutgoing(None)
 		self.assertEqual(len(ret), 0)
 
 
@@ -178,8 +179,7 @@ class Test(unittest.TestCase):
 		"Test lockOutgoing"
 
 		ret = self.payeeLink.lockOutgoing(
-			messages.Lock(transactionID="bar"),
-			"foobar")
+			messages.Lock(transactionID="bar"))
 
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.sentCommit)
 
@@ -189,7 +189,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.token, self.payeeLink.token)
 		msg = ret[1]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
-		self.assertEqual(msg.localID, "foobar")
+		self.assertEqual(msg.localID, "PayeeID")
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.SettleCommit))
 		self.assertEqual(msg.token, self.payeeLink.token)
@@ -208,8 +208,7 @@ class Test(unittest.TestCase):
 		"Test settleCommitOutgoing"
 
 		ret = self.payeeLink.settleCommitOutgoing(
-			messages.SettleCommit(token=self.payeeLink.token),
-			"foobar")
+			messages.SettleCommit(token=self.payeeLink.token))
 
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.committed)
 

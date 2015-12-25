@@ -113,8 +113,9 @@ for i in range(len(linkDefinitions)):
 				"transactionsOutgoingReserved": {}
 				}
 				],
+				"localID": "%s",
 				"remoteID": "%s"
-			}""" % (localID, remoteID)
+			}""" % (localID, localID, remoteID)
 			)
 		linkConnections.append(
 			""""%s":

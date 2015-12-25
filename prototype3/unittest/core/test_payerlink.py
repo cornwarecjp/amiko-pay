@@ -385,11 +385,11 @@ class Test(unittest.TestCase):
 		"Test cancelOutgoing"
 
 		self.assertRaises(Exception,
-			self.payerLink.cancelOutgoing, None, None)
+			self.payerLink.cancelOutgoing, None)
 
 		self.payerLink.state = payerlink.PayerLink.states.confirmed
 
-		ret = self.payerLink.cancelOutgoing(None, None)
+		ret = self.payerLink.cancelOutgoing(None)
 		self.assertEqual(len(ret), 0)
 
 
@@ -397,13 +397,12 @@ class Test(unittest.TestCase):
 		"Test commitOutgoing"
 
 		self.assertRaises(Exception, self.payerLink.commitOutgoing,
-			messages.Commit(token="bar"),
-			"foobar"
+			messages.Commit(token="bar")
 			)
 
 		self.payerLink.state = payerlink.PayerLink.states.locked
 
-		ret = self.payerLink.commitOutgoing(messages.Commit(token="bar"), "foobar")
+		ret = self.payerLink.commitOutgoing(messages.Commit(token="bar"))
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.receivedCommit)
 		self.assertEqual(self.payerLink.token, "bar")
