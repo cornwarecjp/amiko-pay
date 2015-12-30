@@ -30,12 +30,13 @@ import os
 
 import log
 from ..utils import serializable
+from ..utils import uid
 
 
 
 class PersistentObject:
-	def __init__(self, context, filename, defaultObject):
-		self.__context = context
+	def __init__(self, filename, defaultObject):
+		self.__UIDContext = uid.Context()
 		self.__filename = filename
 		self.__object = None
 
@@ -92,12 +93,15 @@ class PersistentObject:
 			log.log("Got OSError on removing old state file; probably it didn't exist, which is OK in a fresh installation.")
 
 
+	def getUIDContext(self):
+		return self.__UIDContext
+
 	def __getState(self):
 		return serializable.object2State(self.__object)
 
 
 	def __setState(self, s):
-		self.__object = serializable.state2Object(s, self.__context)
+		self.__object = serializable.state2Object(s, self.__UIDContext)
 
 
 	def __enter__(self):

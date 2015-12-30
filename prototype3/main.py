@@ -193,7 +193,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 			print "Aborted"
 			return
 
-		channel = iouchannel.IOUChannel.makeForOwnDeposit(amount)
+		channel = iouchannel.IOUChannel.makeForOwnDeposit(a.getUIDContext(), amount)
 
 		a.deposit(linkname, channel)
 
