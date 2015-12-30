@@ -66,8 +66,8 @@ class IOUChannel(PlainChannel):
 			isIssuer=True)
 
 
-	def __init__(self, **kwargs):
-		PlainChannel.__init__(self, **kwargs)
+	def __init__(self, context=None, **kwargs):
+		PlainChannel.__init__(self, context, **kwargs)
 
 
 	def handleMessage(self, msg):

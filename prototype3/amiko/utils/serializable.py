@@ -65,10 +65,10 @@ def applyRecursively(selectFunction, transformFunction, obj):
 	return obj
 
 
-def state2Object(s):
+def state2Object(s, context=None):
 	def transformFunction(attribs):
 		c = registeredClasses[attribs["_class"]]
-		return c(**attribs)
+		return c(context, **attribs)
 
 	return applyRecursively(
 		lambda obj: type(obj) == dict and "_class" in obj.keys(),
@@ -134,8 +134,8 @@ def deserializeState(s):
 	return decodeStrings(json.loads(s))
 
 
-def deserialize(s):
-	return state2Object(deserializeState(s))
+def deserialize(s, context=None):
+	return state2Object(deserializeState(s), context)
 
 
 def serializeState(s):
@@ -148,7 +148,7 @@ def serialize(obj):
 
 
 class Serializable:
-	def __init__(self, **kwargs):
+	def __init__(self, context=None, **kwargs):
 		c = registeredClasses[self.__class__.__name__]
 		attributes = c.serializableAttributes
 		for name in attributes.keys():
