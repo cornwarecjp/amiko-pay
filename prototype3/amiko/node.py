@@ -42,6 +42,8 @@ from core import paylog
 from core import persistentobject
 from core import settings
 
+from utils import uid
+
 
 
 #Somehow it is hard to replace the above copyright information with a more
@@ -128,7 +130,10 @@ class Node(threading.Thread):
 		self._commandProcessed = threading.Event()
 		self._commandReturnValue = None
 
+		self.UIDContext = uid.Context()
+
 		self.__node = persistentobject.PersistentObject(
+			context=self.UIDContext,
 			filename=self.settings.stateFile,
 			defaultObject=nodestate.NodeState() #empty state; used when file can not be loaded
 			)

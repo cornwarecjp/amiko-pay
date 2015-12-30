@@ -27,6 +27,7 @@
 #    OpenSSL library used as well as that of the covered work.
 
 from ..utils import utils
+from ..utils import uid
 from ..utils import serializable
 
 
@@ -49,7 +50,7 @@ serializable.registerClass(PlainChannel_Transaction)
 
 
 
-class PlainChannel(serializable.Serializable):
+class PlainChannel(uid.Serializable):
 	"""
 	Payment channel without any protection.
 	This can be used as a base class for other channel types.
@@ -65,6 +66,8 @@ class PlainChannel(serializable.Serializable):
 
 	serializableAttributes = \
 	{
+	'UID': None,
+
 	'state': states.initial,
 
 	'amountLocal': 0,
