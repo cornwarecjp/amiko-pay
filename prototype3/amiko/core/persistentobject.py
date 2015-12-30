@@ -34,7 +34,8 @@ from ..utils import serializable
 
 
 class PersistentObject:
-	def __init__(self, filename, defaultObject):
+	def __init__(self, context, filename, defaultObject):
+		self.__context = context
 		self.__filename = filename
 		self.__object = None
 
@@ -96,7 +97,7 @@ class PersistentObject:
 
 
 	def __setState(self, s):
-		self.__object = serializable.state2Object(s)
+		self.__object = serializable.state2Object(s, self.__context)
 
 
 	def __enter__(self):
