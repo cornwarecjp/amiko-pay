@@ -101,7 +101,9 @@ class PersistentObject:
 	def __setState(self, s):
 		self.__UIDContext.reset()
 		self.__object = serializable.state2Object(s)
-		#TODO: register objects recursively at UIDContext
+
+		#TODO: UIDs of newly created objects must be registered ASAP.
+		self.__UIDContext.registerAllUIDs(self.__object)
 
 
 	def __enter__(self):

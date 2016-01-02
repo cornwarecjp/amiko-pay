@@ -57,6 +57,15 @@ class Context:
 		self.objects[UID] = obj
 
 
+	def registerAllUIDs(self, obj):
+
+		def transformFunction(x):
+			if isinstance(x, Serializable):
+				x.registerUID(self)
+
+		obj.applyRecursively(transformFunction)
+
+
 
 class Serializable(serializable.Serializable):
 	"""
@@ -69,5 +78,4 @@ class Serializable(serializable.Serializable):
 			self.UID = context.makeNewAndRegister(self)
 		else:
 			context.register(self.UID, self)
-
 
