@@ -1,5 +1,5 @@
 #    iouchannel.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -64,10 +64,6 @@ class IOUChannel(PlainChannel):
 			amountLocal=amount,
 			amountRemote=0,
 			isIssuer=True)
-
-
-	def __init__(self, context=None, **kwargs):
-		PlainChannel.__init__(self, context, **kwargs)
 
 
 	def handleMessage(self, msg):

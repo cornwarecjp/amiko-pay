@@ -1,5 +1,5 @@
 #    uid.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -32,6 +32,10 @@ import serializable
 
 class Context:
 	def __init__(self):
+		self.reset()
+
+
+	def reset(self):
 		self.objects = {}
 		self.nextID = 0
 
@@ -60,9 +64,7 @@ class Serializable(serializable.Serializable):
 	      with default value None.
 	"""
 
-	def __init__(self, context, **kwargs):
-		serializable.Serializable.__init__(self, context, **kwargs)
-
+	def registerUID(self, context):
 		if self.UID is None:
 			self.UID = context.makeNewAndRegister(self)
 		else:

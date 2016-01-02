@@ -1,5 +1,5 @@
 #    serializable.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -65,10 +65,10 @@ def applyRecursively(selectFunction, transformFunction, obj):
 	return obj
 
 
-def state2Object(s, context=None):
+def state2Object(s):
 	def transformFunction(attribs):
 		c = registeredClasses[attribs["_class"]]
-		return c(context, **attribs)
+		return c(**attribs)
 
 	return applyRecursively(
 		lambda obj: type(obj) == dict and "_class" in obj.keys(),
@@ -134,8 +134,8 @@ def deserializeState(s):
 	return decodeStrings(json.loads(s))
 
 
-def deserialize(s, context=None):
-	return state2Object(deserializeState(s), context)
+def deserialize(s):
+	return state2Object(deserializeState(s))
 
 
 def serializeState(s):
@@ -148,7 +148,7 @@ def serialize(obj):
 
 
 class Serializable:
-	def __init__(self, context=None, **kwargs):
+	def __init__(self, **kwargs):
 		c = registeredClasses[self.__class__.__name__]
 		attributes = c.serializableAttributes
 		for name in attributes.keys():
@@ -161,4 +161,23 @@ class Serializable:
 
 	def getState(self):
 		return object2State(self)
+
+
+	def __deepcopy__(self, memoDict):
+		"""
+		A deep-copied serializable object will have
+		* deep copies of the serializable attributes
+		* no copies of other attributes (they might e.g. be initialized by the
+		  constructor)
+		"""
+
+		c = registeredClasses[self.__class__.__name__]
+		attributes = c.serializableAttributes
+		attributes = \
+		{
+			name: copy.deepcopy(getattr(self,name), memoDict)
+			for name in attributes.keys()
+		}
+
+		return self.__class__(**attributes)
 

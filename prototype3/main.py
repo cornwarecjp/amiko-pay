@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #    main.py
-#    Copyright (C) 2014-2015 by CJP
+#    Copyright (C) 2014-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -193,7 +193,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 			print "Aborted"
 			return
 
-		channel = iouchannel.IOUChannel.makeForOwnDeposit(a.getUIDContext(), amount)
+		channel = iouchannel.IOUChannel.makeForOwnDeposit(amount)
 
 		a.deposit(linkname, channel)
 

@@ -1,5 +1,5 @@
 #    persistentobject.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -35,9 +35,10 @@ from ..utils import uid
 
 
 class PersistentObject:
-	def __init__(self, filename, defaultObject):
-		self.__UIDContext = uid.Context()
+	def __init__(self, filename, defaultState):
 		self.__filename = filename
+
+		self.__UIDContext = uid.Context()
 		self.__object = None
 
 		self.__oldState = None
@@ -49,7 +50,7 @@ class PersistentObject:
 			log.log("Failed to load from %s" % self.__filename)
 			log.log("Starting with default state")
 
-			self.__object = defaultObject
+			self.__setState(defaultState)
 
 			#Store the default state:
 			self.save()
@@ -93,15 +94,14 @@ class PersistentObject:
 			log.log("Got OSError on removing old state file; probably it didn't exist, which is OK in a fresh installation.")
 
 
-	def getUIDContext(self):
-		return self.__UIDContext
-
 	def __getState(self):
 		return serializable.object2State(self.__object)
 
 
 	def __setState(self, s):
-		self.__object = serializable.state2Object(s, self.__UIDContext)
+		self.__UIDContext.reset()
+		self.__object = serializable.state2Object(s)
+		#TODO: register objects recursively at UIDContext
 
 
 	def __enter__(self):

@@ -1,5 +1,5 @@
 #    node.py
-#    Copyright (C) 2014-2015 by CJP
+#    Copyright (C) 2014-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -130,7 +130,7 @@ class Node(threading.Thread):
 
 		self.__node = persistentobject.PersistentObject(
 			filename=self.settings.stateFile,
-			defaultObject=nodestate.NodeState() #empty state; used when file can not be loaded
+			defaultState=nodestate.NodeState().getState() #empty state; used when file can not be loaded
 			)
 
 		#Establish connections
@@ -232,10 +232,6 @@ class Node(threading.Thread):
 
 		self.__network.makeConnection(
 			(persistentConn.host, persistentConn.port), ID, persistentConn.connectMessage)
-
-
-	def getUIDContext(self):
-		return self.__node.getUIDContext()
 
 
 	def stop(self):
