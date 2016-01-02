@@ -163,6 +163,27 @@ class Serializable:
 		return object2State(self)
 
 
+	def applyRecursively(self, transformFunction):
+		"""
+		Apply first to serializable attributes, then to self.
+		transformFunction must perform in-place transformation.
+		"""
+
+		def applyToObject(obj):
+			obj.applyRecursively(transformFunction)
+			return obj
+
+		c = registeredClasses[self.__class__.__name__]
+		attributeNames = c.serializableAttributes.keys()
+		for name in attributeNames:
+			applyRecursively(
+				lambda obj: isinstance(obj, Serializable),
+				applyToObject,
+				getattr(self, name))
+
+		transformFunction(self)
+
+
 	def __deepcopy__(self, memoDict):
 		"""
 		A deep-copied serializable object will have
