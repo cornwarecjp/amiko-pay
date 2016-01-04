@@ -97,6 +97,10 @@ class PersistentObject:
 			log.log("Got OSError on removing old state file; probably it didn't exist, which is OK in a fresh installation.")
 
 
+	def getUIDContext(self):
+		return self.__UIDContext
+
+
 	def __getState(self):
 		return serializable.object2State(self.__object)
 

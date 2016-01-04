@@ -1,5 +1,5 @@
 #    bitcoind_dummy.py
-#    Copyright (C) 2014-2015 by CJP
+#    Copyright (C) 2014-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -30,6 +30,7 @@ import binascii
 import random
 
 import log
+import messages
 
 from ..utils.crypto import *
 from ..utils import base58
@@ -133,7 +134,16 @@ class Bitcoind_Dummy:
 	######################################
 
 	def handleMessage(self, msg):
-		return []
+		if msg.returnUID is None:
+			return []
+
+		return \
+			[
+			messages.ToUID(UID=msg.returnUID,
+				message=messages.BitcoinReturnValue(
+					command=msg.command, value=None #TODO
+				))
+			]
 
 
 

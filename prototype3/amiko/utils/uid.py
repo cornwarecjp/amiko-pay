@@ -66,6 +66,10 @@ class Context:
 		obj.applyRecursively(transformFunction)
 
 
+	def handleMessage(self, msg):
+		return self.objects[msg.UID].handleMessage(msg.message)
+
+
 
 class Serializable(serializable.Serializable):
 	"""

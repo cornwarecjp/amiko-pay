@@ -32,7 +32,7 @@ from ..utils.crypto import Key, RIPEMD160, SHA256
 from ..utils.base58 import decodeBase58Check, encodeBase58Check
 
 #TODO: move (part of) messages to utils
-from ..core.messages import BitcoinCommand
+from ..core.messages import BitcoinCommand, BitcoinReturnValue
 
 from plainchannel import PlainChannel, PlainChannel_Deposit, PlainChannel_Withdraw
 
@@ -114,6 +114,15 @@ class IOUChannel(PlainChannel):
 			else:
 				return self.startWithdraw()
 
+		elif (self.state, msg.__class__) == (self.states.sendingCloseTransaction, BitcoinReturnValue):
+			#TODO: make sure that messages.BitcoinReturnValue can only come from
+			#bitcoind, and never from the peer.
+			#TODO: make transaction and send it to the peer
+			self.state = self.states.closed
+
+			#TODO: fix return type discrepancy between channels and other objects
+			return []
+
 		raise Exception("Received unexpected channel message")
 
 
@@ -127,11 +136,18 @@ class IOUChannel(PlainChannel):
 
 		if self.isIssuer:
 			self.state = self.states.sendingCloseTransaction
-			#TODO: ask bitcoind for unspent outputs
-		else:
-			self.state = self.states.closed
 
-		#Tell peer to do withdrawal
+			return None, \
+			[
+			BitcoinCommand(
+				command='listunspent',
+				arguments=[],
+				returnUID=self.UID)
+			]
+
+		self.state = self.states.closed
+
+		#Ask peer to do withdrawal
 		return PlainChannel_Withdraw(), []
 
 

@@ -203,6 +203,10 @@ class Node(threading.Thread):
 					#state makes sense.
 					newMessages = self.bitcoind.handleMessage(msg)
 
+				#Messages to be delivered by UID:
+				elif msg.__class__ == messages.ToUID:
+					newMessages = self.__node.getUIDContext().handleMessage(msg)
+
 				else:
 					#All other messages go to the node:
 					newMessages = self.__node.handleMessage(msg)

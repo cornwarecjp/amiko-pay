@@ -1,5 +1,5 @@
 #    messages.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -70,9 +70,19 @@ class OutboundMessage(serializable.Serializable):
 serializable.registerClass(OutboundMessage)
 
 
+class ToUID(serializable.Serializable):
+	serializableAttributes = {'UID': -1, 'message': None}
+serializable.registerClass(ToUID)
+
+
 class BitcoinCommand(serializable.Serializable):
-	serializableAttributes = {'command': '', 'arguments':[]}
+	serializableAttributes = {'command': '', 'arguments': [], 'returnUID': None}
 serializable.registerClass(BitcoinCommand)
+
+
+class BitcoinReturnValue(serializable.Serializable):
+	serializableAttributes = {'command': '', 'value': None}
+serializable.registerClass(BitcoinReturnValue)
 
 
 class Timeout(serializable.Serializable):
