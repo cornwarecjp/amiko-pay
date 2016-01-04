@@ -73,6 +73,9 @@ class PersistentObject:
 
 
 	def save(self):
+		#Make sure all objects have UIDs before saving
+		self.__UIDContext.registerAllUIDs(self.__object)
+
 		stateData = serializable.serializeState(self.__getState())
 
 		newFile = self.__filename + ".new"
@@ -101,8 +104,6 @@ class PersistentObject:
 	def __setState(self, s):
 		self.__UIDContext.reset()
 		self.__object = serializable.state2Object(s)
-
-		#TODO: UIDs of newly created objects must be registered ASAP.
 		self.__UIDContext.registerAllUIDs(self.__object)
 
 

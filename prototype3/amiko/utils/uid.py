@@ -50,7 +50,7 @@ class Context:
 
 
 	def register(self, UID, obj):
-		if UID in self.objects:
+		if UID in self.objects and obj != self.objects[UID]:
 			raise Exception(
 				"Attempt to register multiple objects with the same UID %d" % \
 				UID)
