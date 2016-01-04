@@ -1,5 +1,5 @@
 #    utils.py
-#    Copyright (C) 2014-2015 by CJP
+#    Copyright (C) 2014-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -37,10 +37,17 @@ class Enum(set):
 	and its elements can be accessed as attributes.
 	"""
 
+	def __init__(self, elements, parentEnum=None):
+		set.__init__(self, elements)
+		if parentEnum is not None:
+			self.update(parentEnum)
+
+
 	def __getattr__(self, name):
 		if name in self:
 			return name
 		raise AttributeError
+
 
 
 def inheritDocString(cls):

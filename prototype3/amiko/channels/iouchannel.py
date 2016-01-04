@@ -53,6 +53,10 @@ class IOUChannel(PlainChannel):
 	(e.g. user trusts service provider, but not vice versa).
 	"""
 
+	states = utils.Enum([
+		"sendingCloseTransaction"
+		], PlainChannel.states)
+
 	serializableAttributes = utils.dictSum(PlainChannel.serializableAttributes,
 		{'isIssuer': False, 'address': None})
 
@@ -108,13 +112,31 @@ class IOUChannel(PlainChannel):
 			return None
 
 		elif msg.__class__ == PlainChannel_Withdraw:
-			if self.state in (self.states.withdrawing, self.states.closed):
+			if self.state in (self.states.withdrawing, self.states.sendingCloseTransaction, self.states.closed):
 				#Ignore if already in progress/done
 				return None
 			else:
 				return self.startWithdraw()
 
 		raise Exception("Received unexpected channel message")
+
+
+	def doClose(self):
+		"""
+		Return value:
+			None
+			tuple(None, list)
+			tuple(message, list)
+		"""
+
+		if self.isIssuer:
+			self.state = self.states.sendingCloseTransaction
+			#TODO: ask bitcoind for unspent outputs
+		else:
+			self.state = self.states.closed
+
+		#Tell peer to do withdrawal
+		return PlainChannel_Withdraw(), []
 
 
 
