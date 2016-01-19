@@ -87,7 +87,7 @@ class PlainChannel(uid.Serializable):
 			state=PlainChannel.states.depositing, amountLocal=amount, amountRemote=0)
 
 
-	def handleMessage(self, msg):
+	def handleChannelMessage(self, msg):
 		"""
 		Return value:
 			None

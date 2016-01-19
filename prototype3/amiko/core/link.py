@@ -264,7 +264,7 @@ class Link(serializable.Serializable):
 	def continueChannelConversation(self, msg):
 		return self.handleChannelOutput(
 			msg.channelIndex,
-			self.channels[msg.channelIndex].handleMessage(msg.message)
+			self.channels[msg.channelIndex].handleChannelMessage(msg.message)
 			)
 
 

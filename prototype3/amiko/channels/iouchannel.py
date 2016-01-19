@@ -70,7 +70,7 @@ class IOUChannel(PlainChannel):
 			isIssuer=True)
 
 
-	def handleMessage(self, msg):
+	def handleChannelMessage(self, msg):
 		"""
 		Return value:
 			None
@@ -114,16 +114,32 @@ class IOUChannel(PlainChannel):
 			else:
 				return self.startWithdraw()
 
-		elif (self.state, msg.__class__) == (self.states.sendingCloseTransaction, BitcoinReturnValue):
-			#TODO: make sure that messages.BitcoinReturnValue can only come from
-			#bitcoind, and never from the peer.
-			#TODO: make transaction and send it to the peer
-			self.state = self.states.closed
-
-			#TODO: fix return type discrepancy between channels and other objects
-			return []
-
 		raise Exception("Received unexpected channel message")
+
+
+	def handleMessage(self, msg):
+		"""
+		Return value:
+			list
+		"""
+
+		return \
+		{
+		BitcoinReturnValue: self.msg_BitcoinReturnValue
+		}[msg.__class__](msg)
+
+
+	def msg_BitcoinReturnValue(self, msg):
+		if self.state != self.states.sendingCloseTransaction:
+			raise Exception(
+				"msg_BitcoinReturnValue should not be called in state %s" % \
+					self.state
+				)
+
+		#TODO: make transaction and send it to the peer
+		self.state = self.states.closed
+
+		return []
 
 
 	def doClose(self):
