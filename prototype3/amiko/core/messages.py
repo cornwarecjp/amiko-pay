@@ -71,8 +71,13 @@ serializable.registerClass(OutboundMessage)
 
 
 class BitcoinCommand(serializable.Serializable):
-	serializableAttributes = {'command': '', 'arguments':[], 'returnLinkID': '', 'returnChannelIndex': 0}
+	serializableAttributes = {'command': '', 'arguments':[], 'returnID': '', 'returnChannelIndex': 0}
 serializable.registerClass(BitcoinCommand)
+
+
+class BitcoinReturnValue(serializable.Serializable):
+	serializableAttributes = {'command': '', 'value': None, 'ID': '', 'channelIndex': 0}
+serializable.registerClass(BitcoinReturnValue)
 
 
 class Timeout(serializable.Serializable):

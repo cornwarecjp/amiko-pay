@@ -1,5 +1,5 @@
 #    bitcoind.py
-#    Copyright (C) 2014-2015 by CJP
+#    Copyright (C) 2014-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -237,9 +237,8 @@ class Bitcoind_Real:
 
 	def handleMessage(self, msg):
 		getattr(self.access, msg.command)(*(msg.arguments))
-		#TODO: check return value?
 		#TODO: check whether exception handling is OK
-		return [] #TODO: put return values here?
+		return [] #TODO: send back return value
 
 
 #This is a proxy-class that wraps different implementations.
