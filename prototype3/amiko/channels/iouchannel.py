@@ -121,6 +121,17 @@ class IOUChannel(PlainChannel):
 		raise Exception("Received unexpected channel message")
 
 
+	def handleBitcoinReturnValue(self, command, value):
+		"""
+		Return value:
+			None
+			tuple(None, list)
+			tuple(message, list)
+		"""
+
+		return None #TODO
+
+
 	def doClose(self):
 		"""
 		Return value:

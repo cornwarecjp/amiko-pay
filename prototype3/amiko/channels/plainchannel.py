@@ -1,5 +1,5 @@
 #    plainchannel.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -109,6 +109,17 @@ class PlainChannel(serializable.Serializable):
 				return self.startWithdraw()
 
 		raise Exception("Received unexpected channel message")
+
+
+	def handleBitcoinReturnValue(self, msg):
+		"""
+		Return value:
+			None
+			tuple(None, list)
+			tuple(message, list)
+		"""
+
+		raise Exception("PlainChannel does not expect any Bitcoin return value")
 
 
 	def startWithdraw(self):

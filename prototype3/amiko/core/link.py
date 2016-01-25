@@ -116,9 +116,10 @@ class Link(serializable.Serializable):
 
 
 	def msg_bitcoinReturnValue(self, msg):
-		log.log("Received Bitcoin return value " + str(msg.value))
-		#TODO
-		return []
+		return self.handleChannelOutput(
+			msg.channelIndex,
+			self.channels[msg.channelIndex].handleBitcoinReturnValue(msg.command, msg.value)
+			)
 
 
 	def makeRouteOutgoing(self, msg):
