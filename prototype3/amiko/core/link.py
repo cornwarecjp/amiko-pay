@@ -274,6 +274,11 @@ class Link(serializable.Serializable):
 
 		message, actions = channelOutput
 
+		#Fill in return address, so that any return value will be sent back
+		for a in actions:
+			a.returnLinkID = self.localID
+			a.returnChannelIndex = channelIndex
+
 		if not(message is None):
 			actions.append(
 				messages.OutboundMessage(localID=self.localID,

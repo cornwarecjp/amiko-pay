@@ -71,7 +71,7 @@ serializable.registerClass(OutboundMessage)
 
 
 class BitcoinCommand(serializable.Serializable):
-	serializableAttributes = {'command': '', 'arguments':[]}
+	serializableAttributes = {'command': '', 'arguments':[], 'returnLinkID': '', 'returnChannelIndex': 0}
 serializable.registerClass(BitcoinCommand)
 
 
