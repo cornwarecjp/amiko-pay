@@ -1,5 +1,5 @@
 #    messages.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
