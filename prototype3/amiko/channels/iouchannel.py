@@ -129,7 +129,18 @@ class IOUChannel(PlainChannel):
 			tuple(message, list)
 		"""
 
-		return None #TODO
+		if (self.state, command) == (self.states.ready, 'importprivkey'):
+			return None
+
+		elif (self.state, command) == (self.states.sendingCloseTransaction, 'listunspent'):
+			self.state = self.states.closed
+			#TODO: make close transaction, based on value
+			return None
+
+		raise Exception(
+			"Received unexpected Bitcoin return value %s -> %s in state %s" % \
+			(command, str(value), self.state)
+			)
 
 
 	def doClose(self):
@@ -142,13 +153,16 @@ class IOUChannel(PlainChannel):
 
 		if self.isIssuer:
 			self.state = self.states.sendingCloseTransaction
-			#TODO: ask bitcoind for unspent outputs
-		else:
-			self.state = self.states.closed
 
-		#Tell peer to do withdrawal
-		return PlainChannel_Withdraw(), []
+			return None, \
+			[
+			BitcoinCommand(command='listunspent', arguments=[])
+			]
 
+		self.state = self.states.closed
+
+		#Ask peer to do withdrawal
+ 		return PlainChannel_Withdraw(), []
 
 
 serializable.registerClass(IOUChannel)
