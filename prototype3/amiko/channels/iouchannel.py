@@ -74,13 +74,11 @@ class IOUChannel(PlainChannel):
 	def handleMessage(self, msg):
 		"""
 		Return value:
-			None
-			tuple(None, list)
-			tuple(message, list)
+			message, function (either may be None)
 		"""
 
 		if (self.state, msg) == (self.states.depositing, None):
-			return PlainChannel_Deposit(amount=self.amountLocal), []
+			return PlainChannel_Deposit(amount=self.amountLocal), None
 
 		elif (self.state, msg.__class__) == (self.states.initial, PlainChannel_Deposit):
 			self.state = self.states.ready
@@ -98,20 +96,21 @@ class IOUChannel(PlainChannel):
 				#it's impossible we've already received bitcoins on it.
 				#Therefore, rescan=False is safe.
 				bitcoind.importprivkey(privateKey, 'Amiko Pay IOUChannel', False)
+				return None, None
 
-			return IOUChannel_Address(address=self.address), [importPrivateKey]
+			return IOUChannel_Address(address=self.address), importPrivateKey
 
 		elif (self.state, msg.__class__) == (self.states.depositing, IOUChannel_Address):
 			self.address = msg.address
 			self.state = self.states.ready
-			return None
+			return None, None
 
 		elif msg.__class__ == PlainChannel_Withdraw:
 			if self.state in (self.states.withdrawing, self.states.sendingCloseTransaction, self.states.closed):
 				#Ignore if already in progress/done
-				return None
+				return None, None
 			else:
-				return self.startWithdraw()
+				return self.startWithdraw(), None
 
 		raise Exception("Received unexpected channel message")
 
@@ -119,9 +118,7 @@ class IOUChannel(PlainChannel):
 	def doClose(self):
 		"""
 		Return value:
-			None
-			tuple(None, list)
-			tuple(message, list)
+			message, function (either may be None)
 		"""
 
 		if self.isIssuer:
@@ -130,13 +127,14 @@ class IOUChannel(PlainChannel):
 			def makeCloseTransaction(bitcoind):
 				self.state = self.states.closed
 				#TODO: make close transaction, based on value
+				return None, None
 				
-			return None, [makeCloseTransaction]
+			return None, makeCloseTransaction
 
 		self.state = self.states.closed
 
 		#Ask peer to do withdrawal
- 		return PlainChannel_Withdraw(), []
+ 		return PlainChannel_Withdraw(), None
 
 
 serializable.registerClass(IOUChannel)

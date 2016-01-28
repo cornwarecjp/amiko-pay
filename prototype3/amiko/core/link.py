@@ -274,15 +274,16 @@ class Link(serializable.Serializable):
 
 
 	def handleChannelOutput(self, channelIndex, channelOutput):
-		if channelOutput is None: #None = end of conversation
-			return []
+		message, function = channelOutput
+		ret = []
 
-		message, functions = channelOutput
-
-		actions = [messages.BitcoinCommand(f, self.localID, channelIndex) for f in functions]
+		if not(function is None):
+			ret.append(
+				messages.BitcoinCommand(function, self.localID, channelIndex)
+				)
 
 		if not(message is None):
-			actions.append(
+			ret.append(
 				messages.OutboundMessage(localID=self.localID,
 					message=messages.ChannelMessage(
 						ID=self.remoteID,
@@ -291,7 +292,7 @@ class Link(serializable.Serializable):
 					))
 				)
 
-		return actions
+		return ret
 
 
 	def __findChannelWithTransaction(self, transactionID):
