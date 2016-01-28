@@ -1,5 +1,5 @@
 #    node.py
-#    Copyright (C) 2014-2015 by CJP
+#    Copyright (C) 2014-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -51,7 +51,7 @@ Top-level Application Programming Interface for the Amiko payment system
 """
 
 version = "0.1.0 (unstable,development)"
-lastCopyrightYear = "2015"
+lastCopyrightYear = "2016"
 
 
 
