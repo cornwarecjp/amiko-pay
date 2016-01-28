@@ -61,10 +61,6 @@ class Bitcoind_Real:
 			self.access = None
 
 
-	#####################################################
-	# Old API (used in previous prototype and in goodies)
-	#####################################################
-
 	def isConnected(self):
 		"""
 		Return value:
@@ -182,6 +178,10 @@ class Bitcoind_Real:
 		return self.access.getrawtransaction(thash, 1)
 
 
+	def importprivkey(self, privateKey, description, rescan):
+		return self.access.importprivkey(privateKey, description, rescan)
+
+
 	def listUnspent(self):
 		"""
 		Return value:
@@ -231,14 +231,14 @@ class Bitcoind_Real:
 		return int(value*100000000)
 
 
-	######################################
-	# New API (used in this prototype)
-	######################################
-
 	def handleMessage(self, msg):
-		getattr(self.access, msg.command)(*(msg.arguments))
-		#TODO: check whether exception handling is OK
-		return [] #TODO: send back return value
+		return \
+		[
+		messages.BitcoinReturnValue(
+			value=msg.function(self),
+			ID=msg.returnID, channelIndex=msg.returnChannelIndex)
+		]
+
 
 
 #This is a proxy-class that wraps different implementations.

@@ -31,9 +31,6 @@ from ..utils import utils
 from ..utils.crypto import Key, RIPEMD160, SHA256
 from ..utils.base58 import decodeBase58Check, encodeBase58Check
 
-#TODO: move (part of) messages to utils
-from ..core.messages import BitcoinCommand
-
 from plainchannel import PlainChannel, PlainChannel_Deposit, PlainChannel_Withdraw
 
 
@@ -96,15 +93,13 @@ class IOUChannel(PlainChannel):
 
 			privateKey = encodeBase58Check(k.getPrivateKey(), 128) #PRIVKEY = 128
 
-			return IOUChannel_Address(address=self.address), \
-				[
-				BitcoinCommand(
-					command='importprivkey',
-					#We've just created the key and haven't shared it yet, so
-					#it's impossible we've already received bitcoins on it.
-					#Therefore, rescan=False is safe.
-					arguments=[privateKey, 'Amiko Pay IOUChannel', False])
-				]
+			def importPrivateKey(bitcoind):
+				#We've just created the key and haven't shared it yet, so
+				#it's impossible we've already received bitcoins on it.
+				#Therefore, rescan=False is safe.
+				bitcoind.importprivkey(privateKey, 'Amiko Pay IOUChannel', False)
+
+			return IOUChannel_Address(address=self.address), [importPrivateKey]
 
 		elif (self.state, msg.__class__) == (self.states.depositing, IOUChannel_Address):
 			self.address = msg.address
@@ -121,28 +116,6 @@ class IOUChannel(PlainChannel):
 		raise Exception("Received unexpected channel message")
 
 
-	def handleBitcoinReturnValue(self, command, value):
-		"""
-		Return value:
-			None
-			tuple(None, list)
-			tuple(message, list)
-		"""
-
-		if (self.state, command) == (self.states.ready, 'importprivkey'):
-			return None
-
-		elif (self.state, command) == (self.states.sendingCloseTransaction, 'listunspent'):
-			self.state = self.states.closed
-			#TODO: make close transaction, based on value
-			return None
-
-		raise Exception(
-			"Received unexpected Bitcoin return value %s -> %s in state %s" % \
-			(command, str(value), self.state)
-			)
-
-
 	def doClose(self):
 		"""
 		Return value:
@@ -154,10 +127,11 @@ class IOUChannel(PlainChannel):
 		if self.isIssuer:
 			self.state = self.states.sendingCloseTransaction
 
-			return None, \
-			[
-			BitcoinCommand(command='listunspent', arguments=[])
-			]
+			def makeCloseTransaction(bitcoind):
+				self.state = self.states.closed
+				#TODO: make close transaction, based on value
+				
+			return None, [makeCloseTransaction]
 
 		self.state = self.states.closed
 

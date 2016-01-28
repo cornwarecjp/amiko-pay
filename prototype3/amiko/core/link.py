@@ -116,10 +116,7 @@ class Link(serializable.Serializable):
 
 
 	def msg_bitcoinReturnValue(self, msg):
-		return self.handleChannelOutput(
-			msg.channelIndex,
-			self.channels[msg.channelIndex].handleBitcoinReturnValue(msg.command, msg.value)
-			)
+		return self.handleChannelOutput(msg.channelIndex, msg.value)
 
 
 	def makeRouteOutgoing(self, msg):
@@ -280,12 +277,9 @@ class Link(serializable.Serializable):
 		if channelOutput is None: #None = end of conversation
 			return []
 
-		message, actions = channelOutput
+		message, functions = channelOutput
 
-		#Fill in return address, so that any return value will be sent back
-		for a in actions:
-			a.returnID = self.localID
-			a.returnChannelIndex = channelIndex
+		actions = [messages.BitcoinCommand(f, self.localID, channelIndex) for f in functions]
 
 		if not(message is None):
 			actions.append(

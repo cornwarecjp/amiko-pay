@@ -70,13 +70,18 @@ class OutboundMessage(serializable.Serializable):
 serializable.registerClass(OutboundMessage)
 
 
-class BitcoinCommand(serializable.Serializable):
-	serializableAttributes = {'command': '', 'arguments':[], 'returnID': '', 'returnChannelIndex': 0}
-serializable.registerClass(BitcoinCommand)
+class BitcoinCommand:
+	def __init__(self, function, returnID, returnChannelIndex):
+		#Function accepts a bitcoind object as argument. The return value will
+		#be emitted, wrapped in a BitcoinReturnValue message.
+		self.function = function
+		self.returnID = returnID
+		self.returnChannelIndex = returnChannelIndex
+#Note: BitcoinCommand is not serializable, since it contains a function object
 
 
 class BitcoinReturnValue(serializable.Serializable):
-	serializableAttributes = {'command': '', 'value': None, 'ID': '', 'channelIndex': 0}
+	serializableAttributes = {'value': None, 'ID': '', 'channelIndex': 0}
 serializable.registerClass(BitcoinReturnValue)
 
 

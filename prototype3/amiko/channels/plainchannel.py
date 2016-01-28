@@ -111,17 +111,6 @@ class PlainChannel(serializable.Serializable):
 		raise Exception("Received unexpected channel message")
 
 
-	def handleBitcoinReturnValue(self, msg):
-		"""
-		Return value:
-			None
-			tuple(None, list)
-			tuple(message, list)
-		"""
-
-		raise Exception("PlainChannel does not expect any Bitcoin return value")
-
-
 	def startWithdraw(self):
 		"""
 		Return value:

@@ -49,10 +49,6 @@ class Bitcoind_Dummy:
 		self.numConfirmations = {}
 
 
-	#####################################################
-	# Old API (used in previous prototype and in goodies)
-	#####################################################
-
 	def isConnected(self):
 		return True
 		
@@ -93,6 +89,10 @@ class Bitcoind_Dummy:
 		return {"confirmations": self.numConfirmations[thash]}
 
 
+	def importprivkey(self, privateKey, description, rescan):
+		pass
+
+
 	def listUnspent(self):
 		k1 = self.__makeNewKey()
 		k2 = self.__makeNewKey()
@@ -129,15 +129,13 @@ class Bitcoind_Dummy:
 			0)
 
 
-	######################################
-	# New API (used in this prototype)
-	######################################
-
 	def handleMessage(self, msg):
-		return [messages.BitcoinReturnValue(
-			command=msg.command, value=None, #TODO
-			ID=msg.returnID, channelIndex=msg.returnChannelIndex
-			)]
+		return \
+		[
+		messages.BitcoinReturnValue(
+			value=msg.function(self),
+			ID=msg.returnID, channelIndex=msg.returnChannelIndex)
+		]
 
 
 
