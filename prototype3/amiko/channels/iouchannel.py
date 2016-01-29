@@ -30,6 +30,8 @@ from ..utils import serializable
 from ..utils import utils
 from ..utils.crypto import Key, RIPEMD160, SHA256
 from ..utils.base58 import decodeBase58Check, encodeBase58Check
+from ..utils.bitcoinutils import getInputsForAmount
+from ..utils.bitcointransaction import Transaction, TxIn, TxOut, Script
 
 from plainchannel import PlainChannel, PlainChannel_Deposit, PlainChannel_Withdraw
 
@@ -55,7 +57,7 @@ class IOUChannel(PlainChannel):
 		], PlainChannel.states)
 
 	serializableAttributes = utils.dictSum(PlainChannel.serializableAttributes,
-		{'isIssuer': False, 'address': None})
+		{'isIssuer': False, 'address': None, 'withdrawTxID': None})
 
 
 	@staticmethod
@@ -125,8 +127,53 @@ class IOUChannel(PlainChannel):
 			self.state = self.states.sendingCloseTransaction
 
 			def makeCloseTransaction(bitcoind):
+				mBTC = 100000 #Satoshi
+
+				amount = self.amountRemote
+				fee = mBTC / 100
+
+				toHash = decodeBase58Check(self.address, 0) #PUBKEY_ADDRESS = 0
+
+				#Make change address and store it:
+				k = Key()
+				k.makeNewKey(compressed=True)
+				changeHash = RIPEMD160(SHA256(k.getPublicKey()))
+				changePrivateKey = encodeBase58Check(k.getPrivateKey(), 128) #PRIVKEY = 128
+				bitcoind.importprivkey(changePrivateKey, 'Amiko Pay IOUChannel change', False)
+
+				#TODO: de-duplicate code with bitcoinutils.sendToStandardPubKey
+				totalIn, inputs = getInputsForAmount(bitcoind, amount+fee)
+				change = totalIn - fee - amount
+
+				print "%d -> %d, %d, %d" % (totalIn, amount, change, fee)
+
+				tx = Transaction(
+					tx_in = [
+						TxIn(x[0], x[1])
+						for x in inputs
+						],
+					tx_out = [
+						TxOut(amount, Script.standardPubKey(toHash)),
+						TxOut(change, Script.standardPubKey(changeHash))
+						]
+					)
+
+				for i in range(len(inputs)):
+					scriptPubKey = Script.deserialize(inputs[i][2])
+					key = Key()
+					key.setPrivateKey(inputs[i][3])
+					tx.signInput(i, scriptPubKey, [None, key.getPublicKey()], [key])
+
 				self.state = self.states.closed
-				#TODO: make close transaction, based on value
+				self.withdrawTxID = tx.getTransactionID()[::-1].encode("hex")
+
+				tx = tx.serialize()
+
+				#TODO: for security, delay sending the transaction until all
+				#processing is finished. For that, create a new Bitcoin command type.
+				bitcoind.sendRawTransaction(tx)
+
+				#TODO: tell peer about the transaction
 				return None, None
 				
 			return None, makeCloseTransaction
