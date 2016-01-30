@@ -274,6 +274,8 @@ class Link(serializable.Serializable):
 
 
 	def handleChannelOutput(self, channelIndex, channelOutput):
+		log.log("Channel output: " + str(channelOutput))
+
 		message, function = channelOutput
 		ret = []
 

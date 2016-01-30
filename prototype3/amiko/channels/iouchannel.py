@@ -30,6 +30,7 @@ from ..utils import serializable
 from ..utils import utils
 from ..utils.crypto import Key, RIPEMD160, SHA256
 from ..utils.base58 import decodeBase58Check, encodeBase58Check
+from ..utils.bitcointransaction import Transaction
 from ..utils.bitcoinutils import sendToStandardPubKey
 
 from plainchannel import PlainChannel, PlainChannel_Deposit, PlainChannel_Withdraw
@@ -39,6 +40,12 @@ from plainchannel import PlainChannel, PlainChannel_Deposit, PlainChannel_Withdr
 class IOUChannel_Address(serializable.Serializable):
 	serializableAttributes = {'address': ''}
 serializable.registerClass(IOUChannel_Address)
+
+
+
+class IOUChannel_WithdrawTransaction(serializable.Serializable):
+	serializableAttributes = {'transaction': ''}
+serializable.registerClass(IOUChannel_WithdrawTransaction)
 
 
 
@@ -103,11 +110,35 @@ class IOUChannel(PlainChannel):
 			return None, None
 
 		elif msg.__class__ == PlainChannel_Withdraw:
-			if self.state in (self.states.withdrawing, self.states.sendingCloseTransaction, self.states.closed):
+			if not self.isIssuer:
+				raise Exception('Issuing peer should not send PlainChannel_Withdraw')
+
+			if self.state in (self.states.withdrawing, self.states.closed):
 				#Ignore if already in progress/done
 				return None, None
 			else:
-				return self.startWithdraw(), None
+				return self.startWithdraw()
+
+		elif msg.__class__ == IOUChannel_WithdrawTransaction:
+			if self.isIssuer:
+				#TODO: store the transaction anyway? It might work to our advantage.
+				raise Exception('Non-issuing peer should not send IOUChannel_WithdrawTransaction')
+
+			#TODO: check/fix state (e.g. ongoing transactions)
+
+			tx = Transaction.deserialize(msg.transaction)
+
+			#TODO: check transaction contents!!!!
+			#it should match with the state.
+
+			self.state = self.states.closed
+			self.withdrawTxID = tx.getTransactionID()[::-1].encode("hex")
+
+			def sendTransaction(bitcoind):
+				bitcoind.sendRawTransaction(msg.transaction)
+				return None, None
+
+			return None, sendTransaction
 
 		raise Exception("Received unexpected channel message")
 
@@ -146,12 +177,16 @@ class IOUChannel(PlainChannel):
 				#processing is finished. For that, create a new Bitcoin command type.
 				bitcoind.sendRawTransaction(tx)
 
-				#TODO: tell peer about the transaction
-				return None, None
+				#Tell peer about the transaction
+				return IOUChannel_WithdrawTransaction(transaction=tx), None
 				
 			return None, makeCloseTransaction
 
-		self.state = self.states.closed
+
+		#else (not self.isIssuer)
+
+		#Do NOT YET set the state to closed: we still need to get our funds
+		#from the peer.
 
 		#Ask peer to do withdrawal
  		return PlainChannel_Withdraw(), None
