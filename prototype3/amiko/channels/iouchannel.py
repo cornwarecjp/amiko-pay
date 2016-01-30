@@ -30,8 +30,7 @@ from ..utils import serializable
 from ..utils import utils
 from ..utils.crypto import Key, RIPEMD160, SHA256
 from ..utils.base58 import decodeBase58Check, encodeBase58Check
-from ..utils.bitcoinutils import getInputsForAmount
-from ..utils.bitcointransaction import Transaction, TxIn, TxOut, Script
+from ..utils.bitcoinutils import sendToStandardPubKey
 
 from plainchannel import PlainChannel, PlainChannel_Deposit, PlainChannel_Withdraw
 
@@ -51,10 +50,6 @@ class IOUChannel(PlainChannel):
 	so this channel type can be used in asymmetric trust relationships
 	(e.g. user trusts service provider, but not vice versa).
 	"""
-
-	states = utils.Enum([
-		"sendingCloseTransaction"
-		], PlainChannel.states)
 
 	serializableAttributes = utils.dictSum(PlainChannel.serializableAttributes,
 		{'isIssuer': False, 'address': None, 'withdrawTxID': None})
@@ -124,13 +119,13 @@ class IOUChannel(PlainChannel):
 		"""
 
 		if self.isIssuer:
-			self.state = self.states.sendingCloseTransaction
+			self.state = self.states.closed
 
 			def makeCloseTransaction(bitcoind):
 				mBTC = 100000 #Satoshi
 
 				amount = self.amountRemote
-				fee = mBTC / 100
+				fee = mBTC / 100 #TODO: use configurable fee
 
 				toHash = decodeBase58Check(self.address, 0) #PUBKEY_ADDRESS = 0
 
@@ -141,30 +136,8 @@ class IOUChannel(PlainChannel):
 				changePrivateKey = encodeBase58Check(k.getPrivateKey(), 128) #PRIVKEY = 128
 				bitcoind.importprivkey(changePrivateKey, 'Amiko Pay IOUChannel change', False)
 
-				#TODO: de-duplicate code with bitcoinutils.sendToStandardPubKey
-				totalIn, inputs = getInputsForAmount(bitcoind, amount+fee)
-				change = totalIn - fee - amount
+				tx = sendToStandardPubKey(bitcoind, amount, toHash, changeHash, fee)
 
-				print "%d -> %d, %d, %d" % (totalIn, amount, change, fee)
-
-				tx = Transaction(
-					tx_in = [
-						TxIn(x[0], x[1])
-						for x in inputs
-						],
-					tx_out = [
-						TxOut(amount, Script.standardPubKey(toHash)),
-						TxOut(change, Script.standardPubKey(changeHash))
-						]
-					)
-
-				for i in range(len(inputs)):
-					scriptPubKey = Script.deserialize(inputs[i][2])
-					key = Key()
-					key.setPrivateKey(inputs[i][3])
-					tx.signInput(i, scriptPubKey, [None, key.getPublicKey()], [key])
-
-				self.state = self.states.closed
 				self.withdrawTxID = tx.getTransactionID()[::-1].encode("hex")
 
 				tx = tx.serialize()
