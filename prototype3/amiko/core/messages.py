@@ -26,6 +26,8 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+import copy
+
 from ..utils import serializable
 
 
@@ -35,6 +37,74 @@ from ..utils import serializable
 payerLocalID = "__payer__"
 
 
+
+################################################################################
+# Non-serializable messages, for immediate, internal use only:
+################################################################################
+
+#Abstract base class
+class NonserializableMessage:
+	def __init__(self, **kwargs):
+		attributes = self.__class__.attributes
+		for name in attributes.keys():
+			setattr(self, name, copy.deepcopy(
+					kwargs[name]
+				if name in kwargs else
+					attributes[name] #default value
+				))
+
+
+class BitcoinCommand(NonserializableMessage):
+	attributes = {
+		#Function accepts a bitcoind object as argument. The return value will
+		#be emitted, wrapped in a BitcoinReturnValue message.
+		'function': (lambda bitcoind: (None, None)),
+		'returnID': '',
+		'returnChannelIndex': 0}
+
+
+class BitcoinReturnValue(NonserializableMessage):
+	attributes = {'value': None, 'ID': '', 'channelIndex': 0}
+
+
+class PayerLink_Confirm(NonserializableMessage):
+	attributes = {'agreement':False}
+
+
+class MakePayer(NonserializableMessage):
+	attributes = {'host':'', 'port':0, 'payeeLinkID': ''}
+
+
+class MakeLink(NonserializableMessage):
+	attributes = {
+		'localHost': None,
+		'localPort': None,
+		'localID': '',
+		'remoteHost': None,
+		'remotePort': None,
+		'remoteID': None}
+
+
+class Link_Deposit(NonserializableMessage):
+	attributes = {'ID': '', 'channel': None}
+
+
+class Link_Withdraw(NonserializableMessage):
+	attributes = {'ID': '', 'channelIndex': 0}
+
+
+class ReturnValue(NonserializableMessage):
+	attributes = {'value':''}
+
+
+class PaymentRequest(NonserializableMessage):
+	attributes = {'amount':0, 'receipt':'', 'meetingPoints':[]}
+
+
+
+################################################################################
+# Serializable messages, for external communication and/or time-outs:
+################################################################################
 
 class Connect(serializable.Serializable):
 	"""
@@ -70,21 +140,6 @@ class OutboundMessage(serializable.Serializable):
 serializable.registerClass(OutboundMessage)
 
 
-class BitcoinCommand:
-	def __init__(self, function, returnID, returnChannelIndex):
-		#Function accepts a bitcoind object as argument. The return value will
-		#be emitted, wrapped in a BitcoinReturnValue message.
-		self.function = function
-		self.returnID = returnID
-		self.returnChannelIndex = returnChannelIndex
-#Note: BitcoinCommand is not serializable, since it contains a function object
-
-
-class BitcoinReturnValue(serializable.Serializable):
-	serializableAttributes = {'value': None, 'ID': '', 'channelIndex': 0}
-serializable.registerClass(BitcoinReturnValue)
-
-
 class Timeout(serializable.Serializable):
 	serializableAttributes = {'state':''}
 serializable.registerClass(Timeout)
@@ -108,47 +163,6 @@ serializable.registerClass(Confirm)
 class Cancel(serializable.Serializable):
 	serializableAttributes = {"ID": None}
 serializable.registerClass(Cancel)
-
-
-class PaymentRequest(serializable.Serializable):
-	serializableAttributes = {'amount':0, 'receipt':'', 'meetingPoints':[]}
-serializable.registerClass(PaymentRequest)
-
-
-class PayerLink_Confirm(serializable.Serializable):
-	serializableAttributes = {'agreement':False}
-serializable.registerClass(PayerLink_Confirm)
-
-
-class MakePayer(serializable.Serializable):
-	serializableAttributes = {'host':'', 'port':0, 'payeeLinkID': ''}
-serializable.registerClass(MakePayer)
-
-
-class MakeLink(serializable.Serializable):
-	serializableAttributes = {
-		'localHost': None,
-		'localPort': None,
-		'localID': '',
-		'remoteHost': None,
-		'remotePort': None,
-		'remoteID': None}
-serializable.registerClass(MakeLink)
-
-
-class Link_Deposit(serializable.Serializable):
-	serializableAttributes = {'ID': '', 'channel': None}
-serializable.registerClass(Link_Deposit)
-
-
-class Link_Withdraw(serializable.Serializable):
-	serializableAttributes = {'ID': '', 'channelIndex': 0}
-serializable.registerClass(Link_Withdraw)
-
-
-class ReturnValue(serializable.Serializable):
-	serializableAttributes = {'value':''}
-serializable.registerClass(ReturnValue)
 
 
 class MakeRoute(serializable.Serializable):
