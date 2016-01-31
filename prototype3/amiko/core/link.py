@@ -281,7 +281,9 @@ class Link(serializable.Serializable):
 
 		if not(function is None):
 			ret.append(
-				messages.BitcoinCommand(function, self.localID, channelIndex)
+				messages.BitcoinCommand(
+					function=function,
+					returnID=self.localID, returnChannelIndex=channelIndex)
 				)
 
 		if not(message is None):
