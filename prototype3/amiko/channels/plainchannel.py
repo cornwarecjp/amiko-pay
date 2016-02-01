@@ -56,15 +56,15 @@ class PlainChannel(serializable.Serializable):
 	"""
 
 	states = utils.Enum([
-		"initial",
-		"ready",
-		"withdrawing",
-		"closed"
+		'opening',
+		'open',
+		'closing',
+		'closed'
 		])
 
 	serializableAttributes = \
 	{
-	'state': states.initial,
+	'state': states.opening,
 
 	'amountLocal': 0,
 	'amountRemote': 0,
@@ -80,7 +80,7 @@ class PlainChannel(serializable.Serializable):
 	@staticmethod
 	def makeForOwnDeposit(amount):
 		return PlainChannel(
-			state=PlainChannel.states.initial, amountLocal=amount, amountRemote=0)
+			state=PlainChannel.states.opening, amountLocal=amount, amountRemote=0)
 
 
 	def handleMessage(self, msg):
@@ -89,17 +89,17 @@ class PlainChannel(serializable.Serializable):
 			message, function (either may be None)
 		"""
 
-		if (self.state, msg) == (self.states.initial, None):
-			self.state = self.states.ready
+		if (self.state, msg) == (self.states.opening, None):
+			self.state = self.states.open
 			return PlainChannel_Deposit(amount=self.amountLocal), None
 
-		elif (self.state, msg.__class__) == (self.states.initial, PlainChannel_Deposit):
-			self.state = self.states.ready
+		elif (self.state, msg.__class__) == (self.states.opening, PlainChannel_Deposit):
+			self.state = self.states.open
 			self.amountRemote = msg.amount
 			return None, None
 
 		elif msg.__class__ == PlainChannel_Withdraw:
-			if self.state in (self.states.withdrawing, self.states.closed):
+			if self.state in (self.states.closing, self.states.closed):
 				#Ignore if already in progress/done
 				return None, None
 			else:
@@ -114,18 +114,18 @@ class PlainChannel(serializable.Serializable):
 			message, function (either may be None)
 		"""
 
-		if self.state in (self.states.withdrawing, self.states.closed):
+		if self.state in (self.states.closing, self.states.closed):
 			raise Exception("Channel is already %s." % self.state)
 
-		if self.state != self.states.ready:
+		if self.state != self.states.open:
 			raise Exception("Can not withdraw from a channel in state %s." % self.state)
 
-		self.state = self.states.withdrawing
+		self.state = self.states.closing
 		return self.tryToClose()
 
 
 	def reserve(self, isPayerSide, transactionID, startTime, endTime, amount):
-		if self.state != self.states.ready:
+		if self.state != self.states.open:
 			raise Exception("Channel will not start transactions in state %s." % self.state)
 
 		if isPayerSide:
@@ -201,7 +201,7 @@ class PlainChannel(serializable.Serializable):
 			message, function (either may be None)
 		"""
 
-		if self.state != self.states.withdrawing:
+		if self.state != self.states.closing:
 			return None, None
 
 		if len(self.transactionsIncomingReserved) != 0:
@@ -213,7 +213,7 @@ class PlainChannel(serializable.Serializable):
 		if len(self.transactionsOutgoingLocked) != 0:
 			return None, None
 
-		#we're withdrawing, and there are no more ongoing transactions,
+		#we're closing, and there are no more ongoing transactions,
 		#so it's OK to close the channel now.
 		return self.doClose()
 

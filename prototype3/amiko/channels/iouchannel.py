@@ -65,7 +65,7 @@ class IOUChannel(PlainChannel):
 	@staticmethod
 	def makeForOwnDeposit(amount):
 		return IOUChannel(
-			state=PlainChannel.states.initial,
+			state=PlainChannel.states.opening,
 			amountLocal=amount,
 			amountRemote=0,
 			isIssuer=True)
@@ -81,11 +81,11 @@ class IOUChannel(PlainChannel):
 			message, function (either may be None)
 		"""
 
-		if (self.state, msg) == (self.states.initial, None):
+		if (self.state, msg) == (self.states.opening, None):
 			return PlainChannel_Deposit(amount=self.amountLocal), None
 
-		elif (self.state, msg.__class__) == (self.states.initial, PlainChannel_Deposit):
-			self.state = self.states.ready
+		elif (self.state, msg.__class__) == (self.states.opening, PlainChannel_Deposit):
+			self.state = self.states.open
 			self.amountRemote = msg.amount
 
 			k = Key()
@@ -104,19 +104,19 @@ class IOUChannel(PlainChannel):
 
 			return IOUChannel_Address(address=self.address), importPrivateKey
 
-		elif (self.state, msg.__class__) == (self.states.initial, IOUChannel_Address):
+		elif (self.state, msg.__class__) == (self.states.opening, IOUChannel_Address):
 			if not self.isIssuer:
 				raise Exception('Issuing peer should not send IOUChannel_Address')
 
 			self.address = msg.address
-			self.state = self.states.ready
+			self.state = self.states.open
 			return None, None
 
 		elif msg.__class__ == PlainChannel_Withdraw:
 			if not self.isIssuer:
 				raise Exception('Issuing peer should not send PlainChannel_Withdraw')
 
-			if self.state in (self.states.withdrawing, self.states.closed):
+			if self.state in (self.states.closing, self.states.closed):
 				#Ignore if already in progress/done
 				return None, None
 			else:
