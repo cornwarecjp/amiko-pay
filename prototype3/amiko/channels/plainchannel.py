@@ -57,7 +57,6 @@ class PlainChannel(serializable.Serializable):
 
 	states = utils.Enum([
 		"initial",
-		"depositing",
 		"ready",
 		"withdrawing",
 		"closed"
@@ -81,7 +80,7 @@ class PlainChannel(serializable.Serializable):
 	@staticmethod
 	def makeForOwnDeposit(amount):
 		return PlainChannel(
-			state=PlainChannel.states.depositing, amountLocal=amount, amountRemote=0)
+			state=PlainChannel.states.initial, amountLocal=amount, amountRemote=0)
 
 
 	def handleMessage(self, msg):
@@ -90,7 +89,7 @@ class PlainChannel(serializable.Serializable):
 			message, function (either may be None)
 		"""
 
-		if (self.state, msg) == (self.states.depositing, None):
+		if (self.state, msg) == (self.states.initial, None):
 			self.state = self.states.ready
 			return PlainChannel_Deposit(amount=self.amountLocal), None
 

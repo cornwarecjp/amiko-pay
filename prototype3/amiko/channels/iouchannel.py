@@ -65,7 +65,7 @@ class IOUChannel(PlainChannel):
 	@staticmethod
 	def makeForOwnDeposit(amount):
 		return IOUChannel(
-			state=PlainChannel.states.depositing,
+			state=PlainChannel.states.initial,
 			amountLocal=amount,
 			amountRemote=0,
 			isIssuer=True)
@@ -81,7 +81,7 @@ class IOUChannel(PlainChannel):
 			message, function (either may be None)
 		"""
 
-		if (self.state, msg) == (self.states.depositing, None):
+		if (self.state, msg) == (self.states.initial, None):
 			return PlainChannel_Deposit(amount=self.amountLocal), None
 
 		elif (self.state, msg.__class__) == (self.states.initial, PlainChannel_Deposit):
@@ -104,7 +104,10 @@ class IOUChannel(PlainChannel):
 
 			return IOUChannel_Address(address=self.address), importPrivateKey
 
-		elif (self.state, msg.__class__) == (self.states.depositing, IOUChannel_Address):
+		elif (self.state, msg.__class__) == (self.states.initial, IOUChannel_Address):
+			if not self.isIssuer:
+				raise Exception('Issuing peer should not send IOUChannel_Address')
+
 			self.address = msg.address
 			self.state = self.states.ready
 			return None, None
