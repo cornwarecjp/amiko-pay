@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #    main.py
-#    Copyright (C) 2014-2015 by CJP
+#    Copyright (C) 2014-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -44,54 +44,42 @@ def formatBitcoinAmount(value):
 
 def handleCommand(cmd):
 
-	cmd = cmd.split() # split according to whitespace
+	cmd = cmd.strip() # remove whitespace
 
 	if len(cmd) == 0:
 		return
 
-	cmd[0] = cmd[0].lower()
+	cmd = cmd.lower()
 
-	def checkNumArgs(mina, maxa):
-		if len(cmd)-1 < mina:
-			raise Exception("Not enough arguments")
-		if len(cmd)-1 > maxa:
-			raise Exception("Too many arguments")
-
-	if cmd[0] in ["quit", "exit"]:
-		checkNumArgs(0, 0)
+	if cmd in ["quit", "exit"]:
 		a.stop()
 		crypto.cleanup()
 		sys.exit()
-	elif cmd[0] == "help":
-		checkNumArgs(0, 0)
+	elif cmd == "help":
 		print """\
-exit:
-quit:
+exit
+quit
   Terminate application.
-help:
+help
   Display this message.
-license:
+license
   Display licensing information.
-request amount [receipt]:
-  Request payment of amount, with optional receipt
-pay URL [linkname]
-  Pay the payment corresponding with URL
-  If linkname is given, payment routing is restricted to the link with the
-  given name.
+request
+  Request a payment
+pay
+  Pay a payment request
 list
   Print a list of objects
 getbalance
   Print balance information
-makelink localname [remoteURL]
-  Make a new link.
-  If remoteURL is given, connect to that URL.
-  Prints the local link URL.
-deposit linkname amount
-  Deposit amount into a link
-withdraw linkname channelID
+makelink
+  Make a new link
+deposit
+  Deposit funds into a link
+withdraw
   Withdraw from a channel of a link
 """
-	elif cmd[0] == "license":
+	elif cmd == "license":
 		print """Amiko Pay is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -134,74 +122,64 @@ along with this software; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-	elif cmd[0] == "request":
-		checkNumArgs(1, 2)
-		if len(cmd) < 3:
-			cmd.append("")
-
-		amount = int(cmd[1])
-		receipt = (cmd[2])
+	elif cmd == "request":
+		amount = int(raw_input('Amount (Satoshi): '))
+		receipt = (raw_input('Receipt (can be empty): '))
 
 		URL = a.request(amount, receipt)
-		print URL
+		print 'Request URL (pass this to the payer): ', URL
 
-	elif cmd[0] == "pay":
-		checkNumArgs(1, 2)
+	elif cmd == "pay":
 
-		URL = cmd[1]
-		if len(cmd) < 3:
-			amount, receipt = a.pay(URL)
-		else:
-			linkname = cmd[2]
-			amount, receipt = a.pay(URL, linkname)
+		URL = raw_input('Request URL: ').strip()
+		#TODO: specify link name
+		amount, receipt = a.pay(URL)
 
-		print "Receipt: ", repr(receipt)
-		print "Amount: ", amount
-		answer = raw_input("Do you want to pay (y/n)? ")
+		print 'Receipt: ', repr(receipt)
+		print 'Amount: (Satoshi)', amount
+		answer = raw_input('Do you want to pay (y/n)? ')
 		OK = answer.lower() == 'y'
 		state = a.confirmPayment(OK)
-		print "Payment is ", state
+		print 'Payment is ', state
 
-	elif cmd[0] == "list":
+	elif cmd == "list":
 		data = a.list()
 		pprint.pprint(data)
 
-	elif cmd[0] == "getbalance":
+	elif cmd == "getbalance":
 		balance = a.getBalance()
 		keys = balance.keys()
 		keys.sort()
 		for k in keys:
 			print k, formatBitcoinAmount(balance[k])
 
-	elif cmd[0] == "makelink":
-		checkNumArgs(1, 2)
-
-		localName = cmd[1]
-		if len(cmd) < 3:
-			print a.makeLink(localName)
+	elif cmd == "makelink":
+		localName = raw_input('Local name of the link: ')
+		remoteURL = raw_input('Remote URL of the link (can be empty): ').strip()
+		if remoteURL == '':
+			localURL = a.makeLink(localName)
 		else:
-			remoteURL = cmd[2]
-			print a.makeLink(localName, remoteURL)
+			localURL = a.makeLink(localName, remoteURL)
 
-	elif cmd[0] == "deposit":
-		checkNumArgs(2, 2)
+		print 'Link URL (pass this to the peer): ', localURL
 
-		linkname = cmd[1]
-		amount = int(cmd[2])
+	elif cmd == "deposit":
+		#TODO: list links
+		linkname = raw_input('Name of the link: ')
+		amount = int(raw_input('Amount (Satoshi): '))
 
 		if raw_input("Are you sure (y/n)? ") != 'y':
 			print "Aborted"
 			return
 
+		#TODO: other channel types
 		channel = iouchannel.IOUChannel.makeForOwnDeposit(amount)
 
 		a.deposit(linkname, channel)
 
-	elif cmd[0] == "withdraw":
-		checkNumArgs(2, 2)
-
-		linkname = cmd[1]
-		channelID = int(cmd[2])
+	elif cmd == "withdraw":
+		linkname = raw_input('Name of the link: ')
+		channelID = int(raw_input('Channel index: '))
 
 		if raw_input("Are you sure (y/n)? ") != 'y':
 			print "Aborted"
