@@ -121,7 +121,10 @@ class PlainChannel(serializable.Serializable):
 			raise Exception("Can not withdraw from a channel in state %s." % self.state)
 
 		self.state = self.states.closing
-		return self.tryToClose()
+
+		#Tell peer to do withdrawal
+		ret = self.tryToClose()
+		return [PlainChannel_Withdraw()] + ret[0], ret[1]
 
 
 	def reserve(self, isPayerSide, transactionID, startTime, endTime, amount):
@@ -226,8 +229,7 @@ class PlainChannel(serializable.Serializable):
 
 		self.state = self.states.closed
 
-		#Tell peer to do withdrawal
-		return [PlainChannel_Withdraw()], None
+		return [], None
 
 
 	def hasTransaction(self, transactionID):

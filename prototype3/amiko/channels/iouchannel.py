@@ -113,9 +113,6 @@ class IOUChannel(PlainChannel):
 			return [], None
 
 		elif msg.__class__ == PlainChannel_Withdraw:
-			if not self.isIssuer:
-				raise Exception('Issuing peer should not send PlainChannel_Withdraw')
-
 			if self.state in (self.states.closing, self.states.closed):
 				#Ignore if already in progress/done
 				return [], None
@@ -190,9 +187,7 @@ class IOUChannel(PlainChannel):
 
 		#Do NOT YET set the state to closed: we still need to get our funds
 		#from the peer.
-
-		#Ask peer to do withdrawal
- 		return [PlainChannel_Withdraw()], None
+ 		return [], None
 
 
 serializable.registerClass(IOUChannel)
