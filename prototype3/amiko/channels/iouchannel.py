@@ -78,11 +78,11 @@ class IOUChannel(PlainChannel):
 	def handleMessage(self, msg):
 		"""
 		Return value:
-			message, function (either may be None)
+			tuple(list, function) (function may be None)
 		"""
 
 		if (self.state, msg) == (self.states.opening, None):
-			return PlainChannel_Deposit(amount=self.amountLocal), None
+			return [PlainChannel_Deposit(amount=self.amountLocal)], None
 
 		elif (self.state, msg.__class__) == (self.states.opening, PlainChannel_Deposit):
 			self.state = self.states.open
@@ -100,9 +100,9 @@ class IOUChannel(PlainChannel):
 				#it's impossible we've already received bitcoins on it.
 				#Therefore, rescan=False is safe.
 				bitcoind.importprivkey(privateKey, 'Amiko Pay IOUChannel', False)
-				return None, None
+				return [], None
 
-			return IOUChannel_Address(address=self.address), importPrivateKey
+			return [IOUChannel_Address(address=self.address)], importPrivateKey
 
 		elif (self.state, msg.__class__) == (self.states.opening, IOUChannel_Address):
 			if not self.isIssuer:
@@ -110,7 +110,7 @@ class IOUChannel(PlainChannel):
 
 			self.address = msg.address
 			self.state = self.states.open
-			return None, None
+			return [], None
 
 		elif msg.__class__ == PlainChannel_Withdraw:
 			if not self.isIssuer:
@@ -118,7 +118,7 @@ class IOUChannel(PlainChannel):
 
 			if self.state in (self.states.closing, self.states.closed):
 				#Ignore if already in progress/done
-				return None, None
+				return [], None
 			else:
 				return self.startWithdraw()
 
@@ -139,9 +139,9 @@ class IOUChannel(PlainChannel):
 
 			def sendTransaction(bitcoind):
 				bitcoind.sendRawTransaction(msg.transaction)
-				return None, None
+				return [], None
 
-			return None, sendTransaction
+			return [], sendTransaction
 
 		raise Exception("Received unexpected channel message")
 
@@ -149,7 +149,7 @@ class IOUChannel(PlainChannel):
 	def doClose(self):
 		"""
 		Return value:
-			message, function (either may be None)
+			tuple(list, function) (function may be None)
 		"""
 
 		if self.isIssuer:
@@ -181,9 +181,9 @@ class IOUChannel(PlainChannel):
 				bitcoind.sendRawTransaction(tx)
 
 				#Tell peer about the transaction
-				return IOUChannel_WithdrawTransaction(transaction=tx), None
+				return [IOUChannel_WithdrawTransaction(transaction=tx)], None
 				
-			return None, makeCloseTransaction
+			return [], makeCloseTransaction
 
 
 		#else (not self.isIssuer)
@@ -192,7 +192,7 @@ class IOUChannel(PlainChannel):
 		#from the peer.
 
 		#Ask peer to do withdrawal
- 		return PlainChannel_Withdraw(), None
+ 		return [PlainChannel_Withdraw()], None
 
 
 serializable.registerClass(IOUChannel)

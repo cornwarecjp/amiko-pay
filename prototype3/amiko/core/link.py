@@ -276,24 +276,21 @@ class Link(serializable.Serializable):
 	def handleChannelOutput(self, channelIndex, channelOutput):
 		log.log("Channel output: " + str(channelOutput))
 
-		message, function = channelOutput
-		ret = []
+		channelMessages, function = channelOutput
+
+		ret = \
+		[
+		messages.OutboundMessage(localID=self.localID,
+			message=messages.ChannelMessage(
+			ID=self.remoteID, channelIndex=channelIndex, message=m))
+		for m in channelMessages
+		]
 
 		if not(function is None):
 			ret.append(
 				messages.BitcoinCommand(
 					function=function,
 					returnID=self.localID, returnChannelIndex=channelIndex)
-				)
-
-		if not(message is None):
-			ret.append(
-				messages.OutboundMessage(localID=self.localID,
-					message=messages.ChannelMessage(
-						ID=self.remoteID,
-						channelIndex=channelIndex,
-						message=message
-					))
 				)
 
 		return ret

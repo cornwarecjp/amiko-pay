@@ -86,24 +86,24 @@ class PlainChannel(serializable.Serializable):
 	def handleMessage(self, msg):
 		"""
 		Return value:
-			message, function (either may be None)
+			tuple(list, function) (function may be None)
 		"""
 
 		if (self.state, msg) == (self.states.opening, None):
 			self.state = self.states.open
-			return PlainChannel_Deposit(amount=self.amountLocal), None
+			return [PlainChannel_Deposit(amount=self.amountLocal)], None
 
 		elif (self.state, msg.__class__) == (self.states.opening, PlainChannel_Deposit):
 			self.state = self.states.open
 			self.amountRemote = msg.amount
-			return None, None
+			return [], None
 
 		elif msg.__class__ == PlainChannel_Withdraw:
 			if self.state in (self.states.closing, self.states.closed):
 				#Ignore if already in progress/done
-				return None, None
+				return [], None
 			else:
-				return self.startWithdraw(), None
+				return self.startWithdraw()
 
 		raise Exception("Received unexpected channel message")
 
@@ -111,7 +111,7 @@ class PlainChannel(serializable.Serializable):
 	def startWithdraw(self):
 		"""
 		Return value:
-			message, function (either may be None)
+			tuple(list, function) (function may be None)
 		"""
 
 		if self.state in (self.states.closing, self.states.closed):
@@ -149,7 +149,7 @@ class PlainChannel(serializable.Serializable):
 	def unreserve(self, isPayerSide, transactionID):
 		"""
 		Return value:
-			message, function (either may be None)
+			tuple(list, function) (function may be None)
 		"""
 
 		if isPayerSide:
@@ -176,7 +176,7 @@ class PlainChannel(serializable.Serializable):
 	def settleCommitOutgoing(self, transactionID, token):
 		"""
 		Return value:
-			message, function (either may be None)
+			tuple(list, function) (function may be None)
 		"""
 
 		self.amountRemote += self.transactionsOutgoingLocked[transactionID].amount
@@ -187,7 +187,7 @@ class PlainChannel(serializable.Serializable):
 	def settleCommitIncoming(self, transactionID):
 		"""
 		Return value:
-			message, function (either may be None)
+			tuple(list, function) (function may be None)
 		"""
 
 		self.amountLocal += self.transactionsIncomingLocked[transactionID].amount
@@ -198,20 +198,20 @@ class PlainChannel(serializable.Serializable):
 	def tryToClose(self):
 		"""
 		Return value:
-			message, function (either may be None)
+			tuple(list, function) (function may be None)
 		"""
 
 		if self.state != self.states.closing:
-			return None, None
+			return [], None
 
 		if len(self.transactionsIncomingReserved) != 0:
-			return None, None
+			return [], None
 		if len(self.transactionsOutgoingReserved) != 0:
-			return None, None
+			return [], None
 		if len(self.transactionsIncomingLocked) != 0:
-			return None, None
+			return [], None
 		if len(self.transactionsOutgoingLocked) != 0:
-			return None, None
+			return [], None
 
 		#we're closing, and there are no more ongoing transactions,
 		#so it's OK to close the channel now.
@@ -221,13 +221,13 @@ class PlainChannel(serializable.Serializable):
 	def doClose(self):
 		"""
 		Return value:
-			message, function (either may be None)
+			tuple(list, function) (function may be None)
 		"""
 
 		self.state = self.states.closed
 
 		#Tell peer to do withdrawal
-		return PlainChannel_Withdraw(), None
+		return [PlainChannel_Withdraw()], None
 
 
 	def hasTransaction(self, transactionID):
