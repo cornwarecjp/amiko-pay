@@ -67,6 +67,10 @@ class BitcoinReturnValue(NonserializableMessage):
 	attributes = {'value': None, 'ID': '', 'channelIndex': 0}
 
 
+class Confirmation(NonserializableMessage):
+	attributes = {'localID': '', 'index':0}
+
+
 class PayerLink_Confirm(NonserializableMessage):
 	attributes = {'agreement':False}
 
@@ -128,11 +132,6 @@ class ConnectLink(Connect):
 		'callbackID': None
 		}
 serializable.registerClass(ConnectLink)
-
-
-class Confirmation(serializable.Serializable):
-	serializableAttributes = {'localID': '', 'index':0}
-serializable.registerClass(Confirmation)
 
 
 class OutboundMessage(serializable.Serializable):
