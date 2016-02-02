@@ -59,7 +59,7 @@ with open(settings1.stateFile, "wb") as f:
 					[
 					{
 					"_class": "PlainChannel",
-					"state": "ready",
+					"state": "open",
 					"amountLocal": 1000,
 					"amountRemote": 0,
 					"transactionsIncomingLocked": {},
@@ -119,7 +119,7 @@ with open(settings2.stateFile, "wb") as f:
 					[
 					{
 					"_class": "PlainChannel",
-					"state": "ready",
+					"state": "open",
 					"amountLocal": 0,
 					"amountRemote": 1000,
 					"transactionsIncomingLocked": {},

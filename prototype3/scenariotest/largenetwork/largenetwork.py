@@ -104,7 +104,7 @@ for i in range(len(linkDefinitions)):
 				[
 				{
 				"_class": "PlainChannel",
-				"state": "ready",
+				"state": "open",
 				"amountLocal": 1000,
 				"amountRemote": 1000,
 				"transactionsIncomingLocked": {},
