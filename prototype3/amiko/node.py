@@ -268,9 +268,16 @@ class Node(threading.Thread):
 		The URL of the payment request
 		"""
 
+		meetingPoints = self.__node.meetingPoints.keys() + self.settings.externalMeetingPoints
+		if len(meetingPoints) == 0:
+			raise Exception(
+				'Can not make a payment request when no meeting points are configured. '
+				'Either make a local meeting point, '
+				'or configure the use of an external meeting point.')
+
 		ID = self.handleMessage(messages.PaymentRequest(
 			amount=amount, receipt=receipt,
-			meetingPoints=self.__node.meetingPoints.keys() + self.settings.externalMeetingPoints))
+			meetingPoints=meetingPoints))
 
 		return "amikopay://%s/%s" % \
 			(self.settings.getAdvertizedNetworkLocation(), ID)
