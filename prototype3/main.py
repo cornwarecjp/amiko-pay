@@ -39,7 +39,7 @@ from amiko import node
 
 
 def formatBitcoinAmount(value):
-	return str(Decimal(value) / 100000) + " mBTC"
+	return str(Decimal(value) / 100000) + ' mBTC'
 
 
 def handleCommand(cmd):
@@ -51,12 +51,12 @@ def handleCommand(cmd):
 
 	cmd = cmd.lower()
 
-	if cmd in ["quit", "exit"]:
+	if cmd in ['quit', 'exit']:
 		a.stop()
 		crypto.cleanup()
 		sys.exit()
-	elif cmd == "help":
-		print """\
+	elif cmd == 'help':
+		print '''\
 exit
 quit
   Terminate application.
@@ -80,9 +80,9 @@ deposit
   Deposit funds into a link
 withdraw
   Withdraw from a channel of a link
-"""
-	elif cmd == "license":
-		print """Amiko Pay is free software: you can redistribute it and/or modify
+'''
+	elif cmd == 'license':
+		print '''Amiko Pay is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -122,16 +122,16 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this software; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-"""
+'''
 
-	elif cmd == "request":
+	elif cmd == 'request':
 		amount = int(raw_input('Amount (Satoshi): '))
 		receipt = (raw_input('Receipt (can be empty): '))
 
 		URL = a.request(amount, receipt)
 		print 'Request URL (pass this to the payer): ', URL
 
-	elif cmd == "pay":
+	elif cmd == 'pay':
 
 		URL = raw_input('Request URL: ').strip()
 		#TODO: specify link name
@@ -144,18 +144,18 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 		state = a.confirmPayment(OK)
 		print 'Payment is ', state
 
-	elif cmd == "list":
+	elif cmd == 'list':
 		data = a.list()
 		pprint.pprint(data)
 
-	elif cmd == "getbalance":
+	elif cmd == 'getbalance':
 		balance = a.getBalance()
 		keys = balance.keys()
 		keys.sort()
 		for k in keys:
 			print k, formatBitcoinAmount(balance[k])
 
-	elif cmd == "makelink":
+	elif cmd == 'makelink':
 		localName = raw_input('Local name of the link: ')
 		remoteURL = raw_input('Remote URL of the link (can be empty): ').strip()
 		if remoteURL == '':
@@ -165,17 +165,17 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 		print 'Link URL (pass this to the peer): ', localURL
 
-	elif cmd == "makemeetingpoint":
+	elif cmd == 'makemeetingpoint':
 		meetingPointName = raw_input('Name of the meeting point: ')
 		a.makeMeetingPoint(meetingPointName)
 
-	elif cmd == "deposit":
+	elif cmd == 'deposit':
 		#TODO: list links
 		linkname = raw_input('Name of the link: ')
 		amount = int(raw_input('Amount (Satoshi): '))
 
-		if raw_input("Are you sure (y/n)? ") != 'y':
-			print "Aborted"
+		if raw_input('Are you sure (y/n)? ') != 'y':
+			print 'Aborted'
 			return
 
 		#TODO: other channel types
@@ -183,28 +183,28 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 		a.deposit(linkname, channel)
 
-	elif cmd == "withdraw":
+	elif cmd == 'withdraw':
 		linkname = raw_input('Name of the link: ')
 		channelID = int(raw_input('Channel index: '))
 
-		if raw_input("Are you sure (y/n)? ") != 'y':
-			print "Aborted"
+		if raw_input('Are you sure (y/n)? ') != 'y':
+			print 'Aborted'
 			return
 
 		a.withdraw(linkname, channelID)
 
 	else:
-		print "Unknown command. Enter \"help\" for a list of commands."
+		print 'Unknown command. Enter \'help\' for a list of commands.'
 
 
 a = node.Node()
 a.start()
 
-print """
+print '''
 Amiko Pay %s Copyright (C) 2013 - %s
 
-Enter "help" for a list of commands. Enter "license" for licensing information.
-""" % (node.version, node.lastCopyrightYear)
+Enter 'help' for a list of commands. Enter 'license' for licensing information.
+''' % (node.version, node.lastCopyrightYear)
 
 while True:
 	cmd = raw_input('> ')
