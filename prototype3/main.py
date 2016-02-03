@@ -74,6 +74,8 @@ getbalance
   Print balance information
 makelink
   Make a new link
+makemeetingpoint
+  Make a new meeting point
 deposit
   Deposit funds into a link
 withdraw
@@ -162,6 +164,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 			localURL = a.makeLink(localName, remoteURL)
 
 		print 'Link URL (pass this to the peer): ', localURL
+
+	elif cmd == "makemeetingpoint":
+		meetingPointName = raw_input('Name of the meeting point: ')
+		a.makeMeetingPoint(meetingPointName)
 
 	elif cmd == "deposit":
 		#TODO: list links

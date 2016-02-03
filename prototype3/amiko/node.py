@@ -385,6 +385,11 @@ class Node(threading.Thread):
 
 
 	@runInNodeThread
+	def makeMeetingPoint(self, meetingPointName):
+		self.handleMessage(messages.MakeMeetingPoint(name=meetingPointName))
+
+
+	@runInNodeThread
 	def deposit(self, linkname, channel):
 		"""
 		Deposit into a link.

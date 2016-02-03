@@ -89,6 +89,10 @@ class MakeLink(NonserializableMessage):
 		'remoteID': None}
 
 
+class MakeMeetingPoint(NonserializableMessage):
+	attributes = {'name': ''}
+
+
 class Link_Deposit(NonserializableMessage):
 	attributes = {'ID': '', 'channel': None}
 

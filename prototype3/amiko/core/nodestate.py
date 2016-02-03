@@ -65,17 +65,18 @@ class NodeState(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		messages.PaymentRequest : self.msg_request,
-		messages.MakePayer      : self.msg_makePayer,
-		messages.MakeLink       : self.msg_makeLink,
-		messages.MakeRoute      : self.msg_makeRoute,
-		messages.HaveNoRoute    : self.msg_haveNoRoute,
-		messages.CancelRoute    : self.msg_cancelRoute,
-		messages.HavePayerRoute : self.msg_havePayerRoute,
-		messages.HavePayeeRoute : self.msg_havePayeeRoute,
-		messages.Lock           : self.msg_lock,
-		messages.Commit         : self.msg_commit,
-		messages.SettleCommit   : self.msg_settleCommit,
+		messages.PaymentRequest  : self.msg_request,
+		messages.MakePayer       : self.msg_makePayer,
+		messages.MakeLink        : self.msg_makeLink,
+		messages.MakeMeetingPoint: self.msg_makeMeetingPoint,
+		messages.MakeRoute       : self.msg_makeRoute,
+		messages.HaveNoRoute     : self.msg_haveNoRoute,
+		messages.CancelRoute     : self.msg_cancelRoute,
+		messages.HavePayerRoute  : self.msg_havePayerRoute,
+		messages.HavePayeeRoute  : self.msg_havePayeeRoute,
+		messages.Lock            : self.msg_lock,
+		messages.Commit          : self.msg_commit,
+		messages.SettleCommit    : self.msg_settleCommit,
 
 		messages.Pay    : self.msg_passToPayee,
 		messages.Confirm: self.msg_passToPayee,
@@ -165,6 +166,13 @@ class NodeState(serializable.Serializable):
 					callbackID=msg.localID
 					)
 				)
+
+		return []
+
+
+	def msg_makeMeetingPoint(self, msg):
+		#For now, no contents, so the dictionary acts just a list of strings.
+		self.meetingPoints[msg.name] = None
 
 		return []
 
