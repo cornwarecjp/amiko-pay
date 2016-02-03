@@ -128,6 +128,8 @@ class Node(threading.Thread):
 		self._commandProcessed = threading.Event()
 		self._commandReturnValue = None
 
+		# TODO: recover from a state where one of the events can be set,
+		# but the user interface is not waiting for it anymore after a re-start.
 		self.__events = {name: threading.Event() for name in messages.SetEvent.events}
 
 		self.__node = persistentobject.PersistentObject(
