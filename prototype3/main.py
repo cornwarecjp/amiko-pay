@@ -42,6 +42,22 @@ def formatBitcoinAmount(value):
 	return str(Decimal(value) / 100000) + ' mBTC'
 
 
+def choiceInput(options, prompt):
+	while True:
+		for i in range(len(options)):
+			print '%d: %s' % (i+1, str(options[i]))
+
+		answer = raw_input(prompt + ' (leave empty to abort): ').strip()
+		if answer == '':
+			raise Exception('Aborted')
+
+		answer = int(answer) - 1
+		if answer >= 0 and answer < len(options):
+			return options[answer]
+
+		print 'Answer is out of range; please try again.'
+
+
 def handleCommand(cmd):
 
 	cmd = cmd.strip() # remove whitespace
@@ -132,7 +148,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 		print 'Request URL (pass this to the payer): ', URL
 
 	elif cmd == 'pay':
-
 		URL = raw_input('Request URL: ').strip()
 		#TODO: specify link name
 		amount, receipt = a.pay(URL)
@@ -170,8 +185,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 		a.makeMeetingPoint(meetingPointName)
 
 	elif cmd == 'deposit':
-		#TODO: list links
-		linkname = raw_input('Name of the link: ')
+		data = a.list()
+		linknames = data['links'].keys()
+		linkname = choiceInput(linknames, 'Choose a link to deposit in')
 		amount = int(raw_input('Amount (Satoshi): '))
 
 		if raw_input('Are you sure (y/n)? ') != 'y':
@@ -184,8 +200,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 		a.deposit(linkname, channel)
 
 	elif cmd == 'withdraw':
-		linkname = raw_input('Name of the link: ')
-		channelID = int(raw_input('Channel index: '))
+		data = a.list()
+		linknames = data['links'].keys()
+		linkname = choiceInput(linknames, 'Choose a link to withdraw from')
+		numChannels = len(data['links'][linkname]['channels'])
+		channelID = choiceInput(range(numChannels), 'Channel index')
 
 		if raw_input('Are you sure (y/n)? ') != 'y':
 			print 'Aborted'
