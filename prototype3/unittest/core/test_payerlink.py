@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #    test_payerlink.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -59,32 +59,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.initial)
 
 
-	def test_deepcopy(self):
-		"Test deep copy operator"
-
-		self.payerLink = payerlink.PayerLink(
-			payeeHost      = "payeeHost",
-			payeePort      = "payeePort",
-			payeeLinkID    = "payeeLinkID",
-			amount         = "amount",
-			receipt        = "receipt",
-			transactionID  = "transactionID",
-			token          = "token",
-			meetingPointID = "meetingPointID",
-			state          = "state"
-			)
-		payer2 = copy.deepcopy(self.payerLink)
-		self.assertEqual(payer2.payeeHost      , "payeeHost")
-		self.assertEqual(payer2.payeePort      , "payeePort")
-		self.assertEqual(payer2.payeeLinkID    , "payeeLinkID")
-		self.assertEqual(payer2.amount         , "amount")
-		self.assertEqual(payer2.receipt        , "receipt")
-		self.assertEqual(payer2.transactionID  , "transactionID")
-		self.assertEqual(payer2.token          , "token")
-		self.assertEqual(payer2.meetingPointID , "meetingPointID")
-		self.assertEqual(payer2.state          , "state")
-
-
 	def test_getTimeoutMessage(self):
 		"Test getTimeoutMessage"
 
@@ -102,26 +76,16 @@ class Test(unittest.TestCase):
 	def test_msg_timeout_initial(self):
 		"Test msg_timeout (state: initial)"
 
-		measuredTime = [0.0]
-		def measureTime():
-			t0 = time.time()
-			self.payerLink.waitForReceipt()
-			t1 = time.time()
-			measuredTime[0] = t1 - t0
-		measureTime = threading.Thread(target=measureTime)
-		measureTime.start()
-
-		time.sleep(0.5)
 		ret = self.payerLink.handleMessage(
 			messages.Timeout(state=payerlink.PayerLink.states.initial))
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
 
-		self.assertEqual(len(ret), 0)
+		self.assertEqual(len(ret), 1)
 
-		measureTime.join()
-		self.assertGreaterEqual(measuredTime[0], 0.5)
-		self.assertLess(measuredTime[0], 0.6)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.SetEvent))
+		self.assertEqual(msg.event, messages.SetEvent.events.receiptReceived)
 
 
 	def test_msg_timeout_receivedCommit(self):
@@ -129,26 +93,16 @@ class Test(unittest.TestCase):
 
 		self.payerLink.state = payerlink.PayerLink.states.receivedCommit
 
-		measuredTime = [0.0]
-		def measureTime():
-			t0 = time.time()
-			self.payerLink.waitForFinished()
-			t1 = time.time()
-			measuredTime[0] = t1 - t0
-		measureTime = threading.Thread(target=measureTime)
-		measureTime.start()
-
-		time.sleep(0.5)
 		ret = self.payerLink.handleMessage(
 			messages.Timeout(state=payerlink.PayerLink.states.receivedCommit))
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.committed)
 
-		self.assertEqual(len(ret), 0)
+		self.assertEqual(len(ret), 1)
 
-		measureTime.join()
-		self.assertGreaterEqual(measuredTime[0], 0.5)
-		self.assertLess(measuredTime[0], 0.6)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.SetEvent))
+		self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
 
 	def test_msg_timeout_confirmed(self):
@@ -169,7 +123,7 @@ class Test(unittest.TestCase):
 
 			self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
 
-			self.assertEqual(len(ret), 2)
+			self.assertEqual(len(ret), 3)
 
 			msg = ret[0]
 			self.assertTrue(isinstance(msg, messages.CancelRoute))
@@ -181,6 +135,9 @@ class Test(unittest.TestCase):
 			msg = msg.message
 			self.assertTrue(isinstance(msg, messages.Cancel))
 			self.assertEqual(msg.ID, "payeeLinkID")
+			msg = ret[2]
+			self.assertTrue(isinstance(msg, messages.SetEvent))
+			self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
 
 	def test_msg_timeout_other(self):
@@ -197,16 +154,6 @@ class Test(unittest.TestCase):
 	def test_msg_receipt(self):
 		"Test msg_receipt"
 
-		measuredTime = [0.0]
-		def measureTime():
-			t0 = time.time()
-			self.payerLink.waitForReceipt()
-			t1 = time.time()
-			measuredTime[0] = t1 - t0
-		measureTime = threading.Thread(target=measureTime)
-		measureTime.start()
-
-		time.sleep(0.5)
 		ret = self.payerLink.handleMessage(
 			messages.Receipt(
 				amount=123,
@@ -221,11 +168,11 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.payerLink.transactionID, "txID")
 		#self.assertEqual(self.payerLink.meetingPointID, "MPID") #TODO
 
-		self.assertEqual(len(ret), 0)
+		self.assertEqual(len(ret), 1)
 
-		measureTime.join()
-		self.assertGreaterEqual(measuredTime[0], 0.5)
-		self.assertLess(measuredTime[0], 0.6)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.SetEvent))
+		self.assertEqual(msg.event, messages.SetEvent.events.receiptReceived)
 
 
 	def test_msg_confirm(self):
@@ -270,13 +217,16 @@ class Test(unittest.TestCase):
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
 
-		self.assertEqual(len(ret), 1)
+		self.assertEqual(len(ret), 2)
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, messages.payerLocalID)
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.Cancel))
 		self.assertEqual(msg.ID, None)
+		msg = ret[1]
+		self.assertTrue(isinstance(msg, messages.SetEvent))
+		self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
 
 	def test_msg_havePayerRoute(self):
@@ -418,25 +368,15 @@ class Test(unittest.TestCase):
 	def test_settleCommitIncoming(self):
 		"Test settleCommitIncoming"
 
-		measuredTime = [0.0]
-		def measureTime():
-			t0 = time.time()
-			self.payerLink.waitForFinished()
-			t1 = time.time()
-			measuredTime[0] = t1 - t0
-		measureTime = threading.Thread(target=measureTime)
-		measureTime.start()
-
-		time.sleep(0.5)
 		ret = self.payerLink.settleCommitIncoming(messages.SettleCommit(token="bar"))
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.committed)
 
-		self.assertEqual(len(ret), 0)
+		self.assertEqual(len(ret), 1)
 
-		measureTime.join()
-		self.assertGreaterEqual(measuredTime[0], 0.5)
-		self.assertLess(measuredTime[0], 0.6)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.SetEvent))
+		self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
 
 

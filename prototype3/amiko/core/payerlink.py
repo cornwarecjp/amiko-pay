@@ -1,5 +1,5 @@
 #    payerlink.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -26,8 +26,6 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-import threading
-import copy
 import time
 
 from ..utils import utils
@@ -64,44 +62,9 @@ class PayerLink(serializable.Serializable):
 	def __init__(self, **kwargs):
 		serializable.Serializable.__init__(self, **kwargs)
 
-		# Will be set when receipt message is received from payee, or in case of time-out
-		self.__receiptReceived = threading.Event()
-
-		# Will be set when transaction is committed or cancelled, or in case of time-out
-		self.__finished = threading.Event()
-
-		#TODO: recover from a state where one of the above events can be set,
-		#but the user interface is not waiting for it anymore after a re-start.
-
-
-	def __deepcopy__(self, memo):
-		#This is called indirectly from serializable.py.
-		#It overrides default deepcopy behavior to work around a problem with
-		#threading.Event objects
-		return PayerLink(
-			payeeHost      = self.payeeHost,
-			payeePort      = self.payeePort,
-			payeeLinkID    = self.payeeLinkID,
-			amount         = self.amount,
-			receipt        = self.receipt,
-			transactionID  = self.transactionID,
-			token          = self.token,
-			meetingPointID = self.meetingPointID,
-			state          = self.state
-		)
-
 
 	def getTimeoutMessage(self):
 		return messages.Timeout(state=self.state)
-
-
-	def waitForReceipt(self):
-		self.__receiptReceived.wait()
-
-
-	def waitForFinished(self):
-		#TODO: timeout mechanism
-		self.__finished.wait()
 
 
 	def handleMessage(self, msg):
@@ -116,33 +79,33 @@ class PayerLink(serializable.Serializable):
 
 
 	def msg_timeout(self, msg):
-		ret = []
 		if self.state == self.states.initial and msg.state == self.states.initial:
 			#Receipt time-out
 			log.log("Payer: receipt time-out -> cancelled")
 			self.state = self.states.cancelled
-			self.__receiptReceived.set()
+			return [messages.SetEvent(event=messages.SetEvent.events.receiptReceived)]
+
 		elif self.state == self.states.receivedCommit and msg.state == self.states.receivedCommit:
 			#settleCommit time-out: assume settled anyway, since we've received the commit token
 			log.log("Payer: settleCommit time-out -> committed")
 			self.state = self.states.committed
-			self.__finished.set()
+			return [messages.SetEvent(event=messages.SetEvent.events.paymentFinished)]
+
 		elif self.state in (self.states.confirmed, self.states.hasPayerRoute, self.states.hasPayeeRoute) and msg.state == self.states.confirmed:
 			log.log("Payer: routing time-out -> cancelled")
 			self.state = self.states.cancelled
-			ret += \
-				[
-				messages.CancelRoute(transactionID=self.transactionID, payerSide=True),
-				messages.OutboundMessage(localID = messages.payerLocalID, message = \
-					messages.Cancel(ID=self.payeeLinkID)
-					)
-				]
-			self.__finished.set()
-		else:
-			log.log("Payer: time-out of state %s no longer applicable: we are now in state %s" % \
-				(msg.state, self.state))
+			return \
+			[
+			messages.CancelRoute(transactionID=self.transactionID, payerSide=True),
+			messages.OutboundMessage(localID = messages.payerLocalID, message = \
+				messages.Cancel(ID=self.payeeLinkID)),
+			messages.SetEvent(event=messages.SetEvent.events.paymentFinished)
+			]
 
-		return ret
+		log.log("Payer: time-out of state %s no longer applicable: we are now in state %s" % \
+			(msg.state, self.state))
+
+		return []
 
 
 	def msg_receipt(self, msg):
@@ -153,9 +116,8 @@ class PayerLink(serializable.Serializable):
 		self.transactionID = msg.transactionID
 		self.meetingPointID = msg.meetingPoints[0] #TODO: more intelligent choice
 		self.state = self.states.hasReceipt
-		self.__receiptReceived.set()
 
-		return []
+		return [messages.SetEvent(event=messages.SetEvent.events.receiptReceived)]
 
 
 	def msg_confirm(self, msg):
@@ -194,13 +156,12 @@ class PayerLink(serializable.Serializable):
 		else:
 			self.state = self.states.cancelled
 
-			self.__finished.set()
-
 			ret = \
 			[
 			messages.OutboundMessage(localID = messages.payerLocalID, message = \
 				messages.Cancel(ID=self.payeeLinkID)
-			)
+			),
+			messages.SetEvent(event=messages.SetEvent.events.paymentFinished)
 			]
 
 		return ret
@@ -301,9 +262,9 @@ class PayerLink(serializable.Serializable):
 
 		log.log("Payer: received settleCommit -> committed")
 		self.state = self.states.committed
-		self.__finished.set()
 
-		return []
+		return [messages.SetEvent(event=messages.SetEvent.events.paymentFinished)]
+
 
 
 serializable.registerClass(PayerLink)

@@ -29,6 +29,7 @@
 import copy
 
 from ..utils import serializable
+from ..utils import utils
 
 
 
@@ -101,12 +102,17 @@ class Link_Withdraw(NonserializableMessage):
 	attributes = {'ID': '', 'channelIndex': 0}
 
 
+class PaymentRequest(NonserializableMessage):
+	attributes = {'amount':0, 'receipt':'', 'meetingPoints':[]}
+
+
 class ReturnValue(NonserializableMessage):
 	attributes = {'value':''}
 
 
-class PaymentRequest(NonserializableMessage):
-	attributes = {'amount':0, 'receipt':'', 'meetingPoints':[]}
+class SetEvent(NonserializableMessage):
+	events = utils.Enum(['receiptReceived', 'paymentFinished'])
+	attributes = {'event': None}
 
 
 

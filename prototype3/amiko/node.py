@@ -128,6 +128,8 @@ class Node(threading.Thread):
 		self._commandProcessed = threading.Event()
 		self._commandReturnValue = None
 
+		self.__events = {name: threading.Event() for name in messages.SetEvent.events}
+
 		self.__node = persistentobject.PersistentObject(
 			filename=self.settings.stateFile,
 			defaultObject=nodestate.NodeState() #empty state; used when file can not be loaded
@@ -179,6 +181,7 @@ class Node(threading.Thread):
 
 	def handleMessage(self, msg):
 		returnValue = None
+		setEvents = set([])
 
 		with self.__node: #makes sure the state is saved or restored in the end
 
@@ -194,6 +197,8 @@ class Node(threading.Thread):
 					#Should happen only once per call of this function.
 					#Otherwise, some return values will be forgotten.
 					returnValue = msg.value
+				elif msg.__class__ == messages.SetEvent:
+					setEvents.add(msg.event)
 
 				#Messages for Bitcoind:
 				elif msg.__class__ == messages.BitcoinCommand:
@@ -217,6 +222,11 @@ class Node(threading.Thread):
 						messageQueue.append(msg)
 
 			self.__cleanupState()
+
+		# Set all generated events, but only after the above processing is
+		# completely finished, and no exceptions have occurred.
+		for e in setEvents:
+			self.__events[e].set()
 
 		return returnValue
 
@@ -282,11 +292,12 @@ class Node(threading.Thread):
 		"""
 
 		self.__pay(URL, linkname) #implemented in Node thread
+
+		#Must be done in this thread:
+		self.__events[messages.SetEvent.events.receiptReceived].wait()
+
 		payer = self.__node.payerLink
-
-		payer.waitForReceipt() #Must be done in this thread
-
-		if payer.amount is None or payer.receipt is None:
+		if payer is None or payer.amount is None or payer.receipt is None:
 			raise Exception("Connecting to payee failed")
 
 		return payer.amount, payer.receipt
@@ -301,10 +312,11 @@ class Node(threading.Thread):
 		port = settings.defaultPort if URL.port == None else URL.port
 		payeeLinkID = URL.path[1:] #remove initial slash
 
+		self.__events[messages.SetEvent.events.receiptReceived].clear()
+
 		self.handleMessage(messages.MakePayer(
 			host=host, port=port, payeeLinkID=payeeLinkID
 			))
-
 		self.makeConnection(messages.payerLocalID)
 
 
@@ -322,7 +334,8 @@ class Node(threading.Thread):
 		payer = self.__node.payerLink
 
 		if payerAgrees:
-			payer.waitForFinished() #Must be done in this thread
+			#Must be done in this thread:
+			self.__events[messages.SetEvent.events.paymentFinished].wait()
 			return payer.state
 
 		return "cancelled by payer"
@@ -330,6 +343,7 @@ class Node(threading.Thread):
 
 	@runInNodeThread
 	def __confirmPayment(self, payerAgrees):
+		self.__events[messages.SetEvent.events.paymentFinished].clear()
 		self.handleMessage(messages.PayerLink_Confirm(agreement=payerAgrees))
 
 
