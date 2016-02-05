@@ -124,7 +124,9 @@ class NodeState(serializable.Serializable):
 	def msg_makePayer(self, msg):
 		if not (self.payerLink is None):
 			raise Exception("There already is a payment in progress")
-		self.payerLink = payerlink.PayerLink(payeeLinkID=msg.payeeLinkID)
+		self.payerLink = payerlink.PayerLink(
+			payeeLinkID=msg.payeeLinkID,
+			routingContext=msg.routingContext)
 
 		self.connections[messages.payerLocalID] = \
 			persistentconnection.PersistentConnection(

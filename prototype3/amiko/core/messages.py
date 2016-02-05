@@ -77,7 +77,7 @@ class PayerLink_Confirm(NonserializableMessage):
 
 
 class MakePayer(NonserializableMessage):
-	attributes = {'host':'', 'port':0, 'payeeLinkID': ''}
+	attributes = {'host':'', 'port':0, 'payeeLinkID': '', 'routingContext': None}
 
 
 class MakeLink(NonserializableMessage):

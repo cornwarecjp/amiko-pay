@@ -54,13 +54,12 @@ class PayerLink(serializable.Serializable):
 		'receipt':        None,
 		'transactionID':  None,
 		'token'  :        None,
+
+		'routingContext': None,
 		'meetingPointID': None,
+
 		'state': states.initial
 	}
-
-
-	def __init__(self, **kwargs):
-		serializable.Serializable.__init__(self, **kwargs)
 
 
 	def getTimeoutMessage(self):

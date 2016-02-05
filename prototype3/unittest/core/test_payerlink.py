@@ -51,11 +51,15 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.payerLink.payeeHost, None)
 		self.assertEqual(self.payerLink.payeePort, None)
 		self.assertEqual(self.payerLink.payeeLinkID, None)
+
 		self.assertEqual(self.payerLink.amount, None)
 		self.assertEqual(self.payerLink.receipt, None)
 		self.assertEqual(self.payerLink.transactionID, None)
 		self.assertEqual(self.payerLink.token, None)
+
+		self.assertEqual(self.payerLink.routingContext, None)
 		self.assertEqual(self.payerLink.meetingPointID, None)
+
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.initial)
 
 

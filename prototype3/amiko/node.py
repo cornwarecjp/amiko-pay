@@ -314,8 +314,6 @@ class Node(threading.Thread):
 
 	@runInNodeThread
 	def __pay(self, URL, linkname=None):
-		#TODO: make routing context, based on linkname
-
 		URL = urlparse(URL)
 		host = URL.hostname
 		port = settings.defaultPort if URL.port == None else URL.port
@@ -324,7 +322,8 @@ class Node(threading.Thread):
 		self.__events[messages.SetEvent.events.receiptReceived].clear()
 
 		self.handleMessage(messages.MakePayer(
-			host=host, port=port, payeeLinkID=payeeLinkID
+			host=host, port=port, payeeLinkID=payeeLinkID,
+			routingContext=linkname
 			))
 		self.makeConnection(messages.payerLocalID)
 
