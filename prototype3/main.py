@@ -149,8 +149,17 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 	elif cmd == 'pay':
 		URL = raw_input('Request URL: ').strip()
-		#TODO: specify link name
-		amount, receipt = a.pay(URL)
+
+		data = a.list()
+		linknames = data['links'].keys()
+		class Any:
+			def __str__(self):
+				return "(any link)"
+		linkname = choiceInput([Any()] + linknames, 'Choose a link to pay with')
+		if linkname.__class__ == Any:
+			amount, receipt = a.pay(URL)
+		else:
+			amount, receipt = a.pay(URL, linkname)
 
 		print 'Receipt: ', repr(receipt)
 		print 'Amount: (Satoshi)', amount
