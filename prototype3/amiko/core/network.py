@@ -1,5 +1,5 @@
 #    network.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -80,7 +80,6 @@ class Connection(asyncore.dispatcher_with_send):
 			elif 'message' in container.keys():
 				index = container['index']
 				msg = container['message']
-				#print "Got message: ", str(msg.__class__)
 
 				if isinstance(msg, messages.Connect):
 					if not (self.localID is None):
@@ -93,7 +92,10 @@ class Connection(asyncore.dispatcher_with_send):
 					confirmation = {'received': index}
 					self.send(serializable.serialize(confirmation) + '\n')
 
-				#TODO: filter for acceptable message types, IDs etc. before
+				#Always set/overwrite the ID attribute with our own localID
+				msg.ID = self.localID
+
+				#TODO: filter for acceptable message types etc. before
 				#sending them to a general-purpose message handler
 				self.network.callback.handleMessage(msg)
 			else:
