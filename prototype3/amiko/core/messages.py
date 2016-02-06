@@ -44,7 +44,7 @@ payerLocalID = "__payer__"
 ################################################################################
 
 #Abstract base class
-class NonserializableMessage:
+class Message:
 	def __init__(self, **kwargs):
 		attributes = self.__class__.attributes
 		for name in attributes.keys():
@@ -55,7 +55,7 @@ class NonserializableMessage:
 				))
 
 
-class BitcoinCommand(NonserializableMessage):
+class BitcoinCommand(Message):
 	attributes = {
 		#Function accepts a bitcoind object as argument. The return value will
 		#be emitted, wrapped in a BitcoinReturnValue message.
@@ -64,23 +64,23 @@ class BitcoinCommand(NonserializableMessage):
 		'returnChannelIndex': 0}
 
 
-class BitcoinReturnValue(NonserializableMessage):
+class BitcoinReturnValue(Message):
 	attributes = {'value': None, 'ID': '', 'channelIndex': 0}
 
 
-class Confirmation(NonserializableMessage):
+class Confirmation(Message):
 	attributes = {'localID': '', 'index':0}
 
 
-class PayerLink_Confirm(NonserializableMessage):
+class PayerLink_Confirm(Message):
 	attributes = {'agreement':False}
 
 
-class MakePayer(NonserializableMessage):
+class MakePayer(Message):
 	attributes = {'host':'', 'port':0, 'payeeLinkID': '', 'routingContext': None}
 
 
-class MakeLink(NonserializableMessage):
+class MakeLink(Message):
 	attributes = {
 		'localHost': None,
 		'localPort': None,
@@ -90,41 +90,50 @@ class MakeLink(NonserializableMessage):
 		'remoteID': None}
 
 
-class MakeMeetingPoint(NonserializableMessage):
+class MakeMeetingPoint(Message):
 	attributes = {'name': ''}
 
 
-class Link_Deposit(NonserializableMessage):
+class Link_Deposit(Message):
 	attributes = {'ID': '', 'channel': None}
 
 
-class Link_Withdraw(NonserializableMessage):
+class Link_Withdraw(Message):
 	attributes = {'ID': '', 'channelIndex': 0}
 
 
-class PaymentRequest(NonserializableMessage):
+class PaymentRequest(Message):
 	attributes = {'amount':0, 'receipt':'', 'meetingPoints':[]}
 
 
-class ReturnValue(NonserializableMessage):
+class ReturnValue(Message):
 	attributes = {'value':''}
 
 
-class SetEvent(NonserializableMessage):
+class SetEvent(Message):
 	events = utils.Enum(['receiptReceived', 'paymentFinished'])
 	attributes = {'event': None}
 
 
 
 ################################################################################
-# Serializable messages, for external communication and/or time-outs:
+# Serializable messages, for external communication:
 ################################################################################
 
-class Connect(serializable.Serializable):
+
+#Abstract base class
+class ProtocolMessage(serializable.Serializable, Message):
+	def __init__(self, **kwargs):
+		Message.__init__(self, **kwargs)
+		serializable.Serializable.__init__(self, **kwargs)
+
+
+class Connect(ProtocolMessage):
 	"""
 	This is a base class for messages that indicate a connection ID
 	(Link and Pay).
 	"""
+	attributes = {}
 	serializableAttributes = {'ID': '', 'dice': 0}
 
 
@@ -144,37 +153,32 @@ class ConnectLink(Connect):
 serializable.registerClass(ConnectLink)
 
 
-class OutboundMessage(serializable.Serializable):
-	serializableAttributes = {'localID': '', 'message': None}
-serializable.registerClass(OutboundMessage)
-
-
-class Timeout(serializable.Serializable):
-	serializableAttributes = {'state':''}
-serializable.registerClass(Timeout)
-
-
-class ChannelMessage(serializable.Serializable):
-	serializableAttributes = {'ID': '', 'channelIndex': 0, 'message': None}
+class ChannelMessage(ProtocolMessage):
+	attributes = {'ID': None}
+	serializableAttributes = {'channelIndex': 0, 'message': None}
 serializable.registerClass(ChannelMessage)
 
 
-class Receipt(serializable.Serializable):
+class Receipt(ProtocolMessage):
+	attributes = {'ID': None}
 	serializableAttributes = {'amount':0, 'receipt':'', 'transactionID':'', 'meetingPoints':[]}
 serializable.registerClass(Receipt)
 
 
-class Confirm(serializable.Serializable):
-	serializableAttributes = {"ID": None, "meetingPointID": ""}
+class Confirm(ProtocolMessage):
+	attributes = {'ID': None}
+	serializableAttributes = {'meetingPointID': ''}
 serializable.registerClass(Confirm)
 
 
-class Cancel(serializable.Serializable):
-	serializableAttributes = {"ID": None}
+class Cancel(ProtocolMessage):
+	attributes = {'ID': None}
+	serializableAttributes = {}
 serializable.registerClass(Cancel)
 
 
-class MakeRoute(serializable.Serializable):
+class MakeRoute(ProtocolMessage):
+	attributes = {'ID': None}
 	serializableAttributes = \
 	{
 		'amount': 0,
@@ -182,54 +186,76 @@ class MakeRoute(serializable.Serializable):
 		'startTime': None,
 		'endTime': None,
 		'meetingPointID': '',
-		'ID': '',
 		'channelIndex': 0,
 		'isPayerSide': False
 	}
 serializable.registerClass(MakeRoute)
 
 
-class CancelRoute(serializable.Serializable):
+class CancelRoute(ProtocolMessage):
+	attributes = {'ID': None}
 	serializableAttributes = {'transactionID': '', 'payerSide': None}
 serializable.registerClass(CancelRoute)
 
 
-class HavePayerRoute(serializable.Serializable):
-	serializableAttributes = {'ID': '', 'transactionID': ''}
+class HavePayerRoute(ProtocolMessage):
+	attributes = {'ID': None}
+	serializableAttributes = {'transactionID': ''}
 serializable.registerClass(HavePayerRoute)
 
 
-class HavePayeeRoute(serializable.Serializable):
-	serializableAttributes = {'ID': '', 'transactionID': ''}
+class HavePayeeRoute(ProtocolMessage):
+	attributes = {'ID': None}
+	serializableAttributes = {'transactionID': ''}
 serializable.registerClass(HavePayeeRoute)
 
 
-class HaveNoRoute(serializable.Serializable):
-	serializableAttributes = {'ID': '', 'transactionID': ''}
+class HaveNoRoute(ProtocolMessage):
+	attributes = {'ID': None}
+	serializableAttributes = {'transactionID': ''}
 serializable.registerClass(HaveNoRoute)
 
 
-class Deposit(serializable.Serializable):
-	serializableAttributes = {'ID': '', 'channelIndex': 0, 'channelClass': ''} #TODO: add payload?
+class Deposit(ProtocolMessage):
+	attributes = {'ID': None}
+	serializableAttributes = {'channelIndex': 0, 'channelClass': ''} #TODO: add payload?
 serializable.registerClass(Deposit)
 
 
-class Lock(serializable.Serializable):
+class Lock(ProtocolMessage):
+	attributes = {'ID': None}
 	serializableAttributes = {'transactionID': ''} #TODO: add payload
 serializable.registerClass(Lock)
 
 
-class Commit(serializable.Serializable):
+class Commit(ProtocolMessage):
+	attributes = {'ID': None}
 	serializableAttributes = {'token': ''}
 serializable.registerClass(Commit)
 
 
-class SettleCommit(serializable.Serializable):
-	serializableAttributes = {'ID': '', 'token': ''} #TODO: add payload
+class SettleCommit(ProtocolMessage):
+	attributes = {'ID': None}
+	serializableAttributes = {'token': ''} #TODO: add payload
 serializable.registerClass(SettleCommit)
+
+
+################################################################################
+# Serializable messages, for internal use (e.g. time-outs):
+################################################################################
+
+
+class OutboundMessage(serializable.Serializable):
+	serializableAttributes = {'localID': '', 'message': None}
+serializable.registerClass(OutboundMessage)
 
 
 class TimeoutMessage(serializable.Serializable):
 	serializableAttributes = {'timestamp': 0.0, 'message': None}
 serializable.registerClass(TimeoutMessage)
+
+
+class Timeout(serializable.Serializable):
+	serializableAttributes = {'state':''}
+serializable.registerClass(Timeout)
 
