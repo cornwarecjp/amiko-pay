@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #    test_network.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -142,9 +142,9 @@ class Test(unittest.TestCase):
 		"Test duplicate connection scenario"
 
 		c1 = self.network.makeConnection(
-			('localhost', 4321), 'localID', messages.Pay(ID='remoteID'))
+			('localhost', 4321), 'localID', messages.ConnectLink(ID='remoteID'))
 		c2 = self.network.makeConnection(
-			('localhost', 4321), 'remoteID', messages.Pay(ID='localID'))
+			('localhost', 4321), 'remoteID', messages.ConnectLink(ID='localID'))
 
 		self.assertEqual(len(self.network.connections), 2)
 		self.assertTrue(c1 in self.network.connections)

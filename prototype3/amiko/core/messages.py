@@ -130,7 +130,7 @@ class ProtocolMessage(serializable.Serializable, Message):
 
 class Pay(ProtocolMessage):
 	attributes = {}
-	serializableAttributes = {'ID': '', 'dice': 0}
+	serializableAttributes = {'ID': ''}
 serializable.registerClass(Pay)
 
 

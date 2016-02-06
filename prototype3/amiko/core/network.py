@@ -81,12 +81,18 @@ class Connection(asyncore.dispatcher_with_send):
 				index = container['index']
 				msg = container['message']
 
-				if msg.__class__ in (messages.ConnectLink, messages.Pay):
+				if msg.__class__ == messages.ConnectLink:
 					if not (self.localID is None):
-						raise Exception("Received connect message while already connected")
+						raise Exception("Received ConnectLink message while already connected")
 					self.localID = msg.ID
 					self.dice = msg.dice
 					self.network.checkForDuplicateConnections(self.localID)
+				elif msg.__class__ == messages.Pay:
+					if not (self.localID is None):
+						raise Exception("Received Pay message while already connected")
+					if self.network.interfaceExists(msg.ID):
+						raise Exception("Received Pay message for payment that already has a connection")
+					self.localID = msg.ID
 				else:
 					#Send confirmation on non-connect messages:
 					confirmation = {'received': index}
