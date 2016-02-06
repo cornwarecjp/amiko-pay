@@ -128,21 +128,14 @@ class ProtocolMessage(serializable.Serializable, Message):
 		serializable.Serializable.__init__(self, **kwargs)
 
 
-class Connect(ProtocolMessage):
-	"""
-	This is a base class for messages that indicate a connection ID
-	(Link and Pay).
-	"""
+class Pay(ProtocolMessage):
 	attributes = {}
 	serializableAttributes = {'ID': '', 'dice': 0}
-
-
-class Pay(Connect):
-	pass
 serializable.registerClass(Pay)
 
 
-class ConnectLink(Connect):
+class ConnectLink(ProtocolMessage):
+	attributes = {}
 	serializableAttributes = {
 		'ID': '',
 		'dice': 0,

@@ -81,7 +81,7 @@ class Connection(asyncore.dispatcher_with_send):
 				index = container['index']
 				msg = container['message']
 
-				if isinstance(msg, messages.Connect):
+				if msg.__class__ in (messages.ConnectLink, messages.Pay):
 					if not (self.localID is None):
 						raise Exception("Received connect message while already connected")
 					self.localID = msg.ID
