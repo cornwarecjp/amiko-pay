@@ -237,9 +237,10 @@ class NodeState(serializable.Serializable):
 			side=transactionSide,
 			payeeID=payeeID,
 			payerID=payerID,
-			remainingLinkIDs=remainingLinks, 
+			remainingLinkIDs=remainingLinks,
 			meetingPointID=msg.meetingPointID,
 			amount=msg.amount,
+			transactionID=msg.transactionID,
 			startTime=msg.startTime,
 			endTime=msg.endTime
 			)

@@ -1,5 +1,5 @@
 #    transaction.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -38,7 +38,8 @@ class Transaction(serializable.Serializable):
 	serializableAttributes = \
 	{
 	'side':None, 'payeeID':None, 'payerID':None, 'remainingLinkIDs':[],
-	'meetingPointID':None, 'amount':0, 'startTime':0, 'endTime':0
+	'meetingPointID':None, 'amount':0,
+	'transactionID':'', 'startTime':0, 'endTime':0,
 	}
 
 
