@@ -139,12 +139,13 @@ class PayerLink(serializable.Serializable):
 				messages.Confirm(ID=self.payeeLinkID, meetingPointID=self.meetingPointID)
 			),
 			messages.MakeRoute( #This will start the transaction routing
+				ID=messages.payerLocalID,
+				routingContext=self.routingContext,
 				amount=self.amount,
 				transactionID=self.transactionID,
 				startTime=None, #Will be received from the payee side
 				endTime=None, #Will be received from the payee side
 				meetingPointID=self.meetingPointID,
-				ID=messages.payerLocalID,
 				isPayerSide=True
 				),
 			messages.TimeoutMessage(timestamp=time.time()+5.0, message=\

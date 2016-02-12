@@ -223,12 +223,17 @@ class NodeState(serializable.Serializable):
 			#TODO: same direction -> haveNoRoute message
 			return ret
 
-		#Create new transaction
-		remainingLinks = self.links.keys()
+		#Determine the routes we can take
+		if msg.routingContext is None:
+			remainingLinks = self.links.keys()
+		else:
+			remainingLinks = [msg.routingContext]
 		try:
 			remainingLinks.remove(msg.ID) #Skip source link
 		except ValueError:
 			pass #it's OK if the source link wasn't present already
+
+		#Create new transaction
 		self.transactions[msg.transactionID] = transaction.Transaction(
 			side=transactionSide,
 			payeeID=payeeID,

@@ -171,7 +171,7 @@ serializable.registerClass(Cancel)
 
 
 class MakeRoute(ProtocolMessage):
-	attributes = {'ID': None}
+	attributes = {'ID': None, 'routingContext': None}
 	serializableAttributes = \
 	{
 		'amount': 0,
