@@ -173,8 +173,7 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_makeMeetingPoint(self, msg):
-		#For now, no contents, so the dictionary acts just a list of strings.
-		self.meetingPoints[msg.name] = None
+		self.meetingPoints[msg.name] = meetingpoint.MeetingPoint()
 
 		return []
 

@@ -149,7 +149,7 @@ with open(settings2.stateFile, "wb") as f:
 				}
 			},
 			"transactions": {},
-			"meetingPoints": {"MeetingPoint2": null},
+			"meetingPoints": {"MeetingPoint2": {"_class": "MeetingPoint", "transactions": {}}},
 			"payeeLinks": {},
 			"payerLink": null,
 			"timeoutMessages": []
