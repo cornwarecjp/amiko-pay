@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #    test_nodestate.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.nodeState.links, {})
 		self.assertEqual(self.nodeState.payeeLinks, {})
 		self.assertEqual(self.nodeState.meetingPoints, {})
-		self.assertEqual(self.nodeState.transactions, {})
+		self.assertEqual(self.nodeState.transactions, [])
 
 
 	def test_msg_request(self):
@@ -67,6 +67,9 @@ class Test(unittest.TestCase):
 		self.assertEqual(txID, RIPEMD160(SHA256(newLink.token)))
 
 		#TODO: test ret
+
+
+	#TODO: test many other methods
 
 
 

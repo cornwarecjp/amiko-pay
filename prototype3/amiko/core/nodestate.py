@@ -49,6 +49,11 @@ class LinkNotFound(Exception):
 
 
 
+class TransactionNotFound(Exception):
+	pass
+
+
+
 class NodeState(serializable.Serializable):
 	serializableAttributes = \
 	{
@@ -56,7 +61,7 @@ class NodeState(serializable.Serializable):
 	'payeeLinks':{},
 	'payerLink': None,
 	'meetingPoints':{},
-	'transactions':{},
+	'transactions':[],
 	'connections':{},
 	'timeoutMessages': []
 	}
@@ -190,10 +195,15 @@ class NodeState(serializable.Serializable):
 		False: (transaction.side_payee, None, msg.ID)
 		}[msg.isPayerSide]
 
-		if msg.transactionID in self.transactions.keys():
+		try:
+			tx = self.findTransaction(transactionID=msg.transactionID)
+			foundTransaction = True
+		except TransactionNotFound:
+			foundTransaction = False
+
+		if foundTransaction:
 			#Match with existing transaction
 			log.log('  Found an existing open transaction with the same transactionID')
-			tx = self.transactions[msg.transactionID]
 
 			#TODO: don't match if tx already has a finished route
 
@@ -233,7 +243,7 @@ class NodeState(serializable.Serializable):
 			pass #it's OK if the source link wasn't present already
 
 		#Create new transaction
-		self.transactions[msg.transactionID] = transaction.Transaction(
+		newTx = transaction.Transaction(
 			side=transactionSide,
 			payeeID=payeeID,
 			payerID=payerID,
@@ -244,6 +254,7 @@ class NodeState(serializable.Serializable):
 			startTime=msg.startTime,
 			endTime=msg.endTime
 			)
+		self.transactions.append(newTx)
 
 		#Match with our meeting points
 		if msg.meetingPointID in self.meetingPoints.keys():
@@ -252,11 +263,11 @@ class NodeState(serializable.Serializable):
 			#TODO: route time-out
 			return ret
 
-		nextRoute = self.transactions[msg.transactionID].tryNextRoute()
+		nextRoute = newTx.tryNextRoute()
 		if nextRoute is None:
 			log.log('  No route found')
 			#Delete the tx we just created:
-			del self.transactions[msg.transactionID]
+			self.transactions.remove(newTx)
 			#Send back haveNoRoute:
 			ret += sourceLink.haveNoRouteOutgoing(
 				msg.transactionID, msg.isPayerSide)
@@ -273,8 +284,8 @@ class NodeState(serializable.Serializable):
 	def msg_haveNoRoute(self, msg):
 		log.log('Processing HaveNoRoute message')
 		try:
-			tx = self.transactions[msg.transactionID]
-		except KeyError:
+			tx = self.findTransaction(transactionID=msg.transactionID)
+		except TransactionNotFound:
 			log.log('  HaveNoRoute failed: transaction %s does not (or no longer) exist (ignored)' % \
 				msg.transactionID.encode('hex'))
 			return []
@@ -304,7 +315,7 @@ class NodeState(serializable.Serializable):
 				raise Exception('  HaveNoRoute should only be received on payer or payee route')
 
 			#Clean up cancelled transaction:
-			del self.transactions[msg.transactionID]
+			self.transactions.remove(tx)
 
 			return ret
 
@@ -326,8 +337,8 @@ class NodeState(serializable.Serializable):
 
 	def msg_cancelRoute(self, msg):
 		try:
-			tx = self.transactions[msg.transactionID]
-		except KeyError:
+			tx = self.findTransaction(transactionID=msg.transactionID)
+		except TransactionNotFound:
 			log.log('cancelRoute failed: transaction %s does not (or no longer) exist (ignored)' % \
 				msg.transactionID.encode('hex'))
 			return []
@@ -343,13 +354,13 @@ class NodeState(serializable.Serializable):
 			ret += payer.cancelOutgoing(msg)
 
 		#Clean up cancelled transaction:
-		del self.transactions[msg.transactionID]
+		self.transactions.remove(tx)
 
 		return ret
 
 
 	def msg_havePayerRoute(self, msg):
-		tx = self.transactions[msg.transactionID]
+		tx = self.findTransaction(transactionID=msg.transactionID)
 		payer = self.__getLinkObject(tx.payerID)
 		#payee = self.__getLinkObject(tx.payeeID) #TODO: check whether this matches msg.ID
 
@@ -362,7 +373,7 @@ class NodeState(serializable.Serializable):
 		if msg.ID == messages.payerLocalID:
 			return self.payerLink.handleMessage(msg)
 
-		tx = self.transactions[msg.transactionID]
+		tx = self.findTransaction(transactionID=msg.transactionID)
 		#payer = self.__getLinkObject(tx.payerID) #TODO: check whether this matches msg.ID
 		payee = self.__getLinkObject(tx.payeeID)
 
@@ -371,7 +382,7 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_lock(self, msg):
-		tx = self.transactions[msg.transactionID]
+		tx = self.findTransaction(transactionID=msg.transactionID)
 		payer = self.__getLinkObject(tx.payerID)
 		payee = self.__getLinkObject(tx.payeeID)
 
@@ -384,8 +395,8 @@ class NodeState(serializable.Serializable):
 	def msg_commit(self, msg):
 		transactionID = settings.hashAlgorithm(msg.token)
 		try:
-			tx = self.transactions[transactionID]
-		except KeyError:
+			tx = self.findTransaction(transactionID=transactionID)
+		except TransactionNotFound:
 			log.log('Received a commit message for an unknown transaction. Probably we\'ve already settled, so we ignore this.')
 			return []
 
@@ -401,7 +412,7 @@ class NodeState(serializable.Serializable):
 
 	def msg_settleCommit(self, msg):
 		transactionID = settings.hashAlgorithm(msg.token)
-		tx = self.transactions[transactionID]
+		tx = self.findTransaction(transactionID=transactionID)
 
 		ret = []
 
@@ -418,7 +429,7 @@ class NodeState(serializable.Serializable):
 			pass #Payment is committed, so payee object may already be deleted
 
 		#Clean up no-longer-needed transaction:
-		del self.transactions[transactionID]
+		self.transactions.remove(tx)
 
 		return ret
 
@@ -463,6 +474,29 @@ class NodeState(serializable.Serializable):
 
 	def msg_passToLink(self, msg):
 		return self.links[msg.ID].handleMessage(msg)
+
+
+	def findTransaction(self, transactionID=None):
+		ret = self.transactions[:]
+		if transactionID is not None:
+			ret = [x for x in ret if x.transactionID == transactionID]
+
+		def queryText():
+			ret = ''
+			if transactionID is not None:
+				ret += 'transactionID=%s ' % transactionID
+			return ret
+
+		if len(ret) == 0:
+			raise TransactionNotFound(
+				'No transaction found with ' + queryText())
+
+		if len(ret) > 1:
+			raise Exception(
+				'Ambiguous query: multiple transactions found with ' + \
+				queryText())
+
+		return ret[0]
 
 
 serializable.registerClass(NodeState)

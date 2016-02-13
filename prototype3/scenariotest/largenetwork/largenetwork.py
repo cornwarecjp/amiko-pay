@@ -147,7 +147,7 @@ for i in range(len(linkDefinitions)):
 		{
 		%s
 		},
-		"transactions": {},
+		"transactions": [],
 		"meetingPoints": %s,
 		"payeeLinks": {},
 		"payerLink": null,

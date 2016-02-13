@@ -88,7 +88,7 @@ with open(settings1.stateFile, "wb") as f:
 					"closing": false
 				}
 			},
-			"transactions": {},
+			"transactions": [],
 			"meetingPoints": {},
 			"payeeLinks": {},
 			"payerLink": null,
@@ -148,7 +148,7 @@ with open(settings2.stateFile, "wb") as f:
 					"closing": false
 				}
 			},
-			"transactions": {},
+			"transactions": [],
 			"meetingPoints": {"MeetingPoint2": {"_class": "MeetingPoint", "transactions": {}}},
 			"payeeLinks": {},
 			"payerLink": null,
