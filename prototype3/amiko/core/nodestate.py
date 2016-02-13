@@ -44,7 +44,7 @@ from ..utils import serializable
 
 
 
-class ObjectNotFound(Exception):
+class LinkNotFound(Exception):
 	pass
 
 
@@ -181,7 +181,7 @@ class NodeState(serializable.Serializable):
 	def msg_makeRoute(self, msg):
 		log.log('Processing MakeRoute message')
 
-		sourceLink = self.__getObject(msg.ID)
+		sourceLink = self.__getLinkObject(msg.ID)
 		ret = sourceLink.makeRouteIncoming(msg)
 
 		transactionSide, payerID, payeeID = \
@@ -264,7 +264,7 @@ class NodeState(serializable.Serializable):
 
 		log.log('  Forwarding MakeRoute to the first route')
 
-		ret += self.__getObject(nextRoute).makeRouteOutgoing(msg)
+		ret += self.__getLinkObject(nextRoute).makeRouteOutgoing(msg)
 
 		#TODO: route time-out
 		return ret
@@ -279,8 +279,8 @@ class NodeState(serializable.Serializable):
 				msg.transactionID.encode('hex'))
 			return []
 
-		payer = self.__getObject(tx.payerID)
-		payee = self.__getObject(tx.payeeID)
+		payer = self.__getLinkObject(tx.payerID)
+		payee = self.__getLinkObject(tx.payeeID)
 
 		ret = []
 
@@ -310,7 +310,7 @@ class NodeState(serializable.Serializable):
 
 		log.log('  Forwarding MakeRoute to the next route')
 
-		ret += self.__getObject(nextRoute).makeRouteOutgoing(
+		ret += self.__getLinkObject(nextRoute).makeRouteOutgoing(
 			messages.MakeRoute(
 				amount         = tx.amount,
 				transactionID  = msg.transactionID,
@@ -332,8 +332,8 @@ class NodeState(serializable.Serializable):
 				msg.transactionID.encode('hex'))
 			return []
 
-		payer = self.__getObject(tx.payerID)
-		payee = self.__getObject(tx.payeeID)
+		payer = self.__getLinkObject(tx.payerID)
+		payee = self.__getLinkObject(tx.payeeID)
 
 		if msg.payerSide:
 			ret = payer.cancelIncoming(msg)
@@ -350,8 +350,8 @@ class NodeState(serializable.Serializable):
 
 	def msg_havePayerRoute(self, msg):
 		tx = self.transactions[msg.transactionID]
-		payer = self.__getObject(tx.payerID)
-		#payee = self.__getObject(tx.payeeID) #TODO: check whether this matches msg.ID
+		payer = self.__getLinkObject(tx.payerID)
+		#payee = self.__getLinkObject(tx.payeeID) #TODO: check whether this matches msg.ID
 
 		msg.ID = tx.payerID
 		return payer.handleMessage(msg)
@@ -363,8 +363,8 @@ class NodeState(serializable.Serializable):
 			return self.payerLink.handleMessage(msg)
 
 		tx = self.transactions[msg.transactionID]
-		#payer = self.__getObject(tx.payerID) #TODO: check whether this matches msg.ID
-		payee = self.__getObject(tx.payeeID)
+		#payer = self.__getLinkObject(tx.payerID) #TODO: check whether this matches msg.ID
+		payee = self.__getLinkObject(tx.payeeID)
 
 		msg.ID = tx.payeeID
 		return payee.handleMessage(msg)
@@ -372,8 +372,8 @@ class NodeState(serializable.Serializable):
 
 	def msg_lock(self, msg):
 		tx = self.transactions[msg.transactionID]
-		payer = self.__getObject(tx.payerID)
-		payee = self.__getObject(tx.payeeID)
+		payer = self.__getLinkObject(tx.payerID)
+		payee = self.__getLinkObject(tx.payeeID)
 
 		ret = payer.lockIncoming(msg)
 		ret += payee.lockOutgoing(msg)
@@ -389,8 +389,8 @@ class NodeState(serializable.Serializable):
 			log.log('Received a commit message for an unknown transaction. Probably we\'ve already settled, so we ignore this.')
 			return []
 
-		payer = self.__getObject(tx.payerID)
-		payee = self.__getObject(tx.payeeID)
+		payer = self.__getLinkObject(tx.payerID)
+		payee = self.__getLinkObject(tx.payeeID)
 
 		ret = payee.commitIncoming(msg)
 		ret += payer.commitOutgoing(msg)
@@ -406,15 +406,15 @@ class NodeState(serializable.Serializable):
 		ret = []
 
 		try:
-			payer = self.__getObject(tx.payerID)
+			payer = self.__getLinkObject(tx.payerID)
 			ret += payer.settleCommitIncoming(msg)
-		except ObjectNotFound:
+		except LinkNotFound:
 			pass #Payment is committed, so payer object may already be deleted
 
 		try:
-			payee = self.__getObject(tx.payeeID)
+			payee = self.__getLinkObject(tx.payeeID)
 			ret += payee.settleCommitOutgoing(msg)
-		except ObjectNotFound:
+		except LinkNotFound:
 			pass #Payment is committed, so payee object may already be deleted
 
 		#Clean up no-longer-needed transaction:
@@ -435,17 +435,15 @@ class NodeState(serializable.Serializable):
 		return []
 
 
-	def __getObject(self, objID):
-		if objID == messages.payerLocalID and not (self.payerLink is None):
+	def __getLinkObject(self, linkID):
+		if linkID == messages.payerLocalID and not (self.payerLink is None):
 			return self.payerLink
-		elif objID in self.payeeLinks.keys():
-			return self.payeeLinks[objID]
-		elif objID in self.links.keys():
-			return self.links[objID]
-		elif objID in self.transactions.keys():
-			return self.transactions[objID]
+		elif linkID in self.payeeLinks.keys():
+			return self.payeeLinks[linkID]
+		elif linkID in self.links.keys():
+			return self.links[linkID]
 
-		raise ObjectNotFound("Object ID %s not found" % repr(objID))
+		raise LinkNotFound("Link ID %s not found" % repr(linkID))
 
 
 	def msg_passToPayee(self, msg):
