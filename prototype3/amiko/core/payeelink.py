@@ -1,5 +1,5 @@
 #    payeelink.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -174,7 +174,7 @@ class PayeeLink(serializable.Serializable):
 
 		return \
 		[
-		messages.Commit(token=self.token),
+		messages.Commit(ID=self.ID, token=self.token),
 		messages.OutboundMessage(localID = self.ID, message = \
 			messages.SettleCommit(token=self.token)
 			)

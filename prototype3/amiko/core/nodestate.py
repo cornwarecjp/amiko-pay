@@ -329,7 +329,7 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_havePayerRoute(self, msg):
-		tx = self.findTransaction(transactionID=msg.transactionID)
+		tx = self.findTransaction(transactionID=msg.transactionID, side=transaction.side_payer)
 		payer = self.__getLinkObject(tx.payerID)
 		#payee = self.__getLinkObject(tx.payeeID) #TODO: check whether this matches msg.ID
 
@@ -342,7 +342,7 @@ class NodeState(serializable.Serializable):
 		if msg.ID == messages.payerLocalID:
 			return self.payerLink.handleMessage(msg)
 
-		tx = self.findTransaction(transactionID=msg.transactionID)
+		tx = self.findTransaction(transactionID=msg.transactionID, side=transaction.side_payee)
 		#payer = self.__getLinkObject(tx.payerID) #TODO: check whether this matches msg.ID
 		payee = self.__getLinkObject(tx.payeeID)
 
@@ -351,7 +351,7 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_lock(self, msg):
-		tx = self.findTransaction(transactionID=msg.transactionID)
+		tx = self.findTransaction(transactionID=msg.transactionID, payerID=msg.ID)
 		payer = self.__getLinkObject(tx.payerID)
 		payee = self.__getLinkObject(tx.payeeID)
 
@@ -364,7 +364,7 @@ class NodeState(serializable.Serializable):
 	def msg_commit(self, msg):
 		transactionID = settings.hashAlgorithm(msg.token)
 		try:
-			tx = self.findTransaction(transactionID=transactionID)
+			tx = self.findTransaction(transactionID=transactionID, payeeID=msg.ID)
 		except TransactionNotFound:
 			log.log('Received a commit message for an unknown transaction. Probably we\'ve already settled, so we ignore this.')
 			return []
@@ -381,7 +381,7 @@ class NodeState(serializable.Serializable):
 
 	def msg_settleCommit(self, msg):
 		transactionID = settings.hashAlgorithm(msg.token)
-		tx = self.findTransaction(transactionID=transactionID)
+		tx = self.findTransaction(transactionID=transactionID, payerID=msg.ID)
 
 		ret = []
 
@@ -447,19 +447,27 @@ class NodeState(serializable.Serializable):
 		return self.links[msg.ID].handleMessage(msg)
 
 
-	def findTransaction(self, transactionID=None, side=None):
+	def findTransaction(self, transactionID=None, side=None, payerID=None, payeeID=None):
 		ret = self.transactions[:]
 		if transactionID is not None:
 			ret = [x for x in ret if x.transactionID == transactionID]
 		if side is not None:
 			ret = [x for x in ret if x.side == side]
+		if payerID is not None:
+			ret = [x for x in ret if x.payerID == payerID]
+		if payeeID is not None:
+			ret = [x for x in ret if x.payeeID == payeeID]
 
 		def queryText():
 			ret = []
 			if transactionID is not None:
-				ret.append('transactionID=%s ' % repr(transactionID))
+				ret.append('transactionID=%s' % repr(transactionID))
 			if side is not None:
-				ret.append('side=%d ' % side)
+				ret.append('side=%d' % side)
+			if payerID is not None:
+				ret.append('payerID=%s' % payerID)
+			if payeeID is not None:
+				ret.append('payeeID=%s' % payeeID)
 			return ', '.join(ret)
 
 		if len(ret) == 0:

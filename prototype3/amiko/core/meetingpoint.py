@@ -26,6 +26,8 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+import copy
+
 from ..utils import serializable
 
 import messages
@@ -33,17 +35,61 @@ import messages
 
 
 class MeetingPoint(serializable.Serializable):
-	serializableAttributes = {'ID': '', 'transactions':{}}
+	serializableAttributes = {'ID': ''}
 
 	def makeRouteOutgoing(self, msg):
+		if msg.meetingPointID != self.ID:
+			#This is not the meeting point mentioned in the message, so
+			#this meeting point will not be part of the route.
+			return \
+			[
+			messages.HaveNoRoute(ID=self.ID, transactionID=msg.transactionID)
+			]
+
+		if msg.isPayerSide:
+			return \
+			[
+			messages.HavePayerRoute(ID=self.ID, transactionID=msg.transactionID)
+			]
+		#else: (payee side)
 		return \
-		[
-		messages.HaveNoRoute(ID=self.ID, transactionID=msg.transactionID)
-		] #TODO
+			[
+			messages.HavePayeeRoute(ID=self.ID, transactionID=msg.transactionID)
+			]
 
 
 	def haveNoRouteIncoming(self, msg, isPayerSide):
 		return [] #This is called when our own HaveNoRoute message is processed -> NOP
+
+
+	def lockOutgoing(self, msg):
+		msg = copy.deepcopy(msg)
+		msg.ID = self.ID
+		return [msg]
+
+
+	def lockIncoming(self, msg):
+		return [] #This is called when our own lock message is processed -> NOP
+
+
+	def commitOutgoing(self, msg):
+		msg = copy.deepcopy(msg)
+		msg.ID = self.ID
+		return [msg]
+
+
+	def commitIncoming(self, msg):
+		return [] #This is called when our own commit message is processed -> NOP
+
+
+	def settleCommitOutgoing(self, msg):
+		msg = copy.deepcopy(msg)
+		msg.ID = self.ID
+		return [msg]
+
+
+	def settleCommitIncoming(self, msg):
+		return [] #This is called when our own settle commit message is processed -> NOP
 
 
 serializable.registerClass(MeetingPoint)
