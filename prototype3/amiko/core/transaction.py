@@ -30,7 +30,6 @@ from ..utils import serializable
 
 
 side_payer = 1
-side_midpoint = 0
 side_payee = -1
 
 
