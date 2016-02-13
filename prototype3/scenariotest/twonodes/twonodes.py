@@ -38,6 +38,7 @@ from amiko import node
 from amiko.core import settings
 
 settings1 = settings.Settings()
+settings1.name = 'Node 1'
 settings1.bitcoinRPCURL = "dummy"
 settings1.listenHost = "localhost"
 settings1.listenPort = 4322
@@ -99,6 +100,7 @@ node1 = node.Node(settings1)
 node1.start()
 
 settings2 = settings.Settings()
+settings2.name = 'Node 2'
 settings2.bitcoinRPCURL = "dummy"
 settings2.listenHost = "localhost"
 settings2.listenPort = 4323
