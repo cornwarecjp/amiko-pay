@@ -324,7 +324,7 @@ class Test(unittest.TestCase):
 	def test_haveNoRouteOutgoing(self):
 		"Test haveNoRouteOutgoing"
 
-		ret = self.payerLink.haveNoRouteOutgoing(None, None, None)
+		ret = self.payerLink.haveNoRouteOutgoing(None, None)
 		self.assertEqual(len(ret), 0)
 
 
