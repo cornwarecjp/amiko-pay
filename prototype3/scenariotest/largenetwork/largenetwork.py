@@ -89,7 +89,7 @@ for i in range(len(linkDefinitions)):
 
 	meetingPoints = '{}'
 	if i == 4:
-		meetingPoints = '{"Node4": {"_class": "MeetingPoint", "transactions": {}}}'
+		meetingPoints = '{"Node4": {"_class": "MeetingPoint", "transactions": {}, "ID": "Node4"}}'
 
 	linkStates = []
 	linkConnections = []

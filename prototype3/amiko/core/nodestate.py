@@ -178,7 +178,7 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_makeMeetingPoint(self, msg):
-		self.meetingPoints[msg.name] = meetingpoint.MeetingPoint()
+		self.meetingPoints[msg.name] = meetingpoint.MeetingPoint(ID=msg.name)
 
 		return []
 
@@ -196,45 +196,21 @@ class NodeState(serializable.Serializable):
 		}[msg.isPayerSide]
 
 		try:
-			tx = self.findTransaction(transactionID=msg.transactionID)
+			tx = self.findTransaction(transactionID=msg.transactionID, side=transactionSide)
 			foundTransaction = True
 		except TransactionNotFound:
 			foundTransaction = False
 
 		if foundTransaction:
-			#Match with existing transaction
-			log.log('  Found an existing open transaction with the same transactionID')
-
-			#TODO: don't match if tx already has a finished route
-
-			if transactionSide == -tx.side:
-				#opposite direction -> short-cut
-
-				#TODO: check that amount matches!!!
-
-				tx.side = transaction.side_midpoint
-				if transactionSide == transaction.side_payer:
-					tx.payerID = payerID
-				else: #side_payee
-					tx.payeeID = payeeID
-
-				log.log('  Transactions match -> sending HaveRoute messages back')
-
-				#TODO: possibly cancelRoute message in case of shortcut
-				return ret + \
-				[
-				messages.HavePayerRoute(ID=tx.payerID, transactionID=msg.transactionID),
-				messages.HavePayeeRoute(ID=tx.payeeID, transactionID=msg.transactionID)
-				]
-
-			log.log('  Transactions don\'t match (same direction: probably a route loop)')
+			log.log('  Found an existing open transaction with the same transactionID and direction')
 
 			#TODO: same direction -> haveNoRoute message
 			return ret
 
 		#Determine the routes we can take
 		if msg.routingContext is None:
-			remainingLinks = self.links.keys()
+			#Order is important: try meeting points first
+			remainingLinks = self.meetingPoints.keys() + self.links.keys()
 		else:
 			remainingLinks = [msg.routingContext]
 		try:
@@ -255,13 +231,6 @@ class NodeState(serializable.Serializable):
 			endTime=msg.endTime
 			)
 		self.transactions.append(newTx)
-
-		#Match with our meeting points
-		if msg.meetingPointID in self.meetingPoints.keys():
-			log.log('  Matched with local meeting point')
-			#Do nothing, just wait for the other side to arrive.
-			#TODO: route time-out
-			return ret
 
 		nextRoute = newTx.tryNextRoute()
 		if nextRoute is None:
@@ -453,6 +422,8 @@ class NodeState(serializable.Serializable):
 			return self.payeeLinks[linkID]
 		elif linkID in self.links.keys():
 			return self.links[linkID]
+		elif linkID in self.meetingPoints.keys():
+			return self.meetingPoints[linkID]
 
 		raise LinkNotFound("Link ID %s not found" % repr(linkID))
 
@@ -476,16 +447,20 @@ class NodeState(serializable.Serializable):
 		return self.links[msg.ID].handleMessage(msg)
 
 
-	def findTransaction(self, transactionID=None):
+	def findTransaction(self, transactionID=None, side=None):
 		ret = self.transactions[:]
 		if transactionID is not None:
 			ret = [x for x in ret if x.transactionID == transactionID]
+		if side is not None:
+			ret = [x for x in ret if x.side == side]
 
 		def queryText():
-			ret = ''
+			ret = []
 			if transactionID is not None:
-				ret += 'transactionID=%s ' % transactionID
-			return ret
+				ret.append('transactionID=%s ' % repr(transactionID))
+			if side is not None:
+				ret.append('side=%d ' % side)
+			return ', '.join(ret)
 
 		if len(ret) == 0:
 			raise TransactionNotFound(

@@ -1,5 +1,5 @@
 #    meetingpoint.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -28,9 +28,23 @@
 
 from ..utils import serializable
 
+import messages
+
 
 
 class MeetingPoint(serializable.Serializable):
-	serializableAttributes = {'transactions':{}}
+	serializableAttributes = {'ID': '', 'transactions':{}}
+
+	def makeRouteOutgoing(self, msg):
+		return \
+		[
+		messages.HaveNoRoute(ID=self.ID, transactionID=msg.transactionID)
+		] #TODO
+
+
+	def haveNoRouteIncoming(self, msg, isPayerSide):
+		return [] #This is called when our own HaveNoRoute message is processed -> NOP
+
+
 serializable.registerClass(MeetingPoint)
 
