@@ -36,7 +36,8 @@ side_payee = -1
 class Transaction(serializable.Serializable):
 	serializableAttributes = \
 	{
-	'side':None, 'payeeID':None, 'payerID':None, 'remainingLinkIDs':[],
+	'side':None, 'payeeID':None, 'payerID':None,
+	'initialLinkIDs':[], 'remainingLinkIDs':[],
 	'meetingPointID':None, 'amount':0,
 	'transactionID':'', 'startTime':0, 'endTime':0,
 	}

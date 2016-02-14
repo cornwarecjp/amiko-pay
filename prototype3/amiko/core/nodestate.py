@@ -195,37 +195,52 @@ class NodeState(serializable.Serializable):
 		False: (transaction.side_payee, None, msg.ID)
 		}[msg.isPayerSide]
 
-		try:
-			tx = self.findTransaction(transactionID=msg.transactionID, side=transactionSide)
-			foundTransaction = True
-		except TransactionNotFound:
-			foundTransaction = False
-
-		if foundTransaction:
-			log.log('  Found an existing open transaction with the same transactionID and direction')
-
-			#TODO: same direction -> haveNoRoute message
-			return ret
-
-		#Determine the routes we can take
+		#Possible routes we can take
 		if msg.routingContext is None:
 			#Order is important: try meeting points first
-			remainingLinks = self.meetingPoints.keys() + self.links.keys()
+			possibleLinks = self.meetingPoints.keys() + self.links.keys()
 		else:
-			remainingLinks = [msg.routingContext]
-		try:
-			remainingLinks.remove(msg.ID) #Skip source link
-		except ValueError:
-			pass #it's OK if the source link wasn't present already
+			possibleLinks = [msg.routingContext]
+
+		def tryRemove(ID):
+			try:
+				possibleLinks.remove(ID)
+			except ValueError:
+				pass #it's OK if the source link wasn't present already
+			
+		#Remove the source link:
+		tryRemove(msg.ID)
+
+		#Remove source link and possible routes of earlier instances of
+		#this route:
+		#for these, the route should be made by the earlier instance.
+		#Allowing them to be selected by later instances would allow
+		#infinite routing loops.
+		#Note: generally, this will remove ALL routes, if earlier instances of
+		#the same route exist. The only situation where this is not the case
+		#is when an earlier instance was restricted in its routing choices,
+		#and, theoretically, when a new route was created in-between.
+		earlierTransactions = self.findMultipleTransactions(
+			transactionID=msg.transactionID, side=transactionSide)
+		for earlierTx in earlierTransactions:
+			earlierSourceLinkID = earlierTx.payerID if msg.isPayerSide else earlierTx.payeeID
+			tryRemove(earlierSourceLinkID)
+
+			for ID in earlierTx.initialLinkIDs:
+				tryRemove(ID)
 
 		#Create new transaction
 		newTx = transaction.Transaction(
 			side=transactionSide,
 			payeeID=payeeID,
 			payerID=payerID,
-			remainingLinkIDs=remainingLinks,
+
+			initialLinkIDs=possibleLinks[:],
+			remainingLinkIDs=possibleLinks[:],
+
 			meetingPointID=msg.meetingPointID,
 			amount=msg.amount,
+
 			transactionID=msg.transactionID,
 			startTime=msg.startTime,
 			endTime=msg.endTime
@@ -329,10 +344,8 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_havePayerRoute(self, msg):
-		tx = self.findTransaction(transactionID=msg.transactionID, side=transaction.side_payer)
+		tx = self.findTransaction(transactionID=msg.transactionID, payeeID=msg.ID)
 		payer = self.__getLinkObject(tx.payerID)
-		#payee = self.__getLinkObject(tx.payeeID) #TODO: check whether this matches msg.ID
-
 		msg.ID = tx.payerID
 		return payer.handleMessage(msg)
 
@@ -342,10 +355,8 @@ class NodeState(serializable.Serializable):
 		if msg.ID == messages.payerLocalID:
 			return self.payerLink.handleMessage(msg)
 
-		tx = self.findTransaction(transactionID=msg.transactionID, side=transaction.side_payee)
-		#payer = self.__getLinkObject(tx.payerID) #TODO: check whether this matches msg.ID
+		tx = self.findTransaction(transactionID=msg.transactionID, payerID=msg.ID)
 		payee = self.__getLinkObject(tx.payeeID)
-
 		msg.ID = tx.payeeID
 		return payee.handleMessage(msg)
 
@@ -457,8 +468,9 @@ class NodeState(serializable.Serializable):
 		return self.links[msg.ID].handleMessage(msg)
 
 
-	def findTransaction(self, transactionID=None, side=None, payerID=None, payeeID=None):
+	def findMultipleTransactions(self, transactionID=None, side=None, payerID=None, payeeID=None):
 		ret = self.transactions[:]
+
 		if transactionID is not None:
 			ret = [x for x in ret if x.transactionID == transactionID]
 		if side is not None:
@@ -467,6 +479,12 @@ class NodeState(serializable.Serializable):
 			ret = [x for x in ret if x.payerID == payerID]
 		if payeeID is not None:
 			ret = [x for x in ret if x.payeeID == payeeID]
+
+		return ret
+
+
+	def findTransaction(self, transactionID=None, side=None, payerID=None, payeeID=None):
+		ret = self.findMultipleTransactions(transactionID, side, payerID, payeeID)
 
 		def queryText():
 			ret = []
