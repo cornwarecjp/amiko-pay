@@ -46,10 +46,13 @@ class PayeeLink(serializable.Serializable):
 	serializableAttributes = \
 	{
 		'state': states.initial,
+
 		'ID': '',
 		'amount': 0,
 		'receipt': None,
 		'token': None,
+
+		'routingContext': None,
 		'meetingPoints': [],
 		'meetingPointID': ''
 	}
@@ -112,6 +115,7 @@ class PayeeLink(serializable.Serializable):
 				endTime=None, #TODO: fill in
 				meetingPointID=self.meetingPointID,
 				ID=msg.ID,
+				routingContext=self.routingContext,
 				isPayerSide=False
 				)
 		]

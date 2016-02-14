@@ -144,7 +144,17 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 		amount = int(raw_input('Amount (Satoshi): '))
 		receipt = (raw_input('Receipt (can be empty): '))
 
-		URL = a.request(amount, receipt)
+		data = a.list()
+		linknames = data['links'].keys()
+		class Any:
+			def __str__(self):
+				return "(any link)"
+		linkname = choiceInput([Any()] + linknames, 'Choose a link to receive with')
+		if linkname.__class__ == Any:
+			URL = a.request(amount, receipt)
+		else:
+			URL = a.request(amount, receipt, linkname)
+
 		print 'Request URL (pass this to the payer): ', URL
 
 	elif cmd == 'pay':

@@ -103,7 +103,7 @@ class Link_Withdraw(Message):
 
 
 class PaymentRequest(Message):
-	attributes = {'amount':0, 'receipt':'', 'meetingPoints':[]}
+	attributes = {'amount':0, 'receipt':'', 'meetingPoints':[], 'routingContext': None}
 
 
 class ReturnValue(Message):

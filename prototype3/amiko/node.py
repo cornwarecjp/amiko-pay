@@ -258,13 +258,15 @@ class Node(threading.Thread):
 
 
 	@runInNodeThread
-	def request(self, amount, receipt):
+	def request(self, amount, receipt, linkname=None):
 		"""
 		Request a payment.
 
 		Arguments:
-		amount : The amount (integer, in Satoshi) to be paid
-		receipt: A receipt for the payment
+		amount  : The amount (integer, in Satoshi) to be paid
+		receipt : A receipt for the payment
+		linkname: If not equal to None, payment routing is restricted to the
+		          link with the given name.
 
 		Return value:
 		The URL of the payment request
@@ -279,7 +281,8 @@ class Node(threading.Thread):
 
 		ID = self.handleMessage(messages.PaymentRequest(
 			amount=amount, receipt=receipt,
-			meetingPoints=meetingPoints))
+			meetingPoints=meetingPoints,
+			routingContext=linkname))
 
 		return "amikopay://%s/%s" % \
 			(self.settings.getAdvertizedNetworkLocation(), ID)

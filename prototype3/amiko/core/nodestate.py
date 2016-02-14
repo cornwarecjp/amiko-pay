@@ -115,7 +115,7 @@ class NodeState(serializable.Serializable):
 		newPayeeLink = payeelink.PayeeLink(
 			ID=payeeLinkID,
 			amount=msg.amount, receipt=msg.receipt, token=token,
-			meetingPoints=msg.meetingPoints)
+			meetingPoints=msg.meetingPoints, routingContext=msg.routingContext)
 
 		self.payeeLinks[payeeLinkID] = newPayeeLink
 
