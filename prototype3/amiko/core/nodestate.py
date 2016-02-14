@@ -388,18 +388,24 @@ class NodeState(serializable.Serializable):
 			payer = self.__getLinkObject(msg.ID)
 			ret += payer.settleCommitIncoming(msg)
 		except LinkNotFound:
-			pass #Payment is committed, so payer object may already be deleted
+			#Payment is committed, so payer object may already be deleted
+			#Pass: continue with payee side handling and tx removing
+			pass
 
 		try:
 			tx = self.findTransaction(transactionID=transactionID, payerID=msg.ID)
 		except TransactionNotFound:
-			return ret #Payment is committed, so transaction object may already be deleted
+			#Payment is committed, so transaction object may already be deleted
+			#Return here: don't remove non-existing tx
+			return ret
 
 		try:
 			payee = self.__getLinkObject(tx.payeeID)
 			ret += payee.settleCommitOutgoing(msg)
 		except LinkNotFound:
-			return ret #Payment is committed, so payee object may already be deleted
+			#Payment is committed, so payee object may already be deleted
+			#Pass: continue with removing tx
+			pass
 
 		#Clean up no-longer-needed transaction:
 		self.transactions.remove(tx)
