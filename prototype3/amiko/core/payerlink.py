@@ -201,7 +201,10 @@ class PayerLink(serializable.Serializable):
 		#If both routes are present, start locking
 		if self.state == self.states.locked:
 			ret.append(
-				messages.Lock(transactionID=self.transactionID, payload=[])
+				messages.Lock(
+					ID=messages.payerLocalID,
+					transactionID=self.transactionID,
+					payload=[])
 				)
 
 		return ret
