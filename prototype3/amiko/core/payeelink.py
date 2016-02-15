@@ -178,9 +178,9 @@ class PayeeLink(serializable.Serializable):
 
 		return \
 		[
-		messages.Commit(ID=self.ID, token=self.token),
+		messages.Commit(ID=self.ID, token=self.token, isPayerSide=False),
 		messages.OutboundMessage(localID = self.ID, message = \
-			messages.SettleCommit(token=self.token)
+			messages.SettleCommit(token=self.token, isPayerSide=False)
 			)
 		]
 

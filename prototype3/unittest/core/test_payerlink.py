@@ -267,6 +267,7 @@ class Test(unittest.TestCase):
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, messages.Lock))
 		self.assertEqual(msg.transactionID, self.payerLink.transactionID)
+		self.assertEqual(msg.isPayerSide, True)
 
 
 	def test_msg_havePayeeRoute(self):
@@ -304,6 +305,7 @@ class Test(unittest.TestCase):
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, messages.Lock))
 		self.assertEqual(msg.transactionID, self.payerLink.transactionID)
+		self.assertEqual(msg.isPayerSide, True)
 
 
 	def test_lockIncoming(self):

@@ -395,7 +395,8 @@ class NodeState(serializable.Serializable):
 
 		ret = payee.commitIncoming(msg)
 		ret += payer.commitOutgoing(msg)
-		ret += payee.settleCommitOutgoing(messages.SettleCommit(token=msg.token))
+		ret += payee.settleCommitOutgoing(
+			messages.SettleCommit(token=msg.token, isPayerSide=msg.isPayerSide))
 
 		return ret
 

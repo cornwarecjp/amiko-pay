@@ -190,12 +190,14 @@ class Test(unittest.TestCase):
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, messages.Commit))
 		self.assertEqual(msg.token, self.payeeLink.token)
+		self.assertEqual(msg.isPayerSide, False)
 		msg = ret[1]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, "PayeeID")
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.SettleCommit))
 		self.assertEqual(msg.token, self.payeeLink.token)
+		self.assertEqual(msg.isPayerSide, False)
 
 
 	def test_commitIncoming(self):

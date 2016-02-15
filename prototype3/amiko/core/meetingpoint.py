@@ -66,6 +66,7 @@ class MeetingPoint(serializable.Serializable):
 	def lockOutgoing(self, msg):
 		msg = copy.deepcopy(msg)
 		msg.ID = self.ID
+		msg.isPayerSide = False
 		return [msg]
 
 
@@ -76,6 +77,7 @@ class MeetingPoint(serializable.Serializable):
 	def commitOutgoing(self, msg):
 		msg = copy.deepcopy(msg)
 		msg.ID = self.ID
+		msg.isPayerSide = True
 		return [msg]
 
 
@@ -86,6 +88,7 @@ class MeetingPoint(serializable.Serializable):
 	def settleCommitOutgoing(self, msg):
 		msg = copy.deepcopy(msg)
 		msg.ID = self.ID
+		msg.isPayerSide = False
 		return [msg]
 
 

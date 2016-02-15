@@ -217,19 +217,19 @@ serializable.registerClass(Deposit)
 
 class Lock(ProtocolMessage):
 	attributes = {'ID': None}
-	serializableAttributes = {'transactionID': ''} #TODO: add payload
+	serializableAttributes = {'transactionID': '', 'isPayerSide': None} #TODO: add payload
 serializable.registerClass(Lock)
 
 
 class Commit(ProtocolMessage):
 	attributes = {'ID': None}
-	serializableAttributes = {'token': ''}
+	serializableAttributes = {'token': '', 'isPayerSide': None}
 serializable.registerClass(Commit)
 
 
 class SettleCommit(ProtocolMessage):
 	attributes = {'ID': None}
-	serializableAttributes = {'token': ''} #TODO: add payload
+	serializableAttributes = {'token': '', 'isPayerSide': None} #TODO: add payload
 serializable.registerClass(SettleCommit)
 
 
