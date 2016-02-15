@@ -189,10 +189,10 @@ class NodeState(serializable.Serializable):
 		sourceLink = self.__getLinkObject(msg.ID)
 		ret = sourceLink.makeRouteIncoming(msg)
 
-		transactionSide, payerID, payeeID = \
+		payerID, payeeID = \
 		{
-		True: (transaction.side_payer, msg.ID, None),
-		False: (transaction.side_payee, None, msg.ID)
+		True: (msg.ID, None),
+		False: (None, msg.ID)
 		}[msg.isPayerSide]
 
 		#Possible routes we can take
@@ -221,7 +221,7 @@ class NodeState(serializable.Serializable):
 		#is when an earlier instance was restricted in its routing choices,
 		#and, theoretically, when a new route was created in-between.
 		earlierTransactions = self.findMultipleTransactions(
-			transactionID=msg.transactionID, side=transactionSide)
+			transactionID=msg.transactionID, isPayerSide=msg.isPayerSide)
 		for earlierTx in earlierTransactions:
 			earlierSourceLinkID = earlierTx.payerID if msg.isPayerSide else earlierTx.payeeID
 			tryRemove(earlierSourceLinkID)
@@ -231,7 +231,7 @@ class NodeState(serializable.Serializable):
 
 		#Create new transaction
 		newTx = transaction.Transaction(
-			side=transactionSide,
+			isPayerSide=msg.isPayerSide,
 			payeeID=payeeID,
 			payerID=payerID,
 
@@ -280,24 +280,20 @@ class NodeState(serializable.Serializable):
 
 		ret = []
 
-		if tx.side == transaction.side_payer:
+		if tx.isPayerSide:
 			ret += payee.haveNoRouteIncoming(msg)
-		elif tx.side == transaction.side_payee:
-			ret += payer.haveNoRouteIncoming(msg)
 		else:
-			raise Exception('  HaveNoRoute should only be received on payer or payee route')
+			ret += payer.haveNoRouteIncoming(msg)
 
 		#Try to find another route
 		nextRoute = tx.tryNextRoute()
 		if nextRoute is None:
 			log.log('  No remaining route found')
 
-			if tx.side == transaction.side_payer:
+			if tx.isPayerSide:
 				ret += payer.haveNoRouteOutgoing(msg.transactionID, isPayerSide=True)
-			elif tx.side == transaction.side_payee:
-				ret += payee.haveNoRouteOutgoing(msg.transactionID, isPayerSide=False)
 			else:
-				raise Exception('  HaveNoRoute should only be received on payer or payee route')
+				ret += payee.haveNoRouteOutgoing(msg.transactionID, isPayerSide=False)
 
 			#Clean up cancelled transaction:
 			self.transactions.remove(tx)
@@ -314,7 +310,7 @@ class NodeState(serializable.Serializable):
 				endTime        = tx.endTime,
 				meetingPointID = tx.meetingPointID,
 				ID             = nextRoute,
-				isPayerSide    = tx.side == transaction.side_payer
+				isPayerSide    = tx.isPayerSide
 				))
 
 		return ret
@@ -475,13 +471,13 @@ class NodeState(serializable.Serializable):
 		return self.links[msg.ID].handleMessage(msg)
 
 
-	def findMultipleTransactions(self, transactionID=None, side=None, payerID=None, payeeID=None):
+	def findMultipleTransactions(self, transactionID=None, isPayerSide=None, payerID=None, payeeID=None):
 		ret = self.transactions[:]
 
 		if transactionID is not None:
 			ret = [x for x in ret if x.transactionID == transactionID]
-		if side is not None:
-			ret = [x for x in ret if x.side == side]
+		if isPayerSide is not None:
+			ret = [x for x in ret if x.isPayerSide == isPayerSide]
 		if payerID is not None:
 			ret = [x for x in ret if x.payerID == payerID]
 		if payeeID is not None:
@@ -490,15 +486,15 @@ class NodeState(serializable.Serializable):
 		return ret
 
 
-	def findTransaction(self, transactionID=None, side=None, payerID=None, payeeID=None):
-		ret = self.findMultipleTransactions(transactionID, side, payerID, payeeID)
+	def findTransaction(self, transactionID=None, isPayerSide=None, payerID=None, payeeID=None):
+		ret = self.findMultipleTransactions(transactionID, isPayerSide, payerID, payeeID)
 
 		def queryText():
 			ret = []
 			if transactionID is not None:
 				ret.append('transactionID=%s' % repr(transactionID))
-			if side is not None:
-				ret.append('side=%d' % side)
+			if isPayerSide is not None:
+				ret.append('isPayerSide=%s' % str(isPayerSide))
 			if payerID is not None:
 				ret.append('payerID=%s' % payerID)
 			if payeeID is not None:

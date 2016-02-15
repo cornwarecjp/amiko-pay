@@ -29,14 +29,11 @@
 from ..utils import serializable
 
 
-side_payer = 1
-side_payee = -1
-
 
 class Transaction(serializable.Serializable):
 	serializableAttributes = \
 	{
-	'side':None, 'payeeID':None, 'payerID':None,
+	'isPayerSide':None, 'payeeID':None, 'payerID':None,
 	'initialLinkIDs':[], 'remainingLinkIDs':[],
 	'meetingPointID':None, 'amount':0,
 	'transactionID':'', 'startTime':0, 'endTime':0,
@@ -50,9 +47,9 @@ class Transaction(serializable.Serializable):
 			#None in case there is no more route
 			nextRoute = None
 
-		if self.side == side_payer:
+		if self.isPayerSide:
 			self.payeeID = nextRoute
-		else: #side_payee
+		else:
 			self.payerID = nextRoute
 
 		return nextRoute

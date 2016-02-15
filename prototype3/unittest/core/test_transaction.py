@@ -45,7 +45,7 @@ class Test(unittest.TestCase):
 	def test_constructor(self):
 		"Test constructor"
 
-		self.assertEqual(self.transaction.side, None)
+		self.assertEqual(self.transaction.isPayerSide, None)
 		self.assertEqual(self.transaction.payeeID, None)
 		self.assertEqual(self.transaction.payerID, None)
 		self.assertEqual(self.transaction.remainingLinkIDs, [])
@@ -59,7 +59,7 @@ class Test(unittest.TestCase):
 		"Test tryNextRoute"
 
 		self.transaction.remainingLinkIDs = ['a', 'b', 'c']
-		self.transaction.side = transaction.side_payer
+		self.transaction.isPayerSide = True
 		self.transaction.payerID = 'old'
 
 		self.assertEqual(self.transaction.tryNextRoute(), 'a')
@@ -80,7 +80,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.transaction.remainingLinkIDs, [])
 
 		self.transaction.remainingLinkIDs = ['a', 'b', 'c']
-		self.transaction.side = transaction.side_payee
+		self.transaction.isPayerSide = False
 		self.transaction.payeeID = 'old'
 
 		self.assertEqual(self.transaction.tryNextRoute(), 'a')
