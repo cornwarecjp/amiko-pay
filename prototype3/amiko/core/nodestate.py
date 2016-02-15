@@ -410,6 +410,7 @@ class NodeState(serializable.Serializable):
 			payer = self.__getLinkObject(msg.ID)
 			ret += payer.settleCommitIncoming(msg)
 		except LinkNotFound:
+			log.log('Payer link not found (ignored)')
 			#Payment is committed, so payer object may already be deleted
 			#Pass: continue with payee side handling and tx removing
 			pass
@@ -418,6 +419,7 @@ class NodeState(serializable.Serializable):
 			tx = self.findTransaction(
 				transactionID=transactionID, payerID=msg.ID, isPayerSide=msg.isPayerSide)
 		except TransactionNotFound:
+			log.log('Transaction not found (ignored)')
 			#Payment is committed, so transaction object may already be deleted
 			#Return here: don't remove non-existing tx
 			return ret
@@ -426,6 +428,7 @@ class NodeState(serializable.Serializable):
 			payee = self.__getLinkObject(tx.payeeID)
 			ret += payee.settleCommitOutgoing(msg)
 		except LinkNotFound:
+			log.log('Payee link not found (ignored)')
 			#Payment is committed, so payee object may already be deleted
 			#Pass: continue with removing tx
 			pass
@@ -480,7 +483,7 @@ class NodeState(serializable.Serializable):
 		return self.links[msg.ID].handleMessage(msg)
 
 
-	def findMultipleTransactions(self, transactionID=None, isPayerSide=None, payerID=None, payeeID=None):
+	def findMultipleTransactions(self, transactionID, isPayerSide, payerID=None, payeeID=None):
 		ret = self.transactions[:]
 
 		if transactionID is not None:
@@ -495,7 +498,7 @@ class NodeState(serializable.Serializable):
 		return ret
 
 
-	def findTransaction(self, transactionID=None, isPayerSide=None, payerID=None, payeeID=None):
+	def findTransaction(self, transactionID, isPayerSide, payerID=None, payeeID=None):
 		ret = self.findMultipleTransactions(transactionID, isPayerSide, payerID, payeeID)
 
 		def queryText():
