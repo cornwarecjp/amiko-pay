@@ -132,7 +132,7 @@ class Test(unittest.TestCase):
 			msg = ret[0]
 			self.assertTrue(isinstance(msg, messages.CancelRoute))
 			self.assertEqual(msg.transactionID, "txID")
-			self.assertEqual(msg.payerSide, True)
+			self.assertEqual(msg.isPayerSide, True)
 			msg = ret[1]
 			self.assertTrue(isinstance(msg, messages.OutboundMessage))
 			self.assertEqual(msg.localID, messages.payerLocalID)

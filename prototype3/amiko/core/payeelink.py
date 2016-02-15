@@ -131,7 +131,7 @@ class PayeeLink(serializable.Serializable):
 		ret = []
 
 		if self.state == self.states.confirmed:
-			ret = [messages.CancelRoute(transactionID=self.transactionID, payerSide=False)]
+			ret = [messages.CancelRoute(transactionID=self.transactionID, isPayerSide=False)]
 
 		self.state = self.states.cancelled
 

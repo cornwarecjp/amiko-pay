@@ -95,7 +95,7 @@ class PayerLink(serializable.Serializable):
 			self.state = self.states.cancelled
 			return \
 			[
-			messages.CancelRoute(transactionID=self.transactionID, payerSide=True),
+			messages.CancelRoute(transactionID=self.transactionID, isPayerSide=True),
 			messages.OutboundMessage(localID = messages.payerLocalID, message = \
 				messages.Cancel()),
 			messages.SetEvent(event=messages.SetEvent.events.paymentFinished)

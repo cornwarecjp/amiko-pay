@@ -181,7 +181,7 @@ class Link(serializable.Serializable):
 		c, ci = self.__findChannelWithTransaction(msg.transactionID)
 		ret = self.handleChannelOutput(
 			ci,
-			c.unreserve(msg.payerSide, msg.transactionID)
+			c.unreserve(msg.isPayerSide, msg.transactionID)
 			)
 
 		msg = copy.deepcopy(msg)
@@ -193,7 +193,7 @@ class Link(serializable.Serializable):
 		c, ci = self.__findChannelWithTransaction(msg.transactionID)
 		return self.handleChannelOutput(
 			ci,
-			c.unreserve(not msg.payerSide, msg.transactionID)
+			c.unreserve(not msg.isPayerSide, msg.transactionID)
 			)
 
 

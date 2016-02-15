@@ -187,7 +187,7 @@ serializable.registerClass(MakeRoute)
 
 class CancelRoute(ProtocolMessage):
 	attributes = {'ID': None}
-	serializableAttributes = {'transactionID': '', 'payerSide': None}
+	serializableAttributes = {'transactionID': '', 'isPayerSide': None}
 serializable.registerClass(CancelRoute)
 
 
