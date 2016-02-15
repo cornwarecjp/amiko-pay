@@ -268,8 +268,12 @@ class NodeState(serializable.Serializable):
 	def msg_haveNoRoute(self, msg):
 		log.log('Processing HaveNoRoute message')
 		try:
-			#TODO: non-ambiguous query (transactionID, link and side)
-			tx = self.findTransaction(transactionID=msg.transactionID)
+			if msg.isPayerSide:
+				tx = self.findTransaction(
+					transactionID=msg.transactionID, payeeID=msg.ID, isPayerSide=True)
+			else:
+				tx = self.findTransaction(
+					transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=False)
 		except TransactionNotFound:
 			log.log('  HaveNoRoute failed: transaction %s does not (or no longer) exist (ignored)' % \
 				msg.transactionID.encode('hex'))
@@ -318,8 +322,12 @@ class NodeState(serializable.Serializable):
 
 	def msg_cancelRoute(self, msg):
 		try:
-			#TODO: non-ambiguous query (transactionID, link and side)
-			tx = self.findTransaction(transactionID=msg.transactionID)
+			if msg.payerSide:
+				tx = self.findTransaction(
+					transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=True)
+			else:
+				tx = self.findTransaction(
+					transactionID=msg.transactionID, payeeID=msg.ID, isPayerSide=False)
 		except TransactionNotFound:
 			log.log('cancelRoute failed: transaction %s does not (or no longer) exist (ignored)' % \
 				msg.transactionID.encode('hex'))
@@ -342,8 +350,8 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_havePayerRoute(self, msg):
-		#TODO: non-ambiguous query (transactionID, link and side)
-		tx = self.findTransaction(transactionID=msg.transactionID, payeeID=msg.ID)
+		tx = self.findTransaction(
+			transactionID=msg.transactionID, payeeID=msg.ID, isPayerSide=True)
 		payer = self.__getLinkObject(tx.payerID)
 		msg.ID = tx.payerID
 		return payer.handleMessage(msg)
@@ -354,8 +362,8 @@ class NodeState(serializable.Serializable):
 		if msg.ID == messages.payerLocalID:
 			return self.payerLink.handleMessage(msg)
 
-		#TODO: non-ambiguous query (transactionID, link and side)
-		tx = self.findTransaction(transactionID=msg.transactionID, payerID=msg.ID)
+		tx = self.findTransaction(
+			transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=False)
 		payee = self.__getLinkObject(tx.payeeID)
 		msg.ID = tx.payeeID
 		return payee.handleMessage(msg)
