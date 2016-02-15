@@ -370,8 +370,8 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_lock(self, msg):
-		#TODO: non-ambiguous query (transactionID, link and side)
-		tx = self.findTransaction(transactionID=msg.transactionID, payerID=msg.ID)
+		tx = self.findTransaction(
+			transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=msg.isPayerSide)
 		payer = self.__getLinkObject(tx.payerID)
 		payee = self.__getLinkObject(tx.payeeID)
 
@@ -384,8 +384,8 @@ class NodeState(serializable.Serializable):
 	def msg_commit(self, msg):
 		transactionID = settings.hashAlgorithm(msg.token)
 		try:
-			#TODO: non-ambiguous query (transactionID, link and side)
-			tx = self.findTransaction(transactionID=transactionID, payeeID=msg.ID)
+			tx = self.findTransaction(
+				transactionID=transactionID, payeeID=msg.ID, isPayerSide=msg.isPayerSide)
 		except TransactionNotFound:
 			log.log('Received a commit message for an unknown transaction. Probably we\'ve already settled, so we ignore this.')
 			return []
@@ -415,8 +415,8 @@ class NodeState(serializable.Serializable):
 			pass
 
 		try:
-			#TODO: non-ambiguous query (transactionID, link and side)
-			tx = self.findTransaction(transactionID=transactionID, payerID=msg.ID)
+			tx = self.findTransaction(
+				transactionID=transactionID, payerID=msg.ID, isPayerSide=msg.isPayerSide)
 		except TransactionNotFound:
 			#Payment is committed, so transaction object may already be deleted
 			#Return here: don't remove non-existing tx
