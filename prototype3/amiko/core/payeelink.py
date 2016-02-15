@@ -143,7 +143,7 @@ class PayeeLink(serializable.Serializable):
 		return \
 		[
 		messages.OutboundMessage(localID = msg.ID, message = \
-			messages.HavePayeeRoute(ID=messages.payerLocalID, transactionID=None)
+			messages.HavePayeeRoute(transactionID=None)
 			)
 		]
 

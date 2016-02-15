@@ -97,7 +97,7 @@ class PayerLink(serializable.Serializable):
 			[
 			messages.CancelRoute(transactionID=self.transactionID, payerSide=True),
 			messages.OutboundMessage(localID = messages.payerLocalID, message = \
-				messages.Cancel(ID=self.payeeLinkID)),
+				messages.Cancel()),
 			messages.SetEvent(event=messages.SetEvent.events.paymentFinished)
 			]
 
@@ -136,7 +136,7 @@ class PayerLink(serializable.Serializable):
 			ret = \
 			[
 			messages.OutboundMessage(localID = messages.payerLocalID, message = \
-				messages.Confirm(ID=self.payeeLinkID, meetingPointID=self.meetingPointID)
+				messages.Confirm(meetingPointID=self.meetingPointID)
 			),
 			messages.MakeRoute( #This will start the transaction routing
 				ID=messages.payerLocalID,
@@ -159,7 +159,7 @@ class PayerLink(serializable.Serializable):
 			ret = \
 			[
 			messages.OutboundMessage(localID = messages.payerLocalID, message = \
-				messages.Cancel(ID=self.payeeLinkID)
+				messages.Cancel()
 			),
 			messages.SetEvent(event=messages.SetEvent.events.paymentFinished)
 			]

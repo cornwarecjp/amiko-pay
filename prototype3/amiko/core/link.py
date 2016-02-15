@@ -69,7 +69,6 @@ class Link(serializable.Serializable):
 			[
 			messages.OutboundMessage(localID=self.localID,
 				message=messages.Deposit(
-					ID=self.remoteID,
 					channelIndex=channelIndex,
 					channelClass=str(msg.channel.__class__.__name__)
 				))
@@ -157,7 +156,7 @@ class Link(serializable.Serializable):
 		return ret + \
 		[
 		messages.OutboundMessage(localID=self.localID,
-			message=messages.HaveNoRoute(ID=self.remoteID, transactionID=transactionID))
+			message=messages.HaveNoRoute(transactionID=transactionID))
 		]
 
 
@@ -282,7 +281,7 @@ class Link(serializable.Serializable):
 		[
 		messages.OutboundMessage(localID=self.localID,
 			message=messages.ChannelMessage(
-			ID=self.remoteID, channelIndex=channelIndex, message=m))
+			channelIndex=channelIndex, message=m))
 		for m in channelMessages
 		]
 

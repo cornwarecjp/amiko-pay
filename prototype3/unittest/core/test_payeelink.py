@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #    test_payeelink.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -49,10 +49,14 @@ class Test(unittest.TestCase):
 		"Test default attributes"
 
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.initial)
+
 		self.assertEqual(self.payeeLink.amount, 0)
 		self.assertEqual(self.payeeLink.receipt, None)
+
 		self.assertEqual(self.payeeLink.token, "foo")
 		self.assertEqual(self.payeeLink.transactionID, RIPEMD160(SHA256("foo")))
+
+		self.assertEqual(self.payeeLink.routingContext, None)
 		self.assertEqual(self.payeeLink.meetingPointID, "")
 
 
@@ -138,7 +142,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.localID, "foobar")
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.HavePayeeRoute))
-		self.assertEqual(msg.ID, "__payer__")
 		self.assertEqual(msg.transactionID, None)
 
 

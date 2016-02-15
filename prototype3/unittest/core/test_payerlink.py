@@ -138,7 +138,6 @@ class Test(unittest.TestCase):
 			self.assertEqual(msg.localID, messages.payerLocalID)
 			msg = msg.message
 			self.assertTrue(isinstance(msg, messages.Cancel))
-			self.assertEqual(msg.ID, "payeeLinkID")
 			msg = ret[2]
 			self.assertTrue(isinstance(msg, messages.SetEvent))
 			self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
