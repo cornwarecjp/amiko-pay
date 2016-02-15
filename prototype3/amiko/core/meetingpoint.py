@@ -43,7 +43,8 @@ class MeetingPoint(serializable.Serializable):
 			#this meeting point will not be part of the route.
 			return \
 			[
-			messages.HaveNoRoute(ID=self.ID, transactionID=msg.transactionID)
+			messages.HaveNoRoute(
+				ID=self.ID, transactionID=msg.transactionID, isPayerSide=msg.isPayerSide)
 			]
 
 		if msg.isPayerSide:
@@ -58,7 +59,7 @@ class MeetingPoint(serializable.Serializable):
 			]
 
 
-	def haveNoRouteIncoming(self, msg, isPayerSide):
+	def haveNoRouteIncoming(self, msg):
 		return [] #This is called when our own HaveNoRoute message is processed -> NOP
 
 

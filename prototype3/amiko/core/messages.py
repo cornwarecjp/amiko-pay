@@ -205,7 +205,7 @@ serializable.registerClass(HavePayeeRoute)
 
 class HaveNoRoute(ProtocolMessage):
 	attributes = {'ID': None}
-	serializableAttributes = {'transactionID': ''}
+	serializableAttributes = {'transactionID': '', 'isPayerSide': None}
 serializable.registerClass(HaveNoRoute)
 
 

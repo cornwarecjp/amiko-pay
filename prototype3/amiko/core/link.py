@@ -156,15 +156,16 @@ class Link(serializable.Serializable):
 		return ret + \
 		[
 		messages.OutboundMessage(localID=self.localID,
-			message=messages.HaveNoRoute(transactionID=transactionID))
+			message=messages.HaveNoRoute(
+				transactionID=transactionID, isPayerSide=isPayerSide))
 		]
 
 
-	def haveNoRouteIncoming(self, msg, isPayerSide):
+	def haveNoRouteIncoming(self, msg):
 		c, ci = self.__findChannelWithTransaction(msg.transactionID)
 		return self.handleChannelOutput(
 			ci,
-			c.unreserve(isPayerSide, msg.transactionID)
+			c.unreserve(msg.isPayerSide, msg.transactionID)
 			)
 
 

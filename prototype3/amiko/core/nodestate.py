@@ -268,6 +268,7 @@ class NodeState(serializable.Serializable):
 	def msg_haveNoRoute(self, msg):
 		log.log('Processing HaveNoRoute message')
 		try:
+			#TODO: non-ambiguous query (transactionID, link and side)
 			tx = self.findTransaction(transactionID=msg.transactionID)
 		except TransactionNotFound:
 			log.log('  HaveNoRoute failed: transaction %s does not (or no longer) exist (ignored)' % \
@@ -280,9 +281,9 @@ class NodeState(serializable.Serializable):
 		ret = []
 
 		if tx.side == transaction.side_payer:
-			ret += payee.haveNoRouteIncoming(msg, isPayerSide=True)
+			ret += payee.haveNoRouteIncoming(msg)
 		elif tx.side == transaction.side_payee:
-			ret += payer.haveNoRouteIncoming(msg, isPayerSide=False)
+			ret += payer.haveNoRouteIncoming(msg)
 		else:
 			raise Exception('  HaveNoRoute should only be received on payer or payee route')
 
@@ -321,6 +322,7 @@ class NodeState(serializable.Serializable):
 
 	def msg_cancelRoute(self, msg):
 		try:
+			#TODO: non-ambiguous query (transactionID, link and side)
 			tx = self.findTransaction(transactionID=msg.transactionID)
 		except TransactionNotFound:
 			log.log('cancelRoute failed: transaction %s does not (or no longer) exist (ignored)' % \
@@ -344,6 +346,7 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_havePayerRoute(self, msg):
+		#TODO: non-ambiguous query (transactionID, link and side)
 		tx = self.findTransaction(transactionID=msg.transactionID, payeeID=msg.ID)
 		payer = self.__getLinkObject(tx.payerID)
 		msg.ID = tx.payerID
@@ -355,6 +358,7 @@ class NodeState(serializable.Serializable):
 		if msg.ID == messages.payerLocalID:
 			return self.payerLink.handleMessage(msg)
 
+		#TODO: non-ambiguous query (transactionID, link and side)
 		tx = self.findTransaction(transactionID=msg.transactionID, payerID=msg.ID)
 		payee = self.__getLinkObject(tx.payeeID)
 		msg.ID = tx.payeeID
@@ -362,6 +366,7 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_lock(self, msg):
+		#TODO: non-ambiguous query (transactionID, link and side)
 		tx = self.findTransaction(transactionID=msg.transactionID, payerID=msg.ID)
 		payer = self.__getLinkObject(tx.payerID)
 		payee = self.__getLinkObject(tx.payeeID)
@@ -375,6 +380,7 @@ class NodeState(serializable.Serializable):
 	def msg_commit(self, msg):
 		transactionID = settings.hashAlgorithm(msg.token)
 		try:
+			#TODO: non-ambiguous query (transactionID, link and side)
 			tx = self.findTransaction(transactionID=transactionID, payeeID=msg.ID)
 		except TransactionNotFound:
 			log.log('Received a commit message for an unknown transaction. Probably we\'ve already settled, so we ignore this.')
@@ -404,6 +410,7 @@ class NodeState(serializable.Serializable):
 			pass
 
 		try:
+			#TODO: non-ambiguous query (transactionID, link and side)
 			tx = self.findTransaction(transactionID=transactionID, payerID=msg.ID)
 		except TransactionNotFound:
 			#Payment is committed, so transaction object may already be deleted
