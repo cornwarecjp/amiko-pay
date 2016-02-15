@@ -402,6 +402,12 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_settleCommit(self, msg):
+		#Special case for payee->payer transmission of this message type:
+		if msg.ID == messages.payerLocalID:
+			#Start settling on the payer side route,
+			#no matter what the payee says.
+			msg.isPayerSide = True
+
 		transactionID = settings.hashAlgorithm(msg.token)
 
 		ret = []

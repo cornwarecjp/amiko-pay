@@ -180,7 +180,7 @@ class PayeeLink(serializable.Serializable):
 		[
 		messages.Commit(ID=self.ID, token=self.token, isPayerSide=False),
 		messages.OutboundMessage(localID = self.ID, message = \
-			messages.SettleCommit(token=self.token, isPayerSide=False)
+			messages.SettleCommit(token=self.token)
 			)
 		]
 
