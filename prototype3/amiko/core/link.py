@@ -35,7 +35,7 @@ import messages
 from ..utils import serializable
 
 
-class TransactionNotInChannelsException(Exception):
+class RouteNotInChannelsException(Exception):
 	pass
 
 
@@ -119,12 +119,15 @@ class Link(serializable.Serializable):
 
 
 	def makeRouteOutgoing(self, msg):
+		routeID = self.__makeRouteID(msg.transactionID, msg.isPayerSide)
+		isOutgoing = msg.isPayerSide
+
 		#Try the channels one by one:
 		for i, c in enumerate(self.channels):
 
 			#Reserve funds in channel.
 			try:
-				c.reserve(msg.isPayerSide, msg.transactionID, msg.startTime, msg.endTime, msg.amount)
+				c.reserve(isOutgoing, routeID, msg.startTime, msg.endTime, msg.amount)
 			except Exception as e:
 				#TODO: make sure the state of the channel is restored?
 				log.log("Reserving on channel %d failed: returned exception \"%s\"" % (i, str(e)))
@@ -146,11 +149,25 @@ class Link(serializable.Serializable):
 		return []
 
 
+	def makeRouteIncoming(self, msg):
+		routeID = self.__makeRouteID(msg.transactionID, msg.isPayerSide)
+		isOutgoing = not msg.isPayerSide
+
+		#Reserve funds in channel
+		c = self.channels[msg.channelIndex]
+		c.reserve(isOutgoing, routeID, msg.startTime, msg.endTime, msg.amount)
+
+		return []
+
+
 	def haveNoRouteOutgoing(self, transactionID, isPayerSide):
-		c, ci = self.__findChannelWithTransaction(transactionID)
+		routeID = self.__makeRouteID(transactionID, isPayerSide)
+		isOutgoing = not isPayerSide
+
+		c, ci = self.__findChannelWithRoute(routeID)
 		ret = self.handleChannelOutput(
 			ci,
-			c.unreserve(not isPayerSide, transactionID)
+			c.unreserve(isOutgoing, routeID)
 			)
 
 		return ret + \
@@ -162,26 +179,24 @@ class Link(serializable.Serializable):
 
 
 	def haveNoRouteIncoming(self, msg):
-		c, ci = self.__findChannelWithTransaction(msg.transactionID)
+		routeID = self.__makeRouteID(msg.transactionID, msg.isPayerSide)
+		isOutgoing = msg.isPayerSide
+
+		c, ci = self.__findChannelWithRoute(routeID)
 		return self.handleChannelOutput(
 			ci,
-			c.unreserve(msg.isPayerSide, msg.transactionID)
+			c.unreserve(isOutgoing, routeID)
 			)
 
 
-	def makeRouteIncoming(self, msg):
-		#Reserve funds in channel
-		c = self.channels[msg.channelIndex]
-		c.reserve(not msg.isPayerSide, msg.transactionID, msg.startTime, msg.endTime, msg.amount)
-
-		return []
-
-
 	def cancelOutgoing(self, msg):
-		c, ci = self.__findChannelWithTransaction(msg.transactionID)
+		routeID = self.__makeRouteID(msg.transactionID, msg.isPayerSide)
+		isOutgoing = msg.isPayerSide
+
+		c, ci = self.__findChannelWithRoute(routeID)
 		ret = self.handleChannelOutput(
 			ci,
-			c.unreserve(msg.isPayerSide, msg.transactionID)
+			c.unreserve(isOutgoing, routeID)
 			)
 
 		msg = copy.deepcopy(msg)
@@ -190,16 +205,20 @@ class Link(serializable.Serializable):
 
 
 	def cancelIncoming(self, msg):
-		c, ci = self.__findChannelWithTransaction(msg.transactionID)
+		routeID = self.__makeRouteID(msg.transactionID, msg.isPayerSide)
+		isOutgoing = not msg.isPayerSide
+
+		c, ci = self.__findChannelWithRoute(routeID)
 		return self.handleChannelOutput(
 			ci,
-			c.unreserve(not msg.isPayerSide, msg.transactionID)
+			c.unreserve(isOutgoing, routeID)
 			)
 
 
 	def lockOutgoing(self, msg):
-		c, ci = self.__findChannelWithTransaction(msg.transactionID)
-		c.lockOutgoing(msg.transactionID)
+		routeID = self.__makeRouteID(msg.transactionID, msg.isPayerSide)
+		c, ci = self.__findChannelWithRoute(routeID)
+		c.lockOutgoing(routeID)
 
 		#TODO: add payload
 		msg = copy.deepcopy(msg)
@@ -210,8 +229,9 @@ class Link(serializable.Serializable):
 
 	def lockIncoming(self, msg):
 		#TODO: process payload
-		c, ci = self.__findChannelWithTransaction(msg.transactionID)
-		c.lockIncoming(msg.transactionID)
+		routeID = self.__makeRouteID(msg.transactionID, msg.isPayerSide)
+		c, ci = self.__findChannelWithRoute(routeID)
+		c.lockIncoming(routeID)
 
 		return []
 
@@ -229,15 +249,16 @@ class Link(serializable.Serializable):
 
 	def settleCommitOutgoing(self, msg):
 		transactionID = settings.hashAlgorithm(msg.token)
+		routeID = self.__makeRouteID(transactionID, msg.isPayerSide)
 		try:
-			c, ci = self.__findChannelWithTransaction(transactionID)
-		except TransactionNotInChannelsException:
-			log.log('No channel found for transaction; assuming settleCommitOutgoing was already performed, so we skip it.')
+			c, ci = self.__findChannelWithRoute(routeID)
+		except RouteNotInChannelsException:
+			log.log('No channel found for route; assuming settleCommitOutgoing was already performed, so we skip it.')
 			return []
 
 		ret = self.handleChannelOutput(
 			ci,
-			c.settleCommitOutgoing(transactionID, msg.token)
+			c.settleCommitOutgoing(routeID, msg.token)
 			)
 
 		#TODO: add payload
@@ -249,10 +270,11 @@ class Link(serializable.Serializable):
 	def settleCommitIncoming(self, msg):
 		#TODO: process payload
 		transactionID = settings.hashAlgorithm(msg.token)
-		c, ci = self.__findChannelWithTransaction(transactionID)
+		routeID = self.__makeRouteID(transactionID, msg.isPayerSide)
+		c, ci = self.__findChannelWithRoute(routeID)
 		return self.handleChannelOutput(
 			ci,
-			c.settleCommitIncoming(transactionID)
+			c.settleCommitIncoming(routeID)
 			)
 
 
@@ -296,12 +318,16 @@ class Link(serializable.Serializable):
 		return ret
 
 
-	def __findChannelWithTransaction(self, transactionID):
+	def __makeRouteID(self, transactionID, isPayerSide):
+		return ('1' if isPayerSide else '0') + transactionID
+
+
+	def __findChannelWithRoute(self, routeID):
 		for ci, c in enumerate(self.channels):
-			if c.hasTransaction(transactionID):
+			if c.hasRoute(routeID):
 				return c, ci
-		raise TransactionNotInChannelsException(
-			"None of the channels is processing the transaction")
+		raise RouteNotInChannelsException(
+			"None of the channels is processing the route")
 
 
 serializable.registerClass(Link)

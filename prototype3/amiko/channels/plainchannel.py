@@ -69,7 +69,8 @@ class PlainChannel(serializable.Serializable):
 	'amountLocal': 0,
 	'amountRemote': 0,
 
-	#hash -> amount
+	#routeID -> amount
+	#routeID is hash of the commit token, prefixed by a single character
 	'transactionsIncomingReserved': {},
 	'transactionsOutgoingReserved': {},
 	'transactionsIncomingLocked':   {},
@@ -127,74 +128,81 @@ class PlainChannel(serializable.Serializable):
 		return [PlainChannel_Withdraw()] + ret[0], ret[1]
 
 
-	def reserve(self, isPayerSide, transactionID, startTime, endTime, amount):
+	def reserve(self, isOutgoing, routeID, startTime, endTime, amount):
 		if self.state != self.states.open:
 			raise Exception("Channel will not start transactions in state %s." % self.state)
 
-		if isPayerSide:
+		if isOutgoing:
 			if self.amountLocal < amount:
 				raise Exception("Insufficient funds")
 
+			if routeID in self.transactionsOutgoingReserved:
+				raise Exception("Attempt to let a route run twice through the same channel")
+
 			self.amountLocal -= amount
-			self.transactionsOutgoingReserved[transactionID] = \
+			self.transactionsOutgoingReserved[routeID] = \
 				PlainChannel_Transaction(
 					startTime=startTime, endTime=endTime, amount=amount)
 		else:
 			if self.amountRemote < amount:
 				raise Exception("Insufficient funds")
 
+			if routeID in self.transactionsOutgoingReserved:
+				raise Exception("Attempt to let a route run twice through the same channel")
+
 			self.amountRemote -= amount
-			self.transactionsIncomingReserved[transactionID] = \
+			self.transactionsIncomingReserved[routeID] = \
 				PlainChannel_Transaction(
 					startTime=startTime, endTime=endTime, amount=amount)
 
 
-	def unreserve(self, isPayerSide, transactionID):
+	def unreserve(self, isOutgoing, routeID):
 		"""
 		Return value:
 			tuple(list, function) (function may be None)
 		"""
 
-		if isPayerSide:
-			self.amountLocal += self.transactionsOutgoingReserved[transactionID].amount
-			del self.transactionsOutgoingReserved[transactionID]
+		if isOutgoing:
+			self.amountLocal += self.transactionsOutgoingReserved[routeID].amount
+			del self.transactionsOutgoingReserved[routeID]
 		else:
-			self.amountRemote += self.transactionsIncomingReserved[transactionID].amount
-			del self.transactionsIncomingReserved[transactionID]
+			self.amountRemote += self.transactionsIncomingReserved[routeID].amount
+			del self.transactionsIncomingReserved[routeID]
+
 		return self.tryToClose()
 
 
-	def lockOutgoing(self, transactionID):
-		self.transactionsOutgoingLocked[transactionID] = \
-			self.transactionsOutgoingReserved[transactionID]
-		del self.transactionsOutgoingReserved[transactionID]
+	def lockOutgoing(self, routeID):
+		self.transactionsOutgoingLocked[routeID] = \
+			self.transactionsOutgoingReserved[routeID]
+		del self.transactionsOutgoingReserved[routeID]
 
 
-	def lockIncoming(self, transactionID):
-		self.transactionsIncomingLocked[transactionID] = \
-			self.transactionsIncomingReserved[transactionID]
-		del self.transactionsIncomingReserved[transactionID]
+	def lockIncoming(self, routeID):
+		self.transactionsIncomingLocked[routeID] = \
+			self.transactionsIncomingReserved[routeID]
+		del self.transactionsIncomingReserved[routeID]
 
 
-	def settleCommitOutgoing(self, transactionID, token):
+	def settleCommitOutgoing(self, routeID, token):
 		"""
 		Return value:
 			tuple(list, function) (function may be None)
 		"""
 
-		self.amountRemote += self.transactionsOutgoingLocked[transactionID].amount
-		del self.transactionsOutgoingLocked[transactionID]
+		self.amountRemote += self.transactionsOutgoingLocked[routeID].amount
+		del self.transactionsOutgoingLocked[routeID]
 		return self.tryToClose()
 
 
-	def settleCommitIncoming(self, transactionID):
+	def settleCommitIncoming(self, routeID):
 		"""
 		Return value:
 			tuple(list, function) (function may be None)
 		"""
 
-		self.amountLocal += self.transactionsIncomingLocked[transactionID].amount
-		del self.transactionsIncomingLocked[transactionID]
+		self.amountLocal += self.transactionsIncomingLocked[routeID].amount
+		del self.transactionsIncomingLocked[routeID]
 		return self.tryToClose()
 
 
@@ -232,12 +240,12 @@ class PlainChannel(serializable.Serializable):
 		return [], None
 
 
-	def hasTransaction(self, transactionID):
+	def hasRoute(self, routeID):
 		return \
-			transactionID in self.transactionsIncomingReserved or \
-			transactionID in self.transactionsOutgoingReserved or \
-			transactionID in self.transactionsIncomingLocked or \
-			transactionID in self.transactionsOutgoingLocked
+			routeID in self.transactionsIncomingReserved or \
+			routeID in self.transactionsOutgoingReserved or \
+			routeID in self.transactionsIncomingLocked or \
+			routeID in self.transactionsOutgoingLocked
 
 
 serializable.registerClass(PlainChannel)
