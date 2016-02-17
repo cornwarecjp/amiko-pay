@@ -68,10 +68,10 @@ class PayeeLink(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		messages.Pay           : self.msg_pay,
-		messages.Confirm       : self.msg_confirm,
-		messages.Cancel        : self.msg_cancel,
-		messages.HavePayeeRoute: self.msg_havePayeeRoute
+		messages.Pay      : self.msg_pay,
+		messages.Confirm  : self.msg_confirm,
+		messages.Cancel   : self.msg_cancel,
+		messages.HaveRoute: self.msg_haveRoute
 		}[msg.__class__](msg)
 
 
@@ -138,12 +138,12 @@ class PayeeLink(serializable.Serializable):
 		return ret
 
 
-	def msg_havePayeeRoute(self, msg):
+	def msg_haveRoute(self, msg):
 		#Simply pass it to the payer, who keeps track of whether the route is complete
 		return \
 		[
 		messages.OutboundMessage(localID = msg.ID, message = \
-			messages.HavePayeeRoute(transactionID=None)
+			messages.HaveRoute(transactionID=None, isPayerSide=False)
 			)
 		]
 

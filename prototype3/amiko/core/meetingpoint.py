@@ -47,16 +47,10 @@ class MeetingPoint(serializable.Serializable):
 				ID=self.ID, transactionID=msg.transactionID, isPayerSide=msg.isPayerSide)
 			]
 
-		if msg.isPayerSide:
-			return \
-			[
-			messages.HavePayerRoute(ID=self.ID, transactionID=msg.transactionID)
-			]
-		#else: (payee side)
 		return \
-			[
-			messages.HavePayeeRoute(ID=self.ID, transactionID=msg.transactionID)
-			]
+		[
+		messages.HaveRoute(ID=self.ID, transactionID=msg.transactionID, isPayerSide=msg.isPayerSide)
+		]
 
 
 	def haveNoRouteIncoming(self, msg):

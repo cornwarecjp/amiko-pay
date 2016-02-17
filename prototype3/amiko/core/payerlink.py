@@ -72,8 +72,7 @@ class PayerLink(serializable.Serializable):
 		messages.Timeout          : self.msg_timeout,
 		messages.Receipt          : self.msg_receipt,
 		messages.PayerLink_Confirm: self.msg_confirm,
-		messages.HavePayerRoute   : self.msg_havePayerRoute,
-		messages.HavePayeeRoute   : self.msg_havePayeeRoute
+		messages.HaveRoute        : self.msg_haveRoute,
 		}[msg.__class__](msg)
 
 
@@ -167,38 +166,21 @@ class PayerLink(serializable.Serializable):
 		return ret
 
 
-	def msg_havePayerRoute(self, msg):
-		log.log("Payer: HavePayerRoute received")
+	def msg_haveRoute(self, msg):
+		log.log("Payer: HaveRoute received")
 
-		self.state = \
-		{
-		self.states.confirmed    : self.states.hasPayerRoute,
-		self.states.hasPayeeRoute: self.states.locked
-		}[self.state]
-
-		ret = []
-
-		#If both routes are present, start locking
-		if self.state == self.states.locked:
-			ret.append(
-				messages.Lock(
-					ID=messages.payerLocalID,
-					transactionID=self.transactionID,
-					isPayerSide=True,
-					payload=[])
-				)
-
-		return ret
-
-
-	def msg_havePayeeRoute(self, msg):
-		log.log("Payer: HavePayeeRoute received")
-
-		self.state = \
-		{
-		self.states.confirmed    : self.states.hasPayeeRoute,
-		self.states.hasPayerRoute: self.states.locked
-		}[self.state]
+		if msg.isPayerSide:
+			self.state = \
+			{
+			self.states.confirmed    : self.states.hasPayerRoute,
+			self.states.hasPayeeRoute: self.states.locked
+			}[self.state]
+		else:
+			self.state = \
+			{
+			self.states.confirmed    : self.states.hasPayeeRoute,
+			self.states.hasPayerRoute: self.states.locked
+			}[self.state]
 
 		ret = []
 

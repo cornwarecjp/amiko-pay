@@ -77,8 +77,7 @@ class NodeState(serializable.Serializable):
 		messages.MakeRoute       : self.msg_makeRoute,
 		messages.HaveNoRoute     : self.msg_haveNoRoute,
 		messages.CancelRoute     : self.msg_cancelRoute,
-		messages.HavePayerRoute  : self.msg_havePayerRoute,
-		messages.HavePayeeRoute  : self.msg_havePayeeRoute,
+		messages.HaveRoute       : self.msg_haveRoute,
 		messages.Lock            : self.msg_lock,
 		messages.Commit          : self.msg_commit,
 		messages.SettleCommit    : self.msg_settleCommit,
@@ -322,7 +321,7 @@ class NodeState(serializable.Serializable):
 
 	def msg_cancelRoute(self, msg):
 		try:
-			if msg.payerSide:
+			if msg.isPayerSide:
 				tx = self.findTransaction(
 					transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=True)
 			else:
@@ -349,24 +348,23 @@ class NodeState(serializable.Serializable):
 		return ret
 
 
-	def msg_havePayerRoute(self, msg):
-		tx = self.findTransaction(
-			transactionID=msg.transactionID, payeeID=msg.ID, isPayerSide=True)
-		payer = self.__getLinkObject(tx.payerID)
-		msg.ID = tx.payerID
-		return payer.handleMessage(msg)
-
-
-	def msg_havePayeeRoute(self, msg):
+	def msg_haveRoute(self, msg):
 		#Special case for payee->payer transmission of this message type:
 		if msg.ID == messages.payerLocalID:
 			return self.payerLink.handleMessage(msg)
 
-		tx = self.findTransaction(
-			transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=False)
-		payee = self.__getLinkObject(tx.payeeID)
-		msg.ID = tx.payeeID
-		return payee.handleMessage(msg)
+		if msg.isPayerSide:
+			tx = self.findTransaction(
+				transactionID=msg.transactionID, payeeID=msg.ID, isPayerSide=True)
+			link = self.__getLinkObject(tx.payerID)
+			msg.ID = tx.payerID
+		else:
+			tx = self.findTransaction(
+				transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=False)
+			link = self.__getLinkObject(tx.payeeID)
+			msg.ID = tx.payeeID
+
+		return link.handleMessage(msg)
 
 
 	def msg_lock(self, msg):

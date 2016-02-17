@@ -233,20 +233,22 @@ class Test(unittest.TestCase):
 
 
 	def test_msg_havePayerRoute(self):
-		"Test msg_havePayerRoute"
+		"Test msg_haveRoute (payer side)"
 
 		self.assertRaises(Exception, self.payerLink.handleMessage,
-			messages.HavePayerRoute(
+			messages.HaveRoute(
 				ID=messages.payerLocalID,
-				transactionID=self.payerLink.transactionID
+				transactionID=self.payerLink.transactionID,
+				isPayerSide=True
 				))
 
 		self.payerLink.state = payerlink.PayerLink.states.confirmed
 
 		ret = self.payerLink.handleMessage(
-			messages.HavePayerRoute(
+			messages.HaveRoute(
 				ID=messages.payerLocalID,
-				transactionID=self.payerLink.transactionID
+				transactionID=self.payerLink.transactionID,
+				isPayerSide=True
 				))
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.hasPayerRoute)
@@ -256,9 +258,10 @@ class Test(unittest.TestCase):
 		self.payerLink.state = payerlink.PayerLink.states.hasPayeeRoute
 
 		ret = self.payerLink.handleMessage(
-			messages.HavePayerRoute(
+			messages.HaveRoute(
 				ID=messages.payerLocalID,
-				transactionID=self.payerLink.transactionID
+				transactionID=self.payerLink.transactionID,
+				isPayerSide=True
 				))
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.locked)
@@ -271,20 +274,22 @@ class Test(unittest.TestCase):
 
 
 	def test_msg_havePayeeRoute(self):
-		"Test msg_havePayeeRoute"
+		"Test msg_haveRoute (payee side)"
 
 		self.assertRaises(Exception, self.payerLink.handleMessage,
-			messages.HavePayeeRoute(
+			messages.HaveRoute(
 				ID=messages.payerLocalID,
-				transactionID=self.payerLink.transactionID
+				transactionID=self.payerLink.transactionID,
+				isPayerSide=False
 				))
 
 		self.payerLink.state = payerlink.PayerLink.states.confirmed
 
 		ret = self.payerLink.handleMessage(
-			messages.HavePayeeRoute(
+			messages.HaveRoute(
 				ID=messages.payerLocalID,
-				transactionID=self.payerLink.transactionID
+				transactionID=self.payerLink.transactionID,
+				isPayerSide=False
 				))
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.hasPayeeRoute)
@@ -294,9 +299,10 @@ class Test(unittest.TestCase):
 		self.payerLink.state = payerlink.PayerLink.states.hasPayerRoute
 
 		ret = self.payerLink.handleMessage(
-			messages.HavePayeeRoute(
+			messages.HaveRoute(
 				ID=messages.payerLocalID,
-				transactionID=self.payerLink.transactionID
+				transactionID=self.payerLink.transactionID,
+				isPayerSide=False
 				))
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.locked)

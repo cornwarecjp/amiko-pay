@@ -152,6 +152,12 @@ class ChannelMessage(ProtocolMessage):
 serializable.registerClass(ChannelMessage)
 
 
+class Deposit(ProtocolMessage):
+	attributes = {'ID': None}
+	serializableAttributes = {'channelIndex': 0, 'channelClass': ''} #TODO: add payload?
+serializable.registerClass(Deposit)
+
+
 class Receipt(ProtocolMessage):
 	attributes = {'ID': None}
 	serializableAttributes = {'amount':0, 'receipt':'', 'transactionID':'', 'meetingPoints':[]}
@@ -191,28 +197,16 @@ class CancelRoute(ProtocolMessage):
 serializable.registerClass(CancelRoute)
 
 
-class HavePayerRoute(ProtocolMessage):
-	attributes = {'ID': None}
-	serializableAttributes = {'transactionID': ''}
-serializable.registerClass(HavePayerRoute)
-
-
-class HavePayeeRoute(ProtocolMessage):
-	attributes = {'ID': None}
-	serializableAttributes = {'transactionID': ''}
-serializable.registerClass(HavePayeeRoute)
-
-
 class HaveNoRoute(ProtocolMessage):
 	attributes = {'ID': None}
 	serializableAttributes = {'transactionID': '', 'isPayerSide': None}
 serializable.registerClass(HaveNoRoute)
 
 
-class Deposit(ProtocolMessage):
+class HaveRoute(ProtocolMessage):
 	attributes = {'ID': None}
-	serializableAttributes = {'channelIndex': 0, 'channelClass': ''} #TODO: add payload?
-serializable.registerClass(Deposit)
+	serializableAttributes = {'transactionID': '', 'isPayerSide': None}
+serializable.registerClass(HaveRoute)
 
 
 class Lock(ProtocolMessage):
