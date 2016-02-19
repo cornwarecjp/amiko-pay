@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #    timestamp.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -103,6 +103,7 @@ def make(args):
 		data = f.read()
 
 	dataHash = crypto.SHA256(crypto.SHA256(data))
+	print "Data hash: ", dataHash.encode("hex")
 
 	fee =    10000 #0.1 mBTC = 0.0001 BTC
 	connect()
