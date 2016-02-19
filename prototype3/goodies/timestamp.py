@@ -150,7 +150,7 @@ def make(args):
 		raise Exception("Something went wrong: merkle root value mismatch")
 
 	dt = datetime.utcfromtimestamp(blockInfo["time"])
-	timeText = dt.strftime("%A %B %d %I:%m:%S %p %Y (UTC)")
+	timeText = dt.strftime("%A %B %d %I:%M:%S %p %Y (UTC)")
 
 	with open(args[1], "wb") as f:
 		f.write("#Timestamp certificate for the file %s\n\n" % args[0])
@@ -269,7 +269,7 @@ def verify(args):
 		certificateValues["blockTime"] == str(blockInfo["time"]))
 
 	dt = datetime.utcfromtimestamp(blockInfo["time"])
-	timeText = dt.strftime("%A %B %d %I:%m:%S %p %Y (UTC)")
+	timeText = dt.strftime("%A %B %d %I:%M:%S %p %Y (UTC)")
 
 	test("Block time corresponds with timestamp",
 		certificateValues["timestamp"] == timeText)
