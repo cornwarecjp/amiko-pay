@@ -126,6 +126,17 @@ class IOUChannel(PlainChannel):
 
 			#TODO: check/fix state (e.g. ongoing transactions)
 
+			if msg.transaction is None:
+				#Closing without transaction is only allowed when there are no
+				#funds to be transferred:
+				if self.amountLocal > 0:
+					raise Exception('Peer closed the channel without sending the funds he owes us!')
+
+				self.state = self.states.closed
+				self.withdrawTxID = None
+
+				return [], None
+
 			tx = Transaction.deserialize(msg.transaction)
 
 			#TODO: check transaction contents!!!!
@@ -156,6 +167,13 @@ class IOUChannel(PlainChannel):
 				mBTC = 100000 #Satoshi
 
 				amount = self.amountRemote
+
+				#In case there is nothing to be sent, don't make a Bitcoin
+				#transaction. Tell the peer we close the channel without a
+				#transaction.
+				if amount == 0:
+					return [IOUChannel_WithdrawTransaction(transaction=None)], None
+
 				fee = mBTC / 100 #TODO: use configurable fee
 
 				toHash = decodeBase58Check(self.address, 0) #PUBKEY_ADDRESS = 0
