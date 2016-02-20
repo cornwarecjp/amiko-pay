@@ -118,6 +118,8 @@ class Node(threading.Thread):
 			self.settings.listenHost, self.settings.listenPort, callback=self)
 
 		self.bitcoind = bitcoind.Bitcoind(self.settings)
+		if not self.bitcoind.isConnected():
+			raise Exception('Connecting to bitcoind failed; see the log file for details.')
 
 		self.payLog = paylog.PayLog(self.settings)
 

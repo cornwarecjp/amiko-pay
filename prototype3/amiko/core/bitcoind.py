@@ -69,7 +69,20 @@ class Bitcoind_Real:
 		Returns whether this object is connected.
 		"""
 
-		return self.access != None
+		if self.access is None:
+			log.log('Bitcoind access object does not exist (e.g. because the Bitcoin-RPC URL is incorrect)')
+			return False
+
+		try:
+			info = self.access.getinfo()
+		except:
+			log.log('Bitcoind access object exists, but gives an error when executing a command:')
+			log.logException()
+			return False
+
+		log.log('Connected to bitcoind version %s' % info['version'])
+
+		return True
 		
 
 	def getBalance(self):
