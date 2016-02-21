@@ -32,12 +32,13 @@ from ..utils import utils
 
 import messages
 import log
+import linkbase
 
 from ..utils import serializable
 
 
 
-class PayerLink(serializable.Serializable):
+class PayerLink(linkbase.LinkBase, serializable.Serializable):
 	states = utils.Enum([
 		"initial", "hasReceipt", "confirmed",
 		"hasPayerRoute", "hasPayeeRoute",
@@ -197,16 +198,8 @@ class PayerLink(serializable.Serializable):
 		return ret
 
 
-	def makeRouteIncoming(self, msg):
-		return [] #NOP
-
-
 	def haveNoRouteOutgoing(self, transactionID, isPayerSide):
 		#TODO: go to state cancelled
-		return [] #NOP
-
-
-	def cancelIncoming(self, msg):
 		return [] #NOP
 
 
@@ -224,10 +217,6 @@ class PayerLink(serializable.Serializable):
 				)
 
 		return []
-
-
-	def lockIncoming(self, msg):
-		return [] #This is called when our own lock message is processed -> NOP
 
 
 	def requestCommitOutgoing(self, msg):

@@ -1,5 +1,5 @@
-#    meetingpoint.py
-#    Copyright (C) 2015-2016 by CJP
+#    linkbase.py
+#    Copyright (C) 2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -26,54 +26,61 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
-import copy
 
-from ..utils import serializable
+class LinkBase:
+	"""
+	This is a base-class for all link-like objects.
+	The base class defines a common interface, consisting of a couple of
+	methods. The default behavior of each method is to return an empty list of
+	messages. Derived classes can override these methods to implement other
+	behavior.
+	"""
 
-import messages
-import linkbase
-
-
-
-class MeetingPoint(linkbase.LinkBase, serializable.Serializable):
-	serializableAttributes = {'ID': ''}
 
 	def makeRouteOutgoing(self, msg):
-		if msg.meetingPointID != self.ID:
-			#This is not the meeting point mentioned in the message, so
-			#this meeting point will not be part of the route.
-			return \
-			[
-			messages.HaveNoRoute(
-				ID=self.ID, transactionID=msg.transactionID, isPayerSide=msg.isPayerSide)
-			]
+		return []
 
-		return \
-		[
-		messages.HaveRoute(ID=self.ID, transactionID=msg.transactionID, isPayerSide=msg.isPayerSide)
-		]
+
+	def makeRouteIncoming(self, msg):
+		return []
+
+
+	def haveNoRouteOutgoing(self, transactionID, isPayerSide):
+		return []
+
+
+	def haveNoRouteIncoming(self, msg):
+		return []
+
+
+	def cancelOutgoing(self, msg):
+		return []
+
+
+	def cancelIncoming(self, msg):
+		return []
 
 
 	def lockOutgoing(self, msg):
-		msg = copy.deepcopy(msg)
-		msg.ID = self.ID
-		msg.isPayerSide = False
-		return [msg]
+		return []
+
+
+	def lockIncoming(self, msg):
+		return []
 
 
 	def requestCommitOutgoing(self, msg):
-		msg = copy.deepcopy(msg)
-		msg.ID = self.ID
-		msg.isPayerSide = True
-		return [msg]
+		return []
+
+
+	def requestCommitIncoming(self, msg):
+		return []
 
 
 	def settleCommitOutgoing(self, msg):
-		msg = copy.deepcopy(msg)
-		msg.ID = self.ID
-		msg.isPayerSide = False
-		return [msg]
+		return []
 
 
-serializable.registerClass(MeetingPoint)
+	def settleCommitIncoming(self, msg):
+		return []
 

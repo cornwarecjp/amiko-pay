@@ -31,6 +31,7 @@ import copy
 import log
 import settings
 import messages
+import linkbase
 
 from ..utils import serializable
 
@@ -39,7 +40,7 @@ class RouteNotInChannelsException(Exception):
 	pass
 
 
-class Link(serializable.Serializable):
+class Link(linkbase.LinkBase, serializable.Serializable):
 	serializableAttributes = {'remoteID': '', 'localID': '', 'channels':[]}
 
 

@@ -32,12 +32,13 @@ from ..utils import utils
 import log
 import settings
 import messages
+import linkbase
 
 from ..utils import serializable
 
 
 
-class PayeeLink(serializable.Serializable):
+class PayeeLink(linkbase.LinkBase, serializable.Serializable):
 	states = utils.Enum([
 		"initial", "confirmed",
 		"sentRequestCommit", "cancelled", "committed"
@@ -148,16 +149,8 @@ class PayeeLink(serializable.Serializable):
 		]
 
 
-	def makeRouteIncoming(self, msg):
-		return [] #NOP
-
-
 	def haveNoRouteOutgoing(self, transactionID, isPayerSide):
 		#TODO: go to state cancelled
-		return [] #NOP
-
-
-	def cancelIncoming(self, msg):
 		return [] #NOP
 
 
@@ -183,10 +176,6 @@ class PayeeLink(serializable.Serializable):
 			messages.SettleCommit(token=self.token)
 			)
 		]
-
-
-	def requestCommitIncoming(self, msg):
-		return [] #This is called when our own request commit message is processed -> NOP
 
 
 	def settleCommitOutgoing(self, msg):
