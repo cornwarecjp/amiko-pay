@@ -32,6 +32,7 @@ import unittest
 import testenvironment
 
 from test_log                  import Test as test_log
+from test_linkbase             import Test as test_linkbase
 from test_meetingpoint         import Test as test_meetingpoint
 from test_network              import Test as test_network
 from test_nodestate            import Test as test_nodestate
