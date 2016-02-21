@@ -1,8 +1,8 @@
 test:
 	#no automated test running yet
 	python twonodes.py
-	python largenetwork.py
+	python largenetwork_success.py
 
 clean:
-	-rm *.dat *.log
+	-rm *.dat *.log *.pyc
 
