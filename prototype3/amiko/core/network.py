@@ -91,7 +91,8 @@ class Connection(asyncore.dispatcher_with_send):
 					if not (self.localID is None):
 						raise Exception("Received Pay message while already connected")
 					if self.network.interfaceExists(msg.ID):
-						raise Exception("Received Pay message for payment that already has a connection")
+						log.log("Received Pay message for payment that already has a connection; closing the new one.")
+						self.network.closeConnection(self)
 					self.localID = msg.ID
 				else:
 					#Send confirmation on non-connect messages:
@@ -230,4 +231,9 @@ class Network:
 				self.connections[i].close()
 				del self.connections[i]
 				break
+
+
+	def closeConnection(self, connection):
+		connection.close()
+		self.connections.remove(connection)
 
