@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #    test_utils.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -65,6 +65,13 @@ class Test(unittest.TestCase):
 		self.assertEqual(enum.bar, "bar")
 		with self.assertRaises(AttributeError):
 			e = enum.foobar
+
+
+		enum = utils.Enum(["foobar", "baz"], parentEnum=enum)
+
+		elements = [e for e in enum]
+		elements.sort()
+		self.assertEqual(elements, ["bar", "baz", "foo", "foobar"])
 
 
 	def test_dictSum(self):
