@@ -30,7 +30,7 @@
 import time
 import pprint
 import sys
-sys.path.append('../..')
+sys.path.append('..')
 
 from amiko.channels import plainchannel
 
