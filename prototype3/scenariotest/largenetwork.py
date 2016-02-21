@@ -29,138 +29,22 @@
 
 import time
 import pprint
-import json
 import sys
 sys.path.append('..')
 
 from amiko.channels import plainchannel
 
 from amiko import node
-from amiko.core import settings
 
 
+import largenetwork_setup
 
-"""
-The network has the following shape:
-
-            (3)         (6)
-             |           |
-(0) - (1) - (2) - (4) - (5) - (7)
-             |           |
-            (8)         (10)
-             |           |
-            (9)         (11)
-
-Payment is between 0 and 7
-Meeting point is 4
-"""
-
-linkDefinitions = \
-[
-	[1],          #0
-	[0, 2],       #1
-	[1, 3, 4, 8], #2
-	[2],          #3
-	[2, 5],       #4
-	[4, 6, 7, 10],#5
-	[5],          #6
-	[5],          #7
-	[2, 9],       #8
-	[8],          #9
-	[5, 11],     #10
-	[10]         #11
-]
-
-ports = [4321+i for i in range(len(linkDefinitions))]
 
 nodes = []
-for i in range(len(linkDefinitions)):
-	links = linkDefinitions[i]
-	s = settings.Settings()
-	s.name = 'Node %d' % i
-	s.bitcoinRPCURL = "dummy"
-	s.listenHost = "localhost"
-	s.listenPort = ports[i]
-	s.advertizedHost = s.listenHost
-	s.advertizedPort = s.listenPort
-	s.stateFile = "state_%d.dat" % i
-	s.payLogFile = "payments_%d.log" % i
-	s.externalMeetingPoints = ["Node4"]
-
-	meetingPoints = '{}'
-	if i == 4:
-		meetingPoints = '{"Node4": {"_class": "MeetingPoint", "transactions": {}, "ID": "Node4"}}'
-
-	linkStates = []
-	linkConnections = []
-	for link in links:
-		localID = "link_to_%d" % link
-		remoteID = "link_to_%d" % i
-		linkStates.append(
-			""""%s":
-			{
-				"_class": "Link",
-				"channels":
-				[
-				{
-				"_class": "PlainChannel",
-				"state": "open",
-				"amountLocal": 1000,
-				"amountRemote": 1000,
-				"transactionsIncomingLocked": {},
-				"transactionsOutgoingLocked": {},
-				"transactionsIncomingReserved": {},
-				"transactionsOutgoingReserved": {}
-				}
-				],
-				"localID": "%s",
-				"remoteID": "%s"
-			}""" % (localID, localID, remoteID)
-			)
-		linkConnections.append(
-			""""%s":
-			{
-				"_class": "PersistentConnection",
-				"connectMessage":
-				{
-					"_class": "ConnectLink",
-					"ID": "%s",
-					"callbackHost": "localhost", "callbackPort": %d, "callbackID": "%s"
-				},
-				"messages": [], "lastIndex": -1, "notYetTransmitted": 0,
-				"host": "localhost", "port": %d,
-				"closing": false
-			}""" % (localID, remoteID, ports[i], localID, ports[link])
-			)
-
-	linkStates = ",\n".join(linkStates)
-	linkConnections = ",\n".join(linkConnections)
-
-	state = \
-	"""{
-		"_class": "NodeState",
-		"links":
-		{
-		%s
-		},
-		"connections":
-		{
-		%s
-		},
-		"transactions": [],
-		"meetingPoints": %s,
-		"payeeLinks": {},
-		"payerLink": null,
-		"timeoutMessages": []
-	}""" % (linkStates, linkConnections, meetingPoints)
-
-	with open(s.stateFile, "wb") as f:
-		f.write(state)
-
+for s in largenetwork_setup.makeNodes():
 	newNode = node.Node(s)
 	newNode.start()
 	nodes.append(newNode)
-
 
 
 def printNodeInfo():
