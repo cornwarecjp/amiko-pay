@@ -1,7 +1,10 @@
 test:
 	#no automated test running yet
+	python twonodes.py
+	python largenetwork.py
 
 clean:
-	make -C twonodes clean
-	make -C largenetwork clean
+	-rm *.dat *.log
+	#make -C twonodes clean
+	#make -C largenetwork clean
 
