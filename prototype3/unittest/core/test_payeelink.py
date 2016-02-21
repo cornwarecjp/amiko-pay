@@ -146,24 +146,10 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.isPayerSide, False)
 
 
-	def test_makeRouteIncoming(self):
-		"Test makeRouteIncoming"
-
-		ret = self.payeeLink.makeRouteIncoming(None)
-		self.assertEqual(len(ret), 0)
-
-
 	def test_haveNoRouteOutgoing(self):
 		"Test haveNoRouteOutgoing"
 
 		ret = self.payeeLink.haveNoRouteOutgoing(None, None)
-		self.assertEqual(len(ret), 0)
-
-
-	def test_cancelIncoming(self):
-		"Test cancelIncoming"
-
-		ret = self.payeeLink.cancelIncoming(None)
 		self.assertEqual(len(ret), 0)
 
 
@@ -199,15 +185,6 @@ class Test(unittest.TestCase):
 		self.assertTrue(isinstance(msg, messages.SettleCommit))
 		self.assertEqual(msg.token, self.payeeLink.token)
 		self.assertEqual(msg.isPayerSide, None)
-
-
-	def test_requestCommitIncoming(self):
-		"Test requestCommitIncoming"
-
-		ret = self.payeeLink.requestCommitIncoming(
-			messages.RequestCommit(token=self.payeeLink.token))
-
-		self.assertEqual(len(ret), 0)
 
 
 	def test_settleCommitOutgoing(self):

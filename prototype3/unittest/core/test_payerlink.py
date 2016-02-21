@@ -314,31 +314,10 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.isPayerSide, True)
 
 
-	def test_lockIncoming(self):
-		"Test lockIncoming"
-
-		ret = self.payerLink.lockIncoming(messages.Lock(transactionID=self.payerLink.transactionID))
-		self.assertEqual(len(ret), 0)
-
-
-	def test_makeRouteIncoming(self):
-		"Test makeRouteIncoming"
-
-		ret = self.payerLink.makeRouteIncoming(None)
-		self.assertEqual(len(ret), 0)
-
-
 	def test_haveNoRouteOutgoing(self):
 		"Test haveNoRouteOutgoing"
 
 		ret = self.payerLink.haveNoRouteOutgoing(None, None)
-		self.assertEqual(len(ret), 0)
-
-
-	def test_cancelIncoming(self):
-		"Test cancelIncoming"
-
-		ret = self.payerLink.cancelIncoming(None)
 		self.assertEqual(len(ret), 0)
 
 
