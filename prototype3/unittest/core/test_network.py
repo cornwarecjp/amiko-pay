@@ -88,6 +88,17 @@ class Test(unittest.TestCase):
 		self.assertEqual(c2.localID, 'remoteID') #unchanged
 		self.assertEqual(len(self.messages), 0) #nothing received
 
+		#Sending another connect message (illegal):
+		self.messages = []
+		self.network.sendOutboundMessage(0, messages.OutboundMessage(
+			localID='localID',
+			message=messages.ConnectLink(ID='remoteID2')))
+
+		self.network.processNetworkEvents(timeout=0.01)
+
+		self.assertEqual(c2.localID, 'remoteID') #unchanged
+		self.assertEqual(len(self.messages), 0) #nothing received
+
 		#Sending another message back:
 		self.network.sendOutboundMessage(42, messages.OutboundMessage(
 			localID='remoteID',
@@ -161,6 +172,34 @@ class Test(unittest.TestCase):
 		self.assertEqual(len(stillOpen), 1) #exactly one of the original connections is still open
 		self.assertTrue(self.network.interfaceExists('localID'))
 		self.assertTrue(self.network.interfaceExists('remoteID'))
+
+		#Check that checkForDuplicateConnections doesn't fail when there is only
+		#one connection for an interface.
+		self.network.checkForDuplicateConnections('localID')
+
+
+	def test_duplicatePay(self):
+		"Test duplicate pay scenario"
+
+		c1 = self.network.makeConnection(
+			('localhost', 4321), 'payerLocal0', messages.Pay(ID='requestID'))
+		c2 = self.network.makeConnection(
+			('localhost', 4321), 'payerLocal1', messages.Pay(ID='requestID'))
+
+		self.assertEqual(len(self.network.connections), 2)
+		self.assertTrue(c1 in self.network.connections)
+		self.assertTrue(c2 in self.network.connections)
+		self.assertTrue(self.network.interfaceExists('payerLocal0'))
+		self.assertTrue(self.network.interfaceExists('payerLocal1'))
+
+		self.network.processNetworkEvents(timeout=0.01)
+		self.network.processNetworkEvents(timeout=0.01)
+		self.network.processNetworkEvents(timeout=0.01)
+
+		self.assertEqual(len(self.network.connections), 3)
+		self.assertTrue(self.network.interfaceExists('payerLocal0'))
+		self.assertTrue(self.network.interfaceExists('payerLocal1'))
+		self.assertTrue(self.network.interfaceExists('requestID'))
 
 
 	def test_acceptError(self):
