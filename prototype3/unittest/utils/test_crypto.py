@@ -353,6 +353,15 @@ class Test(unittest.TestCase):
 		t.join()
 
 
+	def test_threadIDCallback(self):
+		"Test threadIDCallback function"
+
+		self.assertEqual(
+			crypto.threadIDCallback(),
+			long(threading.currentThread().ident)
+			)
+
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
