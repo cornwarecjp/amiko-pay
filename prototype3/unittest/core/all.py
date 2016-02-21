@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #    all.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -32,6 +32,7 @@ import unittest
 import testenvironment
 
 from test_log                  import Test as test_log
+from test_meetingpoint         import Test as test_meetingpoint
 from test_network              import Test as test_network
 from test_nodestate            import Test as test_nodestate
 from test_payeelink            import Test as test_payeelink
