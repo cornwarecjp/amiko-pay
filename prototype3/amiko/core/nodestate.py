@@ -79,7 +79,7 @@ class NodeState(serializable.Serializable):
 		messages.CancelRoute     : self.msg_cancelRoute,
 		messages.HaveRoute       : self.msg_haveRoute,
 		messages.Lock            : self.msg_lock,
-		messages.Commit          : self.msg_commit,
+		messages.RequestCommit   : self.msg_requestCommit,
 		messages.SettleCommit    : self.msg_settleCommit,
 
 		messages.Pay    : self.msg_passToPayee,
@@ -379,20 +379,20 @@ class NodeState(serializable.Serializable):
 		return ret
 
 
-	def msg_commit(self, msg):
+	def msg_requestCommit(self, msg):
 		transactionID = settings.hashAlgorithm(msg.token)
 		try:
 			tx = self.findTransaction(
 				transactionID=transactionID, payeeID=msg.ID, isPayerSide=msg.isPayerSide)
 		except TransactionNotFound:
-			log.log('Received a commit message for an unknown transaction. Probably we\'ve already settled, so we ignore this.')
+			log.log('Received a request commit message for an unknown transaction. Probably we\'ve already settled, so we ignore this.')
 			return []
 
 		payer = self.__getLinkObject(tx.payerID)
 		payee = self.__getLinkObject(tx.payeeID)
 
-		ret = payee.commitIncoming(msg)
-		ret += payer.commitOutgoing(msg)
+		ret = payee.requestCommitIncoming(msg)
+		ret += payer.requestCommitOutgoing(msg)
 		ret += payee.settleCommitOutgoing(
 			messages.SettleCommit(token=msg.token, isPayerSide=msg.isPayerSide))
 

@@ -41,7 +41,7 @@ class PayerLink(serializable.Serializable):
 	states = utils.Enum([
 		"initial", "hasReceipt", "confirmed",
 		"hasPayerRoute", "hasPayeeRoute",
-		"locked", "cancelled", "receivedCommit", "committed"
+		"locked", "cancelled", "receivedRequestCommit", "committed"
 		])
 
 	serializableAttributes = \
@@ -83,7 +83,7 @@ class PayerLink(serializable.Serializable):
 			self.state = self.states.cancelled
 			return [messages.SetEvent(event=messages.SetEvent.events.receiptReceived)]
 
-		elif self.state == self.states.receivedCommit and msg.state == self.states.receivedCommit:
+		elif self.state == self.states.receivedRequestCommit and msg.state == self.states.receivedRequestCommit:
 			#settleCommit time-out: assume settled anyway, since we've received the commit token
 			log.log("Payer: settleCommit time-out -> committed")
 			self.state = self.states.committed
@@ -230,13 +230,13 @@ class PayerLink(serializable.Serializable):
 		return [] #This is called when our own lock message is processed -> NOP
 
 
-	def commitOutgoing(self, msg):
+	def requestCommitOutgoing(self, msg):
 		if self.state != self.states.locked:
 			raise Exception(
-				"commitOutgoing should not be called in state %s" % \
+				"requestCommitOutgoing should not be called in state %s" % \
 					self.state
 				)
-		self.state = self.states.receivedCommit
+		self.state = self.states.receivedRequestCommit
 		self.token = msg.token #TODO: maybe check?
 
 		return \

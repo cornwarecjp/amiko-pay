@@ -40,7 +40,7 @@ from ..utils import serializable
 class PayeeLink(serializable.Serializable):
 	states = utils.Enum([
 		"initial", "confirmed",
-		"sentCommit", "cancelled", "committed"
+		"sentRequestCommit", "cancelled", "committed"
 		])
 
 	serializableAttributes = \
@@ -174,19 +174,19 @@ class PayeeLink(serializable.Serializable):
 	def lockOutgoing(self, msg):
 		log.log("Payee: locked; committing")
 
-		self.state = self.states.sentCommit
+		self.state = self.states.sentRequestCommit
 
 		return \
 		[
-		messages.Commit(ID=self.ID, token=self.token, isPayerSide=False),
+		messages.RequestCommit(ID=self.ID, token=self.token, isPayerSide=False),
 		messages.OutboundMessage(localID = self.ID, message = \
 			messages.SettleCommit(token=self.token)
 			)
 		]
 
 
-	def commitIncoming(self, msg):
-		return [] #This is called when our own commit message is processed -> NOP
+	def requestCommitIncoming(self, msg):
+		return [] #This is called when our own request commit message is processed -> NOP
 
 
 	def settleCommitOutgoing(self, msg):

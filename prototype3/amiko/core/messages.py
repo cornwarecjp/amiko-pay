@@ -215,10 +215,10 @@ class Lock(ProtocolMessage):
 serializable.registerClass(Lock)
 
 
-class Commit(ProtocolMessage):
+class RequestCommit(ProtocolMessage):
 	attributes = {'ID': None}
 	serializableAttributes = {'token': '', 'isPayerSide': None}
-serializable.registerClass(Commit)
+serializable.registerClass(RequestCommit)
 
 
 class SettleCommit(ProtocolMessage):

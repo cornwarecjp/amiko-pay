@@ -68,15 +68,15 @@ class MeetingPoint(serializable.Serializable):
 		return [] #This is called when our own lock message is processed -> NOP
 
 
-	def commitOutgoing(self, msg):
+	def requestCommitOutgoing(self, msg):
 		msg = copy.deepcopy(msg)
 		msg.ID = self.ID
 		msg.isPayerSide = True
 		return [msg]
 
 
-	def commitIncoming(self, msg):
-		return [] #This is called when our own commit message is processed -> NOP
+	def requestCommitIncoming(self, msg):
+		return [] #This is called when our own request commit message is processed -> NOP
 
 
 	def settleCommitOutgoing(self, msg):

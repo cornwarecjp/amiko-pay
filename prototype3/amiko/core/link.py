@@ -228,13 +228,13 @@ class Link(serializable.Serializable):
 		return []
 
 
-	def commitOutgoing(self, msg):
+	def requestCommitOutgoing(self, msg):
 		msg = copy.deepcopy(msg)
 		msg.ID = self.remoteID
 		return [messages.OutboundMessage(localID=self.localID, message=msg)]
 
 
-	def commitIncoming(self, msg):
+	def requestCommitIncoming(self, msg):
 		#TODO: check commit hash
 		return []
 

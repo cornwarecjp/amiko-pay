@@ -185,11 +185,11 @@ class Test(unittest.TestCase):
 		ret = self.payeeLink.lockOutgoing(
 			messages.Lock(transactionID="bar"))
 
-		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.sentCommit)
+		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.sentRequestCommit)
 
 		self.assertEqual(len(ret), 2)
 		msg = ret[0]
-		self.assertTrue(isinstance(msg, messages.Commit))
+		self.assertTrue(isinstance(msg, messages.RequestCommit))
 		self.assertEqual(msg.token, self.payeeLink.token)
 		self.assertEqual(msg.isPayerSide, False)
 		msg = ret[1]
@@ -201,11 +201,11 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.isPayerSide, None)
 
 
-	def test_commitIncoming(self):
-		"Test commitIncoming"
+	def test_requestCommitIncoming(self):
+		"Test requestCommitIncoming"
 
-		ret = self.payeeLink.commitIncoming(
-			messages.Commit(token=self.payeeLink.token))
+		ret = self.payeeLink.requestCommitIncoming(
+			messages.RequestCommit(token=self.payeeLink.token))
 
 		self.assertEqual(len(ret), 0)
 

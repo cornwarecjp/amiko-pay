@@ -70,11 +70,11 @@ class Test(unittest.TestCase):
 		self.assertTrue(isinstance(msg, messages.Timeout))
 		self.assertEqual(msg.state, payerlink.PayerLink.states.initial)
 
-		self.payerLink.state = payerlink.PayerLink.states.receivedCommit
+		self.payerLink.state = payerlink.PayerLink.states.receivedRequestCommit
 
 		msg = self.payerLink.getTimeoutMessage()
 		self.assertTrue(isinstance(msg, messages.Timeout))
-		self.assertEqual(msg.state, payerlink.PayerLink.states.receivedCommit)
+		self.assertEqual(msg.state, payerlink.PayerLink.states.receivedRequestCommit)
 
 
 	def test_msg_timeout_initial(self):
@@ -92,13 +92,13 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.event, messages.SetEvent.events.receiptReceived)
 
 
-	def test_msg_timeout_receivedCommit(self):
-		"Test msg_timeout (state: receivedCommit)"
+	def test_msg_timeout_receivedRequestCommit(self):
+		"Test msg_timeout (state: receivedRequestCommit)"
 
-		self.payerLink.state = payerlink.PayerLink.states.receivedCommit
+		self.payerLink.state = payerlink.PayerLink.states.receivedRequestCommit
 
 		ret = self.payerLink.handleMessage(
-			messages.Timeout(state=payerlink.PayerLink.states.receivedCommit))
+			messages.Timeout(state=payerlink.PayerLink.states.receivedRequestCommit))
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.committed)
 
@@ -147,7 +147,7 @@ class Test(unittest.TestCase):
 		"Test msg_timeout (state: other)"
 
 		ret = self.payerLink.handleMessage(
-			messages.Timeout(state=payerlink.PayerLink.states.receivedCommit))
+			messages.Timeout(state=payerlink.PayerLink.states.receivedRequestCommit))
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.initial)
 
@@ -354,18 +354,18 @@ class Test(unittest.TestCase):
 		self.assertEqual(len(ret), 0)
 
 
-	def test_commitOutgoing(self):
-		"Test commitOutgoing"
+	def test_requestCommitOutgoing(self):
+		"Test requestCommitOutgoing"
 
-		self.assertRaises(Exception, self.payerLink.commitOutgoing,
-			messages.Commit(token="bar")
+		self.assertRaises(Exception, self.payerLink.requestCommitOutgoing,
+			messages.RequestCommit(token="bar")
 			)
 
 		self.payerLink.state = payerlink.PayerLink.states.locked
 
-		ret = self.payerLink.commitOutgoing(messages.Commit(token="bar"))
+		ret = self.payerLink.requestCommitOutgoing(messages.RequestCommit(token="bar"))
 
-		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.receivedCommit)
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.receivedRequestCommit)
 		self.assertEqual(self.payerLink.token, "bar")
 
 		self.assertEqual(len(ret), 1)
@@ -373,7 +373,7 @@ class Test(unittest.TestCase):
 		self.assertTrue(isinstance(msg, messages.TimeoutMessage))
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.Timeout))
-		self.assertEqual(msg.state, payerlink.PayerLink.states.receivedCommit)
+		self.assertEqual(msg.state, payerlink.PayerLink.states.receivedRequestCommit)
 
 
 	def test_settleCommitIncoming(self):
