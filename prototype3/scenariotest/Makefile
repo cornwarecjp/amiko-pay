@@ -5,6 +5,4 @@ test:
 
 clean:
 	-rm *.dat *.log
-	#make -C twonodes clean
-	#make -C largenetwork clean
 
