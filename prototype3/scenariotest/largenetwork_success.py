@@ -88,29 +88,29 @@ class Test(unittest.TestCase):
 		verbose = '-v' in sys.argv
 
 		if verbose:
-			print "Before payment:"
+			print 'Before payment:'
 			self.printNodeInfo()
 
 		t0 = time.time()
 		#Pay from 0 to 7:
-		URL = self.nodes[7].request(123, "receipt")
+		URL = self.nodes[7].request(123, 'receipt')
 		if verbose:
-			print "Payment URL:", URL
+			print 'Payment URL:', URL
 
 		amount, receipt = self.nodes[0].pay(URL)
 		paymentState = self.nodes[0].confirmPayment(True)
 		if verbose:
-			print "Payment is ", paymentState
+			print 'Payment is ', paymentState
 		t1 = time.time()
 
 		if verbose:
-			print "Payment took %f seconds" % (t1-t0)
+			print 'Payment took %f seconds' % (t1-t0)
 
 		#Allow paylink to disconnect
 		time.sleep(0.5)
 
 		if verbose:
-			print "After payment:"
+			print 'After payment:'
 			self.printNodeInfo()
 
 

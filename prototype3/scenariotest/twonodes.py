@@ -45,16 +45,16 @@ class Test(unittest.TestCase):
 	def setUp(self):
 		settings1 = settings.Settings()
 		settings1.name = 'Node 1'
-		settings1.bitcoinRPCURL = "dummy"
-		settings1.listenHost = "localhost"
+		settings1.bitcoinRPCURL = 'dummy'
+		settings1.listenHost = 'localhost'
 		settings1.listenPort = 4322
 		settings1.advertizedHost = settings1.listenHost
 		settings1.advertizedPort = settings1.listenPort
-		settings1.stateFile = "twonodes_1.dat"
-		settings1.payLogFile = "payments1.log"
-		settings1.externalMeetingPoints = ["MeetingPoint2"]
-		with open(settings1.stateFile, "wb") as f:
-			f.write("""
+		settings1.stateFile = 'twonodes_1.dat'
+		settings1.payLogFile = 'payments1.log'
+		settings1.externalMeetingPoints = ['MeetingPoint2']
+		with open(settings1.stateFile, 'wb') as f:
+			f.write('''
 				{
 					"_class": "NodeState",
 					"links":
@@ -101,21 +101,21 @@ class Test(unittest.TestCase):
 					"payerLink": null,
 					"timeoutMessages": []
 				}
-				""")
+				''')
 		self.node1 = node.Node(settings1)
 		self.node1.start()
 
 		settings2 = settings.Settings()
 		settings2.name = 'Node 2'
-		settings2.bitcoinRPCURL = "dummy"
-		settings2.listenHost = "localhost"
+		settings2.bitcoinRPCURL = 'dummy'
+		settings2.listenHost = 'localhost'
 		settings2.listenPort = 4323
 		settings2.advertizedHost = settings2.listenHost
 		settings2.advertizedPort = settings2.listenPort
-		settings2.stateFile = "twonodes_2.dat"
-		settings2.payLogFile = "payments2.log"
-		with open(settings2.stateFile, "wb") as f:
-			f.write("""
+		settings2.stateFile = 'twonodes_2.dat'
+		settings2.payLogFile = 'payments2.log'
+		with open(settings2.stateFile, 'wb') as f:
+			f.write('''
 				{
 					"_class": "NodeState",
 					"links":
@@ -162,7 +162,7 @@ class Test(unittest.TestCase):
 					"payerLink": null,
 					"timeoutMessages": []
 				}
-				""")
+				''')
 		self.node2 = node.Node(settings2)
 		self.node2.start()
 
@@ -181,33 +181,34 @@ class Test(unittest.TestCase):
 		verbose = '-v' in sys.argv
 
 		if verbose:
-			print "Node 1:"
+			print 'Node 1:'
 			pprint.pprint(self.node1.list())
 
-			print "Node 2:"
+			print 'Node 2:'
 			pprint.pprint(self.node2.list())
 
-		URL = self.node2.request(123, "receipt")
+		URL = self.node2.request(123, 'receipt')
 		if verbose:
-			print "Payment URL:", URL
+			print 'Payment URL:', URL
 
 		amount, receipt = self.node1.pay(URL)
 
 		if verbose:
-			print "Amount: ", amount
-			print "Receipt: ", receipt
+			print 'Amount: ', amount
+			print 'Receipt: ', receipt
+
 		paymentState = self.node1.confirmPayment(True)
 		if verbose:
-			print "Payment is ", paymentState
+			print 'Payment is ', paymentState
 
 		#Allow paylink to disconnect
 		time.sleep(0.5)
 
 		if verbose:
-			print "Node 1:"
+			print 'Node 1:'
 			pprint.pprint(self.node1.list())
 
-			print "Node 2:"
+			print 'Node 2:'
 			pprint.pprint(self.node2.list())
 
 
