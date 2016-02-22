@@ -178,29 +178,37 @@ class Test(unittest.TestCase):
 	def test_success(self):
 		'Test successfully performing a transaction'
 
-		print "Node 1:"
-		pprint.pprint(self.node1.list())
+		verbose = '-v' in sys.argv
 
-		print "Node 2:"
-		pprint.pprint(self.node2.list())
+		if verbose:
+			print "Node 1:"
+			pprint.pprint(self.node1.list())
+
+			print "Node 2:"
+			pprint.pprint(self.node2.list())
 
 		URL = self.node2.request(123, "receipt")
-		print "Payment URL:", URL
+		if verbose:
+			print "Payment URL:", URL
 
 		amount, receipt = self.node1.pay(URL)
-		print "Amount: ", amount
-		print "Receipt: ", receipt
+
+		if verbose:
+			print "Amount: ", amount
+			print "Receipt: ", receipt
 		paymentState = self.node1.confirmPayment(True)
-		print "Payment is ", paymentState
+		if verbose:
+			print "Payment is ", paymentState
 
 		#Allow paylink to disconnect
 		time.sleep(0.5)
 
-		print "Node 1:"
-		pprint.pprint(self.node1.list())
+		if verbose:
+			print "Node 1:"
+			pprint.pprint(self.node1.list())
 
-		print "Node 2:"
-		pprint.pprint(self.node2.list())
+			print "Node 2:"
+			pprint.pprint(self.node2.list())
 
 
 
