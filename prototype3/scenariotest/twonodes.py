@@ -27,6 +27,8 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+import unittest
+
 import time
 import pprint
 import sys
@@ -37,157 +39,171 @@ from amiko.channels import plainchannel
 from amiko import node
 from amiko.core import settings
 
-settings1 = settings.Settings()
-settings1.name = 'Node 1'
-settings1.bitcoinRPCURL = "dummy"
-settings1.listenHost = "localhost"
-settings1.listenPort = 4322
-settings1.advertizedHost = settings1.listenHost
-settings1.advertizedPort = settings1.listenPort
-settings1.stateFile = "twonodes_1.dat"
-settings1.payLogFile = "payments1.log"
-settings1.externalMeetingPoints = ["MeetingPoint2"]
-with open(settings1.stateFile, "wb") as f:
-	f.write("""
-		{
-			"_class": "NodeState",
-			"links":
-			{
-				"node1":
+
+
+class Test(unittest.TestCase):
+	def setUp(self):
+		settings1 = settings.Settings()
+		settings1.name = 'Node 1'
+		settings1.bitcoinRPCURL = "dummy"
+		settings1.listenHost = "localhost"
+		settings1.listenPort = 4322
+		settings1.advertizedHost = settings1.listenHost
+		settings1.advertizedPort = settings1.listenPort
+		settings1.stateFile = "twonodes_1.dat"
+		settings1.payLogFile = "payments1.log"
+		settings1.externalMeetingPoints = ["MeetingPoint2"]
+		with open(settings1.stateFile, "wb") as f:
+			f.write("""
 				{
-					"_class": "Link",
-					"channels":
-					[
+					"_class": "NodeState",
+					"links":
 					{
-					"_class": "PlainChannel",
-					"state": "open",
-					"amountLocal": 1000,
-					"amountRemote": 0,
-					"transactionsIncomingLocked": {},
-					"transactionsOutgoingLocked": {},
-					"transactionsIncomingReserved": {},
-					"transactionsOutgoingReserved": {}
-					}
-					],
-					"localID": "node1",
-					"remoteID": "node2"
-				}
-			},
-			"connections":
-			{
-				"node1":
-				{
-					"_class": "PersistentConnection",
-					"connectMessage":
-					{
-						"_class": "ConnectLink",
-						"ID": "node2",
-						"callbackHost": "localhost", "callbackPort": 4322, "callbackID": "node1"
+						"node1":
+						{
+							"_class": "Link",
+							"channels":
+							[
+							{
+							"_class": "PlainChannel",
+							"state": "open",
+							"amountLocal": 1000,
+							"amountRemote": 0,
+							"transactionsIncomingLocked": {},
+							"transactionsOutgoingLocked": {},
+							"transactionsIncomingReserved": {},
+							"transactionsOutgoingReserved": {}
+							}
+							],
+							"localID": "node1",
+							"remoteID": "node2"
+						}
 					},
-					"messages": [], "lastIndex": -1, "notYetTransmitted": 0,
-					"host": "localhost", "port": 4323,
-					"closing": false
-				}
-			},
-			"transactions": [],
-			"meetingPoints": {},
-			"payeeLinks": {},
-			"payerLink": null,
-			"timeoutMessages": []
-		}
-		""")
-node1 = node.Node(settings1)
-node1.start()
-
-settings2 = settings.Settings()
-settings2.name = 'Node 2'
-settings2.bitcoinRPCURL = "dummy"
-settings2.listenHost = "localhost"
-settings2.listenPort = 4323
-settings2.advertizedHost = settings2.listenHost
-settings2.advertizedPort = settings2.listenPort
-settings2.stateFile = "twonodes_2.dat"
-settings2.payLogFile = "payments2.log"
-with open(settings2.stateFile, "wb") as f:
-	f.write("""
-		{
-			"_class": "NodeState",
-			"links":
-			{
-				"node2":
-				{
-					"_class": "Link",
-					"channels":
-					[
+					"connections":
 					{
-					"_class": "PlainChannel",
-					"state": "open",
-					"amountLocal": 0,
-					"amountRemote": 1000,
-					"transactionsIncomingLocked": {},
-					"transactionsOutgoingLocked": {},
-					"transactionsIncomingReserved": {},
-					"transactionsOutgoingReserved": {}
-					}
-					],
-					"localID": "node2",
-					"remoteID": "node1"
-				}
-			},
-			"connections":
-			{
-				"node2":
-				{
-					"_class": "PersistentConnection",
-					"connectMessage":
-					{
-						"_class": "ConnectLink",
-						"ID": "node1",
-						"callbackHost": "localhost", "callbackPort": 4323, "callbackID": "node2"
+						"node1":
+						{
+							"_class": "PersistentConnection",
+							"connectMessage":
+							{
+								"_class": "ConnectLink",
+								"ID": "node2",
+								"callbackHost": "localhost", "callbackPort": 4322, "callbackID": "node1"
+							},
+							"messages": [], "lastIndex": -1, "notYetTransmitted": 0,
+							"host": "localhost", "port": 4323,
+							"closing": false
+						}
 					},
-					"messages": [], "lastIndex": -1, "notYetTransmitted": 0,
-					"host": "localhost", "port": 4322,
-					"closing": false
+					"transactions": [],
+					"meetingPoints": {},
+					"payeeLinks": {},
+					"payerLink": null,
+					"timeoutMessages": []
 				}
-			},
-			"transactions": [],
-			"meetingPoints": {"MeetingPoint2": {"_class": "MeetingPoint", "transactions": {}, "ID": "MeetingPoint2"}},
-			"payeeLinks": {},
-			"payerLink": null,
-			"timeoutMessages": []
-		}
-		""")
-node2 = node.Node(settings2)
-node2.start()
+				""")
+		self.node1 = node.Node(settings1)
+		self.node1.start()
 
-#Allow links to connect
-time.sleep(3)
+		settings2 = settings.Settings()
+		settings2.name = 'Node 2'
+		settings2.bitcoinRPCURL = "dummy"
+		settings2.listenHost = "localhost"
+		settings2.listenPort = 4323
+		settings2.advertizedHost = settings2.listenHost
+		settings2.advertizedPort = settings2.listenPort
+		settings2.stateFile = "twonodes_2.dat"
+		settings2.payLogFile = "payments2.log"
+		with open(settings2.stateFile, "wb") as f:
+			f.write("""
+				{
+					"_class": "NodeState",
+					"links":
+					{
+						"node2":
+						{
+							"_class": "Link",
+							"channels":
+							[
+							{
+							"_class": "PlainChannel",
+							"state": "open",
+							"amountLocal": 0,
+							"amountRemote": 1000,
+							"transactionsIncomingLocked": {},
+							"transactionsOutgoingLocked": {},
+							"transactionsIncomingReserved": {},
+							"transactionsOutgoingReserved": {}
+							}
+							],
+							"localID": "node2",
+							"remoteID": "node1"
+						}
+					},
+					"connections":
+					{
+						"node2":
+						{
+							"_class": "PersistentConnection",
+							"connectMessage":
+							{
+								"_class": "ConnectLink",
+								"ID": "node1",
+								"callbackHost": "localhost", "callbackPort": 4323, "callbackID": "node2"
+							},
+							"messages": [], "lastIndex": -1, "notYetTransmitted": 0,
+							"host": "localhost", "port": 4322,
+							"closing": false
+						}
+					},
+					"transactions": [],
+					"meetingPoints": {"MeetingPoint2": {"_class": "MeetingPoint", "transactions": {}, "ID": "MeetingPoint2"}},
+					"payeeLinks": {},
+					"payerLink": null,
+					"timeoutMessages": []
+				}
+				""")
+		self.node2 = node.Node(settings2)
+		self.node2.start()
 
-print "Node 1:"
-pprint.pprint(node1.list())
+		#Allow links to connect
+		time.sleep(3)
 
-print "Node 2:"
-pprint.pprint(node2.list())
 
-URL = node2.request(123, "receipt")
-print "Payment URL:", URL
+	def tearDown(self):
+		self.node1.stop()
+		self.node2.stop()
 
-amount, receipt = node1.pay(URL)
-print "Amount: ", amount
-print "Receipt: ", receipt
-paymentState = node1.confirmPayment(True)
-print "Payment is ", paymentState
 
-#Allow paylink to disconnect
-time.sleep(0.5)
+	def test_success(self):
+		'Test successfully performing a transaction'
 
-print "Node 1:"
-pprint.pprint(node1.list())
+		print "Node 1:"
+		pprint.pprint(self.node1.list())
 
-print "Node 2:"
-pprint.pprint(node2.list())
+		print "Node 2:"
+		pprint.pprint(self.node2.list())
 
-node1.stop()
-node2.stop()
+		URL = self.node2.request(123, "receipt")
+		print "Payment URL:", URL
 
+		amount, receipt = self.node1.pay(URL)
+		print "Amount: ", amount
+		print "Receipt: ", receipt
+		paymentState = self.node1.confirmPayment(True)
+		print "Payment is ", paymentState
+
+		#Allow paylink to disconnect
+		time.sleep(0.5)
+
+		print "Node 1:"
+		pprint.pprint(self.node1.list())
+
+		print "Node 2:"
+		pprint.pprint(self.node2.list())
+
+
+
+if __name__ == '__main__':
+	unittest.main(verbosity=2)
 

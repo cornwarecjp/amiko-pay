@@ -27,6 +27,8 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+import unittest
+
 import time
 import pprint
 import sys
@@ -40,62 +42,72 @@ from amiko import node
 import largenetwork_setup
 
 
-nodes = []
-for s in largenetwork_setup.makeNodes():
-	newNode = node.Node(s)
-	newNode.start()
-	nodes.append(newNode)
+
+class Test(unittest.TestCase):
+	def setUp(self):
+		self.nodes = []
+		for s in largenetwork_setup.makeNodes():
+			newNode = node.Node(s)
+			newNode.start()
+			self.nodes.append(newNode)
+
+		#Allow links to connect
+		time.sleep(3)
 
 
-def printNodeInfo():
-	for i in range(len(nodes)):
-		print
-		print "==========================="
-		print "Node %d:" % i
-		print "==========================="
-		data = nodes[i].list()
-
-		data['links'] = \
-			{
-			ID :
-			{
-				'amountLocal' : sum([chn['amountLocal'] for chn in lnk['channels']]),
-				'amountRemote': sum([chn['amountRemote'] for chn in lnk['channels']]),
-			}
-
-			for ID, lnk in data['links'].iteritems()
-			}
-		del data['connections']
-		pprint.pprint(data)
+	def tearDown(self):
+		for n in self.nodes:
+			n.stop()
 
 
+	def printNodeInfo(self):
+		for i in range(len(self.nodes)):
+			print
+			print '==========================='
+			print 'Node %d:' % i
+			print '==========================='
+			data = self.nodes[i].list()
 
-#Allow links to connect
-time.sleep(3)
+			data['links'] = \
+				{
+				ID :
+				{
+					'amountLocal' : sum([chn['amountLocal'] for chn in lnk['channels']]),
+					'amountRemote': sum([chn['amountRemote'] for chn in lnk['channels']]),
+				}
 
-print "Before payment:"
-printNodeInfo()
-
-t0 = time.time()
-#Pay from 0 to 7:
-URL = nodes[7].request(123, "receipt")
-print "Payment URL:", URL
-
-amount, receipt = nodes[0].pay(URL)
-paymentState = nodes[0].confirmPayment(True)
-print "Payment is ", paymentState
-t1 = time.time()
-
-print "Payment took %f seconds" % (t1-t0)
-
-#Allow paylink to disconnect
-time.sleep(0.5)
-
-
-print "After payment:"
-printNodeInfo()
+				for ID, lnk in data['links'].iteritems()
+				}
+			del data['connections']
+			pprint.pprint(data)
 
 
-for n in nodes:
-	n.stop()
+	def test_success(self):
+		'Test successfully performing a transaction'
+
+		print "Before payment:"
+		self.printNodeInfo()
+
+		t0 = time.time()
+		#Pay from 0 to 7:
+		URL = self.nodes[7].request(123, "receipt")
+		print "Payment URL:", URL
+
+		amount, receipt = self.nodes[0].pay(URL)
+		paymentState = self.nodes[0].confirmPayment(True)
+		print "Payment is ", paymentState
+		t1 = time.time()
+
+		print "Payment took %f seconds" % (t1-t0)
+
+		#Allow paylink to disconnect
+		time.sleep(0.5)
+
+		print "After payment:"
+		self.printNodeInfo()
+
+
+
+if __name__ == '__main__':
+	unittest.main(verbosity=2)
 
