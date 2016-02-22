@@ -176,7 +176,7 @@ class Test(unittest.TestCase):
 
 
 	def test_success(self):
-		'Test successfully performing a transaction'
+		'Test successfully performing a transaction between neighboring nodes'
 
 		verbose = '-v' in sys.argv
 
@@ -192,24 +192,130 @@ class Test(unittest.TestCase):
 			print 'Payment URL:', URL
 
 		amount, receipt = self.node1.pay(URL)
-
 		if verbose:
 			print 'Amount: ', amount
 			print 'Receipt: ', receipt
+		self.assertEqual(amount, 123)
+		self.assertEqual(receipt, 'receipt')
 
 		paymentState = self.node1.confirmPayment(True)
 		if verbose:
 			print 'Payment is ', paymentState
+		self.assertEqual(paymentState, 'committed')
 
 		#Allow paylink to disconnect
 		time.sleep(0.5)
 
+		state1 = self.node1.list()
+		state2 = self.node2.list()
 		if verbose:
 			print 'Node 1:'
-			pprint.pprint(self.node1.list())
+			pprint.pprint(state1)
 
 			print 'Node 2:'
-			pprint.pprint(self.node2.list())
+			pprint.pprint(state2)
+		del state1['connections']['node1']['connectMessage']['dice']
+		del state2['connections']['node2']['connectMessage']['dice']
+		self.assertEqual(state1,
+			{'_class': 'NodeState',
+			'connections':
+				{
+				'node1':
+					{'_class': 'PersistentConnection',
+					'closing': False,
+					'connectMessage':
+						{'_class': 'ConnectLink',
+						'ID': 'node2',
+						'callbackHost': 'localhost',
+						'callbackID': 'node1',
+						'callbackPort': 4322
+						},
+					'host': 'localhost',
+					'lastIndex': 2,
+					'messages': [],
+					'notYetTransmitted': 0,
+					'port': 4323
+					}
+				},
+			'links':
+				{
+				'node1':
+					{'_class': 'Link',
+					'channels':
+						[
+						{'_class': 'PlainChannel',
+						'amountLocal': 877,
+						'amountRemote': 123,
+						'state': 'open',
+						'transactionsIncomingLocked': {},
+						'transactionsIncomingReserved': {},
+						'transactionsOutgoingLocked': {},
+						'transactionsOutgoingReserved': {}
+						}
+						],
+					'localID': 'node1',
+					'remoteID': 'node2'
+					}
+				},
+			'meetingPoints': {},
+			'payeeLinks': {},
+			'payerLink': None,
+			'timeoutMessages': [],
+			'transactions': []
+			})
+		self.assertEqual(state2,
+			{'_class': 'NodeState',
+			'connections':
+				{
+				'node2':
+					{'_class': 'PersistentConnection',
+					'closing': False,
+					'connectMessage':
+						{'_class': 'ConnectLink',
+						'ID': 'node1',
+						'callbackHost': 'localhost',
+						'callbackID': 'node2',
+						'callbackPort': 4323,
+						},
+					'host': 'localhost',
+					'lastIndex': 1,
+					'messages': [],
+					'notYetTransmitted': 0,
+					'port': 4322
+					}
+				},
+			'links':
+				{
+				'node2':
+					{'_class': 'Link',
+					'channels':
+						[
+						{'_class': 'PlainChannel',
+						'amountLocal': 123,
+						'amountRemote': 877,
+						'state': 'open',
+						'transactionsIncomingLocked': {},
+						'transactionsIncomingReserved': {},
+						'transactionsOutgoingLocked': {},
+						'transactionsOutgoingReserved': {}
+						}
+						],
+					'localID': 'node2',
+					'remoteID': 'node1'
+					}
+				},
+			'meetingPoints':
+				{
+				'MeetingPoint2':
+					{'_class': 'MeetingPoint',
+					'ID': 'MeetingPoint2'
+					}
+				},
+			'payeeLinks': {},
+			'payerLink': None,
+			'timeoutMessages': [],
+			'transactions': []
+			})
 
 
 
