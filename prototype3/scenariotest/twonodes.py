@@ -38,7 +38,11 @@ from amiko.channels import plainchannel
 
 from amiko import node
 from amiko.core import settings
+from amiko.core import log
 
+
+
+verbose = '-v' in sys.argv
 
 
 class Test(unittest.TestCase):
@@ -178,7 +182,7 @@ class Test(unittest.TestCase):
 	def test_success(self):
 		'Test successfully performing a transaction between neighboring nodes'
 
-		verbose = '-v' in sys.argv
+		log.log('\n\n\n\nSCENARIO TEST: twonodes.py test_succes\n')
 
 		if verbose:
 			print 'Node 1:'

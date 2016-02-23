@@ -39,6 +39,8 @@ from amiko.channels import plainchannel
 
 from amiko import node
 
+from amiko.core import log
+
 
 import largenetwork_setup
 
@@ -89,8 +91,10 @@ class Test(unittest.TestCase):
 	def test_payerSide(self):
 		'Test behavior when no route is found on the payer side'
 
+		log.log('\n\n\n\nSCENARIO TEST: largenetwork_haveNoRoute.py test_payerSide\n')
+
 		#Make a copy, where the link between 2 and 4 is broken:
-		linkDefinitions = largenetwork_setup.linkDefinitions_global[:]
+		linkDefinitions = copy.deepcopy(largenetwork_setup.linkDefinitions_global)
 		linkDefinitions[2].remove(4)
 		linkDefinitions[4].remove(2)
 
@@ -108,8 +112,10 @@ class Test(unittest.TestCase):
 	def test_payeeSide(self):
 		'Test behavior when no route is found on the payee side'
 
+		log.log('\n\n\n\nSCENARIO TEST: largenetwork_haveNoRoute.py test_payeeSide\n')
+
 		#Make a copy, where the link between 4 and 5 is broken:
-		linkDefinitions = largenetwork_setup.linkDefinitions_global[:]
+		linkDefinitions = copy.deepcopy(largenetwork_setup.linkDefinitions_global)
 		linkDefinitions[4].remove(5)
 		linkDefinitions[5].remove(4)
 

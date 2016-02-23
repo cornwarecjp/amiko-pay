@@ -39,9 +39,14 @@ from amiko.channels import plainchannel
 
 from amiko import node
 
+from amiko.core import log
+
 
 import largenetwork_setup
 
+
+
+verbose = '-v' in sys.argv
 
 
 class Test(unittest.TestCase):
@@ -94,7 +99,7 @@ class Test(unittest.TestCase):
 	def test_success(self):
 		'Test successfully performing a transaction'
 
-		verbose = '-v' in sys.argv
+		log.log('\n\n\n\nSCENARIO TEST: largenetwork_success.py test_succes\n')
 
 		data = [n.list() for n in self.nodes]
 		if verbose:
