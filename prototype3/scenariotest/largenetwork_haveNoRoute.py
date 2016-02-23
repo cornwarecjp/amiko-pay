@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#    largenetwork_success.py
+#    largenetwork_haveNoRoute.py
 #    Copyright (C) 2014-2016 by CJP
 #
 #    This file is part of Amiko Pay.
@@ -42,18 +42,13 @@ from amiko import node
 
 import largenetwork_setup
 
+verbose = '-v' in sys.argv
+
 
 
 class Test(unittest.TestCase):
 	def setUp(self):
 		self.nodes = []
-		for s in largenetwork_setup.makeNodes():
-			newNode = node.Node(s)
-			newNode.start()
-			self.nodes.append(newNode)
-
-		#Allow links to connect
-		time.sleep(3)
 
 
 	def tearDown(self):
@@ -91,10 +86,21 @@ class Test(unittest.TestCase):
 			])
 
 
-	def test_success(self):
-		'Test successfully performing a transaction'
+	def test_payerSide(self):
+		'Test behavior when no route is found on the payer side'
 
-		verbose = '-v' in sys.argv
+		#Make a coy, where the link between 2 and 4 is broken:
+		linkDefinitions = largenetwork_setup.linkDefinitions_global[:]
+		linkDefinitions[2].remove(4)
+		linkDefinitions[4].remove(2)
+
+		for s in largenetwork_setup.makeNodes(linkDefinitions):
+			newNode = node.Node(s)
+			newNode.start()
+			self.nodes.append(newNode)
+
+		#Allow links to connect
+		time.sleep(3)
 
 		data = [n.list() for n in self.nodes]
 		if verbose:
@@ -113,7 +119,7 @@ class Test(unittest.TestCase):
 		paymentState = self.nodes[0].confirmPayment(True)
 		if verbose:
 			print 'Payment is ', paymentState
-		self.assertEqual(paymentState, 'committed')
+		self.assertEqual(paymentState, 'cancelled')
 		t1 = time.time()
 
 		if verbose:
@@ -132,13 +138,7 @@ class Test(unittest.TestCase):
 		afterBalances = [self.getBalance(d) for d in data]
 		balanceChanges = [afterBalances[i] - beforeBalances[i] for i in range(len(self.nodes))]
 		for i, change in enumerate(balanceChanges):
-			if i == 0:
-				expectedChange = -123
-			elif i == 7:
-				expectedChange = 123
-			else:
-				expectedChange = 0
-			self.assertEqual(change, expectedChange)
+			self.assertEqual(change, 0)
 
 		#Check channel consistency between peers:
 		for i, d in enumerate(data):

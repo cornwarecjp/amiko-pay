@@ -51,7 +51,7 @@ Payment is between 0 and 7
 Meeting point is 4
 """
 
-linkDefinitions = \
+linkDefinitions_global = \
 [
 	[1],          #0
 	[0, 2],       #1
@@ -67,11 +67,11 @@ linkDefinitions = \
 	[10]         #11
 ]
 
-ports = [4321+i for i in range(len(linkDefinitions))]
 
-
-def makeNodes():
+def makeNodes(linkDefinitions=linkDefinitions_global):
 	ret = []
+
+	ports = [4321+i for i in range(len(linkDefinitions))]
 
 	for i in range(len(linkDefinitions)):
 		links = linkDefinitions[i]

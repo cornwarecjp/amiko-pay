@@ -29,8 +29,9 @@
 
 import unittest
 
-from largenetwork_success  import Test as largenetwork_success
-from twonodes              import Test as twonodes
+from twonodes                 import Test as twonodes
+from largenetwork_success     import Test as largenetwork_success
+from largenetwork_haveNoRoute import Test as largenetwork_haveNoRoute
 
 
 if __name__ == "__main__":
