@@ -149,8 +149,22 @@ class Test(unittest.TestCase):
 	def test_haveNoRouteOutgoing(self):
 		"Test haveNoRouteOutgoing"
 
+		self.payeeLink.state = payeelink.PayeeLink.states.confirmed
+
 		ret = self.payeeLink.haveNoRouteOutgoing(None, None)
-		self.assertEqual(len(ret), 0)
+
+		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.cancelled)
+
+		self.assertEqual(len(ret), 1)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.OutboundMessage))
+		self.assertEqual(msg.localID, "PayeeID")
+		msg = msg.message
+		self.assertTrue(isinstance(msg, messages.Cancel))
+
+		self.payeeLink.state = payeelink.PayeeLink.states.committed
+		self.assertRaises(Exception, self.payeeLink.haveNoRouteOutgoing, None, None)
+		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.committed)
 
 
 	def test_cancelOutgoing(self):

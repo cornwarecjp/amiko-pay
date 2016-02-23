@@ -73,6 +73,7 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 		messages.Timeout          : self.msg_timeout,
 		messages.Receipt          : self.msg_receipt,
 		messages.PayerLink_Confirm: self.msg_confirm,
+		messages.Cancel           : self.msg_cancel,
 		messages.HaveRoute        : self.msg_haveRoute,
 		}[msg.__class__](msg)
 
@@ -165,6 +166,23 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 			]
 
 		return ret
+
+
+	def msg_cancel(self, msg):
+		log.log("Payer: Cancel received")
+		if self.state not in (self.states.confirmed, self.states.hasPayerRoute):
+			raise Exception(
+				"msg_cancel should not be called in state %s" % \
+					self.state
+				)
+
+		self.state = self.states.cancelled
+
+		return \
+		[
+			messages.CancelRoute(transactionID=self.transactionID, isPayerSide=True),
+			messages.SetEvent(event=messages.SetEvent.events.paymentFinished)
+		]
 
 
 	def msg_haveRoute(self, msg):

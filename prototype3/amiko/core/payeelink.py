@@ -150,8 +150,20 @@ class PayeeLink(linkbase.LinkBase, serializable.Serializable):
 
 
 	def haveNoRouteOutgoing(self, transactionID, isPayerSide):
-		#TODO: go to state cancelled
-		return [] #NOP
+		if self.state != self.states.confirmed:
+			raise Exception(
+				"haveNoRouteOutgoing should not be called in state %s" % \
+					self.state
+				)
+
+		self.state = self.states.cancelled
+
+		return \
+		[
+		messages.OutboundMessage(localID = self.ID, message = \
+			messages.Cancel()
+			)
+		]
 
 
 	def cancelOutgoing(self, msg):

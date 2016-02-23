@@ -84,7 +84,7 @@ class NodeState(serializable.Serializable):
 
 		messages.Pay    : self.msg_passToPayee,
 		messages.Confirm: self.msg_passToPayee,
-		messages.Cancel : self.msg_passToPayee,
+		messages.Cancel : self.msg_passToPayerPayee,
 
 		messages.Timeout          : self.msg_passToPayer,
 		messages.Receipt          : self.msg_passToPayer,
@@ -466,6 +466,12 @@ class NodeState(serializable.Serializable):
 			return self.meetingPoints[linkID]
 
 		raise LinkNotFound("Link ID %s not found" % repr(linkID))
+
+
+	def msg_passToPayerPayee(self, msg):
+		if msg.ID == messages.payerLocalID:
+			return self.msg_passToPayer(msg)
+		return self.msg_passToPayee(msg)
 
 
 	def msg_passToPayee(self, msg):

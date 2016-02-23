@@ -232,6 +232,33 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
 
+	def test_msg_cancel(self):
+		"Test msg_cancel"
+
+		self.payerLink.transactionID = 'txID'
+
+		for s in (payerlink.PayerLink.states.confirmed, payerlink.PayerLink.states.hasPayerRoute):
+			self.payerLink.state = s
+
+			ret = self.payerLink.msg_cancel(None)
+
+			self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
+
+			self.assertEqual(len(ret), 2)
+			msg = ret[0]
+			self.assertTrue(isinstance(msg, messages.CancelRoute))
+			self.assertTrue(msg.transactionID, 'txID')
+			self.assertTrue(msg.isPayerSide, True)
+			msg = ret[1]
+			self.assertTrue(isinstance(msg, messages.SetEvent))
+			self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
+
+		self.payerLink.state = payerlink.PayerLink.states.locked
+		self.assertRaises(Exception, self.payerLink.msg_cancel, None)
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.locked)
+
+
+
 	def test_msg_havePayerRoute(self):
 		"Test msg_haveRoute (payer side)"
 
@@ -318,7 +345,15 @@ class Test(unittest.TestCase):
 		"Test haveNoRouteOutgoing"
 
 		ret = self.payerLink.haveNoRouteOutgoing(None, None)
-		self.assertEqual(len(ret), 0)
+		self.assertEqual(len(ret), 2)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.OutboundMessage))
+		self.assertEqual(msg.localID, messages.payerLocalID)
+		msg = msg.message
+		self.assertTrue(isinstance(msg, messages.Cancel))
+		msg = ret[1]
+		self.assertTrue(isinstance(msg, messages.SetEvent))
+		self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
 
 	def test_cancelOutgoing(self):
