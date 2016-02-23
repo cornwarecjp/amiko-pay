@@ -113,6 +113,7 @@ class Test(unittest.TestCase):
 		paymentState = self.nodes[0].confirmPayment(True)
 		if verbose:
 			print 'Payment is ', paymentState
+		self.assertEqual(paymentState, 'committed')
 		t1 = time.time()
 
 		if verbose:
