@@ -199,8 +199,15 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 
 
 	def haveNoRouteOutgoing(self, transactionID, isPayerSide):
-		#TODO: go to state cancelled
-		return [] #NOP
+		self.state = self.states.cancelled
+
+		return \
+		[
+		messages.OutboundMessage(localID = messages.payerLocalID, message = \
+			messages.Cancel()
+		),
+		messages.SetEvent(event=messages.SetEvent.events.paymentFinished)
+		]
 
 
 	def cancelOutgoing(self, msg):

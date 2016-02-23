@@ -335,7 +335,7 @@ class NodeState(serializable.Serializable):
 		payer = self.__getLinkObject(tx.payerID)
 		payee = self.__getLinkObject(tx.payeeID)
 
-		if msg.payerSide:
+		if msg.isPayerSide:
 			ret = payer.cancelIncoming(msg)
 			ret += payee.cancelOutgoing(msg)
 		else:
