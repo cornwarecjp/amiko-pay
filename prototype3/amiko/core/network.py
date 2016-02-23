@@ -147,9 +147,16 @@ class Listener(asyncore.dispatcher):
 class Network:
 	def __init__(self, host, port, callback):
 		self.channelMap = {}
-		self.listener = Listener(host, port, self)
+		self.listener = None
+		self.host = host
+		self.port = port
 		self.callback = callback
 		self.connections = []
+
+
+	def openListener(self):
+		if self.listener is None:
+			self.listener = Listener(self.host, self.port, self)
 
 
 	def processNetworkEvents(self, timeout):
@@ -236,4 +243,14 @@ class Network:
 	def closeConnection(self, connection):
 		connection.close()
 		self.connections.remove(connection)
+
+
+	def closeAll(self):
+		log.log('Closing all network connections')
+		for c in self.connections:
+			c.close()
+		self.connections = []
+		if self.listener is not None:
+			self.listener.close()
+		self.listener = None
 

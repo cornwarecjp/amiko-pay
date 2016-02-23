@@ -40,13 +40,25 @@ from amiko.core import network
 class Test(unittest.TestCase):
 	def setUp(self):
 		self.network = network.Network('localhost', 4321, self)
+		self.network.openListener()
 
 		self.messages = []
 
 
 	def tearDown(self):
 		#Clean up the listener, so we can run other tests:
-		self.network.listener.close()
+		self.network.closeAll()
+
+
+	def test_duplicateOpenClose(self):
+		"Test duplicate open and close of network"
+
+		lstBefore = self.network.listener
+		self.network.openListener()
+		self.assertEqual(self.network.listener, lstBefore)
+
+		self.network.closeAll()
+		self.network.closeAll()
 
 
 	def test_connectionSession(self):

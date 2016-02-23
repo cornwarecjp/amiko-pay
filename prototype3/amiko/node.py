@@ -452,6 +452,8 @@ class Node(threading.Thread):
 
 		log.log("\n\nNode thread started")
 
+		self.__network.openListener()
+
 		#TODO: (re-)enable creation of new transactions
 
 		self.__stop = False
@@ -494,6 +496,8 @@ class Node(threading.Thread):
 				#TODO: stop creation of new transactions
 				#TODO: only break once there are no more open transactions
 				break
+
+		self.__network.closeAll()
 
 		log.log("Node thread terminated\n\n")
 
