@@ -89,7 +89,7 @@ class Test(unittest.TestCase):
 	def test_payerSide(self):
 		'Test behavior when no route is found on the payer side'
 
-		#Make a coy, where the link between 2 and 4 is broken:
+		#Make a copy, where the link between 2 and 4 is broken:
 		linkDefinitions = largenetwork_setup.linkDefinitions_global[:]
 		linkDefinitions[2].remove(4)
 		linkDefinitions[4].remove(2)
@@ -102,6 +102,29 @@ class Test(unittest.TestCase):
 		#Allow links to connect
 		time.sleep(3)
 
+		self.checkCancelledState()
+
+
+	def test_payeeSide(self):
+		'Test behavior when no route is found on the payee side'
+
+		#Make a copy, where the link between 4 and 5 is broken:
+		linkDefinitions = largenetwork_setup.linkDefinitions_global[:]
+		linkDefinitions[4].remove(5)
+		linkDefinitions[5].remove(4)
+
+		for s in largenetwork_setup.makeNodes(linkDefinitions):
+			newNode = node.Node(s)
+			newNode.start()
+			self.nodes.append(newNode)
+
+		#Allow links to connect
+		time.sleep(3)
+
+		self.checkCancelledState()
+
+
+	def checkCancelledState(self):
 		data = [n.list() for n in self.nodes]
 		if verbose:
 			print 'Before payment:'
