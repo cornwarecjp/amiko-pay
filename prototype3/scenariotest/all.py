@@ -29,9 +29,10 @@
 
 import unittest
 
-from twonodes                 import Test as twonodes
-from largenetwork_success     import Test as largenetwork_success
-from largenetwork_haveNoRoute import Test as largenetwork_haveNoRoute
+from twonodes                  import Test as twonodes
+from largenetwork_success      import Test as largenetwork_success
+from largenetwork_haveNoRoute  import Test as largenetwork_haveNoRoute
+from largenetwork_routeTimeout import Test as largenetwork_routeTimeout
 
 
 if __name__ == "__main__":
