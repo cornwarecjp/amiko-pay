@@ -139,13 +139,6 @@ class Node(threading.Thread):
 			defaultObject=nodestate.NodeState() #empty state; used when file can not be loaded
 			)
 
-		#Establish connections
-		for ID in self.__node.connections.keys():
-			try:
-				self.makeConnection(ID)
-			except network.ConnectFailed as e:
-				log.log("Connect failed (ignored)")
-
 
 	def __addTimeoutMessage(self, msg):
 		with self.__node: #makes sure the state is saved or restored in the end
@@ -453,6 +446,13 @@ class Node(threading.Thread):
 		log.log("\n\nNode thread started")
 
 		self.__network.openListener()
+
+		#Establish connections
+		for ID in self.__node.connections.keys():
+			try:
+				self.makeConnection(ID)
+			except network.ConnectFailed as e:
+				log.log("Connect failed (ignored)")
 
 		#TODO: (re-)enable creation of new transactions
 
