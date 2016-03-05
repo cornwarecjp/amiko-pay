@@ -67,13 +67,13 @@ class Test(unittest.TestCase):
 		"Test getTimeoutMessage"
 
 		msg = self.payerLink.getTimeoutMessage()
-		self.assertTrue(isinstance(msg, messages.Timeout))
+		self.assertTrue(isinstance(msg, messages.PayerTimeout))
 		self.assertEqual(msg.state, payerlink.PayerLink.states.initial)
 
 		self.payerLink.state = payerlink.PayerLink.states.receivedRequestCommit
 
 		msg = self.payerLink.getTimeoutMessage()
-		self.assertTrue(isinstance(msg, messages.Timeout))
+		self.assertTrue(isinstance(msg, messages.PayerTimeout))
 		self.assertEqual(msg.state, payerlink.PayerLink.states.receivedRequestCommit)
 
 
@@ -81,7 +81,7 @@ class Test(unittest.TestCase):
 		"Test msg_timeout (state: initial)"
 
 		ret = self.payerLink.handleMessage(
-			messages.Timeout(state=payerlink.PayerLink.states.initial))
+			messages.PayerTimeout(state=payerlink.PayerLink.states.initial))
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
 
@@ -98,7 +98,7 @@ class Test(unittest.TestCase):
 		self.payerLink.state = payerlink.PayerLink.states.receivedRequestCommit
 
 		ret = self.payerLink.handleMessage(
-			messages.Timeout(state=payerlink.PayerLink.states.receivedRequestCommit))
+			messages.PayerTimeout(state=payerlink.PayerLink.states.receivedRequestCommit))
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.committed)
 
@@ -123,7 +123,7 @@ class Test(unittest.TestCase):
 			self.payerLink.state = s
 
 			ret = self.payerLink.handleMessage(
-				messages.Timeout(state=payerlink.PayerLink.states.confirmed))
+				messages.PayerTimeout(state=payerlink.PayerLink.states.confirmed))
 
 			self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
 
@@ -147,7 +147,7 @@ class Test(unittest.TestCase):
 		"Test msg_timeout (state: other)"
 
 		ret = self.payerLink.handleMessage(
-			messages.Timeout(state=payerlink.PayerLink.states.receivedRequestCommit))
+			messages.PayerTimeout(state=payerlink.PayerLink.states.receivedRequestCommit))
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.initial)
 
@@ -211,7 +211,7 @@ class Test(unittest.TestCase):
 		self.assertTrue(msg.timestamp > time.time() + 1.0)
 		self.assertTrue(msg.timestamp < time.time() + 10.0)
 		msg = msg.message
-		self.assertTrue(isinstance(msg, messages.Timeout))
+		self.assertTrue(isinstance(msg, messages.PayerTimeout))
 		self.assertEqual(msg.state, payerlink.PayerLink.states.confirmed)
 
 		self.payerLink.state = payerlink.PayerLink.states.hasReceipt
@@ -386,7 +386,7 @@ class Test(unittest.TestCase):
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, messages.TimeoutMessage))
 		msg = msg.message
-		self.assertTrue(isinstance(msg, messages.Timeout))
+		self.assertTrue(isinstance(msg, messages.PayerTimeout))
 		self.assertEqual(msg.state, payerlink.PayerLink.states.receivedRequestCommit)
 
 

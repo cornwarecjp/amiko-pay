@@ -64,13 +64,13 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 
 
 	def getTimeoutMessage(self):
-		return messages.Timeout(state=self.state)
+		return messages.PayerTimeout(state=self.state)
 
 
 	def handleMessage(self, msg):
 		return \
 		{
-		messages.Timeout          : self.msg_timeout,
+		messages.PayerTimeout     : self.msg_timeout,
 		messages.Receipt          : self.msg_receipt,
 		messages.PayerLink_Confirm: self.msg_confirm,
 		messages.Cancel           : self.msg_cancel,

@@ -86,7 +86,7 @@ class NodeState(serializable.Serializable):
 		messages.Confirm: self.msg_passToPayee,
 		messages.Cancel : self.msg_passToPayerPayee,
 
-		messages.Timeout          : self.msg_passToPayer,
+		messages.PayerTimeout     : self.msg_passToPayer,
 		messages.Receipt          : self.msg_passToPayer,
 		messages.PayerLink_Confirm: self.msg_passToPayer,
 

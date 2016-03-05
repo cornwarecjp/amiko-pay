@@ -242,7 +242,7 @@ class TimeoutMessage(serializable.Serializable):
 serializable.registerClass(TimeoutMessage)
 
 
-class Timeout(serializable.Serializable):
+class PayerTimeout(serializable.Serializable):
 	serializableAttributes = {'state':''}
-serializable.registerClass(Timeout)
+serializable.registerClass(PayerTimeout)
 

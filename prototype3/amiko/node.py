@@ -169,7 +169,7 @@ class Node(threading.Thread):
 					[
 						msg
 						for msg in self.__node.timeoutMessages
-						if msg.message.__class__ != messages.Timeout
+						if msg.message.__class__ != messages.PayerTimeout
 					]
 
 			#Remove finished payee and related objects:
