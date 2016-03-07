@@ -91,17 +91,6 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 			self.state = self.states.committed
 			return [messages.SetEvent(event=messages.SetEvent.events.paymentFinished)]
 
-		elif self.state in (self.states.confirmed, self.states.hasPayerRoute, self.states.hasPayeeRoute) and msg.state == self.states.confirmed:
-			log.log("Payer: routing time-out -> cancelled")
-			self.state = self.states.cancelled
-			return \
-			[
-			messages.CancelRoute(transactionID=self.transactionID, isPayerSide=True),
-			messages.OutboundMessage(localID = messages.payerLocalID, message = \
-				messages.Cancel()),
-			messages.SetEvent(event=messages.SetEvent.events.paymentFinished)
-			]
-
 		log.log("Payer: time-out of state %s no longer applicable: we are now in state %s" % \
 			(msg.state, self.state))
 
@@ -148,9 +137,6 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 				endTime=None, #Will be received from the payee side
 				meetingPointID=self.meetingPointID,
 				isPayerSide=True
-				),
-			messages.TimeoutMessage(timestamp=time.time()+5.0, message=\
-				self.getTimeoutMessage()  #Add time-out to routing
 				)
 			]
 

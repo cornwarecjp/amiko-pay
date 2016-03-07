@@ -109,40 +109,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
 
-	def test_msg_timeout_confirmed(self):
-		"Test msg_timeout (state: confirmed)"
-
-		self.payerLink.transactionID = "txID"
-		self.payerLink.payeeLinkID = "payeeLinkID"
-
-		for s in ( \
-			payerlink.PayerLink.states.confirmed,
-			payerlink.PayerLink.states.hasPayerRoute,
-			payerlink.PayerLink.states.hasPayeeRoute):
-
-			self.payerLink.state = s
-
-			ret = self.payerLink.handleMessage(
-				messages.PayerTimeout(state=payerlink.PayerLink.states.confirmed))
-
-			self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
-
-			self.assertEqual(len(ret), 3)
-
-			msg = ret[0]
-			self.assertTrue(isinstance(msg, messages.CancelRoute))
-			self.assertEqual(msg.transactionID, "txID")
-			self.assertEqual(msg.isPayerSide, True)
-			msg = ret[1]
-			self.assertTrue(isinstance(msg, messages.OutboundMessage))
-			self.assertEqual(msg.localID, messages.payerLocalID)
-			msg = msg.message
-			self.assertTrue(isinstance(msg, messages.Cancel))
-			msg = ret[2]
-			self.assertTrue(isinstance(msg, messages.SetEvent))
-			self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
-
-
 	def test_msg_timeout_other(self):
 		"Test msg_timeout (state: other)"
 
@@ -189,7 +155,7 @@ class Test(unittest.TestCase):
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.confirmed)
 
-		self.assertEqual(len(ret), 3)
+		self.assertEqual(len(ret), 2)
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, messages.payerLocalID)
@@ -206,13 +172,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.meetingPointID, self.payerLink.meetingPointID)
 		self.assertEqual(msg.ID, messages.payerLocalID)
 		self.assertEqual(msg.isPayerSide, True)
-		msg = ret[2]
-		self.assertTrue(isinstance(msg, messages.TimeoutMessage))
-		self.assertTrue(msg.timestamp > time.time() + 1.0)
-		self.assertTrue(msg.timestamp < time.time() + 10.0)
-		msg = msg.message
-		self.assertTrue(isinstance(msg, messages.PayerTimeout))
-		self.assertEqual(msg.state, payerlink.PayerLink.states.confirmed)
 
 		self.payerLink.state = payerlink.PayerLink.states.hasReceipt
 
