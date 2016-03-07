@@ -231,6 +231,7 @@ class NodeState(serializable.Serializable):
 
 		#Create new transaction
 		newTx = transaction.Transaction(
+			state=transaction.Transaction.states.makingRoute,
 			isPayerSide=msg.isPayerSide,
 			payeeID=payeeID,
 			payerID=payerID,
@@ -365,8 +366,9 @@ class NodeState(serializable.Serializable):
 				msg.transactionID.encode('hex'))
 			return []
 
-		#TODO: check the state of the transaction.
-		# Maybe we actually DO have a route, etc.?
+		if tx.state != transaction.Transaction.states.makingRoute:
+			log.log('  Ignoring route timeout: we already have a route')
+			return []
 
 		payer = self.__getLinkObject(tx.payerID)
 		payee = self.__getLinkObject(tx.payeeID)
@@ -404,6 +406,8 @@ class NodeState(serializable.Serializable):
 			link = self.__getLinkObject(tx.payeeID)
 			msg.ID = tx.payeeID
 
+		tx.state = transaction.Transaction.states.haveRoute
+
 		return link.handleMessage(msg)
 
 
@@ -412,6 +416,8 @@ class NodeState(serializable.Serializable):
 			transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=msg.isPayerSide)
 		payer = self.__getLinkObject(tx.payerID)
 		payee = self.__getLinkObject(tx.payeeID)
+
+		tx.state = transaction.Transaction.states.locked
 
 		ret = payer.lockIncoming(msg)
 		ret += payee.lockOutgoing(msg)
@@ -430,6 +436,8 @@ class NodeState(serializable.Serializable):
 
 		payer = self.__getLinkObject(tx.payerID)
 		payee = self.__getLinkObject(tx.payeeID)
+
+		tx.state = transaction.Transaction.states.requestedCommit
 
 		ret = payee.requestCommitIncoming(msg)
 		ret += payer.requestCommitOutgoing(msg)

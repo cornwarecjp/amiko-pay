@@ -26,17 +26,23 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+from ..utils import utils
 from ..utils import serializable
 
 
 
 class Transaction(serializable.Serializable):
+	states = utils.Enum([
+		'makingRoute', 'haveRoute', 'locked', 'requestedCommit'
+		])
+
 	serializableAttributes = \
 	{
+	'state':states.makingRoute,
 	'isPayerSide':None, 'payeeID':None, 'payerID':None,
 	'initialLinkIDs':[], 'remainingLinkIDs':[],
 	'meetingPointID':None, 'amount':0,
-	'transactionID':'', 'startTime':0, 'endTime':0,
+	'transactionID':'', 'startTime':0, 'endTime':0
 	}
 
 
