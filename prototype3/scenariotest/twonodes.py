@@ -220,6 +220,8 @@ class Test(unittest.TestCase):
 			pprint.pprint(state2)
 		del state1['connections']['node1']['connectMessage']['dice']
 		del state2['connections']['node2']['connectMessage']['dice']
+		del state1['timeoutMessages']
+		del state2['timeoutMessages']
 		self.assertEqual(state1,
 			{'_class': 'NodeState',
 			'connections':
@@ -264,7 +266,6 @@ class Test(unittest.TestCase):
 			'meetingPoints': {},
 			'payeeLinks': {},
 			'payerLink': None,
-			'timeoutMessages': [],
 			'transactions': []
 			})
 		self.assertEqual(state2,
@@ -317,7 +318,6 @@ class Test(unittest.TestCase):
 				},
 			'payeeLinks': {},
 			'payerLink': None,
-			'timeoutMessages': [],
 			'transactions': []
 			})
 

@@ -246,3 +246,8 @@ class PayerTimeout(serializable.Serializable):
 	serializableAttributes = {'state':''}
 serializable.registerClass(PayerTimeout)
 
+
+class NodeStateTimeout_Route(serializable.Serializable):
+	serializableAttributes = {'transactionID': '', 'isPayerSide': None, 'payerID': ''}
+serializable.registerClass(NodeStateTimeout_Route)
+

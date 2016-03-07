@@ -70,17 +70,18 @@ class NodeState(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		messages.PaymentRequest  : self.msg_request,
-		messages.MakePayer       : self.msg_makePayer,
-		messages.MakeLink        : self.msg_makeLink,
-		messages.MakeMeetingPoint: self.msg_makeMeetingPoint,
-		messages.MakeRoute       : self.msg_makeRoute,
-		messages.HaveNoRoute     : self.msg_haveNoRoute,
-		messages.CancelRoute     : self.msg_cancelRoute,
-		messages.HaveRoute       : self.msg_haveRoute,
-		messages.Lock            : self.msg_lock,
-		messages.RequestCommit   : self.msg_requestCommit,
-		messages.SettleCommit    : self.msg_settleCommit,
+		messages.PaymentRequest        : self.msg_request,
+		messages.MakePayer             : self.msg_makePayer,
+		messages.MakeLink              : self.msg_makeLink,
+		messages.MakeMeetingPoint      : self.msg_makeMeetingPoint,
+		messages.MakeRoute             : self.msg_makeRoute,
+		messages.HaveNoRoute           : self.msg_haveNoRoute,
+		messages.CancelRoute           : self.msg_cancelRoute,
+		messages.NodeStateTimeout_Route: self.msg_timeout_route,
+		messages.HaveRoute             : self.msg_haveRoute,
+		messages.Lock                  : self.msg_lock,
+		messages.RequestCommit         : self.msg_requestCommit,
+		messages.SettleCommit          : self.msg_settleCommit,
 
 		messages.Pay    : self.msg_passToPayee,
 		messages.Confirm: self.msg_passToPayee,
@@ -260,7 +261,14 @@ class NodeState(serializable.Serializable):
 
 		ret += self.__getLinkObject(nextRoute).makeRouteOutgoing(msg)
 
-		#TODO: route time-out
+		#route time-out:
+		#TODO: configurable time-out value?
+		ret.append(messages.TimeoutMessage(timestamp=time.time()+5.0, message=\
+			messages.NodeStateTimeout_Route(
+				transactionID=msg.transactionID, isPayerSide=msg.isPayerSide,
+				payerID=newTx.payerID
+				)))
+
 		return ret
 
 
@@ -341,6 +349,38 @@ class NodeState(serializable.Serializable):
 		else:
 			ret = payee.cancelIncoming(msg)
 			ret += payer.cancelOutgoing(msg)
+
+		#Clean up cancelled transaction:
+		self.transactions.remove(tx)
+
+		return ret
+
+
+	def msg_timeout_route(self, msg):
+		try:
+			tx = self.findTransaction(
+				transactionID=msg.transactionID, payerID=msg.payerID, isPayerSide=msg.isPayerSide)
+		except TransactionNotFound:
+			log.log('  Route timeout: transaction %s no longer exists (ignored)' % \
+				msg.transactionID.encode('hex'))
+			return []
+
+		#TODO: check the state of the transaction.
+		# Maybe we actually DO have a route, etc.?
+
+		payer = self.__getLinkObject(tx.payerID)
+		payee = self.__getLinkObject(tx.payeeID)
+
+		if msg.isPayerSide:
+			ret = payer.haveNoRouteOutgoing(msg.transactionID, isPayerSide=True)
+			ret += payee.cancelOutgoing(messages.CancelRoute(
+				transactionID=msg.transactionID, isPayerSide=True
+				))
+		else:
+			ret = payee.haveNoRouteOutgoing(msg.transactionID, isPayerSide=False)
+			ret += payer.cancelOutgoing(messages.CancelRoute(
+				transactionID=msg.transactionID, isPayerSide=False
+				))
 
 		#Clean up cancelled transaction:
 		self.transactions.remove(tx)
