@@ -49,22 +49,24 @@ verbose = '-v' in sys.argv
 class NodeState_LockDelay(nodestate.NodeState):
 	serializableAttributes = utils.dictSum(
 		nodestate.NodeState.serializableAttributes,
-		{'doTimeout': True}
+		{'hasReceivedLock': False}
 		)
 
 	def handleMessage(self, msg):
-		if msg.__class__ == messages.Lock:
-			if self.doTimeout:
-				self.doTimeout = False
+		if msg.__class__ == messages.Lock and not self.hasReceivedLock:
+			self.hasReceivedLock = True
 
-				#Let us receive the same message again in 10 seconds from now
-				return \
-				[
-				messages.TimeoutMessage(timestamp=time.time() + 10.0, message=msg)
-				]
+			#Let us receive the same message again in 10 seconds from now
+			return \
+			[
+			messages.TimeoutMessage(timestamp=time.time() + 10.0, message=msg)
+			]
+		elif msg.__class__ == messages.HaveNoRoute and self.hasReceivedLock:
+			return [] #ignore HaveNoRoute from our "victim"
+		elif msg.__class__ == messages.NodeStateTimeout_Lock:
+			return [] #don't have a time-out ourselves
 
-			#else: fall-through; do normal handling of the Lock message
-
+		#else: fall-through; do normal handling of the Lock message
 		return nodestate.NodeState.handleMessage(self, msg)
 
 serializable.registerClass(NodeState_LockDelay)
