@@ -79,6 +79,7 @@ class NodeState(serializable.Serializable):
 		messages.CancelRoute           : self.msg_cancelRoute,
 		messages.NodeStateTimeout_Route: self.msg_timeout_route,
 		messages.HaveRoute             : self.msg_haveRoute,
+		messages.NodeStateTimeout_Lock : self.msg_timeout_lock,
 		messages.Lock                  : self.msg_lock,
 		messages.RequestCommit         : self.msg_requestCommit,
 		messages.SettleCommit          : self.msg_settleCommit,
@@ -408,10 +409,56 @@ class NodeState(serializable.Serializable):
 
 		tx.state = transaction.Transaction.states.haveRoute
 
-		return link.handleMessage(msg)
+		ret = link.handleMessage(msg)
+
+		#Lock time-out:
+		#TODO: configurable time-out value?
+		ret.append(messages.TimeoutMessage(timestamp=time.time()+5.0, message=\
+			messages.NodeStateTimeout_Lock(
+				transactionID=msg.transactionID, isPayerSide=msg.isPayerSide,
+				payerID=tx.payerID
+				)))
+
+		return ret
+
+
+	def msg_timeout_lock(self, msg):
+		try:
+			tx = self.findTransaction(
+				transactionID=msg.transactionID, payerID=msg.payerID, isPayerSide=msg.isPayerSide)
+		except TransactionNotFound:
+			#This can happen when another node has timed out before us,
+			#and sent us a HaveNoRoute / CancelRoute.
+			log.log('  Lock timeout: transaction %s no longer exists (ignored)' % \
+				msg.transactionID.encode('hex'))
+			return []
+
+		if tx.state != transaction.Transaction.states.haveRoute:
+			log.log('  Ignoring lock timeout: transaction is already locked')
+			return []
+
+		payer = self.__getLinkObject(tx.payerID)
+		payee = self.__getLinkObject(tx.payeeID)
+
+		if msg.isPayerSide:
+			ret = payer.haveNoRouteOutgoing(msg.transactionID, isPayerSide=True)
+			ret += payee.cancelOutgoing(messages.CancelRoute(
+				transactionID=msg.transactionID, isPayerSide=True
+				))
+		else:
+			ret = payee.haveNoRouteOutgoing(msg.transactionID, isPayerSide=False)
+			ret += payer.cancelOutgoing(messages.CancelRoute(
+				transactionID=msg.transactionID, isPayerSide=False
+				))
+
+		#Clean up cancelled transaction:
+		self.transactions.remove(tx)
+
+		return ret
 
 
 	def msg_lock(self, msg):
+		#TODO: when transaction no longer exists -> settle rollback on payer side
 		tx = self.findTransaction(
 			transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=msg.isPayerSide)
 		payer = self.__getLinkObject(tx.payerID)
