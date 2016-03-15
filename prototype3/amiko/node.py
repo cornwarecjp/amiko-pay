@@ -336,21 +336,31 @@ class Node(threading.Thread):
 		Return value:
 		str, indicating the final payment state
 		"""
-		self.__confirmPayment(payerAgrees) #implemented in Node thread
-		payer = self.__node.payerLink
 
-		if payerAgrees:
-			#Must be done in this thread:
-			self.__events[messages.SetEvent.events.paymentFinished].wait()
-			return payer.state
+		transactionID = self.__node.payerLink.transactionID
 
-		return "cancelled by payer"
+		self.__confirmPayment_1(payerAgrees) #implemented in Node thread
+
+		#Must be done in this thread:
+		self.__events[messages.SetEvent.events.paymentFinished].wait()
+
+		return self.__confirmPayment_2(transactionID) #implemented in Node thread
 
 
 	@runInNodeThread
-	def __confirmPayment(self, payerAgrees):
+	def __confirmPayment_1(self, payerAgrees):
 		self.__events[messages.SetEvent.events.paymentFinished].clear()
 		self.handleMessage(messages.PayerLink_Confirm(agreement=payerAgrees))
+
+
+	@runInNodeThread
+	def __confirmPayment_2(self, transactionID):
+		try:
+			ret = self.payLog.getRecentPayerState(transactionID)
+		except KeyError:
+			return 'unknown'
+		self.payLog.removeRecentPayerState(transactionID)
+		return ret
 
 
 	@runInNodeThread

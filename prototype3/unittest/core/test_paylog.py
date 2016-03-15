@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #    test_paylog.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -58,6 +58,8 @@ class DummyPay:
 
 class Test(unittest.TestCase):
 	def test_newLogFile(self):
+		'Test creation of a new log file'
+
 		if os.access(logFile, os.R_OK):
 			os.remove(logFile)
 		self.assertFalse(os.access(logFile, os.R_OK))
@@ -78,6 +80,8 @@ class Test(unittest.TestCase):
 
 
 	def test_write(self):
+		'Test appending to an existing log file'
+
 		with open(logFile, "wb") as f:
 			f.write("Existing data\n")
 
@@ -126,6 +130,21 @@ class Test(unittest.TestCase):
 		with open(logFile, "rb") as f:
 			data = f.read()
 		self.assertEqual(data, expected)
+
+
+	def test_recentPayerState(self):
+		'Test collection of recent payer state information'
+
+		s = settings.Settings()
+		s.payLogFile = logFile
+		payLog = paylog.PayLog(s)
+		self.assertRaises(KeyError, payLog.getRecentPayerState, '\x01\xde')
+
+		payLog.writePayer(DummyPay(123, 'abc', 'committed', '\x01\xde', '\xab\xcd'))
+		self.assertEqual(payLog.getRecentPayerState('\x01\xde'), 'committed')
+
+		payLog.removeRecentPayerState('\x01\xde')
+		self.assertRaises(KeyError, payLog.getRecentPayerState, '\x01\xde')
 
 
 

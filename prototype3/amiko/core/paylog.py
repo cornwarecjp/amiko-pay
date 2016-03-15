@@ -1,5 +1,5 @@
 #    paylog.py
-#    Copyright (C) 2014-2015 by CJP
+#    Copyright (C) 2014-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -31,6 +31,7 @@
 class PayLog:
 	def __init__(self, settings):
 		self.__file = open(settings.payLogFile, "a")
+		self.__recentPayerStates = {}
 
 
 	def close(self):
@@ -40,6 +41,7 @@ class PayLog:
 
 	def writePayer(self, p):
 		self.__write(-1, p)
+		self.__recentPayerStates[p.transactionID] = p.state
 
 
 	def writePayee(self, p):
@@ -68,4 +70,17 @@ class PayLog:
 			])
 		self.__file.write(line + '\n')
 		self.__file.flush()
+
+
+	def getRecentPayerState(self, transactionID):
+		'''
+		Retrieve the state of a recently finished payer transaction.
+		'recent' means: transactions since last restart that have not been
+		explicitly removed with removeRecentPayerState.
+		'''
+		return self.__recentPayerStates[transactionID]
+
+
+	def removeRecentPayerState(self, transactionID):
+		del self.__recentPayerStates[transactionID]
 
