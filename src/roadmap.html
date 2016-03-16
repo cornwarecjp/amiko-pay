@@ -1,0 +1,226 @@
+<h1>Roadmap</h1>
+Last updated: March 2016. All numbers here are rough estimates.
+
+<table class="table">
+<thead>
+	<tr>
+	<th>Feature</th>
+	<th>Implementation status</th>
+	<th>Verification / regression test status</th>
+	<th>Planned for release</th>
+	</tr>
+</thead>
+<tbody>
+	<tr>
+	<td>Completely persistent node state (latest consistent state is always stored to disk and recovered on re-start)</td>
+	<td>100%</td>
+	<td>50%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Sensible error handling</td>
+	<td>90%</td>
+	<td>50%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Automatic re-establishing of communication with peers</td>
+	<td>100%</td>
+	<td>50%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Automatic retransmission of lost messages in case of a lost connection / crash</td>
+	<td>100%</td>
+	<td>50%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Adding / Removing links and channels within links</td>
+	<td>90%</td>
+	<td>50%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Multiplexing of multiple channels within a single link</td>
+	<td>50%</td>
+	<td>10%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Rigourous input checking to prevent security vulnerabilities</td>
+	<td>25%</td>
+	<td></td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Performing the entire sequence of a successful transaction</td>
+	<td>100%</td>
+	<td>60%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Performing the right steps in all failure cases of a transaction</td>
+	<td>50%</td>
+	<td>40%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>"Stupid" non-source routing (trying all possibilities)</td>
+	<td>100%</td>
+	<td>75%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Bi-directional routing (from payer + payee to meeting point)</td>
+	<td>100%</td>
+	<td>75%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Hash pre-image based commit conditions</td>
+	<td>50%</td>
+	<td>50%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Non-signed IOU channel class</td>
+	<td>80%</td>
+	<td>10%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Interactive commandline interface</td>
+	<td>90%</td>
+	<td>10%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Programming interface (Python)</td>
+	<td>90%</td>
+	<td>10%</td>
+	<td>0.1</td>
+	</tr>
+
+	<tr>
+	<td>Signed IOU channel class</td>
+	<td></td>
+	<td></td>
+	<td>0.1 / 0.2</td>
+	</tr>
+
+	<tr>
+	<td>Escrow-based HTLC emulation channel class</td>
+	<td></td>
+	<td></td>
+	<td>Might not be needed</td>
+	</tr>
+
+	<tr>
+	<td>Rusty's "deployable Lightning" channel class</td>
+	<td></td>
+	<td></td>
+	<td>0.2 / 0.3</td>
+	</tr>
+
+	<tr>
+	<td>"Original Lightning" (Poon / Dryja) channel class</td>
+	<td></td>
+	<td></td>
+	<td>0.3+</td>
+	</tr>
+
+	<tr>
+	<td>De-coupled commit conditions in different links (e.g. using Mats Jerratsch's elliptic curve based method)</td>
+	<td></td>
+	<td></td>
+	<td>0.3+</td>
+	</tr>
+
+	<tr>
+	<td>Optimized non-source routing, based on routing tables</td>
+	<td></td>
+	<td></td>
+	<td>0.2+</td>
+	</tr>
+
+	<tr>
+	<td>Onion (source) routing</td>
+	<td></td>
+	<td></td>
+	<td>0.2+</td>
+	</tr>
+
+	<tr>
+	<td>Pre-agreed, link-level transaction fees (enforced by disabling / closing a channel)</td>
+	<td></td>
+	<td></td>
+	<td>0.2</td>
+	</tr>
+
+	<tr>
+	<td>Dynamic, forwarded transaction fees</td>
+	<td></td>
+	<td></td>
+	<td>0.3+</td>
+	</tr>
+
+	<tr>
+	<td>Route optimization for transaction fees</td>
+	<td></td>
+	<td></td>
+	<td>0.4+</td>
+	</tr>
+
+	<tr>
+	<td>Same asset, different block chain (e.g. cross side-chain)</td>
+	<td></td>
+	<td></td>
+	<td>0.3+</td>
+	</tr>
+
+	<tr>
+	<td>Different assets, with exchange nodes and route optimization for fees + exchange rate</td>
+	<td></td>
+	<td></td>
+	<td>(far future)</td>
+	</tr>
+
+	<tr>
+	<td>Graphical user interface</td>
+	<td></td>
+	<td></td>
+	<td>0.2+</td>
+	</tr>
+
+	<tr>
+	<td>Web interface</td>
+	<td></td>
+	<td></td>
+	<td>0.2+</td>
+	</tr>
+
+	<tr>
+	<td>Android port</td>
+	<td></td>
+	<td></td>
+	<td>0.3+</td>
+	</tr>
+
+</tbody>
+</table>
+

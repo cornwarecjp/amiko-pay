@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # make.py
-# Copyright (C) 2015 by CJP
+# Copyright (C) 2015-2016 by CJP
 #
 # This file is part of Amiko Pay.
 #
@@ -23,6 +23,7 @@ pages = \
 	("Home"       , "index"      , "."),
 	("Download"   , "download"   , "download.html"),
 	("Resources"  , "resources"  , "resources.html"),
+	("Roadmap"    , "roadmap"    , "roadmap.html"),
 	("News"       , "news"       , "news.html"),
 	("Contact"    , "contact"    , "contact.html"),
 ]
