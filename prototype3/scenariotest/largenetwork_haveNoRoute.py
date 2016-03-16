@@ -185,7 +185,7 @@ class Test(unittest.TestCase):
 			self.assertEqual(d['transactions'], [])
 			for tm in d['timeoutMessages']:
 				self.assertTrue(tm['message']['_class'] in \
-					['NodeStateTimeout_Route'])
+					['NodeStateTimeout_Route', 'NodeStateTimeout_Lock'])
 			self.assertEqual(d['payeeLinks'], {})
 			self.assertEqual(d['payerLink'], None)
 			for lnk in d['links'].values():
