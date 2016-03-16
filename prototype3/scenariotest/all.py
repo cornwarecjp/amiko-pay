@@ -33,6 +33,7 @@ from twonodes                  import Test as twonodes
 from largenetwork_success      import Test as largenetwork_success
 from largenetwork_haveNoRoute  import Test as largenetwork_haveNoRoute
 from largenetwork_routeTimeout import Test as largenetwork_routeTimeout
+from largenetwork_noLock       import Test as largenetwork_noLock
 
 
 if __name__ == "__main__":
