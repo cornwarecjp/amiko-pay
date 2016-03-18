@@ -84,3 +84,11 @@ class LinkBase:
 	def settleCommitIncoming(self, msg):
 		return []
 
+
+	def settleRollbackOutgoing(self, msg):
+		return []
+
+
+	def settleRollbackIncoming(self, msg):
+		return []
+

@@ -227,6 +227,12 @@ class SettleCommit(ProtocolMessage):
 serializable.registerClass(SettleCommit)
 
 
+class SettleRollback(ProtocolMessage):
+	attributes = {'ID': None}
+	serializableAttributes = {'transactionID': '', 'isPayerSide': None} #TODO: add payload
+serializable.registerClass(SettleRollback)
+
+
 ################################################################################
 # Serializable messages, for internal use (e.g. time-outs):
 ################################################################################

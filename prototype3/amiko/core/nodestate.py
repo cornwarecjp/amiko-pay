@@ -458,9 +458,25 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_lock(self, msg):
-		#TODO: when transaction no longer exists -> settle rollback on payer side
-		tx = self.findTransaction(
-			transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=msg.isPayerSide)
+		try:
+			tx = self.findTransaction(
+				transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=msg.isPayerSide)
+		except TransactionNotFound:
+			#Received a lock for an unknown transaction.
+			#This could be, for instance, a transaction which has already been
+			#timed out on this node.
+			#Let's be nice, and release the funds back to our peer.
+			#(Note: releasing funds ASAP is also good for ourselves)
+
+			payer = self.__getLinkObject(msg.ID)
+			#First, reserve and lock the transaction (to get the link state right for the rollback)
+			ret += payer.lockIncoming(msg)
+			#Then, settle for rollback (this is the "being nice" part)
+			ret += payer.settleRollbackOutgoing(messages.SettleRollback(
+				transactionID=msg.transactionID, isPayerSide=msg.isPayerSide
+				))
+			return ret
+
 		payer = self.__getLinkObject(tx.payerID)
 		payee = self.__getLinkObject(tx.payeeID)
 
