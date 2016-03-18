@@ -211,7 +211,16 @@ serializable.registerClass(HaveRoute)
 
 class Lock(ProtocolMessage):
 	attributes = {'ID': None}
-	serializableAttributes = {'transactionID': '', 'isPayerSide': None} #TODO: add payload
+	serializableAttributes = \
+	{
+		'transactionID': '',
+		'isPayerSide': None,
+		'amount': 0,
+		'startTime': None,
+		'endTime': None,
+		'channelIndex': 0
+
+	} #TODO: add payload
 serializable.registerClass(Lock)
 
 

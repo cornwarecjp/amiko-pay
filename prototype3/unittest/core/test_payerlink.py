@@ -221,6 +221,8 @@ class Test(unittest.TestCase):
 	def test_msg_havePayerRoute(self):
 		"Test msg_haveRoute (payer side)"
 
+		self.payerLink.amount = 123
+
 		self.assertRaises(Exception, self.payerLink.handleMessage,
 			messages.HaveRoute(
 				ID=messages.payerLocalID,
@@ -257,10 +259,15 @@ class Test(unittest.TestCase):
 		self.assertTrue(isinstance(msg, messages.Lock))
 		self.assertEqual(msg.transactionID, self.payerLink.transactionID)
 		self.assertEqual(msg.isPayerSide, True)
+		self.assertEqual(msg.amount, 123)
+		#TODO: verify startTime and endTime
+		#Don't verify channelIndex: its value is irrelevant here.
 
 
 	def test_msg_havePayeeRoute(self):
 		"Test msg_haveRoute (payee side)"
+
+		self.payerLink.amount = 123
 
 		self.assertRaises(Exception, self.payerLink.handleMessage,
 			messages.HaveRoute(
@@ -298,6 +305,9 @@ class Test(unittest.TestCase):
 		self.assertTrue(isinstance(msg, messages.Lock))
 		self.assertEqual(msg.transactionID, self.payerLink.transactionID)
 		self.assertEqual(msg.isPayerSide, True)
+		self.assertEqual(msg.amount, 123)
+		#TODO: verify startTime and endTime
+		#Don't verify channelIndex: its value is irrelevant here.
 
 
 	def test_haveNoRouteOutgoing(self):

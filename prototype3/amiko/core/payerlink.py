@@ -196,7 +196,11 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 					ID=messages.payerLocalID,
 					transactionID=self.transactionID,
 					isPayerSide=True,
-					payload=[])
+					amount=self.amount,
+					startTime=None, #TODO
+					endTime=None,   #TODO
+					channelIndex=None #To be filled in by an outgoing link
+					)
 				)
 
 		return ret

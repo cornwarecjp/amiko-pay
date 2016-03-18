@@ -81,7 +81,10 @@ class Test(unittest.TestCase):
 		ret = self.meetingPoint.lockOutgoing(messages.Lock(
 			ID='foo',
 			transactionID='bar',
-			isPayerSide=True
+			isPayerSide=True,
+			amount=123,
+			startTime=2013,
+			endTime=2016
 			))
 
 		self.assertEqual(len(ret), 1)
@@ -91,6 +94,11 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.ID, 'MPID')
 		self.assertEqual(msg.transactionID, 'bar')
 		self.assertEqual(msg.isPayerSide, False)
+		self.assertEqual(msg.amount, 123)
+		self.assertEqual(msg.startTime, 2013)
+		self.assertEqual(msg.endTime, 2016)
+		#Note: there is no reason to preserve the channel index,
+		#since it is specific to a link. So we won't verify it here.
 
 
 	def test_requestCommitOutgoing(self):
