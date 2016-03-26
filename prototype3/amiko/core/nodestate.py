@@ -83,6 +83,7 @@ class NodeState(serializable.Serializable):
 		messages.Lock                  : self.msg_lock,
 		messages.RequestCommit         : self.msg_requestCommit,
 		messages.SettleCommit          : self.msg_settleCommit,
+		messages.SettleRollback        : self.msg_settleRollback,
 
 		messages.Pay    : self.msg_passToPayee,
 		messages.Confirm: self.msg_passToPayee,
@@ -554,6 +555,42 @@ class NodeState(serializable.Serializable):
 		except LinkNotFound:
 			log.log('Payee link not found (ignored)')
 			#Payment is committed, so payee object may already be deleted
+			#Pass: continue with removing tx
+			pass
+
+		#Clean up no-longer-needed transaction:
+		self.transactions.remove(tx)
+
+		return ret
+
+
+	def msg_settleRollback(self, msg):
+		ret = []
+
+		try:
+			payee = self.__getLinkObject(msg.ID)
+			ret += payee.settleRollbackIncoming(msg)
+		except LinkNotFound:
+			log.log('Payee link not found (ignored)')
+			#Payment is cancelled, so payee object may already be deleted
+			#Pass: continue with payer side handling and tx removing
+			pass
+
+		try:
+			tx = self.findTransaction(
+				transactionID=msg.transactionID, payeeID=msg.ID, isPayerSide=msg.isPayerSide)
+		except TransactionNotFound:
+			log.log('Transaction not found (ignored)')
+			#Payment is cancelled, so transaction object may already be deleted
+			#Return here: don't remove non-existing tx
+			return ret
+
+		try:
+			payer = self.__getLinkObject(tx.payerID)
+			ret += payer.settleRollbackOutgoing(msg)
+		except LinkNotFound:
+			log.log('Payer link not found (ignored)')
+			#Payment is cancelled, so payer object may already be deleted
 			#Pass: continue with removing tx
 			pass
 
