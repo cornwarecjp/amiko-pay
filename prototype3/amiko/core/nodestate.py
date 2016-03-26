@@ -470,6 +470,14 @@ class NodeState(serializable.Serializable):
 
 			payer = self.__getLinkObject(msg.ID)
 			#First, reserve and lock the transaction (to get the link state right for the rollback)
+			ret = payer.makeRouteIncoming(messages.MakeRoute(
+				amount=msg.amount,
+				transactionID=msg.transactionID,
+				isPayerSide=msg.isPayerSide,
+				startTime=msg.startTime,
+				endTime=msg.endTime,
+				channelIndex=msg.channelIndex
+				))
 			ret += payer.lockIncoming(msg)
 			#Then, settle for rollback (this is the "being nice" part)
 			ret += payer.settleRollbackOutgoing(messages.SettleRollback(
