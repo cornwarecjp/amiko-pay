@@ -462,7 +462,8 @@ class NodeState(serializable.Serializable):
 			tx = self.findTransaction(
 				transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=msg.isPayerSide)
 		except TransactionNotFound:
-			#Received a lock for an unknown transaction.
+			log.log('Received a lock for an unknown transaction.')
+			log.log('Going to reserve and lock it, and then settle for rollback.')
 			#This could be, for instance, a transaction which has already been
 			#timed out on this node.
 			#Let's be nice, and release the funds back to our peer.
@@ -492,7 +493,7 @@ class NodeState(serializable.Serializable):
 
 		ret = payer.lockIncoming(msg)
 		ret += payee.lockOutgoing(msg)
-
+		#TODO: add time-out for committing
 		return ret
 
 

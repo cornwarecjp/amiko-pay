@@ -216,7 +216,7 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 		#TODO: add payload
 		msg = copy.deepcopy(msg)
 		msg.ID = self.remoteID
-		#TODO: add time-out for committing?
+		msg.channelIndex = ci
 		return [messages.OutboundMessage(localID=self.localID, message=msg)]
 
 
