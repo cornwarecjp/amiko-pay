@@ -206,6 +206,17 @@ class PlainChannel(serializable.Serializable):
 		return self.tryToClose()
 
 
+	def settleRollbackOutgoing(self, routeID):
+		"""
+		Return value:
+			tuple(list, function) (function may be None)
+		"""
+
+		self.amountRemote += self.transactionsIncomingLocked[routeID].amount
+		del self.transactionsIncomingLocked[routeID]
+		return self.tryToClose()
+
+
 	def tryToClose(self):
 		"""
 		Return value:
