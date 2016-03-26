@@ -260,6 +260,24 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 		return [messages.SetEvent(event=messages.SetEvent.events.paymentFinished)]
 
 
+	def settleRollbackOutgoing(self, msg):
+		if self.state != self.states.locked:
+			raise Exception(
+				"settleRollbackOutgoing should not be called in state %s" % \
+					self.state
+				)
+
+		log.log("Payer: received settleRollback -> cancelled")
+		self.state = self.states.cancelled
+
+		return \
+		[
+		messages.OutboundMessage(localID = messages.payerLocalID, message = \
+			messages.Cancel()
+		),
+		messages.SetEvent(event=messages.SetEvent.events.paymentFinished)
+		]
+
 
 serializable.registerClass(PayerLink)
 

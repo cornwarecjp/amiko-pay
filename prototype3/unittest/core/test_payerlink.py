@@ -373,6 +373,33 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
 
+	def test_settleRollbackOutgoing(self):
+		"Test settleRollbackOutgoing"
+
+		self.assertRaises(Exception, self.payerLink.settleRollbackOutgoing,
+			messages.SettleRollback(
+				transactionID=self.payerLink.transactionID))
+
+		self.payerLink.state = payerlink.PayerLink.states.locked
+
+		ret = self.payerLink.settleRollbackOutgoing(
+			messages.SettleRollback(
+				transactionID=self.payerLink.transactionID))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
+
+		self.assertEqual(len(ret), 2)
+
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.OutboundMessage))
+		self.assertEqual(msg.localID, messages.payerLocalID)
+		msg = msg.message
+		self.assertTrue(isinstance(msg, messages.Cancel))
+
+		msg = ret[1]
+		self.assertTrue(isinstance(msg, messages.SetEvent))
+		self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)

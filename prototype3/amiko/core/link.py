@@ -287,6 +287,16 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 		return ret + [messages.OutboundMessage(localID=self.localID, message=msg)]
 
 
+	def settleRollbackIncoming(self, msg):
+		#TODO: process payload
+		routeID = self.__makeRouteID(msg.transactionID, msg.isPayerSide)
+		c, ci = self.__findChannelWithRoute(routeID)
+		return self.handleChannelOutput(
+			ci,
+			c.settleRollbackIncoming(routeID)
+			)
+
+
 	def startChannelConversation(self, channelIndex):
 		inputMessage = messages.ChannelMessage(
 			ID=self.localID,
