@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #    test_settings.py
-#    Copyright (C) 2015 by CJP
+#    Copyright (C) 2015-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -64,26 +64,30 @@ class Test(unittest.TestCase):
 
 
 	def checkDefaultValues(self, s):
+		self.assertEqual(s.bitcoinRPCURL, '')
 		self.assertEqual(s.listenHost, '')
 		self.assertEqual(s.listenPort, 4321)
 		self.assertEqual(s.advertizedHost, '')
 		self.assertEqual(s.advertizedPort, 4321)
+		self.assertEqual(s.externalMeetingPoints, [])
+		self.assertEqual(s.payeeTimeout, 60)
+		self.assertEqual(s.hopTimeoutIncrement, 86400)
 		self.assertEqual(s.stateFile, 'amikopay.dat')
 		self.assertEqual(s.payLogFile, 'payments.log')
-		self.assertEqual(s.externalMeetingPoints, [])
-		self.assertEqual(s.bitcoinRPCURL, '')
 
 		self.assertEqual(s.getAdvertizedNetworkLocation(), '')
 
 	def checkLoadedValues(self, s):
+		self.assertEqual(s.bitcoinRPCURL, 'test_rpc_url')
 		self.assertEqual(s.listenHost, 'test_listen_host')
 		self.assertEqual(s.listenPort, 12345)
 		self.assertEqual(s.advertizedHost, 'test_advertized_host')
 		self.assertEqual(s.advertizedPort, 2468)
+		self.assertEqual(s.externalMeetingPoints, ['MP1', 'MP2'])
+		self.assertEqual(s.payeeTimeout, 30)
+		self.assertEqual(s.hopTimeoutIncrement, 3600)
 		self.assertEqual(s.stateFile, 'test_state_file')
 		self.assertEqual(s.payLogFile, 'test_log_file')
-		self.assertEqual(s.externalMeetingPoints, ['MP1', 'MP2'])
-		self.assertEqual(s.bitcoinRPCURL, 'test_rpc_url')
 
 		self.assertEqual(s.getAdvertizedNetworkLocation(), 'test_advertized_host:2468')
 

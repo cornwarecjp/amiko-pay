@@ -1,5 +1,5 @@
 #    settings.py
-#    Copyright (C) 2014 by CJP
+#    Copyright (C) 2014-2016 by CJP
 #
 #    This file is part of Amiko Pay.
 #
@@ -59,6 +59,10 @@ class Settings:
 		self.name = self.__get(
 			"general", "name", '')
 
+		#bitcoin RPC
+		self.bitcoinRPCURL = self.__get(
+			"bitcoind", "RPCURL", "")
+
 		#network
 		self.listenHost = self.__get(
 			"network", "listenHost", '')
@@ -69,13 +73,7 @@ class Settings:
 		self.advertizedPort = int(self.__get(
 			"network", "advertizedPort", self.listenPort))
 
-		#files
-		self.stateFile = self.__get(
-			"files", "statefile", "amikopay.dat")
-		self.payLogFile = self.__get(
-			"files", "paylogfile", "payments.log")
-
-		#external meeting points
+		#providers
 		self.externalMeetingPoints = self.__get(
 			"providers", "externalMeetingPoints", "")
 		self.externalMeetingPoints = self.externalMeetingPoints.split(",")
@@ -84,9 +82,17 @@ class Settings:
 		if self.externalMeetingPoints[-1] == '':
 			self.externalMeetingPoints = self.externalMeetingPoints[:-1] #remove empty
 
-		#bitcoin RPC
-		self.bitcoinRPCURL = self.__get(
-			"bitcoind", "RPCURL", "")
+		#time
+		self.payeeTimeout = int(self.__get(
+			"time", "payeeTimeout", "60"))
+		self.hopTimeoutIncrement = int(self.__get(
+			"time", "hopTimeoutIncrement", "86400"))
+
+		#files
+		self.stateFile = self.__get(
+			"files", "statefile", "amikopay.dat")
+		self.payLogFile = self.__get(
+			"files", "paylogfile", "payments.log")
 
 		self.__config = None
 
