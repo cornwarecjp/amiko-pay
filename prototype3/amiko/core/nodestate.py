@@ -55,6 +55,17 @@ class TransactionNotFound(Exception):
 
 
 class NodeState(serializable.Serializable):
+	'''
+	Serializable class containing all state data of a single node.
+	Also implements top-level message handling of the node.
+
+	Note that, between constructing this object and using it, an attribute
+	with the name 'settings' must be set to an object of type settings.Settings:
+	this attribute is used in the methods of this class, but it is not
+	initialized in the constructor, since it is not part of the serializable
+	data.
+	'''
+
 	serializableAttributes = \
 	{
 	'links':{},
