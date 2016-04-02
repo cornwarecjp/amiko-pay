@@ -34,7 +34,39 @@ from ..utils import serializable
 
 
 class PersistentObject:
+	'''
+	Wrapper class for a serializable object whose state must be loaded from
+	a file, saved to a file after certain actions, or restored to the
+	previous state if, during such an action, an exception occurs.
+
+	Python's 'with statement' syntax is supported by this class, and can be
+	used to indicate a section of code that is protected by saving (success)
+	or restoring (exception) at the end of the section. Note that, in the case
+	of nested 'with' statements, only the leaving of the outermost 'with'
+	statement causes such a saving/restoring action.
+	'''
+
 	def __init__(self, filename, defaultObject, nonserializedAttributes={}):
+		'''
+		Constructor.
+
+		Attempt to load the object from disk, and, if that fails, initializes
+		the object to a default state and saves that default state to disk.
+
+		Arguments:
+		filename: str;
+			The base filename for loading/saving. Note that, to make sure that
+			a completely consistent state always exists on disk, <filename>.old
+			and <filename>.new may also be used.
+		defaultObject: serializable.Serializable derived;
+			Object that is used in case no data could be loaded from disk.
+		nonserializedAttributes: dict of str->(any);
+			Contains attribute names + values that are set in the object after
+			each time the object is loaded or restored to a previous state.
+			Typically, these are constants that are not part of the serialized
+			data.
+		'''
+
 		self.__filename = filename
 		self.__object = None
 		self.__nonserializedAttributes = nonserializedAttributes
@@ -55,6 +87,16 @@ class PersistentObject:
 
 
 	def load(self):
+		'''
+		Load the object state from disk, overwriting existing in-memory
+		object state (if any).
+
+		Exceptions:
+		IOError: File reading failed: either the file does not exist, or
+		         we have no read permissions.
+		TBD: De-serialization failed.
+		'''
+
 		oldFile = self.__filename + ".old"
 		if os.access(oldFile, os.F_OK):
 			if os.access(self.__filename, os.F_OK):
@@ -71,6 +113,15 @@ class PersistentObject:
 
 
 	def save(self):
+		'''
+		Save the object state to disk, overwriting existing on-disk object
+		state (if any).
+
+		Exceptions:
+		IOError: File writing failed: we may have insufficient permissions to
+		         write the state file, or maybe there is insufficient disk space.
+		'''
+
 		stateData = serializable.serializeState(self.__getState())
 
 		newFile = self.__filename + ".new"
