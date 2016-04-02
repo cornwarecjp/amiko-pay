@@ -136,7 +136,8 @@ class Node(threading.Thread):
 
 		self.__node = persistentobject.PersistentObject(
 			filename=self.settings.stateFile,
-			defaultObject=nodestate.NodeState() #empty state; used when file can not be loaded
+			defaultObject=nodestate.NodeState(), #empty state; used when file can not be loaded
+			nonserializedAttributes={'settings': self.settings} #attributes added to object after loading
 			)
 
 

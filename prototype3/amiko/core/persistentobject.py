@@ -34,9 +34,10 @@ from ..utils import serializable
 
 
 class PersistentObject:
-	def __init__(self, filename, defaultObject):
+	def __init__(self, filename, defaultObject, nonserializedAttributes={}):
 		self.__filename = filename
 		self.__object = None
+		self.__nonserializedAttributes = nonserializedAttributes
 
 		self.__oldState = None
 		self.__withBlockCount = 0
@@ -97,6 +98,8 @@ class PersistentObject:
 
 	def __setState(self, s):
 		self.__object = serializable.state2Object(s)
+		for k, v in self.__nonserializedAttributes.iteritems():
+			setattr(self.__object, k, v)
 
 
 	def __enter__(self):
