@@ -83,10 +83,8 @@ class Settings:
 			self.externalMeetingPoints = self.externalMeetingPoints[:-1] #remove empty
 
 		#time
-		self.payeeTimeout = int(self.__get(
-			"time", "payeeTimeout", "60"))
-		self.hopTimeoutIncrement = int(self.__get(
-			"time", "hopTimeoutIncrement", "86400"))
+		self.timeoutIncrement = int(self.__get(
+			"time", "timeoutIncrement", "86400"))
 
 		#files
 		self.stateFile = self.__get(
