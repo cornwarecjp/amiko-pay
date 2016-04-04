@@ -28,6 +28,7 @@
 #    OpenSSL library used as well as that of the covered work.
 
 import unittest
+import time
 
 import testenvironment
 
@@ -36,6 +37,28 @@ from amiko.utils.crypto import RIPEMD160, SHA256
 from amiko.core import messages
 
 from amiko.core import payeelink
+
+
+
+class FakeTime:
+	def __init__(self, t):
+		self.t = t
+
+
+	def __enter__(self):
+		def fakeTime():
+			return self.t
+
+		self.oldTime = time.time
+		time.time = fakeTime
+
+		return self
+
+
+	def __exit__(self, exceptionType, value, traceback):
+		time.time = self.oldTime
+
+		return False #False = don't silence exceptions
 
 
 
@@ -89,7 +112,8 @@ class Test(unittest.TestCase):
 		self.assertRaises(Exception, self.payeeLink.handleMessage,
 			messages.Confirm(ID="foobar", meetingPointID="UnknownMeetingPoint"))
 
-		ret = self.payeeLink.handleMessage(messages.Confirm(ID="foobar", meetingPointID="MPID"))
+		with FakeTime(123.0):
+			ret = self.payeeLink.handleMessage(messages.Confirm(ID="foobar", meetingPointID="MPID"))
 
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.confirmed)
 		self.assertEqual(self.payeeLink.meetingPointID, "MPID")
@@ -99,8 +123,8 @@ class Test(unittest.TestCase):
 		self.assertTrue(isinstance(msg, messages.MakeRoute))
 		self.assertEqual(msg.amount, self.payeeLink.amount)
 		self.assertEqual(msg.transactionID, self.payeeLink.transactionID)
-		#self.assertEqual(msg.startTime, None) #TODO
-		#self.assertEqual(msg.endTime, None) #TODO
+		self.assertEqual(msg.startTime, 123.0)
+		self.assertEqual(msg.endTime, 123.0)
 		self.assertEqual(msg.meetingPointID, "MPID")
 		self.assertEqual(msg.ID, "foobar")
 		self.assertEqual(msg.isPayerSide, False)
