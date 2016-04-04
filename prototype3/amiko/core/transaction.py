@@ -42,7 +42,7 @@ class Transaction(serializable.Serializable):
 	'isPayerSide':None, 'payeeID':None, 'payerID':None,
 	'initialLinkIDs':[], 'remainingLinkIDs':[],
 	'meetingPointID':None, 'amount':0,
-	'transactionID':'', 'startTime':0, 'endTime':0
+	'transactionID':'', 'startTime':0, 'endTime':0 #endTime is the value on the PAYER side!
 	}
 
 

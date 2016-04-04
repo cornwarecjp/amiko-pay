@@ -26,6 +26,7 @@
 #    such a combination shall include the source code for the parts of the
 #    OpenSSL library used as well as that of the covered work.
 
+import time
 
 from ..utils import utils
 
@@ -107,13 +108,19 @@ class PayeeLink(linkbase.LinkBase, serializable.Serializable):
 		self.state = self.states.confirmed
 		self.meetingPointID = msg.meetingPointID
 
+		#End time is the same as start time:
+		#this time-out is NOT exceeded on this link, since we already have the
+		#token from the beginning.
+		startTime = time.time()
+		endTime = startTime
+
 		return \
 		[
 			messages.MakeRoute( #This will start the transaction routing
 				amount=self.amount,
 				transactionID=self.transactionID,
-				startTime=None, #TODO: fill in
-				endTime=None, #TODO: fill in
+				startTime=startTime,
+				endTime=endTime,
 				meetingPointID=self.meetingPointID,
 				ID=msg.ID,
 				routingContext=self.routingContext,

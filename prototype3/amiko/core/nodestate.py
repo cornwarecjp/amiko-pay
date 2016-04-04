@@ -242,6 +242,11 @@ class NodeState(serializable.Serializable):
 			for ID in earlierTx.initialLinkIDs:
 				tryRemove(ID)
 
+		#Increment end time on the payee side:
+		#On the payer side, this will be done in haveRoute.
+		if not msg.isPayerSide:
+			msg.endTime += self.settings.timeoutIncrement
+
 		#Create new transaction
 		newTx = transaction.Transaction(
 			state=transaction.Transaction.states.makingRoute,
