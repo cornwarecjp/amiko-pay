@@ -70,8 +70,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(s.advertizedHost, '')
 		self.assertEqual(s.advertizedPort, 4321)
 		self.assertEqual(s.externalMeetingPoints, [])
-		self.assertEqual(s.payeeTimeout, 60)
-		self.assertEqual(s.hopTimeoutIncrement, 86400)
+		self.assertEqual(s.timeoutIncrement, 86400)
 		self.assertEqual(s.stateFile, 'amikopay.dat')
 		self.assertEqual(s.payLogFile, 'payments.log')
 
@@ -84,8 +83,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(s.advertizedHost, 'test_advertized_host')
 		self.assertEqual(s.advertizedPort, 2468)
 		self.assertEqual(s.externalMeetingPoints, ['MP1', 'MP2'])
-		self.assertEqual(s.payeeTimeout, 30)
-		self.assertEqual(s.hopTimeoutIncrement, 3600)
+		self.assertEqual(s.timeoutIncrement, 3600)
 		self.assertEqual(s.stateFile, 'test_state_file')
 		self.assertEqual(s.payLogFile, 'test_log_file')
 
