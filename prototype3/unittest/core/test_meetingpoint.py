@@ -51,6 +51,8 @@ class Test(unittest.TestCase):
 			isPayerSide=True
 			))
 
+		self.assertEqual(self.meetingPoint.unmatchedRoutes, [])
+
 		self.assertEqual(len(ret), 1)
 
 		msg = ret[0]
@@ -59,20 +61,60 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.transactionID, 'foo')
 		self.assertEqual(msg.isPayerSide, True)
 
-		#Same ID:
+		#Same ID, unmatched:
 		ret = self.meetingPoint.makeRouteOutgoing(messages.MakeRoute(
 			meetingPointID='MPID',
 			transactionID='foo',
 			isPayerSide=True
 			))
 
-		self.assertEqual(len(ret), 1)
+		self.assertEqual(self.meetingPoint.unmatchedRoutes,
+			[('foo', True)])
+		self.assertEqual(len(ret), 0)
+
+		#Same ID, matched:
+		ret = self.meetingPoint.makeRouteOutgoing(messages.MakeRoute(
+			meetingPointID='MPID',
+			transactionID='foo',
+			isPayerSide=False
+			))
+
+		self.assertEqual(self.meetingPoint.unmatchedRoutes, [])
+		self.assertEqual(len(ret), 2)
 
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, messages.HaveRoute))
 		self.assertEqual(msg.ID, 'MPID')
 		self.assertEqual(msg.transactionID, 'foo')
 		self.assertEqual(msg.isPayerSide, True)
+
+		msg = ret[1]
+		self.assertTrue(isinstance(msg, messages.HaveRoute))
+		self.assertEqual(msg.ID, 'MPID')
+		self.assertEqual(msg.transactionID, 'foo')
+		self.assertEqual(msg.isPayerSide, False)
+
+
+	def test_cancelOutgoing(self):
+		'Test cancelOutgoing'
+
+		#unmatched:
+		ret = self.meetingPoint.cancelOutgoing(messages.CancelRoute(
+			transactionID='foo',
+			isPayerSide=True
+			))
+
+		self.assertEqual(len(ret), 0)
+
+		#matched:
+		self.meetingPoint.unmatchedRoutes = [('foo', True)]
+		ret = self.meetingPoint.cancelOutgoing(messages.CancelRoute(
+			transactionID='foo',
+			isPayerSide=True
+			))
+
+		self.assertEqual(len(ret), 0)
+		self.assertEqual(self.meetingPoint.unmatchedRoutes, [])
 
 
 	def test_lockOutgoing(self):

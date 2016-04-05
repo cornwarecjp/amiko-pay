@@ -30,16 +30,19 @@ import copy
 
 from ..utils import serializable
 
+import log
+
 import messages
 import linkbase
 
 
 
 class MeetingPoint(linkbase.LinkBase, serializable.Serializable):
-	serializableAttributes = {'ID': ''}
+	serializableAttributes = {'ID': '', 'unmatchedRoutes': []}
 
 	def makeRouteOutgoing(self, msg):
 		if msg.meetingPointID != self.ID:
+			log.log('Meeting point: MakeRoute has a different destination')
 			#This is not the meeting point mentioned in the message, so
 			#this meeting point will not be part of the route.
 			return \
@@ -48,10 +51,33 @@ class MeetingPoint(linkbase.LinkBase, serializable.Serializable):
 				ID=self.ID, transactionID=msg.transactionID, isPayerSide=msg.isPayerSide)
 			]
 
-		return \
-		[
-		messages.HaveRoute(ID=self.ID, transactionID=msg.transactionID, isPayerSide=msg.isPayerSide)
-		]
+		if (msg.transactionID, not msg.isPayerSide) in self.unmatchedRoutes:
+			log.log('Meeting point: matched MakeRoute; sending HaveRoute')
+			self.unmatchedRoutes.remove((msg.transactionID, not msg.isPayerSide))
+			return \
+			[
+			messages.HaveRoute(
+				ID=self.ID, transactionID=msg.transactionID, isPayerSide=True),
+			messages.HaveRoute(
+				ID=self.ID, transactionID=msg.transactionID, isPayerSide=False)
+			]
+
+		#else: it is not yet matched
+		log.log('Meeting point: MakeRoute is not (yet) matched')
+		self.unmatchedRoutes.append((msg.transactionID, msg.isPayerSide))
+		return []
+
+
+	def cancelOutgoing(self, msg):
+		if (msg.transactionID, msg.isPayerSide) in self.unmatchedRoutes:
+			#Just remove the unmatched item
+			self.unmatchedRoutes.remove((msg.transactionID, msg.isPayerSide))
+			return []
+
+		#TODO: maybe send HaveNoRoute to the other side?
+		#That would just be an optimization, since the other side can decide
+		#to time-out on its own.
+		return []
 
 
 	def lockOutgoing(self, msg):

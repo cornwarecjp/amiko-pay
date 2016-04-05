@@ -313,7 +313,8 @@ class Test(unittest.TestCase):
 				{
 				'MeetingPoint2':
 					{'_class': 'MeetingPoint',
-					'ID': 'MeetingPoint2'
+					'ID': 'MeetingPoint2',
+					'unmatchedRoutes': []
 					}
 				},
 			'payeeLinks': {},
