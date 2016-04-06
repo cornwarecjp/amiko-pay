@@ -38,7 +38,7 @@ import linkbase
 
 
 class MeetingPoint(linkbase.LinkBase, serializable.Serializable):
-	serializableAttributes = {'ID': '', 'unmatchedRoutes': []}
+	serializableAttributes = {'ID': '', 'unmatchedRoutes': {}}
 
 	def makeRouteOutgoing(self, msg):
 		if msg.meetingPointID != self.ID:
@@ -51,27 +51,39 @@ class MeetingPoint(linkbase.LinkBase, serializable.Serializable):
 				ID=self.ID, transactionID=msg.transactionID, isPayerSide=msg.isPayerSide)
 			]
 
-		if (msg.transactionID, not msg.isPayerSide) in self.unmatchedRoutes:
+		reverseRouteID = self.__makeRouteID(msg.transactionID, not msg.isPayerSide)
+		if reverseRouteID in self.unmatchedRoutes:
 			log.log('Meeting point: matched MakeRoute; sending HaveRoute')
-			self.unmatchedRoutes.remove((msg.transactionID, not msg.isPayerSide))
+
+			if msg.isPayerSide:
+				startTime, endTime = self.unmatchedRoutes[reverseRouteID]
+			else:
+				startTime, endTime = msg.startTime, msg.endTime
+
+			del self.unmatchedRoutes[reverseRouteID]
+
 			return \
 			[
 			messages.HaveRoute(
-				ID=self.ID, transactionID=msg.transactionID, isPayerSide=True),
+				ID=self.ID, transactionID=msg.transactionID, isPayerSide=True,
+					startTime=startTime, endTime=endTime),
 			messages.HaveRoute(
-				ID=self.ID, transactionID=msg.transactionID, isPayerSide=False)
+				ID=self.ID, transactionID=msg.transactionID, isPayerSide=False,
+					startTime=startTime, endTime=endTime)
 			]
 
 		#else: it is not yet matched
 		log.log('Meeting point: MakeRoute is not (yet) matched')
-		self.unmatchedRoutes.append((msg.transactionID, msg.isPayerSide))
+		routeID = self.__makeRouteID(msg.transactionID, msg.isPayerSide)
+		self.unmatchedRoutes[routeID] = (msg.startTime, msg.endTime)
 		return []
 
 
 	def cancelOutgoing(self, msg):
-		if (msg.transactionID, msg.isPayerSide) in self.unmatchedRoutes:
+		routeID = self.__makeRouteID(msg.transactionID, msg.isPayerSide)
+		if routeID in self.unmatchedRoutes:
 			#Just remove the unmatched item
-			self.unmatchedRoutes.remove((msg.transactionID, msg.isPayerSide))
+			del self.unmatchedRoutes[routeID]
 			return []
 
 		#TODO: maybe send HaveNoRoute to the other side?
@@ -99,6 +111,10 @@ class MeetingPoint(linkbase.LinkBase, serializable.Serializable):
 		msg.ID = self.ID
 		msg.isPayerSide = False
 		return [msg]
+
+
+	def __makeRouteID(self, transactionID, isPayerSide):
+		return ('1' if isPayerSide else '0') + transactionID
 
 
 serializable.registerClass(MeetingPoint)

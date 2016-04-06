@@ -48,10 +48,12 @@ class Test(unittest.TestCase):
 		ret = self.meetingPoint.makeRouteOutgoing(messages.MakeRoute(
 			meetingPointID='OtherMP',
 			transactionID='foo',
-			isPayerSide=True
+			isPayerSide=False,
+			startTime=123,
+			endTime=456
 			))
 
-		self.assertEqual(self.meetingPoint.unmatchedRoutes, [])
+		self.assertEqual(self.meetingPoint.unmatchedRoutes, {})
 
 		self.assertEqual(len(ret), 1)
 
@@ -59,27 +61,31 @@ class Test(unittest.TestCase):
 		self.assertTrue(isinstance(msg, messages.HaveNoRoute))
 		self.assertEqual(msg.ID, 'MPID')
 		self.assertEqual(msg.transactionID, 'foo')
-		self.assertEqual(msg.isPayerSide, True)
+		self.assertEqual(msg.isPayerSide, False)
 
 		#Same ID, unmatched:
 		ret = self.meetingPoint.makeRouteOutgoing(messages.MakeRoute(
 			meetingPointID='MPID',
 			transactionID='foo',
-			isPayerSide=True
+			isPayerSide=False,
+			startTime=123,
+			endTime=456
 			))
 
 		self.assertEqual(self.meetingPoint.unmatchedRoutes,
-			[('foo', True)])
+			{'0foo': (123, 456)})
 		self.assertEqual(len(ret), 0)
 
 		#Same ID, matched:
 		ret = self.meetingPoint.makeRouteOutgoing(messages.MakeRoute(
 			meetingPointID='MPID',
 			transactionID='foo',
-			isPayerSide=False
+			isPayerSide=True,
+			startTime=None,
+			endTime=None
 			))
 
-		self.assertEqual(self.meetingPoint.unmatchedRoutes, [])
+		self.assertEqual(self.meetingPoint.unmatchedRoutes, {})
 		self.assertEqual(len(ret), 2)
 
 		msg = ret[0]
@@ -87,12 +93,45 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.ID, 'MPID')
 		self.assertEqual(msg.transactionID, 'foo')
 		self.assertEqual(msg.isPayerSide, True)
+		self.assertEqual(msg.startTime, 123)
+		self.assertEqual(msg.endTime, 456)
 
 		msg = ret[1]
 		self.assertTrue(isinstance(msg, messages.HaveRoute))
 		self.assertEqual(msg.ID, 'MPID')
 		self.assertEqual(msg.transactionID, 'foo')
 		self.assertEqual(msg.isPayerSide, False)
+		self.assertEqual(msg.startTime, 123)
+		self.assertEqual(msg.endTime, 456)
+
+		#Same ID, matched, opposite direction:
+		self.meetingPoint.unmatchedRoutes = {'1foo': (None, None)}
+		ret = self.meetingPoint.makeRouteOutgoing(messages.MakeRoute(
+			meetingPointID='MPID',
+			transactionID='foo',
+			isPayerSide=False,
+			startTime=123,
+			endTime=456
+			))
+
+		self.assertEqual(self.meetingPoint.unmatchedRoutes, {})
+		self.assertEqual(len(ret), 2)
+
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.HaveRoute))
+		self.assertEqual(msg.ID, 'MPID')
+		self.assertEqual(msg.transactionID, 'foo')
+		self.assertEqual(msg.isPayerSide, True)
+		self.assertEqual(msg.startTime, 123)
+		self.assertEqual(msg.endTime, 456)
+
+		msg = ret[1]
+		self.assertTrue(isinstance(msg, messages.HaveRoute))
+		self.assertEqual(msg.ID, 'MPID')
+		self.assertEqual(msg.transactionID, 'foo')
+		self.assertEqual(msg.isPayerSide, False)
+		self.assertEqual(msg.startTime, 123)
+		self.assertEqual(msg.endTime, 456)
 
 
 	def test_cancelOutgoing(self):
@@ -107,14 +146,14 @@ class Test(unittest.TestCase):
 		self.assertEqual(len(ret), 0)
 
 		#matched:
-		self.meetingPoint.unmatchedRoutes = [('foo', True)]
+		self.meetingPoint.unmatchedRoutes = {'1foo': (None, None)}
 		ret = self.meetingPoint.cancelOutgoing(messages.CancelRoute(
 			transactionID='foo',
 			isPayerSide=True
 			))
 
 		self.assertEqual(len(ret), 0)
-		self.assertEqual(self.meetingPoint.unmatchedRoutes, [])
+		self.assertEqual(self.meetingPoint.unmatchedRoutes, {})
 
 
 	def test_lockOutgoing(self):
