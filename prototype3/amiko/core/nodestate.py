@@ -414,16 +414,21 @@ class NodeState(serializable.Serializable):
 		if msg.ID == messages.payerLocalID:
 			return self.payerLink.handleMessage(msg)
 
+		#TODO: check sanity (and data type) of startTime, endTime
+
 		if msg.isPayerSide:
 			tx = self.findTransaction(
 				transactionID=msg.transactionID, payeeID=msg.ID, isPayerSide=True)
 			link = self.__getLinkObject(tx.payerID)
 			msg.ID = tx.payerID
+			msg.endTime += self.settings.timeoutIncrement
 		else:
 			tx = self.findTransaction(
 				transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=False)
 			link = self.__getLinkObject(tx.payeeID)
 			msg.ID = tx.payeeID
+			msg.endTime -= self.settings.timeoutIncrement
+			#TODO: compare startTime, endTime with MakeRoute values
 
 		tx.state = transaction.Transaction.states.haveRoute
 
