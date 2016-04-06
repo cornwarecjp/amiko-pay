@@ -245,6 +245,7 @@ class NodeState(serializable.Serializable):
 		#Increment end time on the payee side:
 		#On the payer side, this will be done in haveRoute.
 		if not msg.isPayerSide:
+			#TODO: check sanity (and data type) of startTime, endTime
 			msg.endTime += self.settings.timeoutIncrement
 
 		#Create new transaction

@@ -111,7 +111,7 @@ class PayeeLink(linkbase.LinkBase, serializable.Serializable):
 		#End time is the same as start time:
 		#this time-out is NOT exceeded on this link, since we already have the
 		#token from the beginning.
-		startTime = time.time()
+		startTime = int(time.time())
 		endTime = startTime
 
 		return \

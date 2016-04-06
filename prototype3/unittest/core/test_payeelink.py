@@ -112,7 +112,7 @@ class Test(unittest.TestCase):
 		self.assertRaises(Exception, self.payeeLink.handleMessage,
 			messages.Confirm(ID="foobar", meetingPointID="UnknownMeetingPoint"))
 
-		with FakeTime(123.0):
+		with FakeTime(123.6):
 			ret = self.payeeLink.handleMessage(messages.Confirm(ID="foobar", meetingPointID="MPID"))
 
 		self.assertEqual(self.payeeLink.state, payeelink.PayeeLink.states.confirmed)
@@ -123,8 +123,8 @@ class Test(unittest.TestCase):
 		self.assertTrue(isinstance(msg, messages.MakeRoute))
 		self.assertEqual(msg.amount, self.payeeLink.amount)
 		self.assertEqual(msg.transactionID, self.payeeLink.transactionID)
-		self.assertEqual(msg.startTime, 123.0)
-		self.assertEqual(msg.endTime, 123.0)
+		self.assertEqual(msg.startTime, 123)
+		self.assertEqual(msg.endTime, 123)
 		self.assertEqual(msg.meetingPointID, "MPID")
 		self.assertEqual(msg.ID, "foobar")
 		self.assertEqual(msg.isPayerSide, False)
