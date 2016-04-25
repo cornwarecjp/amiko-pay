@@ -102,6 +102,16 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.linkBase.settleCommitIncoming(None), [])
 
 
+	def test_settleRollbackOutgoing(self):
+		'Test settleRollbackOutgoing'
+		self.assertEqual(self.linkBase.settleRollbackOutgoing(None), [])
+
+
+	def test_settleRollbackIncoming(self):
+		'Test settleRollbackIncoming'
+		self.assertEqual(self.linkBase.settleRollbackIncoming(None), [])
+
+
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)
