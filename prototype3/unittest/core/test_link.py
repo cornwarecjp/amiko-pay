@@ -44,60 +44,28 @@ class DummyChannel(serializable.Serializable):
 
 	def handleMessage(self, msg):
 		if msg is None:
-			self.state.append(None)
+			self.state.append(['handleMessage', None])
 		else:
-			self.state.append([msg.ID, msg.channelIndex, msg.message])
+			self.state.append(['handleMessage', msg.ID, msg.channelIndex, msg.message])
 
-		return ['foo'], None
-
-
-	def startWithdraw(self):
-		self.state.append('withdraw')
-		return ['bar'], None
-
-
-	def reserve(self, isOutgoing, routeID, startTime, endTime, amount):
-		self.state.append([isOutgoing, routeID, startTime, endTime, amount])
-
-
-	def unreserve(self, isOutgoing, routeID):
-		self.state.append([isOutgoing, routeID])
-		return ['baz'], None
-
-
-	def lockOutgoing(self, routeID):
-		self.state.append(routeID)
-		return ['buz'], None
-
-
-	def lockIncoming(self, routeID):
-		self.state.append(routeID)
-		return ['baa'], None
-
-
-	def settleCommitOutgoing(self, routeID, token):
-		self.state.append([routeID, token])
-		return ['boo'], None
-
-
-	def settleCommitIncoming(self, routeID):
-		self.state.append(routeID)
-		return ['bzz'], None
-
-
-	def settleRollbackOutgoing(self, routeID):
-		self.state.append(routeID)
-		return ['fuz'], None
-
-
-	def settleRollbackIncoming(self, routeID):
-		self.state.append(routeID)
-		return ['foz'], None
+		return ['handleMessage'], None
 
 
 	def hasRoute(self, routeID):
 		self.state.append(routeID)
 		return self.hasRouteReturn
+ 
+
+	def __getattr__(self, name):
+		if name.startswith('__'):
+			raise AttributeError(name)
+
+		def generic_method(*args, **kwargs):
+			#print self, (name, args, kwargs)
+			self.state.append((name, args, kwargs))
+			return [name], None
+
+		return generic_method
 
 
 serializable.registerClass(DummyChannel)
@@ -139,12 +107,12 @@ class Test(unittest.TestCase):
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.ChannelMessage))
 		self.assertEqual(msg.channelIndex, 0)
-		self.assertEqual(msg.message, 'foo')
+		self.assertEqual(msg.message, 'handleMessage')
 
 		self.assertEqual(len(self.link.channels), 1)
 		channel = self.link.channels[0]
 		self.assertTrue(isinstance(channel, DummyChannel))
-		self.assertEqual(channel.state, ['initial', None])
+		self.assertEqual(channel.state, ['initial', ['handleMessage', None]])
 
 		#Attempt to deposit when remoteID is None:
 		self.link = link.Link(remoteID=None, localID='local', channels=[])
@@ -188,10 +156,10 @@ class Test(unittest.TestCase):
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.ChannelMessage))
 		self.assertEqual(msg.channelIndex, 0)
-		self.assertEqual(msg.message, 'bar')
+		self.assertEqual(msg.message, 'startWithdraw')
 
 		channel = self.link.channels[0]
-		self.assertEqual(channel.state, ['withdraw'])
+		self.assertEqual(channel.state, [('startWithdraw', (), {})])
 
 		self.assertRaises(Exception, self.link.handleMessage,
 			messages.Link_Withdraw(ID=None, channelIndex=-1))
@@ -282,7 +250,7 @@ class Test(unittest.TestCase):
 		#TODO: check that the state of the first channel is restored
 
 		self.assertEqual(self.link.channels[1].state,
-			[[True, '1foobar', 123, 456, 42]])
+			[('reserve', (True, '1foobar', 123, 456, 42), {})])
 
 
 	def test_makeRouteIncoming(self):
@@ -308,7 +276,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(len(ret), 0)
 
 		self.assertEqual(self.link.channels[0].state, [])
-		self.assertEqual(self.link.channels[1].state, [[False, '1foobar', 123, 456, 42]])
+		self.assertEqual(self.link.channels[1].state, [('reserve', (False, '1foobar', 123, 456, 42), {})])
 
 
 	def test_haveNoRouteOutgoing(self):
@@ -332,7 +300,7 @@ class Test(unittest.TestCase):
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.ChannelMessage))
 		self.assertEqual(msg.channelIndex, 1)
-		self.assertEqual(msg.message, 'baz')
+		self.assertEqual(msg.message, 'unreserve')
 		msg = ret[1]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, 'local')
@@ -345,7 +313,7 @@ class Test(unittest.TestCase):
 			['1foobar'])
 
 		self.assertEqual(self.link.channels[1].state,
-			['1foobar', [False, '1foobar']])
+			['1foobar', ('unreserve', (False, '1foobar'), {})])
 
 
 	def test_haveNoRouteIncoming(self):
@@ -374,13 +342,13 @@ class Test(unittest.TestCase):
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.ChannelMessage))
 		self.assertEqual(msg.channelIndex, 1)
-		self.assertEqual(msg.message, 'baz')
+		self.assertEqual(msg.message, 'unreserve')
 
 		self.assertEqual(self.link.channels[0].state,
 			['1foobar'])
 
 		self.assertEqual(self.link.channels[1].state,
-			['1foobar', [True, '1foobar']])
+			['1foobar', ('unreserve', (True, '1foobar'), {})])
 
 
 	def test_cancelOutgoing(self):
@@ -409,7 +377,7 @@ class Test(unittest.TestCase):
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.ChannelMessage))
 		self.assertEqual(msg.channelIndex, 1)
-		self.assertEqual(msg.message, 'baz')
+		self.assertEqual(msg.message, 'unreserve')
 		msg = ret[1]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, 'local')
@@ -423,7 +391,7 @@ class Test(unittest.TestCase):
 			['1foobar'])
 
 		self.assertEqual(self.link.channels[1].state,
-			['1foobar', [True, '1foobar']])
+			['1foobar', ('unreserve', (True, '1foobar'), {})])
 
 
 	def test_cancelIncoming(self):
@@ -452,13 +420,13 @@ class Test(unittest.TestCase):
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.ChannelMessage))
 		self.assertEqual(msg.channelIndex, 1)
-		self.assertEqual(msg.message, 'baz')
+		self.assertEqual(msg.message, 'unreserve')
 
 		self.assertEqual(self.link.channels[0].state,
 			['1foobar'])
 
 		self.assertEqual(self.link.channels[1].state,
-			['1foobar', [False, '1foobar']])
+			['1foobar', ('unreserve', (False, '1foobar'), {})])
 
 
 	def test_lockOutgoing(self):
@@ -503,7 +471,7 @@ class Test(unittest.TestCase):
 			['1foobar'])
 
 		self.assertEqual(self.link.channels[1].state,
-			['1foobar', '1foobar'])
+			['1foobar', ('lockOutgoing', ('1foobar',), {})])
 
 
 	def test_lockIncoming(self):
@@ -536,7 +504,7 @@ class Test(unittest.TestCase):
 			['1foobar'])
 
 		self.assertEqual(self.link.channels[1].state,
-			['1foobar', '1foobar'])
+			['1foobar', ('lockIncoming', ('1foobar',), {})])
 
 
 	def test_requestCommitOutgoing(self):
@@ -610,7 +578,7 @@ class Test(unittest.TestCase):
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.ChannelMessage))
 		self.assertEqual(msg.channelIndex, 1)
-		self.assertEqual(msg.message, 'boo')
+		self.assertEqual(msg.message, 'settleCommitOutgoing')
 		msg = ret[1]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, 'local')
@@ -623,7 +591,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.link.channels[0].state,
 			[expectedRouteID])
 		self.assertEqual(self.link.channels[1].state,
-			[expectedRouteID, [expectedRouteID, 'foobar']])
+			[expectedRouteID, ('settleCommitOutgoing', (expectedRouteID, 'foobar'), {})])
 
 
 	def test_settleCommitIncoming(self):
@@ -659,12 +627,12 @@ class Test(unittest.TestCase):
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.ChannelMessage))
 		self.assertEqual(msg.channelIndex, 1)
-		self.assertEqual(msg.message, 'bzz')
+		self.assertEqual(msg.message, 'settleCommitIncoming')
 
 		self.assertEqual(self.link.channels[0].state,
 			[expectedRouteID])
 		self.assertEqual(self.link.channels[1].state,
-			[expectedRouteID, expectedRouteID])
+			[expectedRouteID, ('settleCommitIncoming', (expectedRouteID,), {})])
 
 
 	def test_settleRollbackOutgoing(self):
@@ -699,7 +667,7 @@ class Test(unittest.TestCase):
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.ChannelMessage))
 		self.assertEqual(msg.channelIndex, 1)
-		self.assertEqual(msg.message, 'fuz')
+		self.assertEqual(msg.message, 'settleRollbackOutgoing')
 		msg = ret[1]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, 'local')
@@ -712,7 +680,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.link.channels[0].state,
 			['1foobar'])
 		self.assertEqual(self.link.channels[1].state,
-			['1foobar', '1foobar'])
+			['1foobar', ('settleRollbackOutgoing', ('1foobar',), {})])
 
 
 	def test_settleRollbackIncoming(self):
@@ -747,12 +715,12 @@ class Test(unittest.TestCase):
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.ChannelMessage))
 		self.assertEqual(msg.channelIndex, 1)
-		self.assertEqual(msg.message, 'foz')
+		self.assertEqual(msg.message, 'settleRollbackIncoming')
 
 		self.assertEqual(self.link.channels[0].state,
 			['1foobar'])
 		self.assertEqual(self.link.channels[1].state,
-			['1foobar', '1foobar'])
+			['1foobar', ('settleRollbackIncoming', ('1foobar',), {})])
 
 
 	def test_handleChannelOutput(self):
