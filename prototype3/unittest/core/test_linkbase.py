@@ -72,6 +72,16 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.linkBase.cancelIncoming(None), [])
 
 
+	def test_haveRouteOutgoing(self):
+		'Test haveRouteOutgoing'
+		self.assertEqual(self.linkBase.haveRouteOutgoing(None), [])
+
+
+	def test_haveRouteIncoming(self):
+		'Test haveRouteIncoming'
+		self.assertEqual(self.linkBase.haveRouteIncoming(None), [])
+
+
 	def test_lockOutgoing(self):
 		'Test lockOutgoing'
 		self.assertEqual(self.linkBase.lockOutgoing(None), [])

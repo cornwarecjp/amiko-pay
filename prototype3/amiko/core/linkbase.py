@@ -61,6 +61,14 @@ class LinkBase:
 		return []
 
 
+	def haveRouteIncoming(self, msg):
+		return []
+
+
+	def haveRouteOutgoing(self, msg):
+		return []
+
+
 	def lockOutgoing(self, msg):
 		return []
 

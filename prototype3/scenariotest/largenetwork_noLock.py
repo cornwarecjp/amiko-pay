@@ -49,10 +49,14 @@ verbose = '-v' in sys.argv
 class PayerLink_NoLock(serializable.Serializable):
 	serializableAttributes = {'object': None}
 
-	def handleMessage(self, msg):
+	def haveRouteIncoming(self, msg):
+		ret = self.object.haveRouteIncoming(msg)
+		#Filter out the Lock message:
+		return [r for r in ret if r.__class__ != messages.Lock]
 
-		ret = self.object.handleMessage(msg)
 
+	def haveRouteOutgoing(self, msg):
+		ret = self.object.haveRouteOutgoing(msg)
 		#Filter out the Lock message:
 		return [r for r in ret if r.__class__ != messages.Lock]
 

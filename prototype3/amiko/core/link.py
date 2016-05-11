@@ -50,7 +50,6 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 		messages.Link_Deposit      : self.msg_ownDeposit,
 		messages.Link_Withdraw     : self.msg_ownWithdraw,
 		messages.Deposit           : self.msg_peerDeposit,
-		messages.HaveRoute         : self.msg_haveRoute,
 		messages.BitcoinReturnValue: self.msg_bitcoinReturnValue,
 		messages.ChannelMessage    : self.continueChannelConversation
 		}[msg.__class__](msg)
@@ -98,13 +97,6 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 
 		channelOutput = self.channels[msg.channelIndex].startWithdraw()
 		return self.handleChannelOutput(msg.channelIndex, channelOutput)
-
-
-	def msg_haveRoute(self, msg):
-		#Forward to peer:
-		msg = copy.deepcopy(msg)
-		msg.ID = self.remoteID
-		return [messages.OutboundMessage(localID=self.localID, message=msg)]
 
 
 	def msg_bitcoinReturnValue(self, msg):
@@ -206,6 +198,13 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 			ci,
 			c.unreserve(isOutgoing, routeID)
 			)
+
+
+	def haveRouteOutgoing(self, msg):
+		#Forward to peer:
+		msg = copy.deepcopy(msg)
+		msg.ID = self.remoteID
+		return [messages.OutboundMessage(localID=self.localID, message=msg)]
 
 
 	def lockOutgoing(self, msg):

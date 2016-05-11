@@ -167,33 +167,6 @@ class Test(unittest.TestCase):
 			messages.Link_Withdraw(ID=None, channelIndex=1))
 
 
-	def test_msg_haveRoute(self):
-		'test msg_haveRoute'
-
-		msg_in = messages.HaveRoute(
-			ID=None,
-			transactionID='foobar',
-			isPayerSide=True,
-			startTime=123,
-			endTime=456
-			)
-
-		ret = self.link.handleMessage(msg_in)
-
-		self.assertEqual(len(ret), 1)
-		msg = ret[0]
-		self.assertTrue(isinstance(msg, messages.OutboundMessage))
-		self.assertEqual(msg.localID, 'local')
-		msg = msg.message
-		self.assertFalse(msg is msg_in)
-		self.assertTrue(isinstance(msg, messages.HaveRoute))
-		self.assertEqual(msg.ID, 'remote')
-		self.assertEqual(msg.transactionID, msg_in.transactionID)
-		self.assertEqual(msg.isPayerSide, msg_in.isPayerSide)
-		self.assertEqual(msg.startTime, msg_in.startTime)
-		self.assertEqual(msg.endTime, msg_in.endTime)
-
-
 	def test_msg_bitcoinReturnValue(self):
 		'test msg_bitcoinReturnValue'
 
@@ -427,6 +400,33 @@ class Test(unittest.TestCase):
 
 		self.assertEqual(self.link.channels[1].state,
 			['1foobar', ('unreserve', (False, '1foobar'), {})])
+
+
+	def test_haveRouteOutgoing(self):
+		'test haveRouteOutgoing'
+
+		msg_in = messages.HaveRoute(
+			ID=None,
+			transactionID='foobar',
+			isPayerSide=True,
+			startTime=123,
+			endTime=456
+			)
+
+		ret = self.link.haveRouteOutgoing(msg_in)
+
+		self.assertEqual(len(ret), 1)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.OutboundMessage))
+		self.assertEqual(msg.localID, 'local')
+		msg = msg.message
+		self.assertFalse(msg is msg_in)
+		self.assertTrue(isinstance(msg, messages.HaveRoute))
+		self.assertEqual(msg.ID, 'remote')
+		self.assertEqual(msg.transactionID, msg_in.transactionID)
+		self.assertEqual(msg.isPayerSide, msg_in.isPayerSide)
+		self.assertEqual(msg.startTime, msg_in.startTime)
+		self.assertEqual(msg.endTime, msg_in.endTime)
 
 
 	def test_lockOutgoing(self):

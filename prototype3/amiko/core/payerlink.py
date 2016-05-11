@@ -74,7 +74,6 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 		messages.Receipt          : self.msg_receipt,
 		messages.PayerLink_Confirm: self.msg_confirm,
 		messages.Cancel           : self.msg_cancel,
-		messages.HaveRoute        : self.msg_haveRoute,
 		}[msg.__class__](msg)
 
 
@@ -171,41 +170,6 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 		]
 
 
-	def msg_haveRoute(self, msg):
-		log.log("Payer: HaveRoute received")
-
-		if msg.isPayerSide:
-			self.state = \
-			{
-			self.states.confirmed    : self.states.hasPayerRoute,
-			self.states.hasPayeeRoute: self.states.locked
-			}[self.state]
-		else:
-			self.state = \
-			{
-			self.states.confirmed    : self.states.hasPayeeRoute,
-			self.states.hasPayerRoute: self.states.locked
-			}[self.state]
-
-		ret = []
-
-		#If both routes are present, start locking
-		if self.state == self.states.locked:
-			ret.append(
-				messages.Lock(
-					ID=messages.payerLocalID,
-					transactionID=self.transactionID,
-					isPayerSide=True,
-					amount=self.amount,
-					startTime=None, #TODO
-					endTime=None,   #TODO
-					channelIndex=None #To be filled in by an outgoing link
-					)
-				)
-
-		return ret
-
-
 	def haveNoRouteOutgoing(self, transactionID, isPayerSide):
 		self.state = self.states.cancelled
 
@@ -230,6 +194,48 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 				"cancelOutgoing should not be called in state %s" % \
 					self.state
 				)
+
+		return []
+
+
+	def haveRouteOutgoing(self, msg):
+		log.log("Payer: HaveRoute received (payer side)")
+
+		self.state = \
+		{
+		self.states.confirmed    : self.states.hasPayerRoute,
+		self.states.hasPayeeRoute: self.states.locked
+		}[self.state]
+
+		return self.__getHaveRouteResponse()
+
+
+	def haveRouteIncoming(self, msg):
+		log.log("Payer: HaveRoute received (payee side)")
+
+		self.state = \
+		{
+		self.states.confirmed    : self.states.hasPayeeRoute,
+		self.states.hasPayerRoute: self.states.locked
+		}[self.state]
+
+		return self.__getHaveRouteResponse()
+
+
+	def __getHaveRouteResponse(self):
+		#If both routes are present, start locking
+		if self.state == self.states.locked:
+			return [
+				messages.Lock(
+					ID=messages.payerLocalID,
+					transactionID=self.transactionID,
+					isPayerSide=True,
+					amount=self.amount,
+					startTime=None, #TODO
+					endTime=None,   #TODO
+					channelIndex=None #To be filled in by an outgoing link
+					)
+				]
 
 		return []
 

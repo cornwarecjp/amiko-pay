@@ -154,22 +154,6 @@ class Test(unittest.TestCase):
 			messages.Cancel(ID="foobar"))
 
 
-	def test_msg_haveRoute(self):
-		"Test msg_haveRoute"
-
-		ret = self.payeeLink.handleMessage(
-			messages.HaveRoute(ID="foobar", transactionID="bar", isPayerSide=False))
-
-		self.assertEqual(len(ret), 1)
-		msg = ret[0]
-		self.assertTrue(isinstance(msg, messages.OutboundMessage))
-		self.assertEqual(msg.localID, "foobar")
-		msg = msg.message
-		self.assertTrue(isinstance(msg, messages.HaveRoute))
-		self.assertEqual(msg.transactionID, None)
-		self.assertEqual(msg.isPayerSide, False)
-
-
 	def test_haveNoRouteOutgoing(self):
 		"Test haveNoRouteOutgoing"
 
@@ -201,6 +185,22 @@ class Test(unittest.TestCase):
 
 		ret = self.payeeLink.cancelOutgoing(None)
 		self.assertEqual(len(ret), 0)
+
+
+	def test_haveRouteOutgoing(self):
+		"Test haveRouteOutgoing"
+
+		ret = self.payeeLink.haveRouteOutgoing(
+			messages.HaveRoute(ID="foobar", transactionID="bar", isPayerSide=False))
+
+		self.assertEqual(len(ret), 1)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.OutboundMessage))
+		self.assertEqual(msg.localID, "foobar")
+		msg = msg.message
+		self.assertTrue(isinstance(msg, messages.HaveRoute))
+		self.assertEqual(msg.transactionID, None)
+		self.assertEqual(msg.isPayerSide, False)
 
 
 	def test_lockOutgoing(self):

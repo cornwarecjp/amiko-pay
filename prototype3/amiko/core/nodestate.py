@@ -412,27 +412,33 @@ class NodeState(serializable.Serializable):
 	def msg_haveRoute(self, msg):
 		#Special case for payee->payer transmission of this message type:
 		if msg.ID == messages.payerLocalID:
-			return self.payerLink.handleMessage(msg)
+			return self.payerLink.haveRouteIncoming(msg)
 
 		#TODO: check sanity (and data type) of startTime, endTime
+
+		ret = []
 
 		if msg.isPayerSide:
 			tx = self.findTransaction(
 				transactionID=msg.transactionID, payeeID=msg.ID, isPayerSide=True)
-			link = self.__getLinkObject(tx.payerID)
+			payer = self.__getLinkObject(tx.payerID)
+			payee = self.__getLinkObject(tx.payeeID)
+			ret += payee.haveRouteIncoming(msg)
 			msg.ID = tx.payerID
 			msg.endTime += self.settings.timeoutIncrement
+			ret += payer.haveRouteOutgoing(msg)
 		else:
 			tx = self.findTransaction(
 				transactionID=msg.transactionID, payerID=msg.ID, isPayerSide=False)
-			link = self.__getLinkObject(tx.payeeID)
+			payer = self.__getLinkObject(tx.payerID)
+			payee = self.__getLinkObject(tx.payeeID)
+			ret += payer.haveRouteIncoming(msg)
 			msg.ID = tx.payeeID
 			msg.endTime -= self.settings.timeoutIncrement
+			ret += payee.haveRouteOutgoing(msg)
 			#TODO: compare startTime, endTime with MakeRoute values
 
 		tx.state = transaction.Transaction.states.haveRoute
-
-		ret = link.handleMessage(msg)
 
 		#Lock time-out:
 		#TODO: configurable time-out value?

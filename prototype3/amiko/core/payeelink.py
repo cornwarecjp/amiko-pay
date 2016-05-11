@@ -73,7 +73,6 @@ class PayeeLink(linkbase.LinkBase, serializable.Serializable):
 		messages.Pay      : self.msg_pay,
 		messages.Confirm  : self.msg_confirm,
 		messages.Cancel   : self.msg_cancel,
-		messages.HaveRoute: self.msg_haveRoute
 		}[msg.__class__](msg)
 
 
@@ -146,16 +145,6 @@ class PayeeLink(linkbase.LinkBase, serializable.Serializable):
 		return ret
 
 
-	def msg_haveRoute(self, msg):
-		#Simply pass it to the payer, who keeps track of whether the route is complete
-		return \
-		[
-		messages.OutboundMessage(localID = msg.ID, message = \
-			messages.HaveRoute(transactionID=None, isPayerSide=False)
-			)
-		]
-
-
 	def haveNoRouteOutgoing(self, transactionID, isPayerSide):
 		if self.state != self.states.confirmed:
 			raise Exception(
@@ -181,6 +170,16 @@ class PayeeLink(linkbase.LinkBase, serializable.Serializable):
 				)
 
 		return []
+
+
+	def haveRouteOutgoing(self, msg):
+		#Simply pass it to the payer, who keeps track of whether the route is complete
+		return \
+		[
+		messages.OutboundMessage(localID = msg.ID, message = \
+			messages.HaveRoute(transactionID=None, isPayerSide=False)
+			)
+		]
 
 
 	def lockOutgoing(self, msg):

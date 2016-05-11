@@ -217,99 +217,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.locked)
 
 
-
-	def test_msg_havePayerRoute(self):
-		"Test msg_haveRoute (payer side)"
-
-		self.payerLink.amount = 123
-
-		self.assertRaises(Exception, self.payerLink.handleMessage,
-			messages.HaveRoute(
-				ID=messages.payerLocalID,
-				transactionID=self.payerLink.transactionID,
-				isPayerSide=True
-				))
-
-		self.payerLink.state = payerlink.PayerLink.states.confirmed
-
-		ret = self.payerLink.handleMessage(
-			messages.HaveRoute(
-				ID=messages.payerLocalID,
-				transactionID=self.payerLink.transactionID,
-				isPayerSide=True
-				))
-
-		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.hasPayerRoute)
-
-		self.assertEqual(len(ret), 0)
-
-		self.payerLink.state = payerlink.PayerLink.states.hasPayeeRoute
-
-		ret = self.payerLink.handleMessage(
-			messages.HaveRoute(
-				ID=messages.payerLocalID,
-				transactionID=self.payerLink.transactionID,
-				isPayerSide=True
-				))
-
-		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.locked)
-
-		self.assertEqual(len(ret), 1)
-		msg = ret[0]
-		self.assertTrue(isinstance(msg, messages.Lock))
-		self.assertEqual(msg.transactionID, self.payerLink.transactionID)
-		self.assertEqual(msg.isPayerSide, True)
-		self.assertEqual(msg.amount, 123)
-		#TODO: verify startTime and endTime
-		#Don't verify channelIndex: its value is irrelevant here.
-
-
-	def test_msg_havePayeeRoute(self):
-		"Test msg_haveRoute (payee side)"
-
-		self.payerLink.amount = 123
-
-		self.assertRaises(Exception, self.payerLink.handleMessage,
-			messages.HaveRoute(
-				ID=messages.payerLocalID,
-				transactionID=self.payerLink.transactionID,
-				isPayerSide=False
-				))
-
-		self.payerLink.state = payerlink.PayerLink.states.confirmed
-
-		ret = self.payerLink.handleMessage(
-			messages.HaveRoute(
-				ID=messages.payerLocalID,
-				transactionID=self.payerLink.transactionID,
-				isPayerSide=False
-				))
-
-		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.hasPayeeRoute)
-
-		self.assertEqual(len(ret), 0)
-
-		self.payerLink.state = payerlink.PayerLink.states.hasPayerRoute
-
-		ret = self.payerLink.handleMessage(
-			messages.HaveRoute(
-				ID=messages.payerLocalID,
-				transactionID=self.payerLink.transactionID,
-				isPayerSide=False
-				))
-
-		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.locked)
-
-		self.assertEqual(len(ret), 1)
-		msg = ret[0]
-		self.assertTrue(isinstance(msg, messages.Lock))
-		self.assertEqual(msg.transactionID, self.payerLink.transactionID)
-		self.assertEqual(msg.isPayerSide, True)
-		self.assertEqual(msg.amount, 123)
-		#TODO: verify startTime and endTime
-		#Don't verify channelIndex: its value is irrelevant here.
-
-
 	def test_haveNoRouteOutgoing(self):
 		"Test haveNoRouteOutgoing"
 
@@ -335,6 +242,98 @@ class Test(unittest.TestCase):
 
 		ret = self.payerLink.cancelOutgoing(None)
 		self.assertEqual(len(ret), 0)
+
+
+	def test_haveRouteOutgoing(self):
+		"Test haveRouteOutgoing"
+
+		self.payerLink.amount = 123
+
+		self.assertRaises(Exception, self.payerLink.haveRouteOutgoing,
+			messages.HaveRoute(
+				ID=messages.payerLocalID,
+				transactionID=self.payerLink.transactionID,
+				isPayerSide=True
+				))
+
+		self.payerLink.state = payerlink.PayerLink.states.confirmed
+
+		ret = self.payerLink.haveRouteOutgoing(
+			messages.HaveRoute(
+				ID=messages.payerLocalID,
+				transactionID=self.payerLink.transactionID,
+				isPayerSide=True
+				))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.hasPayerRoute)
+
+		self.assertEqual(len(ret), 0)
+
+		self.payerLink.state = payerlink.PayerLink.states.hasPayeeRoute
+
+		ret = self.payerLink.haveRouteOutgoing(
+			messages.HaveRoute(
+				ID=messages.payerLocalID,
+				transactionID=self.payerLink.transactionID,
+				isPayerSide=True
+				))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.locked)
+
+		self.assertEqual(len(ret), 1)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.Lock))
+		self.assertEqual(msg.transactionID, self.payerLink.transactionID)
+		self.assertEqual(msg.isPayerSide, True)
+		self.assertEqual(msg.amount, 123)
+		#TODO: verify startTime and endTime
+		#Don't verify channelIndex: its value is irrelevant here.
+
+
+	def test_haveRouteIncoming(self):
+		"Test haveRouteIncoming)"
+
+		self.payerLink.amount = 123
+
+		self.assertRaises(Exception, self.payerLink.haveRouteIncoming,
+			messages.HaveRoute(
+				ID=messages.payerLocalID,
+				transactionID=self.payerLink.transactionID,
+				isPayerSide=False
+				))
+
+		self.payerLink.state = payerlink.PayerLink.states.confirmed
+
+		ret = self.payerLink.haveRouteIncoming(
+			messages.HaveRoute(
+				ID=messages.payerLocalID,
+				transactionID=self.payerLink.transactionID,
+				isPayerSide=False
+				))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.hasPayeeRoute)
+
+		self.assertEqual(len(ret), 0)
+
+		self.payerLink.state = payerlink.PayerLink.states.hasPayerRoute
+
+		ret = self.payerLink.haveRouteIncoming(
+			messages.HaveRoute(
+				ID=messages.payerLocalID,
+				transactionID=self.payerLink.transactionID,
+				isPayerSide=False
+				))
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.locked)
+
+		self.assertEqual(len(ret), 1)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.Lock))
+		self.assertEqual(msg.transactionID, self.payerLink.transactionID)
+		self.assertEqual(msg.isPayerSide, True)
+		self.assertEqual(msg.amount, 123)
+		#TODO: verify startTime and endTime
+		#Don't verify channelIndex: its value is irrelevant here.
 
 
 	def test_requestCommitOutgoing(self):
