@@ -413,6 +413,15 @@ class Test(unittest.TestCase):
 			endTime=456
 			)
 
+		self.link.channels.append(DummyChannel())
+		self.link.channels.append(DummyChannel())
+
+		self.assertRaises(Exception, self.link.haveRouteOutgoing, msg_in)
+		self.link.channels[0].state = []
+		self.link.channels[1].state = []
+
+		self.link.channels[1].hasRouteReturn = True
+
 		ret = self.link.haveRouteOutgoing(msg_in)
 
 		self.assertEqual(len(ret), 1)
@@ -427,6 +436,43 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.isPayerSide, msg_in.isPayerSide)
 		self.assertEqual(msg.startTime, msg_in.startTime)
 		self.assertEqual(msg.endTime, msg_in.endTime)
+
+		self.assertEqual(self.link.channels[0].state,
+			['1foobar'])
+
+		self.assertEqual(self.link.channels[1].state,
+			['1foobar', ('updateReservation', (False, '1foobar', 123, 456), {})])
+
+
+	def test_haveRouteIncoming(self):
+		'test haveRouteIncoming'
+
+		msg_in = messages.HaveRoute(
+			ID=None,
+			transactionID='foobar',
+			isPayerSide=True,
+			startTime=123,
+			endTime=456
+			)
+
+		self.link.channels.append(DummyChannel())
+		self.link.channels.append(DummyChannel())
+
+		self.assertRaises(Exception, self.link.haveRouteIncoming, msg_in)
+		self.link.channels[0].state = []
+		self.link.channels[1].state = []
+
+		self.link.channels[1].hasRouteReturn = True
+
+		ret = self.link.haveRouteIncoming(msg_in)
+
+		self.assertEqual(ret, [])
+
+		self.assertEqual(self.link.channels[0].state,
+			['1foobar'])
+
+		self.assertEqual(self.link.channels[1].state,
+			['1foobar', ('updateReservation', (True, '1foobar', 123, 456), {})])
 
 
 	def test_lockOutgoing(self):

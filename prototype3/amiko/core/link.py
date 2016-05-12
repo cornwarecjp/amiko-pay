@@ -201,10 +201,26 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 
 
 	def haveRouteOutgoing(self, msg):
+		routeID = self.__makeRouteID(msg.transactionID, msg.isPayerSide)
+		isOutgoing = not msg.isPayerSide
+
+		c, ci = self.__findChannelWithRoute(routeID)
+		c.updateReservation(isOutgoing, routeID, msg.startTime, msg.endTime)
+
 		#Forward to peer:
 		msg = copy.deepcopy(msg)
 		msg.ID = self.remoteID
 		return [messages.OutboundMessage(localID=self.localID, message=msg)]
+
+
+	def haveRouteIncoming(self, msg):
+		routeID = self.__makeRouteID(msg.transactionID, msg.isPayerSide)
+		isOutgoing = msg.isPayerSide
+
+		c, ci = self.__findChannelWithRoute(routeID)
+		c.updateReservation(isOutgoing, routeID, msg.startTime, msg.endTime)
+
+		return []
 
 
 	def lockOutgoing(self, msg):

@@ -156,6 +156,27 @@ class PlainChannel(serializable.Serializable):
 					startTime=startTime, endTime=endTime, amount=amount)
 
 
+	def updateReservation(self, isOutgoing, routeID, startTime, endTime):
+		if isOutgoing:
+			tx = self.transactionsOutgoingReserved[routeID]
+		else:
+			tx = self.transactionsIncomingReserved[routeID]
+
+		#Updating startTime and endTime is only allowed if they were previously
+		#unknown, or if they were already the same as the new values.
+		if not(tx.startTime is None) and tx.startTime != startTime:
+			raise Exception(
+				'Error: startTime was previously agreed to be %d, but now we receive %d' % \
+				(tx.startTime, startTime))
+		if not(tx.endTime is None) and tx.endTime != endTime:
+			raise Exception(
+				'Error: endTime was previously agreed to be %d, but now we receive %d' % \
+				(tx.endTime, endTime))
+
+		tx.startTime = startTime
+		tx.endTime = endTime
+
+
 	def unreserve(self, isOutgoing, routeID):
 		"""
 		Return value:
