@@ -151,12 +151,6 @@ class Node(threading.Thread):
 						self.payLog.writePayer(self.__node.payerLink)
 					self.__node.payerLink = None
 					self.__node.connections[messages.payerLocalID].close()
-					self.__node.timeoutMessages = \
-					[
-						msg
-						for msg in self.__node.timeoutMessages
-						if msg.message.__class__ != messages.PayerTimeout
-					]
 
 			#Remove finished payee and related objects:
 			payeeIDs = self.__node.payeeLinks.keys()

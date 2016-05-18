@@ -82,13 +82,19 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 			#Receipt time-out
 			log.log("Payer: receipt time-out -> cancelled")
 			self.state = self.states.cancelled
-			return [messages.SetEvent(event=messages.SetEvent.events.receiptReceived)]
+			return self.__removeTimeouts() + \
+			[
+				messages.SetEvent(event=messages.SetEvent.events.receiptReceived)
+			]
 
 		elif self.state == self.states.receivedRequestCommit and msg.state == self.states.receivedRequestCommit:
 			#settleCommit time-out: assume settled anyway, since we've received the commit token
 			log.log("Payer: settleCommit time-out -> committed")
 			self.state = self.states.committed
-			return [messages.SetEvent(event=messages.SetEvent.events.paymentFinished)]
+			return self.__removeTimeouts() + \
+			[
+				messages.SetEvent(event=messages.SetEvent.events.paymentFinished)
+			]
 
 		log.log("Payer: time-out of state %s no longer applicable: we are now in state %s" % \
 			(msg.state, self.state))
@@ -142,7 +148,7 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 		else:
 			self.state = self.states.cancelled
 
-			ret = \
+			ret = self.__removeTimeouts() + \
 			[
 			messages.OutboundMessage(localID = messages.payerLocalID, message = \
 				messages.Cancel()
@@ -163,7 +169,7 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 
 		self.state = self.states.cancelled
 
-		return \
+		return self.__removeTimeouts() + \
 		[
 			messages.CancelRoute(transactionID=self.transactionID, isPayerSide=True),
 			messages.SetEvent(event=messages.SetEvent.events.paymentFinished)
@@ -173,7 +179,7 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 	def haveNoRouteOutgoing(self, transactionID, isPayerSide):
 		self.state = self.states.cancelled
 
-		return \
+		return self.__removeTimeouts() + \
 		[
 		messages.OutboundMessage(localID = messages.payerLocalID, message = \
 			messages.Cancel()
@@ -263,7 +269,10 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 		log.log("Payer: received settleCommit -> committed")
 		self.state = self.states.committed
 
-		return [messages.SetEvent(event=messages.SetEvent.events.paymentFinished)]
+		return self.__removeTimeouts() + \
+		[
+			messages.SetEvent(event=messages.SetEvent.events.paymentFinished)
+		]
 
 
 	def settleRollbackOutgoing(self, msg):
@@ -276,7 +285,7 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 		log.log("Payer: received settleRollback -> cancelled")
 		self.state = self.states.cancelled
 
-		return \
+		return self.__removeTimeouts() + \
 		[
 		messages.OutboundMessage(localID = messages.payerLocalID, message = \
 			messages.Cancel()
@@ -284,6 +293,11 @@ class PayerLink(linkbase.LinkBase, serializable.Serializable):
 		messages.SetEvent(event=messages.SetEvent.events.paymentFinished)
 		]
 
+
+	def __removeTimeouts(self):
+		return [messages.FilterTimeouts(function = lambda message:
+			not isinstance(message, messages.PayerTimeout)
+			)]
 
 serializable.registerClass(PayerLink)
 

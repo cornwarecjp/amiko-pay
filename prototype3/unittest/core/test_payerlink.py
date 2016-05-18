@@ -85,9 +85,14 @@ class Test(unittest.TestCase):
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
 
-		self.assertEqual(len(ret), 1)
+		self.assertEqual(len(ret), 2)
 
 		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.FilterTimeouts))
+		function = msg.function
+		self.assertFalse(function(messages.PayerTimeout()))
+		self.assertTrue(function(messages.NodeStateTimeout_Route()))
+		msg = ret[1]
 		self.assertTrue(isinstance(msg, messages.SetEvent))
 		self.assertEqual(msg.event, messages.SetEvent.events.receiptReceived)
 
@@ -102,9 +107,14 @@ class Test(unittest.TestCase):
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.committed)
 
-		self.assertEqual(len(ret), 1)
+		self.assertEqual(len(ret), 2)
 
 		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.FilterTimeouts))
+		function = msg.function
+		self.assertFalse(function(messages.PayerTimeout()))
+		self.assertTrue(function(messages.NodeStateTimeout_Route()))
+		msg = ret[1]
 		self.assertTrue(isinstance(msg, messages.SetEvent))
 		self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
@@ -179,14 +189,19 @@ class Test(unittest.TestCase):
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
 
-		self.assertEqual(len(ret), 2)
+		self.assertEqual(len(ret), 3)
 		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.FilterTimeouts))
+		function = msg.function
+		self.assertFalse(function(messages.PayerTimeout()))
+		self.assertTrue(function(messages.NodeStateTimeout_Route()))
+		msg = ret[1]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, messages.payerLocalID)
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.Cancel))
 		self.assertEqual(msg.ID, None)
-		msg = ret[1]
+		msg = ret[2]
 		self.assertTrue(isinstance(msg, messages.SetEvent))
 		self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
@@ -203,12 +218,17 @@ class Test(unittest.TestCase):
 
 			self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
 
-			self.assertEqual(len(ret), 2)
+			self.assertEqual(len(ret), 3)
 			msg = ret[0]
+			self.assertTrue(isinstance(msg, messages.FilterTimeouts))
+			function = msg.function
+			self.assertFalse(function(messages.PayerTimeout()))
+			self.assertTrue(function(messages.NodeStateTimeout_Route()))
+			msg = ret[1]
 			self.assertTrue(isinstance(msg, messages.CancelRoute))
 			self.assertTrue(msg.transactionID, 'txID')
 			self.assertTrue(msg.isPayerSide, True)
-			msg = ret[1]
+			msg = ret[2]
 			self.assertTrue(isinstance(msg, messages.SetEvent))
 			self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
@@ -221,13 +241,21 @@ class Test(unittest.TestCase):
 		"Test haveNoRouteOutgoing"
 
 		ret = self.payerLink.haveNoRouteOutgoing(None, None)
-		self.assertEqual(len(ret), 2)
+
+		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
+
+		self.assertEqual(len(ret), 3)
 		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.FilterTimeouts))
+		function = msg.function
+		self.assertFalse(function(messages.PayerTimeout()))
+		self.assertTrue(function(messages.NodeStateTimeout_Route()))
+		msg = ret[1]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, messages.payerLocalID)
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.Cancel))
-		msg = ret[1]
+		msg = ret[2]
 		self.assertTrue(isinstance(msg, messages.SetEvent))
 		self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
@@ -365,9 +393,14 @@ class Test(unittest.TestCase):
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.committed)
 
-		self.assertEqual(len(ret), 1)
+		self.assertEqual(len(ret), 2)
 
 		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.FilterTimeouts))
+		function = msg.function
+		self.assertFalse(function(messages.PayerTimeout()))
+		self.assertTrue(function(messages.NodeStateTimeout_Route()))
+		msg = ret[1]
 		self.assertTrue(isinstance(msg, messages.SetEvent))
 		self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
@@ -387,15 +420,19 @@ class Test(unittest.TestCase):
 
 		self.assertEqual(self.payerLink.state, payerlink.PayerLink.states.cancelled)
 
-		self.assertEqual(len(ret), 2)
+		self.assertEqual(len(ret), 3)
 
 		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.FilterTimeouts))
+		function = msg.function
+		self.assertFalse(function(messages.PayerTimeout()))
+		self.assertTrue(function(messages.NodeStateTimeout_Route()))
+		msg = ret[1]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, messages.payerLocalID)
 		msg = msg.message
 		self.assertTrue(isinstance(msg, messages.Cancel))
-
-		msg = ret[1]
+		msg = ret[2]
 		self.assertTrue(isinstance(msg, messages.SetEvent))
 		self.assertEqual(msg.event, messages.SetEvent.events.paymentFinished)
 
