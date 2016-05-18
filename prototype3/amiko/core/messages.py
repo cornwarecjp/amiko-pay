@@ -115,6 +115,10 @@ class SetEvent(Message):
 	attributes = {'event': None}
 
 
+class FilterTimeouts(Message):
+	attributes = {'function': lambda message: True}
+
+
 
 ################################################################################
 # Serializable messages, for external communication:

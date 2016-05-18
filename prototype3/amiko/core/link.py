@@ -290,7 +290,20 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 		#TODO: add payload
 		msg = copy.deepcopy(msg)
 		msg.ID = self.remoteID
-		return ret + [messages.OutboundMessage(localID=self.localID, message=msg)]
+		return ret + \
+		[
+			messages.OutboundMessage(localID=self.localID, message=msg),
+			messages.FilterTimeouts(function = lambda message: \
+				not(
+					isinstance(message, messages.LinkTimeout_Commit)
+					and
+					message.transactionID == transactionID
+					and
+					message.isPayerSide == msg.isPayerSide
+					and
+					message.ID == self.localID
+				))
+		]
 
 
 	def settleCommitIncoming(self, msg):
@@ -327,7 +340,19 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 		return self.handleChannelOutput(
 			ci,
 			c.settleRollbackIncoming(routeID)
-			)
+			) + \
+		[
+			messages.FilterTimeouts(function = lambda message: \
+				not(
+					isinstance(message, messages.LinkTimeout_Commit)
+					and
+					message.transactionID == msg.transactionID
+					and
+					message.isPayerSide == msg.isPayerSide
+					and
+					message.ID == self.localID
+				))
+		]
 
 
 	def startChannelConversation(self, channelIndex):

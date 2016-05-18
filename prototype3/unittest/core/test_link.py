@@ -526,7 +526,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.isPayerSide, msg_in.isPayerSide)
 		self.assertEqual(msg.ID, 'local')
 
-
 		self.assertEqual(self.link.channels[0].state,
 			['1foobar'])
 
@@ -631,7 +630,7 @@ class Test(unittest.TestCase):
 
 		ret = self.link.settleCommitOutgoing(msg_in)
 
-		self.assertEqual(len(ret), 2)
+		self.assertEqual(len(ret), 3)
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, 'local')
@@ -647,6 +646,33 @@ class Test(unittest.TestCase):
 		self.assertTrue(isinstance(msg, messages.SettleCommit))
 		self.assertEqual(msg.token, msg_in.token)
 		self.assertEqual(msg.isPayerSide, msg_in.isPayerSide)
+		msg = ret[2]
+		self.assertTrue(isinstance(msg, messages.FilterTimeouts))
+		self.assertFalse(msg.function(messages.LinkTimeout_Commit(
+			transactionID=settings.hashAlgorithm('foobar'),
+			isPayerSide=True,
+			ID='local'
+			)))
+		self.assertTrue(msg.function(messages.LinkTimeout_Commit(
+			transactionID='other',
+			isPayerSide=True,
+			ID='local'
+			)))
+		self.assertTrue(msg.function(messages.LinkTimeout_Commit(
+			transactionID=settings.hashAlgorithm('foobar'),
+			isPayerSide=False,
+			ID='local'
+			)))
+		self.assertTrue(msg.function(messages.LinkTimeout_Commit(
+			transactionID=settings.hashAlgorithm('foobar'),
+			isPayerSide=True,
+			ID='other'
+			)))
+		self.assertTrue(msg.function(messages.SettleCommit(
+			transactionID=settings.hashAlgorithm('foobar'),
+			isPayerSide=True,
+			ID='local'
+			)))
 
 		self.assertEqual(self.link.channels[0].state,
 			[expectedRouteID])
@@ -768,7 +794,7 @@ class Test(unittest.TestCase):
 
 		ret = self.link.settleRollbackIncoming(msg_in)
 
-		self.assertEqual(len(ret), 1)
+		self.assertEqual(len(ret), 2)
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, 'local')
@@ -776,6 +802,33 @@ class Test(unittest.TestCase):
 		self.assertTrue(isinstance(msg, messages.ChannelMessage))
 		self.assertEqual(msg.channelIndex, 1)
 		self.assertEqual(msg.message, 'settleRollbackIncoming')
+		msg = ret[1]
+		self.assertTrue(isinstance(msg, messages.FilterTimeouts))
+		self.assertFalse(msg.function(messages.LinkTimeout_Commit(
+			transactionID='foobar',
+			isPayerSide=True,
+			ID='local'
+			)))
+		self.assertTrue(msg.function(messages.LinkTimeout_Commit(
+			transactionID='other',
+			isPayerSide=True,
+			ID='local'
+			)))
+		self.assertTrue(msg.function(messages.LinkTimeout_Commit(
+			transactionID='foobar',
+			isPayerSide=False,
+			ID='local'
+			)))
+		self.assertTrue(msg.function(messages.LinkTimeout_Commit(
+			transactionID='foobar',
+			isPayerSide=True,
+			ID='other'
+			)))
+		self.assertTrue(msg.function(messages.SettleCommit(
+			transactionID='foobar',
+			isPayerSide=True,
+			ID='local'
+			)))
 
 		self.assertEqual(self.link.channels[0].state,
 			['1foobar'])
