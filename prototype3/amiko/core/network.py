@@ -67,7 +67,7 @@ class Connection(asyncore.dispatcher_with_send):
 
 
 	def processReceivedMessageData(self, msgData):
-		log.log("Received data: %s\n" % msgData)
+		log.log("Received from %s: %s\n" % (str(self.localID), msgData))
 
 		try:
 			container = serializable.deserialize(msgData)
