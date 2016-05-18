@@ -86,6 +86,7 @@ class NodeState(serializable.Serializable):
 		messages.MakeLink              : self.msg_makeLink,
 		messages.MakeMeetingPoint      : self.msg_makeMeetingPoint,
 
+		messages.TimeoutMessage        : self.msg_timeoutMessage,
 		messages.FilterTimeouts        : self.msg_filterTimeouts,
 
 		messages.MakeRoute             : self.msg_makeRoute,
@@ -197,6 +198,14 @@ class NodeState(serializable.Serializable):
 	def msg_makeMeetingPoint(self, msg):
 		self.meetingPoints[msg.name] = meetingpoint.MeetingPoint(ID=msg.name)
 
+		return []
+
+
+	def msg_timeoutMessage(self, msg):
+		self.timeoutMessages.append(msg)
+		self.timeoutMessages.sort(
+			cmp = lambda a, b: int(a.timestamp - b.timestamp)
+			)
 		return []
 
 

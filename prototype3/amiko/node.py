@@ -141,14 +141,6 @@ class Node(threading.Thread):
 			)
 
 
-	def __addTimeoutMessage(self, msg):
-		with self.__node: #makes sure the state is saved or restored in the end
-			self.__node.timeoutMessages.append(msg)
-			self.__node.timeoutMessages.sort(
-				cmp = lambda a, b: int(a.timestamp - b.timestamp)
-				)
-
-
 	def __cleanupState(self):
 		with self.__node: #makes sure the state is saved or restored in the end
 			#Remove finished payer and related objects:
@@ -210,14 +202,8 @@ class Node(threading.Thread):
 					#All other messages go to the node:
 					newMessages = self.__node.handleMessage(msg)
 
-				#Put new messages in the right places:
-				for msg in newMessages:
-					if msg.__class__ == messages.TimeoutMessage:
-						#Add to the list of time-out messages:
-						self.__addTimeoutMessage(msg)
-					else:
-						#Process in another iteration of the loop we're in:
-						messageQueue.append(msg)
+				#Add new messages to the end of the queue:
+				messageQueue += newMessages
 
 			self.__cleanupState()
 
