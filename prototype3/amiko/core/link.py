@@ -51,7 +51,8 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 		messages.Link_Withdraw     : self.msg_ownWithdraw,
 		messages.Deposit           : self.msg_peerDeposit,
 		messages.BitcoinReturnValue: self.msg_bitcoinReturnValue,
-		messages.ChannelMessage    : self.continueChannelConversation
+		messages.LinkTimeout_Commit: self.msg_LinkTimeout_Commit,
+		messages.ChannelMessage    : self.continueChannelConversation,
 		}[msg.__class__](msg)
 
 
@@ -228,11 +229,23 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 		c, ci = self.__findChannelWithRoute(routeID)
 		c.lockOutgoing(routeID)
 
+		commitTimeout = c.getOutgoingCommitTimeout(routeID)
+
 		#TODO: add payload
 		msg = copy.deepcopy(msg)
 		msg.ID = self.remoteID
 		msg.channelIndex = ci
-		return [messages.OutboundMessage(localID=self.localID, message=msg)]
+		return \
+		[
+			messages.OutboundMessage(localID=self.localID, message=msg),
+			messages.TimeoutMessage(
+				timestamp=commitTimeout,
+				message=messages.LinkTimeout_Commit(
+					transactionID=msg.transactionID,
+					isPayerSide=msg.isPayerSide,
+					ID=self.localID
+					))
+		]
 
 
 	def lockIncoming(self, msg):
@@ -241,6 +254,11 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 		c, ci = self.__findChannelWithRoute(routeID)
 		c.lockIncoming(routeID)
 
+		return []
+
+
+	def msg_LinkTimeout_Commit(self, msg):
+		#TODO
 		return []
 
 

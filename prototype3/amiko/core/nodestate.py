@@ -111,6 +111,7 @@ class NodeState(serializable.Serializable):
 
 		messages.Link_Deposit      : self.msg_passToLink,
 		messages.Link_Withdraw     : self.msg_passToLink,
+		messages.LinkTimeout_Commit: self.msg_passToLink,
 		messages.ChannelMessage    : self.msg_passToLink,
 		messages.Deposit           : self.msg_passToLink,
 		messages.BitcoinReturnValue: self.msg_passToLink
@@ -522,7 +523,6 @@ class NodeState(serializable.Serializable):
 
 		ret = payer.lockIncoming(msg)
 		ret += payee.lockOutgoing(msg)
-		#TODO: add time-out for committing
 		return ret
 
 

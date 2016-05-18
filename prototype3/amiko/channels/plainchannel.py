@@ -205,6 +205,10 @@ class PlainChannel(serializable.Serializable):
 		del self.transactionsIncomingReserved[routeID]
 
 
+	def getOutgoingCommitTimeout(self, routeID):
+		return self.transactionsOutgoingLocked[routeID].endTime
+
+
 	def settleCommitOutgoing(self, routeID, token):
 		"""
 		Return value:

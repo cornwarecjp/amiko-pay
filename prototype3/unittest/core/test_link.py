@@ -54,7 +54,12 @@ class DummyChannel(serializable.Serializable):
 	def hasRoute(self, routeID):
 		self.state.append(routeID)
 		return self.hasRouteReturn
- 
+
+
+	def getOutgoingCommitTimeout(self, routeID):
+		self.state.append(('getOutgoingCommitTimeout', routeID))
+		return 2016
+
 
 	def __getattr__(self, name):
 		if name.startswith('__'):
@@ -498,7 +503,7 @@ class Test(unittest.TestCase):
 
 		ret = self.link.lockOutgoing(msg_in)
 
-		self.assertEqual(len(ret), 1)
+		self.assertEqual(len(ret), 2)
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, messages.OutboundMessage))
 		self.assertEqual(msg.localID, 'local')
@@ -512,12 +517,21 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.isPayerSide, msg_in.isPayerSide)
 		self.assertEqual(msg.channelIndex, 1)
 		#TODO: payload
+		msg = ret[1]
+		self.assertTrue(isinstance(msg, messages.TimeoutMessage))
+		self.assertEqual(msg.timestamp, 2016)
+		msg = msg.message
+		self.assertTrue(isinstance(msg, messages.LinkTimeout_Commit))
+		self.assertEqual(msg.transactionID, msg_in.transactionID)
+		self.assertEqual(msg.isPayerSide, msg_in.isPayerSide)
+		self.assertEqual(msg.ID, 'local')
+
 
 		self.assertEqual(self.link.channels[0].state,
 			['1foobar'])
 
 		self.assertEqual(self.link.channels[1].state,
-			['1foobar', ('lockOutgoing', ('1foobar',), {})])
+			['1foobar', ('lockOutgoing', ('1foobar',), {}), ('getOutgoingCommitTimeout', '1foobar')])
 
 
 	def test_lockIncoming(self):
