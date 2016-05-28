@@ -159,9 +159,7 @@ class Test(unittest.TestCase):
 		#Check whether state is cleaned up:
 		for d in data:
 			self.assertEqual(d['transactions'], [])
-			for tm in d['timeoutMessages']:
-				self.assertTrue(tm['message']['_class'] in \
-					['NodeStateTimeout_Lock'])
+			self.assertEqual(d['timeoutMessages'], [])
 			self.assertEqual(d['payeeLinks'], {})
 			self.assertEqual(d['payerLink'], None)
 			for lnk in d['links'].values():

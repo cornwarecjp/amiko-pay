@@ -338,10 +338,10 @@ class NodeState(serializable.Serializable):
 		else:
 			ret += payer.haveNoRouteIncoming(msg)
 
-		#Clean up old route time-out:
+		#Clean up old route and lock time-out:
 		oldPayerID = tx.payerID #keep reference to innermost object
 		ret.append(messages.FilterTimeouts(function = lambda message: not (
-			isinstance(message, messages.NodeStateTimeout_Route)
+			isinstance(message, (messages.NodeStateTimeout_Route, messages.NodeStateTimeout_Lock))
 			and
 			message.transactionID == msg.transactionID
 			and
@@ -415,9 +415,9 @@ class NodeState(serializable.Serializable):
 		#Clean up cancelled transaction:
 		self.transactions.remove(tx)
 
-		#Clean up route time-out:
+		#Clean up route and lock time-out:
 		ret.append(messages.FilterTimeouts(function = lambda message: not (
-			isinstance(message, messages.NodeStateTimeout_Route)
+			isinstance(message, (messages.NodeStateTimeout_Route, messages.NodeStateTimeout_Lock))
 			and
 			message.transactionID == msg.transactionID
 			and
@@ -586,6 +586,18 @@ class NodeState(serializable.Serializable):
 
 		ret = payer.lockIncoming(msg)
 		ret += payee.lockOutgoing(msg)
+
+		#Clean up lock time-out:
+		ret.append(messages.FilterTimeouts(function = lambda message: not (
+			isinstance(message, messages.NodeStateTimeout_Lock)
+			and
+			message.transactionID == msg.transactionID
+			and
+			message.isPayerSide == msg.isPayerSide
+			and
+			message.payerID == tx.payerID
+			)))
+
 		return ret
 
 
