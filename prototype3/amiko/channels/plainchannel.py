@@ -209,6 +209,15 @@ class PlainChannel(serializable.Serializable):
 		return self.transactionsOutgoingLocked[routeID].endTime
 
 
+	def doCommitTimeout(self, routeID):
+		"""
+		Return value:
+			tuple(list, function) (function may be None)
+		"""
+		#TODO
+		return [], None
+
+
 	def settleCommitOutgoing(self, routeID, token):
 		"""
 		Return value:

@@ -258,8 +258,9 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 
 
 	def msg_LinkTimeout_Commit(self, msg):
-		#TODO
-		return []
+		routeID = self.__makeRouteID(msg.transactionID, msg.isPayerSide)
+		c, ci = self.__findChannelWithRoute(routeID)
+		return self.handleChannelOutput(ci, c.doCommitTimeout(routeID))
 
 
 	def requestCommitOutgoing(self, msg):

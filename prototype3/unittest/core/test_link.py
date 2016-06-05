@@ -566,6 +566,47 @@ class Test(unittest.TestCase):
 			['1foobar', ('lockIncoming', ('1foobar',), {})])
 
 
+	def test_msg_LinkTimeout_Commit(self):
+		'test msg_LinkTimeout_Commit'
+
+		msg_in = messages.LinkTimeout_Commit(
+			transactionID='foobar',
+			isPayerSide=True
+			)
+
+		expectedRouteID = '1foobar'
+
+		self.link.channels.append(DummyChannel())
+		self.link.channels.append(DummyChannel())
+
+		self.assertRaises(Exception, self.link.msg_LinkTimeout_Commit, msg_in)
+
+		self.assertEqual(self.link.channels[0].state,
+			[expectedRouteID])
+		self.assertEqual(self.link.channels[1].state,
+			[expectedRouteID])
+
+		self.link.channels[0].state = []
+		self.link.channels[1].state = []
+
+		self.link.channels[1].hasRouteReturn = True
+		ret = self.link.msg_LinkTimeout_Commit(msg_in)
+
+		self.assertEqual(len(ret), 1)
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.OutboundMessage))
+		self.assertEqual(msg.localID, 'local')
+		msg = msg.message
+		self.assertTrue(isinstance(msg, messages.ChannelMessage))
+		self.assertEqual(msg.channelIndex, 1)
+		self.assertEqual(msg.message, 'doCommitTimeout')
+
+		self.assertEqual(self.link.channels[0].state,
+			[expectedRouteID])
+		self.assertEqual(self.link.channels[1].state,
+			[expectedRouteID, ('doCommitTimeout', (expectedRouteID,), {})])
+
+
 	def test_requestCommitOutgoing(self):
 		'test requestCommitOutgoing'
 
