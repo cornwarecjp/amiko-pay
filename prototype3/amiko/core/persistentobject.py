@@ -81,6 +81,8 @@ class PersistentObject:
 			log.log("Starting with default state")
 
 			self.__object = defaultObject
+			for k, v in self.__nonserializedAttributes.iteritems():
+				setattr(self.__object, k, v)
 
 			#Store the default state:
 			self.save()
