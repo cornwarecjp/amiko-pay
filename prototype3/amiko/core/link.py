@@ -376,22 +376,21 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 	def handleChannelOutput(self, channelIndex, channelOutput):
 		log.log("Channel output: " + str(channelOutput))
 
-		channelMessages, function = channelOutput
+		channelMessages, otherMessages = channelOutput
 
-		ret = \
+		ret = otherMessages
+		for msg in ret:
+			if isinstance(msg, messages.BitcoinCommand):
+				msg.returnID=self.localID
+				msg.returnChannelIndex = channelIndex
+
+		ret += \
 		[
-		messages.OutboundMessage(localID=self.localID,
-			message=messages.ChannelMessage(
-			channelIndex=channelIndex, message=m))
-		for m in channelMessages
+			messages.OutboundMessage(localID=self.localID,
+				message=messages.ChannelMessage(
+				channelIndex=channelIndex, message=m))
+			for m in channelMessages
 		]
-
-		if not(function is None):
-			ret.append(
-				messages.BitcoinCommand(
-					function=function,
-					returnID=self.localID, returnChannelIndex=channelIndex)
-				)
 
 		return ret
 

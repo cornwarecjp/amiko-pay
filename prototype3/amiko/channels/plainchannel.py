@@ -87,22 +87,22 @@ class PlainChannel(serializable.Serializable):
 	def handleMessage(self, msg):
 		"""
 		Return value:
-			tuple(list, function) (function may be None)
+			tuple(list, list)
 		"""
 
 		if (self.state, msg) == (self.states.opening, None):
 			self.state = self.states.open
-			return [PlainChannel_Deposit(amount=self.amountLocal)], None
+			return [PlainChannel_Deposit(amount=self.amountLocal)], []
 
 		elif (self.state, msg.__class__) == (self.states.opening, PlainChannel_Deposit):
 			self.state = self.states.open
 			self.amountRemote = msg.amount
-			return [], None
+			return [], []
 
 		elif msg.__class__ == PlainChannel_Withdraw:
 			if self.state in (self.states.closing, self.states.closed):
 				#Ignore if already in progress/done
-				return [], None
+				return [], []
 			else:
 				return self.startWithdraw()
 
@@ -112,7 +112,7 @@ class PlainChannel(serializable.Serializable):
 	def startWithdraw(self):
 		"""
 		Return value:
-			tuple(list, function) (function may be None)
+			tuple(list, list)
 		"""
 
 		if self.state in (self.states.closing, self.states.closed):
@@ -180,7 +180,7 @@ class PlainChannel(serializable.Serializable):
 	def unreserve(self, isOutgoing, routeID):
 		"""
 		Return value:
-			tuple(list, function) (function may be None)
+			tuple(list, list)
 		"""
 
 		if isOutgoing:
@@ -212,16 +212,16 @@ class PlainChannel(serializable.Serializable):
 	def doCommitTimeout(self, routeID):
 		"""
 		Return value:
-			tuple(list, function) (function may be None)
+			tuple(list, list)
 		"""
 		#TODO
-		return [], None
+		return [], []
 
 
 	def settleCommitOutgoing(self, routeID, token):
 		"""
 		Return value:
-			tuple(list, function) (function may be None)
+			tuple(list, list)
 		"""
 
 		self.amountRemote += self.transactionsOutgoingLocked[routeID].amount
@@ -232,7 +232,7 @@ class PlainChannel(serializable.Serializable):
 	def settleCommitIncoming(self, routeID):
 		"""
 		Return value:
-			tuple(list, function) (function may be None)
+			tuple(list, list)
 		"""
 
 		self.amountLocal += self.transactionsIncomingLocked[routeID].amount
@@ -243,7 +243,7 @@ class PlainChannel(serializable.Serializable):
 	def settleRollbackOutgoing(self, routeID):
 		"""
 		Return value:
-			tuple(list, function) (function may be None)
+			tuple(list, list)
 		"""
 
 		self.amountRemote += self.transactionsIncomingLocked[routeID].amount
@@ -254,7 +254,7 @@ class PlainChannel(serializable.Serializable):
 	def settleRollbackIncoming(self, routeID):
 		"""
 		Return value:
-			tuple(list, function) (function may be None)
+			tuple(list, list)
 		"""
 
 		self.amountLocal += self.transactionsOutgoingLocked[routeID].amount
@@ -265,20 +265,20 @@ class PlainChannel(serializable.Serializable):
 	def tryToClose(self):
 		"""
 		Return value:
-			tuple(list, function) (function may be None)
+			tuple(list, list)
 		"""
 
 		if self.state != self.states.closing:
-			return [], None
+			return [], []
 
 		if len(self.transactionsIncomingReserved) != 0:
-			return [], None
+			return [], []
 		if len(self.transactionsOutgoingReserved) != 0:
-			return [], None
+			return [], []
 		if len(self.transactionsIncomingLocked) != 0:
-			return [], None
+			return [], []
 		if len(self.transactionsOutgoingLocked) != 0:
-			return [], None
+			return [], []
 
 		#we're closing, and there are no more ongoing transactions,
 		#so it's OK to close the channel now.
@@ -288,12 +288,12 @@ class PlainChannel(serializable.Serializable):
 	def doClose(self):
 		"""
 		Return value:
-			tuple(list, function) (function may be None)
+			tuple(list, list)
 		"""
 
 		self.state = self.states.closed
 
-		return [], None
+		return [], []
 
 
 	def hasRoute(self, routeID):

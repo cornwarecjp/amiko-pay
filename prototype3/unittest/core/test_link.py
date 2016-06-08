@@ -48,7 +48,7 @@ class DummyChannel(serializable.Serializable):
 		else:
 			self.state.append(['handleMessage', msg.ID, msg.channelIndex, msg.message])
 
-		return ['handleMessage'], None
+		return ['handleMessage'], []
 
 
 	def hasRoute(self, routeID):
@@ -68,7 +68,7 @@ class DummyChannel(serializable.Serializable):
 		def generic_method(*args, **kwargs):
 			#print self, (name, args, kwargs)
 			self.state.append((name, args, kwargs))
-			return [name], None
+			return [name], []
 
 		return generic_method
 
@@ -176,7 +176,7 @@ class Test(unittest.TestCase):
 		'test msg_bitcoinReturnValue'
 
 		ret = self.link.handleMessage(messages.BitcoinReturnValue(
-			ID=None, value=(['foobar'], None), channelIndex=3))
+			ID=None, value=(['foobar'], []), channelIndex=3))
 
 		self.assertEqual(len(ret), 1)
 		msg = ret[0]
@@ -880,7 +880,7 @@ class Test(unittest.TestCase):
 	def test_handleChannelOutput(self):
 		'test handleChannelOutput'
 
-		ret = self.link.handleChannelOutput(42, (['x', 'y'], None))
+		ret = self.link.handleChannelOutput(42, (['x', 'y'], []))
 		self.assertEqual(len(ret), 2)
 		for i,m in enumerate(['x', 'y']):
 			msg = ret[i]
@@ -893,22 +893,24 @@ class Test(unittest.TestCase):
 
 		dummyFunc = lambda x: x
 
-		ret = self.link.handleChannelOutput(42, (['x', 'y'], dummyFunc))
+		ret = self.link.handleChannelOutput(42,
+			(['x', 'y'], [messages.BitcoinCommand(function=dummyFunc)]))
 		self.assertEqual(len(ret), 3)
+
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.BitcoinCommand))
+		self.assertEqual(msg.function, dummyFunc)
+		self.assertEqual(msg.returnID, 'local')
+		self.assertEqual(msg.returnChannelIndex, 42)
+
 		for i,m in enumerate(['x', 'y']):
-			msg = ret[i]
+			msg = ret[1+i]
 			self.assertTrue(isinstance(msg, messages.OutboundMessage))
 			self.assertEqual(msg.localID, 'local')
 			msg = msg.message
 			self.assertTrue(isinstance(msg, messages.ChannelMessage))
 			self.assertEqual(msg.channelIndex, 42)
 			self.assertEqual(msg.message, m)
-
-		msg = ret[2]
-		self.assertTrue(isinstance(msg, messages.BitcoinCommand))
-		self.assertEqual(msg.function, dummyFunc)
-		self.assertEqual(msg.returnID, 'local')
-		self.assertEqual(msg.returnChannelIndex, 42)
 
 
 
