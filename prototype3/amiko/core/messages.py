@@ -286,3 +286,8 @@ class LinkTimeout_Commit(serializable.Serializable):
 	serializableAttributes = {'transactionID': '', 'isPayerSide': None, 'ID': ''}
 serializable.registerClass(LinkTimeout_Commit)
 
+
+class NodeState_TimeoutRollback(serializable.Serializable):
+	serializableAttributes = {'transactionID': '', 'isPayerSide': None, 'ID': ''}
+serializable.registerClass(NodeState_TimeoutRollback)
+

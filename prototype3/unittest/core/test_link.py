@@ -894,17 +894,30 @@ class Test(unittest.TestCase):
 		dummyFunc = lambda x: x
 
 		ret = self.link.handleChannelOutput(42,
-			(['x', 'y'], [messages.BitcoinCommand(function=dummyFunc)]))
-		self.assertEqual(len(ret), 3)
+			(
+			['x', 'y'],
+			[
+				messages.BitcoinCommand(function=dummyFunc),
+				messages.NodeState_TimeoutRollback(transactionID='1foobar'),
+				'dummy'
+			]))
+		self.assertEqual(len(ret), 5)
 
 		msg = ret[0]
 		self.assertTrue(isinstance(msg, messages.BitcoinCommand))
 		self.assertEqual(msg.function, dummyFunc)
 		self.assertEqual(msg.returnID, 'local')
 		self.assertEqual(msg.returnChannelIndex, 42)
+		msg = ret[1]
+		self.assertTrue(isinstance(msg, messages.NodeState_TimeoutRollback))
+		self.assertEqual(msg.transactionID, 'foobar')
+		self.assertEqual(msg.isPayerSide, True)
+		self.assertEqual(msg.ID, 'local')
+		msg = ret[2]
+		self.assertEqual(msg, 'dummy')
 
 		for i,m in enumerate(['x', 'y']):
-			msg = ret[1+i]
+			msg = ret[3+i]
 			self.assertTrue(isinstance(msg, messages.OutboundMessage))
 			self.assertEqual(msg.localID, 'local')
 			msg = msg.message

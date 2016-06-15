@@ -81,24 +81,25 @@ class NodeState(serializable.Serializable):
 	def handleMessage(self, msg):
 		return \
 		{
-		messages.PaymentRequest        : self.msg_request,
-		messages.MakePayer             : self.msg_makePayer,
-		messages.MakeLink              : self.msg_makeLink,
-		messages.MakeMeetingPoint      : self.msg_makeMeetingPoint,
+		messages.PaymentRequest           : self.msg_request,
+		messages.MakePayer                : self.msg_makePayer,
+		messages.MakeLink                 : self.msg_makeLink,
+		messages.MakeMeetingPoint         : self.msg_makeMeetingPoint,
 
-		messages.TimeoutMessage        : self.msg_timeoutMessage,
-		messages.FilterTimeouts        : self.msg_filterTimeouts,
+		messages.TimeoutMessage           : self.msg_timeoutMessage,
+		messages.FilterTimeouts           : self.msg_filterTimeouts,
 
-		messages.MakeRoute             : self.msg_makeRoute,
-		messages.HaveNoRoute           : self.msg_haveNoRoute,
-		messages.CancelRoute           : self.msg_cancelRoute,
-		messages.NodeStateTimeout_Route: self.msg_timeout_route,
-		messages.HaveRoute             : self.msg_haveRoute,
-		messages.NodeStateTimeout_Lock : self.msg_timeout_lock,
-		messages.Lock                  : self.msg_lock,
-		messages.RequestCommit         : self.msg_requestCommit,
-		messages.SettleCommit          : self.msg_settleCommit,
-		messages.SettleRollback        : self.msg_settleRollback,
+		messages.MakeRoute                : self.msg_makeRoute,
+		messages.HaveNoRoute              : self.msg_haveNoRoute,
+		messages.CancelRoute              : self.msg_cancelRoute,
+		messages.NodeStateTimeout_Route   : self.msg_timeout_route,
+		messages.HaveRoute                : self.msg_haveRoute,
+		messages.NodeStateTimeout_Lock    : self.msg_timeout_lock,
+		messages.Lock                     : self.msg_lock,
+		messages.NodeState_TimeoutRollback: self.msg_timeoutRollback,
+		messages.RequestCommit            : self.msg_requestCommit,
+		messages.SettleCommit             : self.msg_settleCommit,
+		messages.SettleRollback           : self.msg_settleRollback,
 
 		messages.Pay    : self.msg_passToPayee,
 		messages.Confirm: self.msg_passToPayee,
@@ -599,6 +600,10 @@ class NodeState(serializable.Serializable):
 			)))
 
 		return ret
+
+
+	def msg_timeoutRollback(self, msg):
+		return [] #TODO
 
 
 	def msg_requestCommit(self, msg):

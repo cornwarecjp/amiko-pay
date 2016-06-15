@@ -381,8 +381,12 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 		ret = otherMessages
 		for msg in ret:
 			if isinstance(msg, messages.BitcoinCommand):
-				msg.returnID=self.localID
+				msg.returnID = self.localID
 				msg.returnChannelIndex = channelIndex
+			elif isinstance(msg, messages.NodeState_TimeoutRollback):
+				msg.ID = self.localID
+				msg.isPayerSide, msg.transactionID = \
+					self.__decodeRouteID(msg.transactionID)
 
 		ret += \
 		[
@@ -397,6 +401,10 @@ class Link(linkbase.LinkBase, serializable.Serializable):
 
 	def __makeRouteID(self, transactionID, isPayerSide):
 		return ('1' if isPayerSide else '0') + transactionID
+
+
+	def __decodeRouteID(self, routeID):
+		return (routeID[0] != '0'), routeID[1:]
 
 
 	def __findChannelWithRoute(self, routeID):

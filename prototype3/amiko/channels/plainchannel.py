@@ -214,8 +214,7 @@ class PlainChannel(serializable.Serializable):
 		Return value:
 			tuple(list, list)
 		"""
-		#TODO
-		return [], []
+		return [], [messages.NodeState_TimeoutRollback(transactionID=routeID)]
 
 
 	def settleCommitOutgoing(self, routeID, token):
