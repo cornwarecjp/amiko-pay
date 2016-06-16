@@ -603,7 +603,22 @@ class NodeState(serializable.Serializable):
 
 
 	def msg_timeoutRollback(self, msg):
-		return [] #TODO
+		#No settleRollbackIncoming on the payee:
+		#first of all, we never received a SettleRollback,
+		#secondly, the payee is already supposed to have settled its state.
+		#After all, we *receive* this timeoutRollback message from a
+		#channel on the payee side.
+
+		tx = self.findTransaction(
+			transactionID=msg.transactionID, payeeID=msg.ID, isPayerSide=msg.isPayerSide)
+
+		payer = self.__getLinkObject(tx.payerID)
+		ret = payer.settleRollbackOutgoing(msg)
+
+		#Clean up no-longer-needed transaction:
+		self.transactions.remove(tx)
+
+		return ret
 
 
 	def msg_requestCommit(self, msg):
