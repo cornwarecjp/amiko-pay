@@ -29,6 +29,8 @@
 from ..utils import utils
 from ..utils import serializable
 
+from ..core import messages
+
 
 
 class PlainChannel_Deposit(serializable.Serializable):
