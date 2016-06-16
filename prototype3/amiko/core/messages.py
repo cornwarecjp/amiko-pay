@@ -119,6 +119,9 @@ class FilterTimeouts(Message):
 	attributes = {'function': lambda message: True}
 
 
+class NodeState_TimeoutRollback(Message):
+	attributes = {'transactionID': '', 'isPayerSide': None, 'ID': ''}
+
 
 ################################################################################
 # Serializable messages, for external communication:
@@ -285,9 +288,4 @@ serializable.registerClass(NodeStateTimeout_Lock)
 class LinkTimeout_Commit(serializable.Serializable):
 	serializableAttributes = {'transactionID': '', 'isPayerSide': None, 'ID': ''}
 serializable.registerClass(LinkTimeout_Commit)
-
-
-class NodeState_TimeoutRollback(serializable.Serializable):
-	serializableAttributes = {'transactionID': '', 'isPayerSide': None, 'ID': ''}
-serializable.registerClass(NodeState_TimeoutRollback)
 
