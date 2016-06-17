@@ -50,9 +50,10 @@ class PayeeLink_NoCommit(serializable.Serializable):
 	serializableAttributes = {'object': None}
 
 	def lockOutgoing(self, msg):
-		self.object.lockOutgoing(msg)
-		#Throw away returned messages from above line
-		return []
+		#By raising an exception, Amiko Pay interprets the Lock message as
+		#invalid, and turns it into a NOP. So, the entire payee node considers
+		#this transaction as being still in a reserved state.
+		raise Exception('Exception raised by test code (intended)')
 
 
 	def __getattr__(self, name):
