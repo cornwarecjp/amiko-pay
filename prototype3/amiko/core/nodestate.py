@@ -613,7 +613,12 @@ class NodeState(serializable.Serializable):
 			transactionID=msg.transactionID, payeeID=msg.ID, isPayerSide=msg.isPayerSide)
 
 		payer = self.__getLinkObject(tx.payerID)
-		ret = payer.settleRollbackOutgoing(msg)
+		ret = payer.settleRollbackOutgoing(
+			messages.SettleRollback(
+				ID=msg.ID,
+				transactionID=msg.transactionID,
+				isPayerSide=msg.isPayerSide
+			))
 
 		#Clean up no-longer-needed transaction:
 		self.transactions.remove(tx)
