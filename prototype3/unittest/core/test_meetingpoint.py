@@ -218,6 +218,24 @@ class Test(unittest.TestCase):
 		self.assertEqual(msg.isPayerSide, False)
 
 
+	def test_settleRollbackOutgoing(self):
+		'Test settleRollbackOutgoing'
+
+		ret = self.meetingPoint.settleRollbackOutgoing(messages.SettleRollback(
+			ID='foo',
+			transactionID='bar',
+			isPayerSide=False
+			))
+
+		self.assertEqual(len(ret), 1)
+
+		msg = ret[0]
+		self.assertTrue(isinstance(msg, messages.SettleRollback))
+		self.assertEqual(msg.ID, 'MPID')
+		self.assertEqual(msg.transactionID, 'bar')
+		self.assertEqual(msg.isPayerSide, True)
+
+
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

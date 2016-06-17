@@ -113,6 +113,13 @@ class MeetingPoint(linkbase.LinkBase, serializable.Serializable):
 		return [msg]
 
 
+	def settleRollbackOutgoing(self, msg):
+		msg = copy.deepcopy(msg)
+		msg.ID = self.ID
+		msg.isPayerSide = True
+		return [msg]
+
+
 	def __makeRouteID(self, transactionID, isPayerSide):
 		return ('1' if isPayerSide else '0') + transactionID
 
