@@ -216,7 +216,13 @@ class PlainChannel(serializable.Serializable):
 		Return value:
 			tuple(list, list)
 		"""
-		return [], [messages.NodeState_TimeoutRollback(transactionID=routeID)]
+
+		#Similar to settleRollbackIncoming
+		self.amountLocal += self.transactionsOutgoingLocked[routeID].amount
+		del self.transactionsOutgoingLocked[routeID]
+		ret = self.tryToClose()
+
+		return ret[0], ret[1] + [messages.NodeState_TimeoutRollback(transactionID=routeID)]
 
 
 	def settleCommitOutgoing(self, routeID, token):
