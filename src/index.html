@@ -1,7 +1,181 @@
 <h1>Amiko Pay</h1>
-<h3>What is it?</h3>
-A de-centralized network for fast, secure, cheap and privacy-friendly
+<p>
+A scalable, de-centralized network for fast, secure, cheap and privacy-friendly
 off-blockchain Bitcoin transactions.
+</p>
+<hr>
+
+<div class="row">
+<div class="col-lg-6">
+
+<h2>Scalable</h2>
+Amiko Pay is scalable to billions of users, without losing its desirable
+properties. Potentially, all people could use Amiko Pay for all their
+daily transactions.
+<p>
+<div id="details-scalable" class="collapse">
+Combining scalability and de-centralization is hard. Centralized systems,
+such as credit card networks, are easy to scale, but even these currently
+only serve a small portion of the world population. Bitcoin is
+de-centralized, but its de-centralized nature depends on all (or many)
+participants exchanging all transactions with each other. When scaling
+such a system to larger numbers of transactions, it becomes less
+attractive for participants to participate in this process, leaving the
+transaction processing to a small, relatively centralized group of
+organizations.
+<p>
+Amiko Pay solves this problem by leaving most transactions out of the
+block chain. Transaction information is normally only exchanged between a few
+participants, and participants can forget about the transaction as soon as it
+is completed. The block chain is only used for changes to the network (opening
+and closing micro-transaction channels), and for enforcement of transaction
+states and channel balances in case a participant is not playing by the rules.
+Both should be very rare compared to the frequency of regular transactions,
+so the block chain can remain much smaller, and much easier to share.
+</div>
+<button type="button" class="btn btn-default" data-toggle="collapse" data-target="#details-scalable">
+	Details
+</button>
+
+<h2>De-centralized</h2>
+Amiko Pay contains no dependencies on centralized parties, a.k.a. "single points
+of control" / "single points of failure". All participants in the network can
+potentially perform the same roles. The design of Amiko Pay contains features
+that ensure it stays that way.
+<p>
+<div id="details-decentralized" class="collapse">
+Amiko Pay participants create connections between each other, and transactions
+are routed over these connections, similar to how information is routed over
+the internet. The shape of the network is arbitrary, but just like the internet,
+the network could become partially centralized around a couple of large service
+providers. Unlike the internet, where creation of new physical connections is
+expensive and difficult, connections in Amiko Pay are completely virtual, and
+it will continue to be easy to create new connections. Also, routing in Amiko
+Pay is designed such that intermediate parties can not determine the identity
+of end points (payer and payee): it will always be possible to route transactions
+through a proxy. This severely limits the power of any centralized entities,
+and makes it possible to re-decentralize in case any centralized entity abuses
+its position.
+</div>
+<button type="button" class="btn btn-default" data-toggle="collapse" data-target="#details-decentralized">
+	Details
+</button>
+
+<h2>Fast</h2>
+Amiko Pay transactions typically become definitive within seconds, often
+even less than a second. This makes Amiko Pay suitable for Point Of Sale
+(POS) applications.
+<p>
+<div id="details-fast" class="collapse">
+Unlike regular Bitcoin transactions, Amiko Pay transactions are normally
+<em>not</em> included in a block chain. Instead, they consist of updates
+in the balances of micro-transaction channels, which are enforceable on
+the block chain. Enforceability of a channel update is immediately clear,
+so it does not have the issue of "zero confirmation double spending" of
+regular Bitcoin transactions.
+</div>
+<button type="button" class="btn btn-default" data-toggle="collapse" data-target="#details-fast">
+	Details
+</button>
+
+<h2>Secure</h2>
+Other participants in the Amiko Pay network can not steal or freeze your funds.
+<p>
+<div id="details-secure" class="collapse">
+By default, Amiko Pay is based on the same technology as the Lightning network.
+This technology ensures that transactions and balances are always enforceable.
+The idea is that, under normal operation, microtransaction channel balances are
+updated cooperatively by the participants of a transaction. In case one of the
+participants does not play by the rules, or becomes unresponsive, the
+micro-transaction channels to that party will be closed by his neighbors in the
+network, and the state of those channels will be enforced on the block chain
+with Bitcoin smart contracts.
+<p>
+As an analogy, you can see a microtransaction channel as a "contract" between
+two parties, and the block chain as a de-centralized "judge" (or jury). Most
+contracts are followed voluntarily, and do not end up in court. However,
+contracts still have power, since they are enforceable in court, even when they
+do not always need to be enforced.
+</div>
+<button type="button" class="btn btn-default" data-toggle="collapse" data-target="#details-secure">
+	Details
+</button>
+
+<h2>Cheap</h2>
+Amiko Pay transactions are expected to be much cheaper than regular Bitcoin
+transactions, making them potentially one of the cheapest payment methods
+available. Amiko Pay is useful for true microtransactions, e.g. for
+pay-per-article funding of websites, as an alternative to advertising.
+<p>
+<div id="details-cheap" class="collapse">
+Intermediate nodes in the network are expected to charge some fees when
+forwarding transactions, but since the cost of performing Amiko Pay transactions
+is much lower than the total cost of keeping the same transactions in a block
+chain, and since there will be plenty of competition between different parties,
+the fees are expected to be much lower. Regular Bitcoin mining fees will still
+be paid, but this will only happen infrequently (opening/closing of channels,
+including conflict resolution).
+<p>
+Note that Amiko Pay is mostly useful for small transactions, where it is
+essential to have low fees. For large transactions, Amiko Pay is less suitable,
+since its microtransaction channels have a limited capacity (depending on
+how many funds people put into them). For large transactions, regular
+on-blockchain transactions remain more useful.
+</div>
+<button type="button" class="btn btn-default" data-toggle="collapse" data-target="#details-cheap">
+	Details
+</button>
+
+<h2>Privacy-friendly</h2>
+The existence of a transaction is only revealed to a couple of intermediate
+parties, and these intermediate parties receive very little meta-data (basically
+only the amount transferred and the moment the transaction is performed). There
+is no need for intermediate parties to remember a transaction after it has
+finished. The shape of the network (who is connected to who) is not completely
+revealed.
+<p>
+<div id="details-privacy" class="collapse">
+The privacy features are strongly related to how transaction routing is
+performed. Amiko Pay uses a combination of non-source routing (where
+intermediate nodes decide the direction of the route, based on a "destination
+address") and "onion routing" (where the end points decide what route must be
+followed, and where each next step in the route is encrypted, so that
+previous nodes in the route can not read it). Amiko Pay uses bi-directional
+routing, where both endpoints (payer and payee) route towards a meeting point.
+The meeting point might be, but is not necessarily, the same node as one of the
+end points (in case it is one of the end points, routing will of course be
+unidirectional).
+<p>
+As a result of this, there is no need for payer/payee to reveal their network
+addresses to each other or to other nodes, or to even <em>have</em> network
+addresses. Payer and payee need to agree on the address of the "meeting point"
+to be used; the "meeting point" node does not need to know the identity of
+payer/payee. All that intermediate nodes see is the address of the next
+onion-routing hop (the last of which is the meeting point), and the interface
+on which the transaction was received. Because of the non-source routing
+in-between onion-routing hops, nodes do not need a very detailed map of the
+network to decide on an onion route. They only need to have a reasonable idea
+of which nodes are reachable from which nodes through non-source routing.
+<p>
+There are some remaining privacy issues. Since the transaction time-out is
+different on different hops of the route, it can be used to estimate the network
+distance to the payee. This might be made less feasible by randomizing the
+time-out increment. Another issue is that the software uses a certain hash value
+for testing whether a transaction has committed or not; since this hash value is
+the same on all hops, it can be used by an entity that has access to different
+nodes on the network to see that the same transaction flows through both. While
+this issue can be solved with certain technology, the combination of exact amount
+and the moment the transaction occurred can still be used to correlate a
+transaction on different parts of its route.
+</div>
+<button type="button" class="btn btn-default" data-toggle="collapse" data-target="#details-privacy">
+	Details
+</button>
+
+</div>
+</div>
+
+<hr>
 
 <h3>Why Bitcoin?</h3>
 There is a long-term trend in society to replace cash with electronic
