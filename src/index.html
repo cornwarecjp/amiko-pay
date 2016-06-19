@@ -82,6 +82,8 @@ regular Bitcoin transactions.
 
 <h2>Secure</h2>
 Other participants in the Amiko Pay network can not steal or freeze your funds.
+You do not have to ask anyone for permission or depend on cooperation from
+anyone for keeping access to your funds. You are in full control.
 <p>
 <div id="details-secure" class="collapse">
 By default, Amiko Pay is based on the same technology as the Lightning network.
@@ -98,6 +100,11 @@ two parties, and the block chain as a de-centralized "judge" (or jury). Most
 contracts are followed voluntarily, and do not end up in court. However,
 contracts still have power, since they are enforceable in court, even when they
 do not always need to be enforced.
+<p>
+Note that, in some cases, non-cooperation of another party can cause a
+<em>temporary</em> freeze of funds in a channel. This risk can be reduced by
+splitting funds over separate channels to different parties; the maximum freeze
+time is configurable, and is a security trade-off.
 </div>
 <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#details-secure">
 	Details
