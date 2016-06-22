@@ -16,24 +16,34 @@ properties. Potentially, all people could use Amiko Pay for all their
 daily transactions.
 <p>
 <div id="details-scalable" class="collapse">
-Combining scalability and de-centralization is hard. Centralized systems,
-such as credit card networks, are easy to scale, but even these currently
-only serve a small portion of the world population. Bitcoin is
-de-centralized, but its de-centralized nature depends on all (or many)
-participants exchanging all transactions with each other. When scaling
-such a system to larger numbers of transactions, it becomes less
-attractive for participants to participate in this process, leaving the
-transaction processing to a small, relatively centralized group of
+Centralized systems are relatively straightforward to scale up, and their
+per-user costs usually don't increase much with increasing scale. However,
+when scaling up, their central hub becomes an increasingly attractive target for
+all sorts of attackers, increasing the vulnerability of such systems.
+<p>
+De-centralized systems have their own scaling issues. Ryan Fugger's original
+concept of Ripple would scale well in terms of costs and technical performance,
+but in a de-centralized, many-nodes scenario, there would be little regulation
+on the debts of nodes, leading to risks of financial instability. The original
+concept of Ripple was never implemented, and the implemented system nowadays
+known as Ripple has its own flaws (mainly by not very de-centralized at all).
+<p>
+Bitcoin is de-centralized, but its de-centralized nature depends on all (or many)
+participants exchanging the &quot;block chain&quot;, containing all transactions,
+with each other. When scaling such a system to larger numbers of transactions, it
+becomes less attractive for participants to participate in this process, leaving
+the transaction processing to a small, relatively centralized group of
 organizations.
 <p>
-Amiko Pay solves this problem by leaving most transactions out of the
-block chain. Transaction information is normally only exchanged between a few
-participants, and participants can forget about the transaction as soon as it
-is completed. The block chain is only used for changes to the network (opening
-and closing micro-transaction channels), and for enforcement of transaction
-states and channel balances in case a participant is not playing by the rules.
-Both should be very rare compared to the frequency of regular transactions,
-so the block chain can remain much smaller, and much easier to share.
+Amiko Pay solves this problem by using Bitcoin under the hood, but leaving most
+transactions out of the block chain. Transaction information is normally only
+exchanged between a few participants, and participants can forget about the
+transaction as soon as it is completed. The block chain is only used for changes
+to the network (opening and closing micro-transaction channels), and for
+enforcement of transaction states and channel balances in case a participant
+is not playing by the rules. Both should be very rare compared to the frequency
+of regular transactions, so the block chain can remain much smaller, and much
+easier to share.
 </div>
 <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#details-scalable">
 	Details
