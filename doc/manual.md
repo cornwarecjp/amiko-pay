@@ -1,4 +1,4 @@
-(Note: this manual applies to the Python prototype version)
+(Note: this manual applies to the prototype3 version)
 
 WARNINGS
 ========
@@ -84,7 +84,7 @@ Pay can connect to it through the Bitcoin RPC interface. This process should
 continue to run as long as Amiko Pay is running.
 
 Amiko Pay can be started in a terminal window. To do this, enter the
-"python-prototype" directory, and enter:
+"prototype3" directory, and enter:
 
 	python main.py
 
@@ -96,9 +96,6 @@ When started, Amiko Pay presents a command prompt to the user. Use the "help"
 command to get a list of available commands. The "exit" and "quit" commands can
 be used to terminate Amiko Pay.
 
-Command arguments are separated by whitespace. For now, arguments that include
-whitespace are not supported.
-
 
 Making new payment links
 ------------------------
@@ -106,26 +103,24 @@ Making new payment links
 Scenario: A and B want to establish a payment link.
 
 Step 1:
-A calls the "makelink" command, with a link name as argument:
+A calls the "makelink" command, with an empty remote URL:
 
-	(A) > makelink linkNameAtA
-	(A) amikolink://A.com/linkNameAtA
+	(A) > makelink
+	(A) Local name of the link: linkNameAtA
+	(A) Remote URL of the link (can be empty):
+	(A) Link URL (pass this to the peer):  amikolink://A.com/linkNameAtA
 
 The result is an amikolink URL.
 
 Note that A can now see the link information with the "list" command.
-The link is not yet connected:
 
 	(A) > list
-	(A) {'links': [{'channels': [],
-	(A)             'isConnected': False,
-	(A)             'localID': 'linkNameAtA',
-	(A)             'localURL': 'amikolink://A.com/linkNameAtA',
-	(A)             'name': 'linkNameAtA',
-	(A)             'openTransactions': [],
-	(A)             'remoteID': '',
-	(A)             'remoteURL': ''}],
-	(A)  ...
+	(A) {...
+	(A) 'links': {'linkNameAtA': {'_class': 'Link',
+	(A)                           'channels': [],
+	(A)                           'localID': 'linkNameAtA',
+	(A)                           'remoteID': None}},
+	(A) ...}
 
 
 Step 2:
@@ -133,22 +128,22 @@ A gives the amikolink URL to B. This can, for instance, be done through a
 web interface.
 
 Step 3:
-B calls the "makelink" command with a name and the amikolink URL as argument:
+B calls the "makelink", using the given amikolink URL as remote URL:
 
-	(B) > makelink linkNameAtB amikolink://A.com/linkNameAtA
+	(B) > makelink
+	(B) Local name of the link: linkNameAtB
+	(B) Remote URL of the link (can be empty): amikolink://A.com/linkNameAtA
+	(B) Link URL (pass this to the peer):  amikolink://B.net/linkNameAtB
 
 Note that B can now see the link information with the "list" command:
 
 	(B) > list
-	(B) {'links': [{'channels': [],
-	(B)             'isConnected': True,
-	(B)             'localID': 'linkNameAtB',
-	(B)             'localURL': 'amikolink://B.net/linkNameAtB',
-	(B)             'name': 'linkNameAtB',
-	(B)             'openTransactions': [],
-	(B)             'remoteID': 'linkNameAtA',
-	(B)             'remoteURL': 'amikolink://A.com/linkNameAtA'}],
-	(B)  ...
+	(B) {...
+	(B) 'links': {'linkNameAtB': {'_class': 'Link',
+	(B)                           'channels': [],
+	(B)                           'localID': 'linkNameAtB',
+	(B)                           'remoteID': 'linkNameAtA'}},
+	(B) ...}
 
 The process of B will now repeatedly try to connect to the process of A, using
 the given URL. Once a successful connection is established, the process of B
@@ -164,19 +159,72 @@ Depositing into a link
 
 Scenario: A wishes to deposit bitcoins into the link with B
 
-A calls the "deposit" command, with the amount and the link name as arguments:
+A calls the "deposit" command
 
-	(A) > deposit linkNameAtA 100000
+	(A) > deposit
+	(A) 1: linkNameAtA
+	(A) Choose a link to deposit in (leave empty to abort): 1
+	(A) Amount (Satoshi): 100000
 	(A) Are you sure (y/n)? y
-	(A) > DONE
 
 Note that the amount is given in Satoshi, not in Bitcoin!
 
-The deposit adds a payment channel to the link. Once the deposit is successful,
-it results in a Bitcoin transaction which locks the specified amount of A's
-bitcoins into the payment channel. The payment channel should not be used for
-further activities until this deposit transaction has received a few
-confirmations in the Bitcoin block chain.
+The deposit adds a payment channel to the link. For now, this is a channel of
+type IOUChannel:
+
+	(A) > list
+	(A) {...
+	(A)  'links': {'linkNameAtA': {'_class': 'Link',
+	(A)                            'channels': [{'_class': 'IOUChannel',
+	(A)                                          'address': _some address_,
+	(A)                                          'amountLocal': 100000,
+	(A)                                          'amountRemote': 0,
+	(A)                                          'isIssuer': True,
+	(A)                                          'state': 'open',
+	(A)                                          'transactionsIncomingLocked': {},
+	(A)                                          'transactionsIncomingReserved': {},
+	(A)                                          'transactionsOutgoingLocked': {},
+	(A)                                          'transactionsOutgoingReserved': {},
+	(A)                                          'withdrawTxID': None}],
+	(A)                            'localID': 'linkNameAtA',
+	(A)                            'remoteID': 'linkNameAtB'},
+	(A) ...}
+
+This type of channel, when created as such, transfers IOU's issued by A. When
+closing the channel, A transfers the owed amount to B with a regular Bitcoin
+transaction.
+
+
+Creating a meeting point
+------------------------
+To allow transactions to take place, the payer and payee need to establish a
+route between each other. They have to agree on a meeting point, and then they
+will both route towards that meeting point.
+
+Any node can host one or more meeting points. The payee node sends a list of
+meeting points to the payer node, and the payer node selects one of these. The
+list of meeting points as assembled by the payee node consists of:
+* all meeting points that are hosted on the payee node
+* all external meeting points, as configured in the payee node settings
+
+The easiest way to have a meeting point for performing transactions is to host
+a meeting point on the payee node. To create a meeting point on node B:
+
+	(B) > makemeetingpoint
+	(B) Name of the meeting point: MP_B
+
+The name can be anything, as long as it is unique on the network. When multiple
+meeting points have the same name, transactions using those meeting points can
+fail to find a route.
+
+You can see that a meeting point has been created:
+
+	(B) > list
+	(B) {...
+	(B)  'meetingPoints': {'MP_B': {'ID': 'MP_B',
+	(B)                             '_class': 'MeetingPoint',
+	(B)                             'unmatchedRoutes': {}}},
+	(B) ...}
 
 
 Performing an Amiko payment
@@ -188,29 +236,39 @@ link-to-link route can be found between A and B that has sufficient liquidity
 to perform the payment.
 
 Step 1:
-B calls the "request" command, with as arguments
+B calls the "request" command. The result is an amikopay URL:
 
-* the amount to be received
-* (optionally) a receipt
+	(B) > request
+	(B) Amount (Satoshi): 123
+	(B) Receipt (can be empty): This is a receipt
+	(B) 1: (any link)
+	(B) 2: linkNameAtB
+	(B) Choose a link to receive with (leave empty to abort): 1
+	(B) Request URL (pass this to the payer):  amikopay://B.net/c21699c701c3db1e
 
-The result is an amikopay URL:
-
-	(B) > request 20000 SomeReceiptText
-	(B) amikopay://B.net/9c8c48c9000a5c11
+Note that, by choosing "(any link)", Amiko Pay will automatically choose a
+suitable link to receive the funds on. By choosing one of the links, you force
+Amiko Pay to receive funds on that link. This is useful, for instance, for
+making payments to yourself (send on one link and receive on another).
 
 Step 2:
 B gives the amikopay URL to A. This can be done, for instance, through a web
 interface, a QR code or NFC.
 
 Step 3:
-A calls the "pay" command with the amikopay URL as argument. Optionally, A can
-also specify the name of the link over which the payment should be performed.
-Now, Amiko Pay shows the receipt and the amount to A, and asks A to confirm the
-payment. If A confirms the payment, the payment is performed:
+A calls the "pay" command. Like on the payee side, it is possible to either let
+Amiko Pay automatically select a link, or force the payment through a specific
+link on the payer side. Now, Amiko Pay shows the receipt and the amount to A,
+and asks A to confirm the payment. If A confirms the payment, the payment is
+performed:
 
-	(A) > pay amikopay://localhost/9c8c48c9000a5c11 linkNameAtA
-	(A) Receipt:  'SomeReceiptText'
-	(A) Amount:  20000
+	(A) > pay
+	(A) Request URL: amikopay://localhost/c21699c701c3db1e
+	(A) 1: (any link)
+	(A) 2: linkNameAtA
+	(A) Choose a link to pay with (leave empty to abort): 1
+	(A) Receipt:  'This is a receipt'
+	(A) Amount: (Satoshi) 123
 	(A) Do you want to pay (y/n)? y
 	(A) Payment is  committed
 
@@ -218,33 +276,23 @@ If the payment is successful, balances on the payment channel(s) between A and B
 are adjusted in such a way that the bitcoins are subtracted from A's balance and
 added to B's balance.
 
+Both on payer and payee side, both successful and unsuccessful transactions are
+logged in a CSV file. The name of this file is a setting; by default, the name
+is 'payments.log'.
 
 Withdrawing from a link
 ----------------------
 
 Scenario: A wishes to withdraw bitcoins from the link with B
 
-A calls the "withdraw" command, with the link name and the channel ID as arguments.
-The channel ID can be found with the "list" command:
+A calls the "withdraw" command:
 
-	(A) > list
-	(A) {'links': [{'channels': [{'ID': 0,
-	(A)                           ...
-	(A)                           'amountLocal': 80000,
-	(A)                           'amountRemote': 20000,
-	(A)                           ...
-	(A)                           'type': 'multisig'}],
-	(A)             'isConnected': True,
-	(A)             'localID': 'linkNameAtA',
-	(A)             'localURL': 'amikolink://localhost/linkNameAtA',
-	(A)             'name': 'linkNameAtA',
-	(A)             'openTransactions': [],
-	(A)             'remoteID': 'linkNameAtB',
-	(A)             'remoteURL': 'amikolink://localhost/linkNameAtB'},
-	(A)             ...
-	(A) > withdraw linkNameAtA 0
+	(A) > withdraw
+	(A) 1: linkNameAtA
+	(A) Choose a link to withdraw from (leave empty to abort): 1
+	(A) 1: 0
+	(A) Channel index (leave empty to abort): 1
 	(A) Are you sure (y/n)? y
-	(A) > DONE
 
 Once the withdrawal is successful, it results in a Bitcoin transaction which
 releases the locked bitcoins from the payment channel. Each side of the link
