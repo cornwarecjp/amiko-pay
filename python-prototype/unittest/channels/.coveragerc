@@ -1,4 +1,0 @@
-[run]
-include = ../../amiko/channels/*.py
-omit = ./*.py
-
