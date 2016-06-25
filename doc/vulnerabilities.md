@@ -3,8 +3,8 @@ Introduction
 Due to the fact that Amiko Pay is experimental and unfinished software,
 a lot of analysis on its security has not yet been performed. Even the most
 basic types of testing, such as an automated set of unit tests with full code
-coverage, are still missing. Because of this, you should expect Amiko Pay to
-contain several unknown vulnerabilities, which may lead to worse consequences
+coverage, are still mostly missing. Because of this, you should expect Amiko Pay
+to contain several unknown vulnerabilities, which may lead to worse consequences
 than the ones listed below (e.g. they might lead to arbitrary code execution
 with the privileges of the Amiko Pay process).
 
@@ -16,69 +16,27 @@ not-yet-implemented security features and to design issues.
 Loss of Bitcoins
 =================
 
-No lock time
-------------
-"Refund" transactions are not yet protected by a lock time, so they are always
-"final". As a result, an attacker can steal bitcoins from a direct neighbor by
-first performing an Amiko payment through their shared link, and then publishing
-an earlier version of the refund transaction on the Bitcoin network. The
-neighbor can then try to cancel the theft by publishing the most recent version
-of the refund transaction, but, assuming equal connectivity in the Bitcoin
-network, even then the theft has at least 50% probability of success.
+No real microtransaction channel yet
+------------------------------------
+Currently, Amiko Pay only contains an "IOU" channel, which exchanges IOUs
+issued by one of the two parties. On closing the channel, the IOU issuing
+party should perform a Bitcoin transaction to settle the final balance of the
+IOU channel. However, this can not be enforced by technological means, so the
+IOU issuing party can choose not to do this. As a result, the IOU issuing party
+can steal his direct neighbor's balance in a channel, simply by disappearing
+without settling the channel balance.
 
-**solution**: implement the missing functionality.
-
-
-No agreement on commit conditions
----------------------------------
-Commit condition information (such as the minimum+maximum block height for a
-"slow commit" hash publication) is not yet transmitted between peers. As a
-result, inconsistencies can occur between the commit decisions on different
-links. An attacker can possibly abuse this to steal bitcoins from other
-participants in the network.
-
-**solution**: implement the missing functionality.
+**solution**: implement a proper Lightning channel.
 
 
 No transaction checks
 ---------------------
-A lot of checks on transactions exchanged by neighbors are not yet implemented.
-As a result, an attacker can steal bitcoins from a direct neighbor, for instance
-by performing an Amiko payment through their shared link, where the updated
-refund transaction is incorrect. It may even be a transaction which will be
-accepted by Bitcoin, but assigns too many bitcoins to the attacker.
+Certain checks on transactions exchanged by neighbors are not yet implemented.
+As a result, an attacker can not only steal bitcoins from a direct neighbor
+(because of the inherent IOU vulnerability), but also hide the fact that the
+bitcoins were stolen (it is not visible in the Amiko Pay user interface).
 
 **solution**: implement the missing functionality.
-
-
-No protection during transaction
---------------------------------
-Between lock and commit/rollback, the bitcoins which are locked in a link
-because of an Amiko transaction are protected with a 2-of-2 multisignature
-script, requiring consensus between both sides of the link about whether
-commit/rollback has occurred. An attacker who is one of the sides of such a link
-can hold those bitcoins hostage by refusing to reach consensus with his
-neighbor.
-
-**solution**: a 100% robust solution would be achieved if the Bitcoin scripting
-language is extended with op-codes that make it possible to implement the Amiko
-commit/rollback conditions instead of the 2-of-2 multisignature script.
-In the absence of such op-codes, there are a couple ways to reduce the problem,
-for instance using an escrow party, adding collateral or, in extreme cases, by
-using the commit/rollback evidence in the legal system.
-
-
-Transaction malleability
-------------------------
-The validity of the "T2" transaction of a microtransaction channel depends on
-the transaction ID of the "T1" transaction. Between the moment of publishing T1
-and the inclusion of T1 into the block chain, it is possible for attackers to
-change the transaction ID of T1, due to Bitcoin transaction malleability. As a
-result, the direct neighbor in a link can hold the deposited bitcoins hostage
-by refusing to re-sign a modified T2 transaction which contains the new
-transaction ID.
-
-**solution**: this has to be solved in the Bitcoin software.
 
 
 No payment channel token check
@@ -130,25 +88,6 @@ re-routing traffic, such as influencing IP routing or changing DNS responses.
 
 Denial of Service
 =================
-
-Missing timeouts
-----------------
-A lot of communication time-outs are missing. As a result, an attacker can stall
-a transaction forever, by never responding to a message, while a response is
-required by the protocol.
-
-**solution**: implement the missing functionality.
-
-
-Missing resume handling
------------------------
-After a disconnect/reconnect of a link, and after shutdown/restart of a node,
-communication of unfinished transactions is not resumed properly. As a result,
-ongoing transactions can hang forever, potentially as a result of a deliberate
-action of an attacker.
-
-**solution**: implement the missing functionality.
-
 
 Meeting point ID spoofing
 -------------------------
