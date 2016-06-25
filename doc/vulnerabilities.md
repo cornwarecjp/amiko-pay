@@ -13,6 +13,17 @@ development, the list below is mainly composed of issues related to
 not-yet-implemented security features and to design issues.
 
 
+General issues (e.g. arbitrary code execution)
+==============================================
+
+No checks on type and structure of incoming messages
+----------------------------------------------------
+For incoming message data, any message type and any type of attributes
+(and sub-elements of composed data types) is accepted. It is unknown whether
+this can be abused by an attacker to change the state of an Amiko Pay node in an
+undesired way, or even to trigger arbitrary code execution.
+
+
 Loss of Bitcoins
 =================
 
@@ -27,6 +38,15 @@ can steal his direct neighbor's balance in a channel, simply by disappearing
 without settling the channel balance.
 
 **solution**: implement a proper Lightning channel.
+
+
+Links accept creation of all types of channels
+----------------------------------------------
+In particular, a link accepts creation of new channels that trade IOUs issued
+by the peer. This makes all links vulnerable to the inherent vulnerability of
+IOU channels.
+
+**solution**: implement a (configurable) filter of acceptable new channel types.
 
 
 No transaction checks
@@ -49,6 +69,16 @@ payee can claim the transaction has failed, and refuse to transfer corresponding
 goods/services.
 
 **solution**: implement the missing functionality.
+
+
+Blocking of time-out events
+---------------------------
+It might be possible for an attacker to send so many messages to a node that the
+node is kept completely busy processing network messages, and will not process
+its time-out events. The possible results are currently not well analyzed.
+
+**solution**: always give priority to local events (like time-outs) over
+network events.
 
 
 Loss of privacy
@@ -100,4 +130,31 @@ transaction routing on the Amiko network unreliable.
 unacceptable, since it introduces a central authority. IDs might be linked to
 identities through digital signatures. If a route requires meeting point
 signatures, then intermediate nodes can detect and work around routing problems.
+
+
+Unreasonable time-out values
+----------------------------
+Amiko Pay does not yet put boundaries on incoming time-out values. As a result,
+an attacker can keep funds locked for an arbitrarily long amount of time.
+
+**solution**: put a limit on incoming time-out values.
+
+
+Unlimited creation of new channels
+----------------------------------
+A peer can repeatedly request a node to create a new channel, and the node will
+always comply. As a result, when this process is repeated at a fast pace, so
+many channels can be created that a node will be severely slowed down, or even
+run out of memory.
+
+**solution**: limit the number of channels in a link.
+
+
+Unlimited message buffer size
+-----------------------------
+A peer can send data to a node, without ever sending the message separator
+character (newline). The node will store all this data in memory. As a result, a
+direct neighbor of a node can create an out of memory situation.
+
+**solution**: limit the size of the message buffer.
 
